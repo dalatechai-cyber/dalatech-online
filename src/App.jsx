@@ -2867,7 +2867,7 @@ export default function App() {
   if (currentPage === "setup") return <Setup />;
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-ink-950 text-fg">
+    <div className="relative min-h-screen bg-ink-950 text-fg">
       <CustomCursor />
       <Navbar />
       <main>
