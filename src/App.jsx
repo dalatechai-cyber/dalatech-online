@@ -11,6 +11,7 @@ import {
   useInView as useFmInView,
 } from "framer-motion";
 import Setup from "./Setup";
+import Globe from "./Globe";
 
 const EASE_OUT = [0.16, 1, 0.3, 1];
 const SPRING_REVEAL = { type: "spring", stiffness: 110, damping: 22, mass: 0.6 };
@@ -339,11 +340,32 @@ const LANGUAGES = [
   { code: "zh-TW", label: "繁體中文" },
 ];
 
-const NAV_ITEMS = ["features", "portfolio", "pricing", "how", "contact"];
+const NAV_ITEMS = [
+  { id: "bento", labelKey: "capabilities" },
+  { id: "process", labelKey: "process" },
+  { id: "tech-stack", labelKey: "stack" },
+  { id: "location", labelKey: "location" },
+  { id: "portfolio", labelKey: "portfolio" },
+  { id: "pricing", labelKey: "pricing" },
+  { id: "faq", labelKey: "faq" },
+];
+
+const SCROLLSPY_IDS = [
+  "bento",
+  "process",
+  "tech-stack",
+  "location",
+  "features",
+  "how",
+  "portfolio",
+  "pricing",
+  "faq",
+  "contact",
+];
 
 function Navbar() {
   const { t, i18n } = useTranslation();
-  const [active, setActive] = React.useState("features");
+  const [active, setActive] = React.useState("bento");
   const [scrolled, setScrolled] = React.useState(false);
   const [langOpen, setLangOpen] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -367,13 +389,12 @@ function Navbar() {
   React.useEffect(() => () => clearTimer(), []);
 
   React.useEffect(() => {
-    const ids = ["features", "how", "portfolio", "pricing", "faq", "contact"];
     const onScroll = () => {
       setScrolled(window.scrollY > 60);
       if (programmaticScroll.current) return;
       const y = window.scrollY + 140;
-      let cur = "features";
-      for (const id of ids) {
+      let cur = "bento";
+      for (const id of SCROLLSPY_IDS) {
         const el = document.getElementById(id);
         if (!el) continue;
         if (y >= el.offsetTop) cur = id;
@@ -421,7 +442,7 @@ function Navbar() {
     programmaticEndTimer.current = setTimeout(watch, 80);
   };
 
-  const navLabel = (id) => id === "how" ? t("nav.howItWorks") : t(`nav.${id}`);
+  const navLabel = (labelKey) => t(`nav.${labelKey}`);
 
   return (
     <motion.header
@@ -449,15 +470,15 @@ function Navbar() {
             <BrandLockup size={40} />
           </a>
 
-          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
-            {NAV_ITEMS.map((id) => (
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex lg:gap-7">
+            {NAV_ITEMS.map(({ id, labelKey }) => (
               <NavLink
                 key={id}
                 href={`#${id}`}
                 active={active === id}
                 onClick={scrollToId(id)}
               >
-                {navLabel(id)}
+                {navLabel(labelKey)}
               </NavLink>
             ))}
           </nav>
@@ -566,7 +587,7 @@ function Navbar() {
               }}
               className="flex flex-1 flex-col justify-center gap-2 px-5 sm:px-7"
             >
-              {NAV_ITEMS.map((id) => (
+              {NAV_ITEMS.map(({ id, labelKey }) => (
                 <motion.a
                   key={id}
                   href={`#${id}`}
@@ -579,9 +600,9 @@ function Navbar() {
                     "block py-1 font-display font-semibold tracking-tight transition-colors",
                     active === id ? "text-[#38BDF8]" : "text-fg hover:text-[#38BDF8]",
                   ].join(" ")}
-                  style={{ fontSize: "48px", lineHeight: 1.05, letterSpacing: "-0.02em" }}
+                  style={{ fontSize: "40px", lineHeight: 1.08, letterSpacing: "-0.02em" }}
                 >
-                  {navLabel(id)}
+                  {navLabel(labelKey)}
                 </motion.a>
               ))}
             </motion.nav>
@@ -2310,41 +2331,53 @@ function LocationBadge() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   return (
-    <section aria-label={t("location.eyebrow")} className="relative py-14 md:py-20">
-      <Container>
+    <section
+      id="location"
+      aria-label={t("location.eyebrow")}
+      className="relative py-24 md:py-28"
+    >
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div
+          className="mesh-blob animate-meshShift opacity-40"
+          style={{
+            top: "10%",
+            left: "-6%",
+            width: "30rem",
+            height: "30rem",
+            background:
+              "radial-gradient(circle at 50% 50%, rgba(56,189,248,0.16), transparent 70%)",
+          }}
+        />
+      </div>
+      <Container className="relative">
         <motion.div
-          initial={reduced ? false : { opacity: 0, y: 18 }}
+          initial={reduced ? false : { opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.55 }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={SPRING_REVEAL}
-          className="mx-auto flex max-w-[600px] flex-col items-center text-center"
+          className="grid items-center gap-12 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-16"
         >
-          <div className="flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.022] px-4 py-2.5 ring-1 ring-inset ring-white/[0.04]">
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden
-              focusable="false"
-              className="h-4 w-4 text-sky-400"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 21s7-7.3 7-12.5A7 7 0 1 0 5 8.5C5 13.7 12 21 12 21z" />
-              <circle cx="12" cy="9" r="2.4" />
-            </svg>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
-              {t("location.eyebrow")}
-            </span>
-            <span aria-hidden className="block h-3 w-px bg-white/15" />
-            <span className="font-display text-[14px] font-semibold tracking-tight text-fg">
-              {t("location.city")}, {t("location.country")}
-            </span>
+          <div className="mx-auto w-full max-w-[360px] sm:max-w-[420px] md:mx-0 md:max-w-[480px]">
+            <Globe reducedMotion={reduced} />
           </div>
-          <p className="mt-6 max-w-[44ch] text-[15px] leading-[1.65] text-fg-muted">
-            {t("location.tagline")}
-          </p>
+          <div className="text-center md:text-left">
+            <SectionLabel>{t("location.eyebrow")}</SectionLabel>
+            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
+              {t("location.city")}, {t("location.country")}
+            </h2>
+            <p className="mx-auto mt-5 max-w-[46ch] text-[15.5px] leading-[1.65] text-fg-muted md:mx-0">
+              {t("location.tagline")}
+            </p>
+            <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.022] px-3.5 py-1.5 ring-1 ring-inset ring-white/[0.04]">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
+              </span>
+              <span className="text-[11px] font-medium tracking-wide text-fg-muted">
+                47.91°N · 106.88°E
+              </span>
+            </div>
+          </div>
         </motion.div>
       </Container>
     </section>

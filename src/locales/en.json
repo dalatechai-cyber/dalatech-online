@@ -1,12 +1,16 @@
 {
   "nav": {
     "brand": "DalaTech",
-    "features": "Services",
-    "howItWorks": "How it works",
+    "capabilities": "Capabilities",
+    "process": "Process",
+    "stack": "Stack",
+    "location": "Location",
     "portfolio": "Portfolio",
     "pricing": "Pricing",
     "faq": "FAQ",
     "contact": "Contact",
+    "features": "Services",
+    "howItWorks": "How it works",
     "getDemo": "Get a free demo"
   },
   "hero": {

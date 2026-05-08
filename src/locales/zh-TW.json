@@ -1,12 +1,16 @@
 {
   "nav": {
     "brand": "DalaTech",
-    "features": "服務",
-    "howItWorks": "運作方式",
+    "capabilities": "功能",
+    "process": "流程",
+    "stack": "技術棧",
+    "location": "據點",
     "portfolio": "作品集",
     "pricing": "價格方案",
     "faq": "常見問題",
     "contact": "聯絡我們",
+    "features": "服務",
+    "howItWorks": "運作方式",
     "getDemo": "免費試用示範"
   },
   "hero": {

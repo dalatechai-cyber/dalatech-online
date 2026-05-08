@@ -1,12 +1,16 @@
 {
   "nav": {
     "brand": "DalaTech",
-    "features": "Үйлчилгээ",
-    "howItWorks": "Яаж ажилладаг",
+    "capabilities": "Боломжууд",
+    "process": "Процесс",
+    "stack": "Технологи",
+    "location": "Байршил",
     "portfolio": "Портфолио",
     "pricing": "Үнэ",
     "faq": "Асуултууд",
     "contact": "Холбоо барих",
+    "features": "Үйлчилгээ",
+    "howItWorks": "Яаж ажилладаг",
     "getDemo": "Үнэгүй демо авах"
   },
   "hero": {
