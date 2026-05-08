@@ -117,7 +117,8 @@ function makeAtmosphereMaterial() {
       uniform vec3 uColor;
       varying vec3 vNormal;
       void main() {
-        float intensity = pow(0.62 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.4);
+        float rim = max(0.0, 0.48 - dot(vNormal, vec3(0.0, 0.0, 1.0)));
+        float intensity = pow(rim, 5.5) * 0.55;
         gl_FragColor = vec4(uColor, 1.0) * intensity;
       }
     `,
@@ -208,7 +209,7 @@ export default function Globe({ className = "", reducedMotion = false }) {
     ring.lookAt(pinPos.clone().multiplyScalar(2));
     globeGroup.add(ring);
 
-    const atmoGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.18, 64, 64);
+    const atmoGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.06, 64, 64);
     const atmoMat = makeAtmosphereMaterial();
     const atmo = new THREE.Mesh(atmoGeo, atmoMat);
     scene.add(atmo);

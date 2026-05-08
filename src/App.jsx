@@ -783,50 +783,6 @@ function MatrixSalonPreview() {
   );
 }
 
-function FloatingChatbotBadge() {
-  const reduced = useReducedMotion();
-  return (
-    <motion.div
-      initial={reduced ? false : { opacity: 0, y: 12, scale: 0.94 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ ...SPRING_REVEAL, delay: 1.0 }}
-      className="absolute bottom-3.5 right-3.5 z-10 flex items-end gap-2.5 sm:bottom-5 sm:right-5"
-    >
-      <motion.div
-        initial={reduced ? false : { opacity: 0, x: 8 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ ...SPRING_REVEAL, delay: 1.4 }}
-        className="hidden max-w-[210px] rounded-2xl rounded-br-md border border-white/10 bg-ink-900/95 px-3 py-2 shadow-[0_20px_44px_-18px_rgba(0,0,0,0.75)] backdrop-blur md:block"
-      >
-        <p className="text-[11px] leading-[1.45] text-fg/90">Сайн байна уу 👋 Ямар үйлчилгээ авах вэ?</p>
-        <div className="mt-1 flex items-center gap-1.5">
-          <span className="text-[8.5px] font-semibold uppercase tracking-[0.14em] text-sky-300">DalaTech AI</span>
-          <span className="h-1 w-1 rounded-full bg-white/30" />
-          <span className="text-[9px] text-fg-muted">Live</span>
-        </div>
-      </motion.div>
-      <motion.button
-        type="button"
-        aria-label="DalaTech AI chatbot"
-        animate={reduced ? undefined : { y: [0, -3, 0] }}
-        transition={reduced ? undefined : { duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
-        whileHover={reduced ? undefined : { scale: 1.04 }}
-        whileTap={reduced ? undefined : { scale: 0.95 }}
-        className="pressable relative flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 shadow-[0_18px_44px_-12px_rgba(56,189,248,0.55)] sm:h-12 sm:w-12"
-        style={{ background: "linear-gradient(155deg, #38BDF8 0%, #2563EB 100%)" }}
-      >
-        <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70" />
-          <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-ink-950 bg-emerald-400" />
-        </span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      </motion.button>
-    </motion.div>
-  );
-}
-
 function HeroDemoCard() {
   const { scrollY } = useScroll();
   const reduced = useReducedMotion();
@@ -838,7 +794,6 @@ function HeroDemoCard() {
       <BrowserMockup url="matrixecosalon.org">
         <MatrixSalonPreview />
       </BrowserMockup>
-      <FloatingChatbotBadge />
       <div
         aria-hidden
         className="pointer-events-none absolute left-4 top-[58px] z-10 flex items-center gap-1.5 rounded-full border border-white/15 bg-ink-950/60 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-fg-muted backdrop-blur sm:top-[62px]"
@@ -1914,7 +1869,6 @@ function Portfolio() {
                 <BrowserMockup url="matrixecosalon.org">
                   <MatrixSalonPreview />
                 </BrowserMockup>
-                <FloatingChatbotBadge />
               </div>
               <div className="mt-5 flex flex-wrap items-center gap-2">
                 <Pill>{t("portfolio.japantok.pills.website")}</Pill>
