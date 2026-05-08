@@ -1,63 +1,153 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-html {
-  scroll-behavior: smooth;
-}
 
 :root {
-  --cursor-emoji: url("/cursor-default.png") 6 8;
-  --cursor-emoji-excited: url("/cursor-hover.png") 6 8;
+  --ease-out-quart: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ink-950: #050A18;
+  --ink-800: #0D1430;
+  --brand-500: #2563EB;
+  --sky-400: #38BDF8;
+  --fg: #F0F4FF;
+  --fg-muted: #8B9FC4;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--ink-950);
+  color-scheme: dark;
+}
+
+body {
+  background: var(--ink-950);
+  color: var(--fg);
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", "PingFang TC",
+    "Microsoft JhengHei", sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 section {
-  scroll-margin-top: 90px; /* fixes sticky navbar covering headings */
-}
-body {
-  background: #fafafa;
-  cursor: var(--cursor-emoji), auto;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", "PingFang TC",
-    "Microsoft JhengHei", sans-serif;
-}
-html {
-  scroll-behavior: smooth;
+  scroll-margin-top: 96px;
 }
 
-input,
-textarea,
-select {
-  cursor: text;
+::selection {
+  background: rgba(56, 189, 248, 0.28);
+  color: #ffffff;
 }
 
-a,
-button,
-[role="button"],
-summary {
-  cursor: var(--cursor-emoji), pointer;
+@media (hover: hover) and (pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: none !important;
+  }
+  html.has-custom-cursor input,
+  html.has-custom-cursor textarea,
+  html.has-custom-cursor select {
+    cursor: text !important;
+  }
 }
 
-a:hover,
-a:focus-visible,
-a:active,
-button:hover,
-button:focus-visible,
-button:active,
-[role="button"]:hover,
-[role="button"]:focus-visible,
-[role="button"]:active,
-summary:hover,
-summary:focus-visible,
-summary:active {
-  cursor: var(--cursor-emoji-excited), pointer;
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(56,189,248,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: -1px -1px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent 75%);
+          mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent 75%);
 }
 
-.cta-emoji {
-  cursor: var(--cursor-emoji), pointer;
+.card-glow {
+  position: relative;
+  isolation: isolate;
+  transition: transform 320ms var(--ease-out-quart),
+              border-color 320ms var(--ease-out-quart),
+              box-shadow 320ms var(--ease-out-quart);
 }
 
-.cta-emoji:hover,
-.cta-emoji:focus-visible,
-.cta-emoji:active {
-  cursor: var(--cursor-emoji-excited), pointer;
+.card-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, rgba(56,189,248,0) 0%, rgba(56,189,248,0) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  transition: background 360ms var(--ease-out-quart);
+  z-index: 1;
+}
+
+.card-glow:hover {
+  border-color: rgba(56,189,248,0.32);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.05) inset,
+    0 24px 60px -24px rgba(56,189,248,0.25),
+    inset 0 0 60px -24px rgba(56,189,248,0.22);
+  transform: translateY(-2px);
+}
+
+.card-glow:hover::before {
+  background: linear-gradient(140deg, rgba(56,189,248,0.55) 0%, rgba(37,99,235,0.05) 60%, rgba(56,189,248,0) 100%);
+}
+
+.mesh-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(72px);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesh-blob,
+  .animate-meshShift,
+  .animate-meshShift2,
+  .animate-gridPulse {
+    animation: none !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+.marquee-track {
+  animation: marquee 32s linear infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.field {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--fg);
+  transition: border-color 200ms var(--ease-out-quart), background 200ms var(--ease-out-quart);
+}
+.field::placeholder { color: rgba(139,159,196,0.7); }
+.field:focus {
+  outline: none;
+  border-color: rgba(56,189,248,0.55);
+  background: rgba(255,255,255,0.04);
+}
+
+.pressable {
+  transition: transform 160ms var(--ease-out-quart);
+}
+.pressable:active {
+  transform: scale(0.97);
 }

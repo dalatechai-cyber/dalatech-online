@@ -1,539 +1,760 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+  useReducedMotion,
+  useInView as useFmInView,
+} from "framer-motion";
 import Setup from "./Setup";
 
-function useInView(options = { threshold: 0.15 }) {
-  const ref = React.useRef(null);
-  const [isInView, setIsInView] = React.useState(false);
+const EASE_OUT = [0.16, 1, 0.3, 1];
+const SPRING_REVEAL = { type: "spring", stiffness: 110, damping: 22, mass: 0.6 };
+const SPRING_HEADLINE = { type: "spring", stiffness: 140, damping: 18, mass: 0.55 };
+
+function CustomCursor() {
+  const reduced = useReducedMotion();
+  const x = useMotionValue(-100);
+  const y = useMotionValue(-100);
+  const sx = useSpring(x, { stiffness: 380, damping: 32, mass: 0.4 });
+  const sy = useSpring(y, { stiffness: 380, damping: 32, mass: 0.4 });
+  const [hover, setHover] = React.useState(false);
+  const [visible, setVisible] = React.useState(false);
 
   React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    if (reduced) return;
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    if (!fine) return;
 
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setIsInView(true);
-        observer.disconnect(); // animate once
-      }
-    }, options);
+    document.documentElement.classList.add("has-custom-cursor");
 
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [options]);
+    const move = (e) => {
+      x.set(e.clientX);
+      y.set(e.clientY);
+      if (!visible) setVisible(true);
+    };
+    const leave = () => setVisible(false);
+    const enter = () => setVisible(true);
+    const checkHover = (e) => {
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      const interactive = t.closest('a,button,[role="button"],input,textarea,select,summary,label,[data-cursor="hover"]');
+      setHover(Boolean(interactive));
+    };
 
-  return [ref, isInView];
-}
+    window.addEventListener("pointermove", move, { passive: true });
+    window.addEventListener("pointerover", checkHover, { passive: true });
+    window.addEventListener("pointerleave", leave);
+    window.addEventListener("pointerenter", enter);
+    return () => {
+      document.documentElement.classList.remove("has-custom-cursor");
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerover", checkHover);
+      window.removeEventListener("pointerleave", leave);
+      window.removeEventListener("pointerenter", enter);
+    };
+  }, [reduced, visible, x, y]);
 
-function Reveal({ children, className = "" }) {
-  const [ref, show] = useInView();
+  if (reduced) return null;
 
   return (
-    <div
-      ref={ref}
-      className={[
-        "transition-all duration-700 ease-out",
-        show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
-        className,
-      ].join(" ")}
+    <>
+      <motion.div
+        aria-hidden
+        className="pointer-events-none fixed left-0 top-0 z-[100001] hidden h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fg md:block"
+        style={{ x, y, opacity: visible ? 1 : 0, scale: hover ? 0.5 : 1 }}
+        transition={{ scale: { type: "spring", stiffness: 300, damping: 25 } }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none fixed left-0 top-0 z-[100000] hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-sky-400/60 mix-blend-difference md:block"
+        style={{ x: sx, y: sy, opacity: visible ? 1 : 0, scale: hover ? 1.6 : 1 }}
+        transition={{ scale: { type: "spring", stiffness: 220, damping: 20 } }}
+      />
+    </>
+  );
+}
+
+function Reveal({ children, delay = 0, y = 28, className = "", once = true, amount = 0.2 }) {
+  const reduced = useReducedMotion();
+  return (
+    <motion.div
+      initial={reduced ? false : { opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once, amount }}
+      transition={{ ...SPRING_REVEAL, delay }}
+      className={className}
     >
       {children}
+    </motion.div>
+  );
+}
+
+function StaggerGroup({ children, className = "", stagger = 0.07, delay = 0, amount = 0.2 }) {
+  return (
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount }}
+      variants={{
+        hidden: {},
+        show: { transition: { staggerChildren: stagger, delayChildren: delay } },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function StaggerItem({ children, className = "", y = 24 }) {
+  const reduced = useReducedMotion();
+  return (
+    <motion.div
+      className={className}
+      variants={{
+        hidden: reduced ? { opacity: 1 } : { opacity: 0, y },
+        show: { opacity: 1, y: 0, transition: SPRING_REVEAL },
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function MagneticButton({ children, href = "#", variant = "primary", onClick, type = "button", className = "" }) {
+  const reduced = useReducedMotion();
+  const ref = React.useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const sx = useSpring(x, { stiffness: 220, damping: 18, mass: 0.5 });
+  const sy = useSpring(y, { stiffness: 220, damping: 18, mass: 0.5 });
+
+  const onMove = (e) => {
+    if (reduced || !ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    const relX = e.clientX - (r.left + r.width / 2);
+    const relY = e.clientY - (r.top + r.height / 2);
+    x.set(relX * 0.25);
+    y.set(relY * 0.35);
+  };
+  const onLeave = () => { x.set(0); y.set(0); };
+
+  const base =
+    "pressable group relative inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold tracking-tight transition-colors duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950";
+
+  const styles =
+    variant === "primary"
+      ? "bg-fg text-ink-950 hover:bg-white"
+      : "bg-white/[0.03] text-fg ring-1 ring-inset ring-white/10 hover:bg-white/[0.06] hover:ring-white/20";
+
+  const Inner = (
+    <motion.span
+      ref={ref}
+      style={{ x: sx, y: sy }}
+      className={[base, styles, className].join(" ")}
+      onPointerMove={onMove}
+      onPointerLeave={onLeave}
+    >
+      <span className="relative z-10 flex items-center gap-2">{children}</span>
+      {variant === "primary" && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
+          style={{ boxShadow: "0 0 0 1px rgba(56,189,248,0.45), 0 16px 40px -8px rgba(56,189,248,0.45)" }}
+        />
+      )}
+    </motion.span>
+  );
+
+  if (onClick || type === "submit") {
+    return (
+      <motion.button
+        type={type}
+        onClick={onClick}
+        className="inline-block"
+        whileTap={reduced ? undefined : { scale: 0.97 }}
+      >
+        {Inner}
+      </motion.button>
+    );
+  }
+
+  return (
+    <motion.a
+      href={href}
+      className="inline-block"
+      whileTap={reduced ? undefined : { scale: 0.97 }}
+    >
+      {Inner}
+    </motion.a>
+  );
+}
+
+function MeshBackground({ intensity = 1 }) {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-grid animate-gridPulse" />
+      <div
+        className="mesh-blob animate-meshShift"
+        style={{
+          top: "-12%", left: "10%",
+          width: `${44 * intensity}rem`, height: `${44 * intensity}rem`,
+          background: "radial-gradient(circle at 30% 30%, rgba(37,99,235,0.65), rgba(37,99,235,0) 60%)",
+        }}
+      />
+      <div
+        className="mesh-blob animate-meshShift2"
+        style={{
+          bottom: "-18%", right: "-8%",
+          width: `${52 * intensity}rem`, height: `${52 * intensity}rem`,
+          background: "radial-gradient(circle at 60% 50%, rgba(56,189,248,0.45), rgba(56,189,248,0) 65%)",
+        }}
+      />
+      <div
+        className="mesh-blob animate-meshShift"
+        style={{
+          top: "20%", right: "20%",
+          width: "28rem", height: "28rem",
+          background: "radial-gradient(circle at 50% 50%, rgba(13,20,48,0.85), rgba(13,20,48,0) 70%)",
+        }}
+      />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink-950" />
     </div>
   );
 }
 
-function Container({ children }) {
+function CountUp({ to, prefix = "", suffix = "", duration = 1400 }) {
+  const ref = React.useRef(null);
+  const inView = useFmInView(ref, { once: true, amount: 0.4 });
+  const [val, setVal] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!inView) return;
+    let raf = 0;
+    const start = performance.now();
+    const ease = (t) => 1 - Math.pow(1 - t, 4);
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      setVal(Math.round(ease(t) * to));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, to, duration]);
+
+  return <span ref={ref}>{prefix}{val}{suffix}</span>;
+}
+
+function Container({ children, className = "" }) {
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+    <div className={["mx-auto w-full max-w-[1180px] px-5 sm:px-7 lg:px-10", className].join(" ")}>
       {children}
     </div>
   );
 }
 
-function NavLink({ children, href = "#", active, onClick }) {
-  const scrollToId = (id) => (e) => {
-  e.preventDefault();
-  const el = document.getElementById(id);
-  if (!el) return;
-  const y = el.getBoundingClientRect().top + window.scrollY - 88; // 88px offset
-  window.scrollTo({ top: y, behavior: "smooth" });
-  setActive(id);
-};
+function SectionLabel({ children }) {
+  return (
+    <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
+      <span className="h-px w-6 bg-gradient-to-r from-transparent via-sky-400/60 to-sky-400/0" />
+      {children}
+    </span>
+  );
+}
 
+function Pill({ children }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium tracking-wide text-fg-muted">
+      {children}
+    </span>
+  );
+}
+
+function NavLink({ children, href, active, onClick }) {
   return (
     <a
       href={href}
       onClick={onClick}
-      className={[
-        "text-sm font-medium transition-colors",
-        active ? "text-zinc-950" : "text-zinc-700 hover:text-zinc-950",
-      ].join(" ")}
+      className="relative px-1 py-1 text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
+      data-cursor="hover"
     >
-      {children}
-      <span
-        className={[
-          "mt-1 block h-0.5 rounded-full transition-all",
-          active ? "w-full bg-zinc-900" : "w-0 bg-transparent",
-        ].join(" ")}
-      />
-    </a>
-  );
-}
-
-
-function PrimaryButton({ children, href = "#" }) {
-  return (
-    <a
-      href={href}
-      className="cta-emoji relative inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-zinc-800 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
-    >
-      {children}
-    </a>
-  );
-}
-
-function SecondaryButton({ children, href = "#" }) {
-  return (
-    <a
-      href={href}
-      className="cta-emoji inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 shadow-sm transition-all duration-200 hover:bg-zinc-50 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-zinc-900/10"
-    >
-      {children}
+      <span className={active ? "text-fg" : ""}>{children}</span>
+      {active && (
+        <motion.span
+          layoutId="nav-underline"
+          className="absolute -bottom-1 left-0 h-px w-full bg-gradient-to-r from-sky-400/0 via-sky-400 to-sky-400/0"
+          transition={{ type: "spring", stiffness: 350, damping: 30 }}
+        />
+      )}
     </a>
   );
 }
 
 const LANGUAGES = [
-  { code: 'en',    label: 'English' },
-  { code: 'mn',    label: 'Монгол' },
-  { code: 'zh-TW', label: '繁體中文' },
+  { code: "en", label: "English" },
+  { code: "mn", label: "Монгол" },
+  { code: "zh-TW", label: "繁體中文" },
 ];
 
 function Navbar() {
   const { t, i18n } = useTranslation();
   const [active, setActive] = React.useState("features");
+  const [scrolled, setScrolled] = React.useState(false);
   const [langOpen, setLangOpen] = React.useState(false);
-  const langCloseTimerRef = React.useRef(null);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const langTimer = React.useRef(null);
 
-  const clearLangCloseTimer = React.useCallback(() => {
-    if (langCloseTimerRef.current) {
-      window.clearTimeout(langCloseTimerRef.current);
-      langCloseTimerRef.current = null;
-    }
-  }, []);
-
-  const openLangMenu = React.useCallback(() => {
-    clearLangCloseTimer();
-    setLangOpen(true);
-  }, [clearLangCloseTimer]);
-
-  const scheduleLangMenuClose = React.useCallback(() => {
-    clearLangCloseTimer();
-    langCloseTimerRef.current = window.setTimeout(() => {
-      setLangOpen(false);
-    }, 180);
-  }, [clearLangCloseTimer]);
+  const clearTimer = () => {
+    if (langTimer.current) { clearTimeout(langTimer.current); langTimer.current = null; }
+  };
+  const openLang = () => { clearTimer(); setLangOpen(true); };
+  const scheduleClose = () => { clearTimer(); langTimer.current = setTimeout(() => setLangOpen(false), 180); };
 
   const changeLanguage = (code) => {
-    clearLangCloseTimer();
+    clearTimer();
     i18n.changeLanguage(code);
-    localStorage.setItem('language', code);
+    localStorage.setItem("language", code);
     setLangOpen(false);
   };
 
-  React.useEffect(() => {
-    return () => {
-      clearLangCloseTimer();
-    };
-  }, [clearLangCloseTimer]);
-
-  React.useEffect(() => {
-    document.documentElement.style.scrollBehavior = "smooth";
-    return () => {
-      document.documentElement.style.scrollBehavior = "auto";
-    };
-  }, []);
+  React.useEffect(() => () => clearTimer(), []);
 
   React.useEffect(() => {
     const ids = ["features", "how", "portfolio", "pricing", "faq", "contact"];
-
     const onScroll = () => {
-      const scrollY = window.scrollY + 120; // offset for sticky navbar
-      let current = "features";
-
+      setScrolled(window.scrollY > 12);
+      const y = window.scrollY + 140;
+      let cur = "features";
       for (const id of ids) {
         const el = document.getElementById(id);
         if (!el) continue;
-
-        const top = el.offsetTop;
-        if (scrollY >= top) current = id;
+        if (y >= el.offsetTop) cur = id;
       }
-
-      setActive(current);
+      setActive(cur);
     };
-
-    onScroll(); // set initial
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const scrollToId = (id) => (e) => {
     e.preventDefault();
+    setMobileOpen(false);
     const el = document.getElementById(id);
     if (!el) return;
-    const y = el.getBoundingClientRect().top + window.scrollY - 88; // 88px offset
+    const y = el.getBoundingClientRect().top + window.scrollY - 88;
     window.scrollTo({ top: y, behavior: "smooth" });
     setActive(id);
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur">
+    <motion.header
+      initial={{ y: -16, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ ...SPRING_REVEAL, delay: 0.05 }}
+      className={[
+        "fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color,padding] duration-300",
+        scrolled
+          ? "bg-ink-950/65 backdrop-blur-xl border-b border-white/5"
+          : "bg-transparent border-b border-transparent",
+      ].join(" ")}
+    >
       <Container>
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/Photos/dalatech-logo.png" alt="DalaTech" className="h-9 w-9 rounded-full object-cover" />
-            <span className="text-sm font-semibold tracking-tight text-zinc-900">
-              {t('nav.brand')}
+        <div className={["flex items-center justify-between transition-all duration-300", scrolled ? "h-14" : "h-20"].join(" ")}>
+          <a href="#top" className="flex items-center gap-2.5" data-cursor="hover">
+            <span className="relative inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg ring-1 ring-white/10">
+              <img src="/Photos/dalatech-logo.png" alt="DalaTech" className="h-full w-full object-cover" />
             </span>
-          </div>
+            <span className="font-display text-[15px] font-semibold tracking-tight text-fg">
+              {t("nav.brand")}
+            </span>
+          </a>
 
-          <nav className="hidden items-center gap-6 md:flex">
-            <NavLink href="#features" active={active === "features"} onClick={scrollToId("features")}>
-              {t('nav.features')}
-            </NavLink>
-            <NavLink href="#how" active={active === "how"} onClick={scrollToId("how")}>
-              {t('nav.howItWorks')}
-            </NavLink>
-            <NavLink href="#portfolio" active={active === "portfolio"} onClick={scrollToId("portfolio")}>
-              {t('nav.portfolio')}
-            </NavLink>
-            <NavLink href="#pricing" active={active === "pricing"} onClick={scrollToId("pricing")}>
-              {t('nav.pricing')}
-            </NavLink>
-            <NavLink href="#faq" active={active === "faq"} onClick={scrollToId("faq")}>
-              {t('nav.faq')}
-            </NavLink>
+          <nav className="hidden items-center gap-7 md:flex">
+            <NavLink href="#features" active={active === "features"} onClick={scrollToId("features")}>{t("nav.features")}</NavLink>
+            <NavLink href="#how" active={active === "how"} onClick={scrollToId("how")}>{t("nav.howItWorks")}</NavLink>
+            <NavLink href="#portfolio" active={active === "portfolio"} onClick={scrollToId("portfolio")}>{t("nav.portfolio")}</NavLink>
+            <NavLink href="#pricing" active={active === "pricing"} onClick={scrollToId("pricing")}>{t("nav.pricing")}</NavLink>
+            <NavLink href="#faq" active={active === "faq"} onClick={scrollToId("faq")}>{t("nav.faq")}</NavLink>
+            <NavLink href="#contact" active={active === "contact"} onClick={scrollToId("contact")}>{t("nav.contact")}</NavLink>
           </nav>
 
-          <div className="flex items-center gap-3">
-            <a
-              href="#contact"
-              className={[
-                "hidden text-sm font-medium sm:inline transition-colors",
-                active === "contact" ? "text-zinc-950" : "text-zinc-700 hover:text-zinc-950",
-              ].join(" ")}
-              onClick={scrollToId("contact")}
-            >
-              {t('nav.contact')}
-            </a>
-            {/* Globe language switcher */}
-            <div
-              className="relative"
-              onMouseEnter={openLangMenu}
-              onMouseLeave={scheduleLangMenuClose}
-            >
+          <div className="flex items-center gap-2.5">
+            <div className="relative hidden sm:block" onMouseEnter={openLang} onMouseLeave={scheduleClose}>
               <button
-                onClick={() => {
-                  clearLangCloseTimer();
-                  setLangOpen((o) => !o);
-                }}
-                className="flex items-center justify-center rounded-xl border border-zinc-200 bg-white p-2 text-zinc-700 hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
-                title="Select language"
+                onClick={() => { clearTimer(); setLangOpen((o) => !o); }}
+                className="pressable flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-fg-muted transition-colors hover:border-white/20 hover:text-fg"
                 aria-label="Select language"
+                data-cursor="hover"
               >
-                {/* Globe icon */}
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
+                  <path d="M2 12h20" />
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                 </svg>
               </button>
+              <AnimatePresence>
+                {langOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ duration: 0.18, ease: EASE_OUT }}
+                    style={{ transformOrigin: "top right" }}
+                    className="absolute right-0 top-full mt-2 w-44 overflow-hidden rounded-xl border border-white/10 bg-ink-800/95 py-1 shadow-2xl backdrop-blur"
+                    onMouseEnter={openLang}
+                    onMouseLeave={scheduleClose}
+                  >
+                    {LANGUAGES.map(({ code, label }) => (
+                      <button
+                        key={code}
+                        onClick={() => changeLanguage(code)}
+                        className={[
+                          "flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-white/[0.04]",
+                          i18n.language === code ? "text-fg" : "text-fg-muted",
+                        ].join(" ")}
+                      >
+                        {i18n.language === code && <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />}
+                        <span className={i18n.language === code ? "" : "ml-3.5"}>{label}</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-              {langOpen && (
-                <div
-                  className="absolute right-0 top-full mt-1 w-40 rounded-xl border border-zinc-200 bg-white py-1 shadow-lg z-50"
-                  onMouseEnter={openLangMenu}
-                  onMouseLeave={scheduleLangMenuClose}
-                >
+            <button
+              type="button"
+              onClick={() => setMobileOpen((o) => !o)}
+              className="pressable flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-fg md:hidden"
+              aria-label="Toggle menu"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {mobileOpen ? <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></> : <><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></>}
+              </svg>
+            </button>
+
+            <div className="hidden md:block">
+              <MagneticButton href="#contact" variant="primary">
+                {t("nav.getDemo")}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
+              </MagneticButton>
+            </div>
+          </div>
+        </div>
+      </Container>
+
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: EASE_OUT }}
+            className="md:hidden border-t border-white/5 bg-ink-950/95 backdrop-blur-xl overflow-hidden"
+          >
+            <Container>
+              <nav className="flex flex-col gap-1 py-4">
+                {[
+                  ["features", t("nav.features")],
+                  ["how", t("nav.howItWorks")],
+                  ["portfolio", t("nav.portfolio")],
+                  ["pricing", t("nav.pricing")],
+                  ["faq", t("nav.faq")],
+                  ["contact", t("nav.contact")],
+                ].map(([id, label]) => (
+                  <a
+                    key={id}
+                    href={`#${id}`}
+                    onClick={scrollToId(id)}
+                    className="rounded-lg px-3 py-2.5 text-base font-medium text-fg-muted hover:bg-white/[0.03] hover:text-fg"
+                  >
+                    {label}
+                  </a>
+                ))}
+                <div className="mt-2 flex items-center gap-2 px-3">
                   {LANGUAGES.map(({ code, label }) => (
                     <button
                       key={code}
                       onClick={() => changeLanguage(code)}
                       className={[
-                        "w-full px-4 py-2 text-left text-sm transition-colors hover:bg-zinc-50",
+                        "rounded-full border px-3 py-1.5 text-xs",
                         i18n.language === code
-                          ? "font-semibold text-zinc-950"
-                          : "font-medium text-zinc-600",
+                          ? "border-sky-400/40 bg-sky-400/10 text-fg"
+                          : "border-white/10 text-fg-muted",
                       ].join(" ")}
                     >
-                      {i18n.language === code && (
-                        <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-zinc-900 align-middle" />
-                      )}
                       {label}
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
-            <PrimaryButton href="#contact">{t('nav.getDemo')}</PrimaryButton>
-          </div>
-        </div>
-      </Container>
-    </header>
+              </nav>
+            </Container>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 }
 
-function DemoChatCard() {
-  const [value, setValue] = React.useState("");
-  const [messages, setMessages] = React.useState([
-    { role: "user", text: "Do you have brake pads for a 2016 Corolla?" },
-    { role: "bot", text: "Yes — we have several options. What brand do you prefer (Akebono, Bosch, OEM)?" },
-  ]);
+function HeroWords({ text, delay = 0 }) {
+  const reduced = useReducedMotion();
+  const words = text.split(/(\s+)/);
+  let wIndex = 0;
+  return (
+    <span aria-label={text}>
+      {words.map((tok, i) => {
+        if (/^\s+$/.test(tok)) return <span key={i}>{tok}</span>;
+        const idx = wIndex++;
+        return (
+          <span key={i} className="word-mask">
+            <motion.span
+              initial={reduced ? false : { y: "110%" }}
+              animate={{ y: 0 }}
+              transition={{ ...SPRING_HEADLINE, delay: delay + idx * 0.06 }}
+              className="inline-block"
+            >
+              {tok}
+            </motion.span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
 
-  const send = () => {
-    const t = value.trim();
-    if (!t) return;
-    setMessages((m) => [...m, { role: "user", text: t }, { role: "bot", text: "Got it — I can help. What's your budget range?" }]);
-    setValue("");
-  };
+function HeroDemoCard() {
+  const { scrollY } = useScroll();
+  const reduced = useReducedMotion();
+  const yT = useTransform(scrollY, [0, 600], [0, reduced ? 0 : -40]);
+  const y = useSpring(yT, { stiffness: 80, damping: 22, mass: 0.4 });
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <p className="text-xs font-semibold text-zinc-900">Live demo (preview)</p>
-
-      <div className="mt-3 space-y-2">
-        {messages.slice(-4).map((m, i) => (
-          <div
-            key={i}
-            className={[
-              "max-w-[90%] rounded-xl px-3 py-2 text-xs leading-relaxed",
-              m.role === "user"
-                ? "ml-auto bg-zinc-900 text-white"
-                : "bg-zinc-100 text-zinc-900",
-            ].join(" ")}
-          >
-            {m.text}
+    <motion.div style={{ y }} className="relative">
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-ink-800/60 shadow-card">
+        <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-sky-400/20 via-transparent to-brand-500/15 [mask:linear-gradient(black,transparent_60%)]" />
+        <div className="relative aspect-video w-full">
+          <video className="h-full w-full object-cover" autoPlay loop muted playsInline webkit-playsinline="true" preload="auto">
+            <source src="/Videos/Matrix_Demo.mov" type="video/mp4" />
+            <source src="/Videos/Matrix_Demo.mov" type="video/quicktime" />
+          </video>
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/40 via-transparent to-transparent" />
+          <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-1.5 rounded-full border border-white/15 bg-ink-950/55 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-fg-muted backdrop-blur">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
+            </span>
+            Live demo
           </div>
-        ))}
+        </div>
       </div>
 
-      <div className="mt-3 flex gap-2">
-        <input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && send()}
-          className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs outline-none focus:border-zinc-900"
-          placeholder="Ask something..."
-        />
-        <button
-          type="button"
-          onClick={send}
-          className="cta-emoji rounded-xl bg-zinc-900 px-3 py-2 text-xs font-semibold text-white transition-all hover:bg-zinc-800 active:scale-[0.99]"
-        >
-          Send
-        </button>
-      </div>
-    </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING_REVEAL, delay: 0.9 }}
+        className="absolute -bottom-8 left-6 hidden w-72 rounded-2xl border border-white/10 bg-ink-800/85 p-4 shadow-card backdrop-blur md:block"
+      >
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-fg-muted">Example</p>
+        <p className="mt-1.5 text-sm text-fg/85">"Do you have brake pads for a 2016 Corolla?"</p>
+        <div className="mt-3 rounded-xl bg-fg px-3 py-2 text-xs leading-relaxed text-ink-950">
+          Yes — we have multiple options. What brand do you prefer?
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
-
 
 function Hero() {
   const { t } = useTranslation();
-
   return (
-    <section className="relative overflow-hidden bg-white">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-28 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-zinc-100 blur-3xl" />
-        <div className="absolute -bottom-28 right-0 h-72 w-72 rounded-full bg-zinc-100 blur-3xl" />
-      </div>
-
-      <Container>
-        <div className="grid items-center gap-10 py-16 md:grid-cols-[35%_65%] md:py-20">
+    <section id="top" className="relative overflow-hidden pt-32 pb-24 md:pt-40 md:pb-36">
+      <MeshBackground />
+      <Container className="relative">
+        <div className="grid items-center gap-14 md:grid-cols-[1fr_1fr] md:gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700">
-              <span className="h-2 w-2 rounded-full bg-zinc-900" />
-              {t('hero.badge')}
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium tracking-wide text-fg-muted backdrop-blur"
+            >
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
+              </span>
+              {t("hero.badge")}
+            </motion.div>
 
-            <h1 className="mt-5 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
-              {t('hero.title')}
+            <h1 className="mt-7 font-display text-[44px] font-semibold leading-[1.05] tracking-tightest text-fg sm:text-[56px] md:text-[60px] lg:text-[68px]">
+              <HeroWords text={t("hero.title")} delay={0.15} />
             </h1>
 
-            <p className="mt-4 text-base leading-relaxed text-zinc-600 sm:text-lg">
-              {t('hero.description')}
-            </p>
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.55 }}
+              className="mt-6 max-w-[44ch] text-[17px] leading-[1.6] text-fg-muted"
+            >
+              {t("hero.description")}
+            </motion.p>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <PrimaryButton href="#contact">{t('hero.buttons.getDemo')}</PrimaryButton>
-              <SecondaryButton href="#portfolio">{t('hero.buttons.seeWork')}</SecondaryButton>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.7 }}
+              className="mt-9 flex flex-col gap-3 sm:flex-row"
+            >
+              <MagneticButton href="#contact" variant="primary">
+                {t("hero.buttons.getDemo")}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
+              </MagneticButton>
+              <MagneticButton href="#portfolio" variant="ghost">
+                {t("hero.buttons.seeWork")}
+              </MagneticButton>
+            </motion.div>
 
-            <div className="mt-8">
-              <p className="text-xs font-medium text-zinc-500">
-                {t('hero.tech')}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.85 }}
+              className="mt-12"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-fg-muted/80">
+                {t("hero.tech")}
               </p>
-              <div className="mt-3 flex flex-wrap gap-3">
-                <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2">
-                  <span className="text-sm font-semibold text-zinc-900">React</span>
-                </div>
-                <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2">
-                  <span className="text-sm font-semibold text-zinc-900">Tailwind CSS</span>
-                </div>
-                <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2">
-                  <span className="text-sm font-semibold text-zinc-900">OpenAI</span>
-                </div>
-                <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2">
-                  <span className="text-sm font-semibold text-zinc-900">Vite</span>
-                </div>
+              <div className="mt-4 flex flex-wrap gap-2.5">
+                {["React", "Tailwind CSS", "OpenAI", "Vite"].map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-lg border border-white/10 bg-white/[0.02] px-3.5 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-white/20"
+                  >
+                    {label}
+                  </span>
+                ))}
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          <div className="relative">
-            <div className="aspect-video w-full rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md overflow-hidden">
-              <video 
-                className="h-full w-full object-cover"
-                autoPlay
-                loop
-                muted
-                playsInline
-                webkit-playsinline="true"
-                preload="auto"
-              >
-                <source src="/Videos/Matrix_Demo.mov" type="video/mp4" />
-                <source src="/Videos/Matrix_Demo.mov" type="video/quicktime" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-
-            <div className="absolute -bottom-6 left-6 hidden w-72 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm md:block transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-              <p className="text-xs font-semibold text-zinc-900">Example</p>
-              <p className="mt-1 text-xs text-zinc-600">
-                “Do you have brake pads for a 2016 Corolla?”
-              </p>
-              <div className="mt-3 rounded-xl bg-zinc-900 px-3 py-2 text-xs text-white">
-                Yes — we have multiple options. What brand do you prefer?
-              </div>
-            </div>
-          </div>
+          <HeroDemoCard />
         </div>
       </Container>
     </section>
   );
 }
 
-function FeatureCard({ title, subtitle, bullets, badge, image }) {
+function SectionHeader({ eyebrow, title, description, align = "center" }) {
+  const wrap = align === "center" ? "text-center mx-auto" : "text-left";
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm  transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-zinc-950">{title}</p>
-          <p className="mt-1 text-sm text-zinc-600">{subtitle}</p>
-        </div>
-        {badge ? (
-          <span className="shrink-0 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700">
-            {badge}
-          </span>
-        ) : null}
-      </div>
-
-      <ul className="mt-5 space-y-2 text-sm text-zinc-700">
-        {bullets.map((b, i) => (
-          <li key={i} className="flex gap-2">
-            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-            <span>{b}</span>
-          </li>
-        ))}
-      </ul>
-
-      {image ? (
-        <div className="mt-6 h-48 rounded-xl border border-zinc-200 bg-white overflow-hidden">
-          <img src={image} alt={title} className="h-full w-full object-cover" />
-        </div>
-      ) : (
-        <div className="mt-6 h-28 rounded-xl border border-zinc-200 bg-white">
-          <div className="flex h-full items-center justify-center text-xs text-zinc-400">
-            Image / UI preview placeholder
-          </div>
-        </div>
+    <Reveal className={wrap}>
+      <SectionLabel>{eyebrow}</SectionLabel>
+      <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
+        {title}
+      </h2>
+      {description && (
+        <p className="mx-auto mt-4 max-w-2xl text-[15.5px] leading-[1.65] text-fg-muted">
+          {description}
+        </p>
       )}
-    </div>
+    </Reveal>
   );
 }
 
-function MiniStat({ label, value }) {
+function FeatureCard({ index, title, subtitle, bullets, badge, image }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <p className="text-xs font-medium text-zinc-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{value}</p>
-    </div>
+    <StaggerItem>
+      <article className="card-glow group flex h-full flex-col rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card backdrop-blur-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] font-display text-[12px] font-semibold tracking-tight text-sky-400">
+              {String(index).padStart(2, "0")}
+            </span>
+            <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{title}</p>
+          </div>
+          {badge && <Pill>{badge}</Pill>}
+        </div>
+        <p className="mt-3 text-[14px] leading-[1.6] text-fg-muted">{subtitle}</p>
+        <ul className="mt-5 space-y-2.5 text-[13.5px] leading-[1.55] text-fg/85">
+          {bullets.map((b, i) => (
+            <li key={i} className="flex gap-2.5">
+              <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+        {image && (
+          <div className="relative mt-6 overflow-hidden rounded-xl border border-white/10 bg-ink-900">
+            <div className="aspect-[16/10]">
+              <img
+                src={image}
+                alt={title}
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+              />
+            </div>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/45 via-transparent to-transparent" />
+          </div>
+        )}
+      </article>
+    </StaggerItem>
+  );
+}
+
+function StatCard({ label, value }) {
+  const m = value.match(/\d+/);
+  const num = m ? m[0] : "0";
+  const before = value.slice(0, value.indexOf(num));
+  const after = value.slice(value.indexOf(num) + num.length);
+  return (
+    <StaggerItem>
+      <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{label}</p>
+        <p className="mt-3 font-display text-[36px] font-semibold tracking-tightest text-fg">
+          {before}
+          <CountUp to={parseInt(num, 10) || 0} />
+          {after}
+        </p>
+      </div>
+    </StaggerItem>
   );
 }
 
 function Features() {
   const { t } = useTranslation();
-
   return (
-    <section id="features" className="py-20">
-      <Container>
-        <Reveal>
-        <div className="text-center">
-          <p className="text-xs font-semibold text-zinc-700">{t('features.section')}</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-            {t('features.title')}
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-zinc-600">
-            {t('features.description')}
-          </p>
-        </div>
-        </Reveal>
+    <section id="features" className="relative py-28">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="mesh-blob animate-meshShift opacity-60" style={{ top: "20%", left: "-10%", width: "32rem", height: "32rem", background: "radial-gradient(circle at 50% 50%, rgba(37,99,235,0.2), transparent 70%)" }} />
+      </div>
+      <Container className="relative">
+        <SectionHeader eyebrow={t("features.section")} title={t("features.title")} description={t("features.description")} />
 
-        <Reveal>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          <FeatureCard
-            title={t('features.chatbot.title')}
-            badge={t('features.chatbot.badge')}
-            subtitle={t('features.chatbot.subtitle')}
-            bullets={[
-              t('features.chatbot.bullets.0'),
-              t('features.chatbot.bullets.1'),
-              t('features.chatbot.bullets.2'),
-            ]}
-            image="/Photos/chatbot-feature.png"
-          />
-          <FeatureCard
-            title={t('features.voiceAgent.title')}
-            badge={t('features.voiceAgent.badge')}
-            subtitle={t('features.voiceAgent.subtitle')}
-            bullets={[
-              t('features.voiceAgent.bullets.0'),
-              t('features.voiceAgent.bullets.1'),
-              t('features.voiceAgent.bullets.2'),
-            ]}
-            image="/Photos/voice-agent-feature.png"
-          />
-          <FeatureCard
-            title={t('features.fullIntegration.title')}
-            badge={t('features.fullIntegration.badge')}
-            subtitle={t('features.fullIntegration.subtitle')}
-            bullets={[
-              t('features.fullIntegration.bullets.0'),
-              t('features.fullIntegration.bullets.1'),
-              t('features.fullIntegration.bullets.2'),
-            ]}
-            image="/Photos/full-integration-feature.png"
-          />
-        </div>
-        </Reveal>
-        
-        <Reveal>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <MiniStat label={t('features.stats.fasterResponses')} value={t('features.stats.fasterResponsesValue')} />
-          <MiniStat label={t('features.stats.lessRepetitiveWork')} value={t('features.stats.lessRepetitiveWorkValue')} />
-          <MiniStat label={t('features.stats.betterExperience')} value={t('features.stats.betterExperienceValue')} />
-          <MiniStat label={t('features.stats.setupTime')} value={t('features.stats.setupTimeValue')} />
-        </div>
-        </Reveal>
+        <StaggerGroup className="mt-14 grid gap-6 md:grid-cols-3">
+          <FeatureCard index={1} title={t("features.chatbot.title")} badge={t("features.chatbot.badge")} subtitle={t("features.chatbot.subtitle")}
+            bullets={[t("features.chatbot.bullets.0"), t("features.chatbot.bullets.1"), t("features.chatbot.bullets.2")]}
+            image="/Photos/chatbot-feature.png" />
+          <FeatureCard index={2} title={t("features.voiceAgent.title")} badge={t("features.voiceAgent.badge")} subtitle={t("features.voiceAgent.subtitle")}
+            bullets={[t("features.voiceAgent.bullets.0"), t("features.voiceAgent.bullets.1"), t("features.voiceAgent.bullets.2")]}
+            image="/Photos/voice-agent-feature.png" />
+          <FeatureCard index={3} title={t("features.fullIntegration.title")} badge={t("features.fullIntegration.badge")} subtitle={t("features.fullIntegration.subtitle")}
+            bullets={[t("features.fullIntegration.bullets.0"), t("features.fullIntegration.bullets.1"), t("features.fullIntegration.bullets.2")]}
+            image="/Photos/full-integration-feature.png" />
+        </StaggerGroup>
+
+        <StaggerGroup className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard label={t("features.stats.fasterResponses")} value={t("features.stats.fasterResponsesValue")} />
+          <StatCard label={t("features.stats.lessRepetitiveWork")} value={t("features.stats.lessRepetitiveWorkValue")} />
+          <StatCard label={t("features.stats.betterExperience")} value={t("features.stats.betterExperienceValue")} />
+          <StatCard label={t("features.stats.setupTime")} value={t("features.stats.setupTimeValue")} />
+        </StaggerGroup>
       </Container>
     </section>
   );
@@ -541,590 +762,368 @@ function Features() {
 
 function StepCard({ step, title, desc, image }) {
   return (
-    <Reveal>
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm  transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-zinc-900 text-sm font-semibold text-white">
-          {step}
+    <StaggerItem>
+      <article className="card-glow group h-full rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
+        <div className="flex items-center gap-4">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-400/10 font-display text-[15px] font-semibold tracking-tight text-sky-400">
+            {step}
+          </span>
+          <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{title}</p>
         </div>
-        <div>
-          <p className="text-sm font-semibold text-zinc-950">{title}</p>
-          <p className="mt-2 text-sm leading-relaxed text-zinc-600">{desc}</p>
-        </div>
-      </div>
-
-      {image ? (
-        <div className="mt-6 h-48 rounded-xl border border-zinc-200 bg-white overflow-hidden">
-          <img src={image} alt={title} className="h-full w-full object-cover" />
-        </div>
-      ) : (
-        <div className="mt-6 h-24 rounded-xl border border-zinc-200 bg-white">
-          <div className="flex h-full items-center justify-center text-xs text-zinc-400">
-            Diagram / screenshot placeholder
+        <p className="mt-4 text-[14px] leading-[1.6] text-fg-muted">{desc}</p>
+        {image && (
+          <div className="mt-6 overflow-hidden rounded-xl border border-white/10 bg-ink-900">
+            <div className="aspect-[16/10]">
+              <img src={image} alt={title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-    </Reveal>
-  );
-}
-
-function Deliverable({ title, desc }) {
-  return (
-    <Reveal>
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm  transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <p className="text-sm font-semibold text-zinc-950">{title}</p>
-      <p className="mt-2 text-sm text-zinc-600">{desc}</p>
-    </div>
-    </Reveal>
+        )}
+      </article>
+    </StaggerItem>
   );
 }
 
 function HowItWorks() {
   const { t } = useTranslation();
-
   return (
-    <section id="how" className="py-20">
+    <section id="how" className="relative py-28">
       <Container>
-        <Reveal>
-        <div className="text-center">
-          <p className="text-xs font-semibold text-zinc-700">{t('howItWorks.section')}</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-            {t('howItWorks.title')}
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-zinc-600">
-            {t('howItWorks.description')}
-          </p>
-        </div>
+        <SectionHeader eyebrow={t("howItWorks.section")} title={t("howItWorks.title")} description={t("howItWorks.description")} />
+
+        <StaggerGroup className="mt-14 grid gap-6 md:grid-cols-3">
+          <StepCard step={t("howItWorks.discovery.step")} title={t("howItWorks.discovery.title")} desc={t("howItWorks.discovery.description")} image="/Photos/discovery-step.png" />
+          <StepCard step={t("howItWorks.buildTrain.step")} title={t("howItWorks.buildTrain.title")} desc={t("howItWorks.buildTrain.description")} image="/Photos/train-step.png" />
+          <StepCard step={t("howItWorks.launchImprove.step")} title={t("howItWorks.launchImprove.title")} desc={t("howItWorks.launchImprove.description")} image="/Photos/launch-step.png" />
+        </StaggerGroup>
+
+        <Reveal className="mt-16">
+          <h3 className="font-display text-[22px] font-semibold tracking-tight text-fg">{t("howItWorks.deliverables")}</h3>
+          <p className="mt-2 text-[14.5px] text-fg-muted">{t("howItWorks.deliverablesDesc")}</p>
         </Reveal>
 
-        <Reveal>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          <StepCard
-            step={t('howItWorks.discovery.step')}
-            title={t('howItWorks.discovery.title')}
-            desc={t('howItWorks.discovery.description')}
-            image="/Photos/discovery-step.png"
-          />
-          <StepCard
-            step={t('howItWorks.buildTrain.step')}
-            title={t('howItWorks.buildTrain.title')}
-            desc={t('howItWorks.buildTrain.description')}
-            image="/Photos/train-step.png"
-          />
-          <StepCard
-            step={t('howItWorks.launchImprove.step')}
-            title={t('howItWorks.launchImprove.title')}
-            desc={t('howItWorks.launchImprove.description')}
-            image="/Photos/launch-step.png"
-          />
-        </div>
-        </Reveal>
+        <StaggerGroup className="mt-6 grid gap-5 md:grid-cols-3">
+          {[
+            { title: t("howItWorks.website.title"), desc: t("howItWorks.website.description") },
+            { title: t("howItWorks.aiAssistant.title"), desc: t("howItWorks.aiAssistant.description") },
+            { title: t("howItWorks.monthlySupport.title"), desc: t("howItWorks.monthlySupport.description") },
+          ].map((d) => (
+            <StaggerItem key={d.title}>
+              <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
+                <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{d.title}</p>
+                <p className="mt-2 text-[14px] leading-[1.6] text-fg-muted">{d.desc}</p>
+              </div>
+            </StaggerItem>
+          ))}
+        </StaggerGroup>
 
-        <Reveal>
-        <div className="mt-12">
-          <h3 className="text-lg font-semibold tracking-tight text-zinc-950">{t('howItWorks.deliverables')}</h3>
-          <p className="mt-2 text-sm text-zinc-600">
-            {t('howItWorks.deliverablesDesc')}
-          </p>
-
-          <div className="mt-6 grid gap-6 md:grid-cols-3">
-            <Deliverable
-              title={t('howItWorks.website.title')}
-              desc={t('howItWorks.website.description')}
-            />
-            <Deliverable
-              title={t('howItWorks.aiAssistant.title')}
-              desc={t('howItWorks.aiAssistant.description')}
-            />
-            <Deliverable
-              title={t('howItWorks.monthlySupport.title')}
-              desc={t('howItWorks.monthlySupport.description')}
-            />
-          </div>
-        </div>
-        </Reveal>
-
-        <Reveal>
-        <div className="mt-12 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm  transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <Reveal className="mt-14">
+          <div className="card-glow flex flex-col items-start justify-between gap-5 rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card sm:flex-row sm:items-center">
             <div>
-              <p className="text-sm font-semibold text-zinc-950">
-                {t('howItWorks.cta')}
-              </p>
-              <p className="mt-1 text-sm text-zinc-600">
-                {t('howItWorks.ctaDesc')}
-              </p>
+              <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{t("howItWorks.cta")}</p>
+              <p className="mt-1.5 text-[14px] text-fg-muted">{t("howItWorks.ctaDesc")}</p>
             </div>
-            <PrimaryButton href="#contact">{t('pricing.paymentTerms.cta')}</PrimaryButton>
+            <MagneticButton href="#contact" variant="primary">{t("pricing.paymentTerms.cta")}</MagneticButton>
           </div>
-        </div>
         </Reveal>
       </Container>
     </section>
-  );
-}
-
-function Pill({ children }) {
-  return (
-    <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700">
-      {children}
-    </span>
   );
 }
 
 function Portfolio() {
   const { t } = useTranslation();
-
   return (
-    <section id="portfolio" className="py-20">
+    <section id="portfolio" className="relative py-28">
       <Container>
         <Reveal>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold text-zinc-700">{t('portfolio.section')}</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              {t('portfolio.title')}
-            </h2>
-            <p className="mt-3 max-w-2xl text-base text-zinc-600">
-              {t('portfolio.description')}
-            </p>
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <SectionLabel>{t("portfolio.section")}</SectionLabel>
+              <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
+                {t("portfolio.title")}
+              </h2>
+              <p className="mt-4 max-w-2xl text-[15.5px] leading-[1.65] text-fg-muted">
+                {t("portfolio.description")}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <MagneticButton href="https://japantokmongolia.com/" variant="ghost">{t("portfolio.visitWebsite")}</MagneticButton>
+              <MagneticButton href="#contact" variant="primary">{t("portfolio.getDemo")}</MagneticButton>
+            </div>
           </div>
-
-          <div className="flex gap-3">
-            <SecondaryButton href="https://japantokmongolia.com/">{t('portfolio.visitWebsite')}</SecondaryButton>
-            <PrimaryButton href="#contact">{t('portfolio.getDemo')}</PrimaryButton>
-          </div>
-        </div>
         </Reveal>
 
-        <Reveal>
-        <div className="mt-10 grid gap-8 lg:grid-cols-2">
+        <div className="mt-14 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <Reveal>
-          <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm  transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <div className="aspect-video w-full overflow-hidden rounded-xl border border-zinc-200 bg-white">
-              <img
-              src="/Photos/japantok-preview.png"
-              alt="JapanTok Mongolia website preview"
-              className="h-full w-full object-cover"
-            />
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Pill>{t('portfolio.japantok.pills.website')}</Pill>
-              <Pill>{t('portfolio.japantok.pills.chatbot')}</Pill>
-              <Pill>{t('portfolio.japantok.pills.productQA')}</Pill>
-              <Pill>{t('portfolio.japantok.pills.availability')}</Pill>
-            </div>
-
-            <p className="mt-4 text-sm text-zinc-600">
-              {t('portfolio.japantok.link')}{" "}
-              <a
-                className="font-semibold text-zinc-900 hover:underline"
-                href="https://japantokmongolia.com/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                japantokmongolia.com
-              </a>
-            </p>
-          </div>
+            <a
+              href="https://japantokmongolia.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="card-glow group block overflow-hidden rounded-2xl border border-white/10 bg-ink-800/55 p-3 shadow-card"
+            >
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-ink-900">
+                <div className="aspect-[16/10] overflow-hidden">
+                  <img
+                    src="/Photos/japantok-preview.png"
+                    alt="JapanTok Mongolia website preview"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 px-2 pb-2 pt-4">
+                <Pill>{t("portfolio.japantok.pills.website")}</Pill>
+                <Pill>{t("portfolio.japantok.pills.chatbot")}</Pill>
+                <Pill>{t("portfolio.japantok.pills.productQA")}</Pill>
+                <Pill>{t("portfolio.japantok.pills.availability")}</Pill>
+                <span className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-sky-400">
+                  japantokmongolia.com
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+                    <path d="M7 17 17 7" /><path d="M7 7h10v10" />
+                  </svg>
+                </span>
+              </div>
+            </a>
           </Reveal>
-          <Reveal>
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm  transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
-              {t('portfolio.japantok.title')}
-            </h3>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-600">
-              {t('portfolio.japantok.description')}
-            </p>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5">
-                <p className="text-xs font-semibold text-zinc-700">{t('portfolio.japantok.whatWeBuilt')}</p>
-                <ul className="mt-3 space-y-2 text-sm text-zinc-700">
-                  <li className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>{t('portfolio.japantok.features.0')}</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>{t('portfolio.japantok.features.1')}</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>{t('portfolio.japantok.features.2')}</span>
-                  </li>
-                </ul>
+          <Reveal delay={0.08}>
+            <div className="card-glow flex h-full flex-col rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card">
+              <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("portfolio.japantok.title")}</h3>
+              <p className="mt-3 text-[14.5px] leading-[1.65] text-fg-muted">{t("portfolio.japantok.description")}</p>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("portfolio.japantok.whatWeBuilt")}</p>
+                  <ul className="mt-3 space-y-2 text-[13.5px] text-fg/85">
+                    {[0, 1, 2].map((i) => (
+                      <li key={i} className="flex gap-2.5">
+                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+                        <span>{t(`portfolio.japantok.features.${i}`)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("portfolio.japantok.idealOutcomes")}</p>
+                  <ul className="mt-3 space-y-2 text-[13.5px] text-fg/85">
+                    {[0, 1, 2].map((i) => (
+                      <li key={i} className="flex gap-2.5">
+                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+                        <span>{t(`portfolio.japantok.outcomes.${i}`)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5">
-                <p className="text-xs font-semibold text-zinc-700">{t('portfolio.japantok.idealOutcomes')}</p>
-                <ul className="mt-3 space-y-2 text-sm text-zinc-700">
-                  <li className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>{t('portfolio.japantok.outcomes.0')}</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>{t('portfolio.japantok.outcomes.1')}</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                    <span>{t('portfolio.japantok.outcomes.2')}</span>
-                  </li>
-                </ul>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <MagneticButton href="#contact" variant="primary">{t("portfolio.japantok.buttons.requestDemo")}</MagneticButton>
+                <MagneticButton href="https://japantokmongolia.com/" variant="ghost">{t("portfolio.japantok.buttons.viewLive")}</MagneticButton>
               </div>
             </div>
-
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <PrimaryButton href="#contact">{t('portfolio.japantok.buttons.requestDemo')}</PrimaryButton>
-              <SecondaryButton href="https://japantokmongolia.com/">{t('portfolio.japantok.buttons.viewLive')}</SecondaryButton>
-            </div>
-          </div>
           </Reveal>
         </div>
-        </Reveal>
       </Container>
     </section>
   );
-
 }
 
-function PriceCard({
-  title,
-  badge,
-  priceLine,
-  subLine,
-  desc,
-  bullets,
-  cta,
-  primary,
-  footnote,
-}) {
+function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote }) {
   return (
-    <Reveal>
-    <div
-      className={[
-        "rounded-2xl border bg-white p-6   transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
-        primary ? "border-zinc-900" : "border-zinc-200",
-      ].join(" ")}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-zinc-950">{title}</p>
-          {desc ? <p className="mt-1 text-sm text-zinc-600">{desc}</p> : null}
-        </div>
-
-        {badge ? (
-          <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700">
-            {badge}
+    <StaggerItem>
+      <div className={["card-glow relative flex h-full flex-col rounded-2xl border bg-ink-800/55 p-6 shadow-card", primary ? "border-sky-400/40" : "border-white/10"].join(" ")}>
+        {primary && (
+          <span className="absolute -top-2.5 left-6 rounded-full border border-sky-400/40 bg-sky-400/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-400 backdrop-blur">
+            Featured
           </span>
-        ) : null}
-      </div>
-
-      <div className="mt-6">
-        <p className="text-3xl font-semibold tracking-tight text-zinc-950">
-          {priceLine}
-        </p>
-        {subLine ? (
-          <p className="mt-2 text-sm text-zinc-600">{subLine}</p>
-        ) : null}
-      </div>
-
-      <ul className="mt-6 space-y-2 text-sm text-zinc-700">
-        {bullets.map((b, i) => (
-          <li key={i} className="flex gap-2">
-            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-            <span>{b}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div className="mt-7">
-        {primary ? (
-          <PrimaryButton href="#contact">{cta}</PrimaryButton>
-        ) : (
-          <SecondaryButton href="#contact">{cta}</SecondaryButton>
         )}
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{title}</p>
+            {desc && <p className="mt-1.5 text-[13.5px] text-fg-muted">{desc}</p>}
+          </div>
+          {badge && <Pill>{badge}</Pill>}
+        </div>
+        <div className="mt-6">
+          <p className="font-display text-[28px] font-semibold tracking-tightest text-fg">{priceLine}</p>
+          {subLine && <p className="mt-2 text-[13px] text-fg-muted">{subLine}</p>}
+        </div>
+        <ul className="mt-6 space-y-2.5 text-[13.5px] text-fg/85">
+          {bullets.map((b, i) => (
+            <li key={i} className="flex gap-2.5">
+              <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-7 pt-2">
+          <MagneticButton href="#contact" variant={primary ? "primary" : "ghost"} className="w-full">{cta}</MagneticButton>
+        </div>
+        {footnote && <p className="mt-4 text-[11px] leading-[1.55] text-fg-muted/80">{footnote}</p>}
       </div>
-
-      {footnote ? (
-        <p className="mt-4 text-xs leading-relaxed text-zinc-500">
-          {footnote}
-        </p>
-      ) : null}
-    </div>
-    </Reveal>
+    </StaggerItem>
   );
 }
 
 function Pricing() {
   const { t } = useTranslation();
-
   return (
-    <section id="pricing" className="py-20">
+    <section id="pricing" className="relative py-28">
       <Container>
-        <Reveal>
-          <div className="text-center">
-            <p className="text-xs font-semibold text-zinc-700">{t('pricing.section')}</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-              {t('pricing.title')}
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-zinc-600">
-              {t('pricing.description')}
-            </p>
+        <SectionHeader eyebrow={t("pricing.section")} title={t("pricing.title")} description={t("pricing.description")} />
+
+        <Reveal className="mt-14">
+          <div className="flex items-center justify-between gap-4">
+            <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("pricing.oneTimeSetup")}</h3>
+            <Pill>{t("pricing.promoBadge")}</Pill>
           </div>
         </Reveal>
 
-        {/* One-time setup */}
-        <Reveal>
-          <div className="mt-12">
-            <div className="flex items-center justify-between gap-4">
-              <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
-                {t('pricing.oneTimeSetup')}
-              </h3>
-              <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-700">
-                {t('pricing.promoBadge')}
+        <StaggerGroup className="mt-7 grid gap-5 lg:grid-cols-4">
+          <PriceCard
+            title={t("pricing.cards.website.title")}
+            badge={t("pricing.cards.website.badge")}
+            priceLine={t("pricing.cards.website.price")}
+            subLine={t("pricing.cards.website.subLine")}
+            desc={t("pricing.cards.website.description")}
+            bullets={[
+              t("pricing.cards.website.bullets.0"),
+              t("pricing.cards.website.bullets.1"),
+              t("pricing.cards.website.bullets.2"),
+              t("pricing.cards.website.bullets.3"),
+            ]}
+            cta={t("pricing.cards.website.cta")}
+          />
+          <PriceCard
+            title={t("pricing.cards.chatbot.title")}
+            badge={t("pricing.cards.chatbot.badge")}
+            priceLine={
+              <span>
+                <span className="text-fg-muted/70 line-through">390,000₮</span>{" "}
+                <span className="text-fg">195,000₮</span>
               </span>
-            </div>
+            }
+            subLine={t("pricing.cards.chatbot.subLine")}
+            desc={t("pricing.cards.chatbot.description")}
+            bullets={[
+              t("pricing.cards.chatbot.bullets.0"),
+              t("pricing.cards.chatbot.bullets.1"),
+              t("pricing.cards.chatbot.bullets.2"),
+            ]}
+            cta={t("pricing.cards.chatbot.cta")}
+            primary
+          />
+          <PriceCard
+            title={t("pricing.cards.voice.title")}
+            badge={t("pricing.cards.voice.badge")}
+            priceLine={t("pricing.cards.voice.price")}
+            subLine={t("pricing.cards.voice.subLine")}
+            desc={t("pricing.cards.voice.description")}
+            bullets={[
+              t("pricing.cards.voice.bullets.0"),
+              t("pricing.cards.voice.bullets.1"),
+              t("pricing.cards.voice.bullets.2"),
+            ]}
+            cta={t("pricing.cards.voice.cta")}
+          />
+          <PriceCard
+            title={t("pricing.cards.combo.title")}
+            badge={t("pricing.cards.combo.badge")}
+            priceLine={t("pricing.cards.combo.price")}
+            subLine={t("pricing.cards.combo.subLine")}
+            desc={t("pricing.cards.combo.description")}
+            bullets={[
+              t("pricing.cards.combo.bullets.0"),
+              t("pricing.cards.combo.bullets.1"),
+              t("pricing.cards.combo.bullets.2"),
+            ]}
+            cta={t("pricing.cards.combo.cta")}
+          />
+        </StaggerGroup>
 
-            <div className="mt-6 grid gap-6 lg:grid-cols-4">
-              <PriceCard
-                title={t('pricing.cards.website.title')}
-                badge={t('pricing.cards.website.badge')}
-                priceLine={t('pricing.cards.website.price')}
-                subLine={t('pricing.cards.website.subLine')}
-                desc={t('pricing.cards.website.description')}
-                bullets={[
-                  t('pricing.cards.website.bullets.0'),
-                  t('pricing.cards.website.bullets.1'),
-                  t('pricing.cards.website.bullets.2'),
-                  t('pricing.cards.website.bullets.3'),
-                ]}
-                cta={t('pricing.cards.website.cta')}
-              />
-
-              <PriceCard
-                title={t('pricing.cards.chatbot.title')}
-                badge={t('pricing.cards.chatbot.badge')}
-                priceLine={
-                  <span>
-                    <span className="text-zinc-400 line-through">390,000₮</span>{" "}
-                    <span>195,000₮</span>
-                  </span>
-                }
-                subLine={t('pricing.cards.chatbot.subLine')}
-                desc={t('pricing.cards.chatbot.description')}
-                bullets={[
-                  t('pricing.cards.chatbot.bullets.0'),
-                  t('pricing.cards.chatbot.bullets.1'),
-                  t('pricing.cards.chatbot.bullets.2'),
-                ]}
-                cta={t('pricing.cards.chatbot.cta')}
-                primary
-              />
-
-              <PriceCard
-                title={t('pricing.cards.voice.title')}
-                badge={t('pricing.cards.voice.badge')}
-                priceLine={t('pricing.cards.voice.price')}
-                subLine={t('pricing.cards.voice.subLine')}
-                desc={t('pricing.cards.voice.description')}
-                bullets={[
-                  t('pricing.cards.voice.bullets.0'),
-                  t('pricing.cards.voice.bullets.1'),
-                  t('pricing.cards.voice.bullets.2'),
-                ]}
-                cta={t('pricing.cards.voice.cta')}
-              />
-
-              <PriceCard
-                title={t('pricing.cards.combo.title')}
-                badge={t('pricing.cards.combo.badge')}
-                priceLine={t('pricing.cards.combo.price')}
-                subLine={t('pricing.cards.combo.subLine')}
-                desc={t('pricing.cards.combo.description')}
-                bullets={[
-                  t('pricing.cards.combo.bullets.0'),
-                  t('pricing.cards.combo.bullets.1'),
-                  t('pricing.cards.combo.bullets.2'),
-                ]}
-                cta={t('pricing.cards.combo.cta')}
-              />
-            </div>
-          </div>
+        <Reveal className="mt-16">
+          <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("pricing.monthly.title")}</h3>
+          <p className="mt-2 text-[14.5px] text-fg-muted">{t("pricing.monthly.description")}</p>
         </Reveal>
 
-        {/* Monthly packages */}
-        <Reveal>
-          <div className="mt-14">
-            <h3 className="text-lg font-semibold tracking-tight text-zinc-950">
-              {t('pricing.monthly.title')}
-            </h3>
-            <p className="mt-2 text-sm text-zinc-600">
-              {t('pricing.monthly.description')}
-            </p>
-
-            <div className="mt-6 grid gap-6 lg:grid-cols-2">
-              {/* Chatbot monthly */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-zinc-950">
-                      {t('pricing.monthly.chatbot.title')}
-                    </p>
-                    <p className="mt-1 text-sm text-zinc-600">
-                      {t('pricing.monthly.chatbot.description')}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 overflow-hidden rounded-xl border border-zinc-200">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-zinc-50">
-                      <tr>
-                        <th className="px-4 py-3 font-semibold text-zinc-700">
-                          {t('pricing.monthly.chatbot.table.headers.feature')}
-                        </th>
-                        <th className="px-4 py-3 font-semibold text-zinc-700">
-                          {t('pricing.monthly.chatbot.table.headers.basic')}
-                        </th>
-                        <th className="px-4 py-3 font-semibold text-zinc-700">
-                          {t('pricing.monthly.chatbot.table.headers.growth')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-200">
-                      <tr>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.server.feature')}</td>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.server.basic')}</td>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.server.growth')}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.dataUpdates.feature')}</td>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.dataUpdates.basic')}</td>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.dataUpdates.growth')}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.support.feature')}</td>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.support.basic')}</td>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.support.growth')}</td>
-                      </tr>
-                      <tr>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.monitoring.feature')}</td>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.monitoring.basic')}</td>
-                        <td className="px-4 py-3 text-zinc-700">{t('pricing.monthly.chatbot.table.rows.monitoring.growth')}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-xs text-zinc-500">
-                    {t('pricing.monthly.chatbot.tip')}
-                  </p>
-                  <PrimaryButton href="#contact">{t('pricing.monthly.chatbot.cta')}</PrimaryButton>
-                </div>
+        <StaggerGroup className="mt-7 grid gap-5 lg:grid-cols-2">
+          <StaggerItem>
+            <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
+              <div>
+                <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{t("pricing.monthly.chatbot.title")}</p>
+                <p className="mt-1.5 text-[13.5px] text-fg-muted">{t("pricing.monthly.chatbot.description")}</p>
               </div>
-
-              {/* Receptionist monthly */}
-              <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-zinc-950">
-                      {t('pricing.monthly.receptionist.title')}
-                    </p>
-                    <p className="mt-1 text-sm text-zinc-600">
-                      {t('pricing.monthly.receptionist.description')}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-zinc-200 bg-white p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold text-zinc-950">{t('pricing.monthly.receptionist.standard.title')}</p>
-                      <span className="text-sm font-semibold text-zinc-950">{t('pricing.monthly.receptionist.standard.price')}</span>
-                    </div>
-                    <ul className="mt-4 space-y-2 text-sm text-zinc-700">
-                      <li className="flex gap-2">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                        <span>{t('pricing.monthly.receptionist.standard.features.0')}</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                        <span>{t('pricing.monthly.receptionist.standard.features.1')}</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                        <span>{t('pricing.monthly.receptionist.standard.features.2')}</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                        <span>{t('pricing.monthly.receptionist.standard.features.3')}</span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <div className="rounded-2xl border border-zinc-900 bg-white p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold text-zinc-950">{t('pricing.monthly.receptionist.premium.title')}</p>
-                      <span className="text-sm font-semibold text-zinc-950">{t('pricing.monthly.receptionist.premium.price')}</span>
-                    </div>
-                    <ul className="mt-4 space-y-2 text-sm text-zinc-700">
-                      <li className="flex gap-2">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                        <span>{t('pricing.monthly.receptionist.premium.features.0')}</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                        <span>{t('pricing.monthly.receptionist.premium.features.1')}</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                        <span>{t('pricing.monthly.receptionist.premium.features.2')}</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                        <span>{t('pricing.monthly.receptionist.premium.features.3')}</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="mt-5 flex justify-end">
-                  <PrimaryButton href="#contact">{t('pricing.monthly.receptionist.cta')}</PrimaryButton>
-                </div>
+              <div className="mt-5 overflow-hidden rounded-xl border border-white/10">
+                <table className="w-full text-left text-[13px]">
+                  <thead className="bg-white/[0.02]">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold text-fg-muted">{t("pricing.monthly.chatbot.table.headers.feature")}</th>
+                      <th className="px-4 py-3 font-semibold text-fg-muted">{t("pricing.monthly.chatbot.table.headers.basic")}</th>
+                      <th className="px-4 py-3 font-semibold text-fg-muted">{t("pricing.monthly.chatbot.table.headers.growth")}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {["server", "dataUpdates", "support", "monitoring"].map((row) => (
+                      <tr key={row}>
+                        <td className="px-4 py-3 text-fg/85">{t(`pricing.monthly.chatbot.table.rows.${row}.feature`)}</td>
+                        <td className="px-4 py-3 text-fg/85">{t(`pricing.monthly.chatbot.table.rows.${row}.basic`)}</td>
+                        <td className="px-4 py-3 text-fg/85">{t(`pricing.monthly.chatbot.table.rows.${row}.growth`)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-[12px] text-fg-muted">{t("pricing.monthly.chatbot.tip")}</p>
+                <MagneticButton href="#contact" variant="primary">{t("pricing.monthly.chatbot.cta")}</MagneticButton>
               </div>
             </div>
-          </div>
-        </Reveal>
+          </StaggerItem>
 
-        {/* Payment terms */}
-        <Reveal>
-          <div className="mt-14 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <p className="text-sm font-semibold text-zinc-950">{t('pricing.paymentTerms.title')}</p>
-            <ul className="mt-3 space-y-2 text-sm text-zinc-700">
-              <li className="flex gap-2">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                <span>{t('pricing.paymentTerms.terms.0')}</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                <span>{t('pricing.paymentTerms.terms.1')}</span>
-              </li>
-              <li className="flex gap-2">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-900" />
-                <span>{t('pricing.paymentTerms.terms.2')}</span>
-              </li>
+          <StaggerItem>
+            <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
+              <div>
+                <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{t("pricing.monthly.receptionist.title")}</p>
+                <p className="mt-1.5 text-[13.5px] text-fg-muted">{t("pricing.monthly.receptionist.description")}</p>
+              </div>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {["standard", "premium"].map((tier) => (
+                  <div key={tier} className={["rounded-xl border p-5", tier === "premium" ? "border-sky-400/40 bg-sky-400/[0.04]" : "border-white/10 bg-white/[0.02]"].join(" ")}>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-display text-[15px] font-semibold tracking-tight text-fg">{t(`pricing.monthly.receptionist.${tier}.title`)}</p>
+                      <span className="font-display text-[15px] font-semibold text-fg">{t(`pricing.monthly.receptionist.${tier}.price`)}</span>
+                    </div>
+                    <ul className="mt-4 space-y-2 text-[13px] text-fg/85">
+                      {[0, 1, 2, 3].map((i) => (
+                        <li key={i} className="flex gap-2.5">
+                          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+                          <span>{t(`pricing.monthly.receptionist.${tier}.features.${i}`)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 flex justify-end">
+                <MagneticButton href="#contact" variant="primary">{t("pricing.monthly.receptionist.cta")}</MagneticButton>
+              </div>
+            </div>
+          </StaggerItem>
+        </StaggerGroup>
+
+        <Reveal className="mt-14">
+          <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card">
+            <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{t("pricing.paymentTerms.title")}</p>
+            <ul className="mt-4 space-y-2.5 text-[14px] text-fg/85">
+              {[0, 1, 2].map((i) => (
+                <li key={i} className="flex gap-2.5">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+                  <span>{t(`pricing.paymentTerms.terms.${i}`)}</span>
+                </li>
+              ))}
             </ul>
-
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-zinc-500">
-                {t('pricing.paymentTerms.note')}
-              </p>
-              <PrimaryButton href="#contact">{t('contact.title')}</PrimaryButton>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[12px] text-fg-muted">{t("pricing.paymentTerms.note")}</p>
+              <MagneticButton href="#contact" variant="primary">{t("contact.title")}</MagneticButton>
             </div>
           </div>
         </Reveal>
@@ -1135,319 +1134,182 @@ function Pricing() {
 
 function FAQItem({ question, answer }) {
   const [open, setOpen] = React.useState(false);
-
   return (
-    <button
-      type="button"
-      onClick={() => setOpen(!open)}
-      className="cta-emoji w-full rounded-2xl border border-zinc-200 bg-white p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <p className="text-sm font-semibold text-zinc-950">{question}</p>
-        <span
-          className={[
-            "mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full border border-zinc-200 text-xs font-bold text-zinc-700 transition-transform",
-            open ? "rotate-45" : "rotate-0",
-          ].join(" ")}
+    <StaggerItem>
+      <div className={["card-glow rounded-2xl border bg-ink-800/55 shadow-card", open ? "border-sky-400/30" : "border-white/10"].join(" ")}>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="pressable flex w-full items-start justify-between gap-5 p-6 text-left"
         >
-          +
-        </span>
+          <p className="font-display text-[15.5px] font-semibold tracking-tight text-fg">{question}</p>
+          <span className={["mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-fg transition-all duration-300", open ? "rotate-45 border-sky-400/40 bg-sky-400/10 text-sky-400" : "border-white/10 bg-white/[0.03]"].join(" ")}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14" /><path d="M5 12h14" />
+            </svg>
+          </span>
+        </button>
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              key="content"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ height: { duration: 0.32, ease: EASE_OUT }, opacity: { duration: 0.22, ease: EASE_OUT } }}
+              className="overflow-hidden"
+            >
+              <p className="px-6 pb-6 text-[14px] leading-[1.65] text-fg-muted">{answer}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-
-      {open ? (
-        <p className="mt-3 text-sm leading-relaxed text-zinc-600">{answer}</p>
-      ) : null}
-    </button>
+    </StaggerItem>
   );
 }
 
 function FAQ() {
   const { t } = useTranslation();
-
   return (
-    <section id="faq" className="py-20">
+    <section id="faq" className="relative py-28">
       <Container>
-        <Reveal>
-        <div className="text-center">
-          <p className="text-xs font-semibold text-zinc-700">{t('faq.section')}</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-            {t('faq.title')}
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-zinc-600">
-            {t('faq.description')}
-          </p>
-        </div>
-        </Reveal>
+        <SectionHeader eyebrow={t("faq.section")} title={t("faq.title")} description={t("faq.description")} />
 
-        <Reveal>
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
-          <FAQItem
-            question={t('faq.q1.question')}
-            answer={t('faq.q1.answer')}
-          />
-          <FAQItem
-            question={t('faq.q2.question')}
-            answer={t('faq.q2.answer')}
-          />
-          <FAQItem
-            question={t('faq.q3.question')}
-            answer={t('faq.q3.answer')}
-          />
-          <FAQItem
-            question={t('faq.q4.question')}
-            answer={t('faq.q4.answer')}
-          />
-          <FAQItem
-            question={t('faq.q5.question')}
-            answer={t('faq.q5.answer')}
-          />
-          <FAQItem
-            question={t('faq.q6.question')}
-            answer={t('faq.q6.answer')}
-          />
-        </div>
-        </Reveal>
+        <StaggerGroup className="mt-14 grid gap-4 md:grid-cols-2">
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <FAQItem key={n} question={t(`faq.q${n}.question`)} answer={t(`faq.q${n}.answer`)} />
+          ))}
+        </StaggerGroup>
 
-        <Reveal>
-        <div className="mt-10 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <p className="text-sm font-semibold text-zinc-950">
-            {t('faq.stillHaveQuestions')}
-          </p>
-          <p className="mt-1 text-sm text-zinc-600">
-            {t('faq.contactPrompt')}
-          </p>
-          <div className="mt-4">
-            <PrimaryButton href="#contact">{t('faq.talkToUs')}</PrimaryButton>
+        <Reveal className="mt-12">
+          <div className="card-glow flex flex-col items-start justify-between gap-4 rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card sm:flex-row sm:items-center">
+            <div>
+              <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{t("faq.stillHaveQuestions")}</p>
+              <p className="mt-1.5 text-[14px] text-fg-muted">{t("faq.contactPrompt")}</p>
+            </div>
+            <MagneticButton href="#contact" variant="primary">{t("faq.talkToUs")}</MagneticButton>
           </div>
-        </div>
         </Reveal>
       </Container>
     </section>
-  );
-}
-
-function ContactCard({ title, desc }) {
-  return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6  transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <p className="text-sm font-semibold text-zinc-950">{title}</p>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-600">{desc}</p>
-    </div>
   );
 }
 
 function Contact() {
   const { t } = useTranslation();
-  
+
   function handleSubmit(e) {
     e.preventDefault();
-
     const form = new FormData(e.currentTarget);
-    const name = form.get("name")?.toString().trim();
-    const business = form.get("business")?.toString().trim();
-    const phone = form.get("phone")?.toString().trim();
-    const service = form.get("service")?.toString().trim();
-    const message = form.get("message")?.toString().trim();
-
     const data = {
-      name: name || "-",
-      business: business || "-",
-      phone: phone || "-",
-      service: service || "-",
-      message: message || "-",
+      name: form.get("name")?.toString().trim() || "-",
+      business: form.get("business")?.toString().trim() || "-",
+      phone: form.get("phone")?.toString().trim() || "-",
+      service: form.get("service")?.toString().trim() || "-",
+      message: form.get("message")?.toString().trim() || "-",
     };
-
-    // Send to Formspree
     fetch("https://formspree.io/f/xqeekjap", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify(data),
     })
       .then((response) => {
         if (response.ok) {
-          alert(t('contact.form.successMessage'));
+          alert(t("contact.form.successMessage"));
           e.currentTarget.reset();
-          return; // Exit promise chain on success
-        } else {
-          return response.json().then(data => {
-            throw new Error(data.error || 'Form submission failed');
-          });
+          return;
         }
+        return response.json().then((d) => { throw new Error(d.error || "Form submission failed"); });
       })
       .catch((error) => {
         console.error("Error:", error);
-        alert(t('contact.form.errorMessage'));
+        alert(t("contact.form.errorMessage"));
       });
   }
 
   return (
-    <section id="contact" className="py-20">
-      <Container>
-        <Reveal>
-        <div className="text-center">
-          <p className="text-xs font-semibold text-zinc-700">{t('contact.sectionLabel')}</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
-            {t('contact.title')}
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-zinc-600">
-            {t('contact.description')}
-          </p>
-        </div>
-        </Reveal>
+    <section id="contact" className="relative py-28">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="mesh-blob animate-meshShift opacity-50" style={{ top: "0%", right: "-10%", width: "40rem", height: "40rem", background: "radial-gradient(circle at 50% 50%, rgba(56,189,248,0.18), transparent 70%)" }} />
+      </div>
+      <Container className="relative">
+        <SectionHeader eyebrow={t("contact.sectionLabel")} title={t("contact.title")} description={t("contact.description")} />
 
-        <Reveal>
-        <div className="mt-12 grid gap-8 lg:grid-cols-2">
-          {/* Form */}
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6   transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <p className="text-sm font-semibold text-zinc-950">{t('contact.form.title')}</p>
-            <p className="mt-2 text-sm text-zinc-600">
-              {t('contact.form.description')}
-            </p>
+        <div className="mt-14 grid gap-7 lg:grid-cols-[1.05fr_0.95fr]">
+          <Reveal>
+            <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card">
+              <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{t("contact.form.title")}</p>
+              <p className="mt-1.5 text-[14px] text-fg-muted">{t("contact.form.description")}</p>
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="text-xs font-semibold text-zinc-700">
-                    {t('contact.form.nameLabel')}
-                  </label>
-                  <input
-                    name="name"
-                    required
-                    className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
-                    placeholder={t('contact.form.namePlaceholder')}
-                  />
+              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.nameLabel")}</label>
+                    <input name="name" required placeholder={t("contact.form.namePlaceholder")} className="field mt-2 w-full rounded-xl px-3.5 py-2.5 text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.businessLabel")}</label>
+                    <input name="business" required placeholder={t("contact.form.businessPlaceholder")} className="field mt-2 w-full rounded-xl px-3.5 py-2.5 text-sm" />
+                  </div>
                 </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-zinc-700">
-                    {t('contact.form.businessLabel')}
-                  </label>
-                  <input
-                    name="business"
-                    required
-                    className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
-                    placeholder={t('contact.form.businessPlaceholder')}
-                  />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.phoneLabel")}</label>
+                    <input name="phone" required placeholder={t("contact.form.phonePlaceholder")} className="field mt-2 w-full rounded-xl px-3.5 py-2.5 text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.serviceLabel")}</label>
+                    <select name="service" defaultValue="Website + AI Chatbot" className="field mt-2 w-full rounded-xl px-3.5 py-2.5 text-sm">
+                      <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteOnly")}</option>
+                      <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteChatbot")}</option>
+                      <option className="bg-ink-800">{t("contact.form.serviceOptions.chatbotOnly")}</option>
+                      <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteVoice")}</option>
+                      <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteBoth")}</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-xs font-semibold text-zinc-700">
-                    {t('contact.form.phoneLabel')}
-                  </label>
-                  <input
-                    name="phone"
-                    required
-                    className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
-                    placeholder={t('contact.form.phonePlaceholder')}
-                  />
+                  <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.messageLabel")}</label>
+                  <textarea name="message" rows={5} placeholder={t("contact.form.messagePlaceholder")} className="field mt-2 w-full rounded-xl px-3.5 py-2.5 text-sm" />
                 </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-zinc-700">
-                    {t('contact.form.serviceLabel')}
-                  </label>
-                  <select
-                    name="service"
-                    className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
-                    defaultValue="Website + AI Chatbot"
-                  >
-                    <option>{t('contact.form.serviceOptions.websiteOnly')}</option>
-                    <option>{t('contact.form.serviceOptions.websiteChatbot')}</option>
-                    <option>{t('contact.form.serviceOptions.chatbotOnly')}</option>
-                    <option>{t('contact.form.serviceOptions.websiteVoice')}</option>
-                    <option>{t('contact.form.serviceOptions.websiteBoth')}</option>
-                  </select>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <MagneticButton type="submit" variant="primary">{t("contact.form.submitButton")}</MagneticButton>
+                  <p className="text-[11.5px] leading-[1.55] text-fg-muted">{t("contact.form.consentText")}</p>
                 </div>
+              </form>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a href="https://www.facebook.com/profile.php?id=61586065058744" target="_blank" rel="noreferrer" className="pressable rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-white/20">
+                  {t("contact.form.facebookButton")}
+                </a>
+                <a href="mailto:dalatech.ai@gmail.com" className="pressable rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-white/20">
+                  {t("contact.form.emailButton")}
+                </a>
               </div>
-
-              <div>
-                <label className="text-xs font-semibold text-zinc-700">
-                  {t('contact.form.messageLabel')}
-                </label>
-                <textarea
-                  name="message"
-                  rows={5}
-                  className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
-                  placeholder={t('contact.form.messagePlaceholder')}
-                />
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <button
-  type="submit"
-  className="cta-emoji inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
->
-  {t('contact.form.submitButton')}
-</button>
-
-
-                <p className="text-xs text-zinc-500">
-                  {t('contact.form.consentText')}
-                </p>
-              </div>
-            </form>
-
-            <div className="mt-6 flex flex-wrap gap-3 text-sm">
-              <a
-                href="https://www.facebook.com/profile.php?id=61586065058744"
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
-              >
-                {t('contact.form.facebookButton')}
-              </a>
-              <a
-                href="mailto:dalatech.ai@gmail.com"
-                className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
-              >
-                {t('contact.form.emailButton')}
-              </a>
             </div>
-          </div>
+          </Reveal>
 
-          {/* What happens next */}
-          <div className="space-y-6">
-            <ContactCard
-              title={t('contact.steps.step1.title')}
-              desc={t('contact.steps.step1.description')}
-            />
-            <ContactCard
-              title={t('contact.steps.step2.title')}
-              desc={t('contact.steps.step2.description')}
-            />
-            <ContactCard
-              title={t('contact.steps.step3.title')}
-              desc={t('contact.steps.step3.description')}
-            />
-
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm  transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-              <p className="text-sm font-semibold text-zinc-950">{t('contact.responseTime.title')}</p>
-              <p className="mt-2 text-sm text-zinc-600">
-                {t('contact.responseTime.description')}
-              </p>
-            </div>
-          </div>
-        </div>
-        </Reveal>
-      </Container>
-    </section>
-  );
-}
-
-function SectionPlaceholder({ id, title, hint }) {
-  return (
-    <section id={id} className="py-20">
-      <Container>
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">{title}</h2>
-          {hint ? <p className="mt-2 text-zinc-600">{hint}</p> : null}
-        </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-8 text-zinc-500">
-          {title} section placeholder
+          <StaggerGroup className="space-y-5">
+            {[1, 2, 3].map((n) => (
+              <StaggerItem key={n}>
+                <div className="card-glow flex gap-5 rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] font-display text-[13px] font-semibold tracking-tight text-sky-400">
+                    {String(n).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <p className="font-display text-[15.5px] font-semibold tracking-tight text-fg">{t(`contact.steps.step${n}.title`)}</p>
+                    <p className="mt-1.5 text-[14px] leading-[1.6] text-fg-muted">{t(`contact.steps.step${n}.description`)}</p>
+                  </div>
+                </div>
+              </StaggerItem>
+            ))}
+            <StaggerItem>
+              <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
+                <p className="font-display text-[15.5px] font-semibold tracking-tight text-fg">{t("contact.responseTime.title")}</p>
+                <p className="mt-1.5 text-[14px] leading-[1.6] text-fg-muted">{t("contact.responseTime.description")}</p>
+              </div>
+            </StaggerItem>
+          </StaggerGroup>
         </div>
       </Container>
     </section>
@@ -1456,60 +1318,34 @@ function SectionPlaceholder({ id, title, hint }) {
 
 function Chatbot() {
   React.useEffect(() => {
-    const container = document.getElementById('dalatech-chatbot-container');
-    const btn = document.getElementById('dalatech-chat-toggle');
-
-    if (!container || !btn) {
-      return;
-    }
-
+    const container = document.getElementById("dalatech-chatbot-container");
+    const btn = document.getElementById("dalatech-chat-toggle");
+    if (!container || !btn) return;
     const handleToggle = () => {
-      const isHidden = container.style.display === 'none' || container.style.display === '';
-      container.style.display = isHidden ? 'block' : 'none';
-      btn.style.transform = isHidden ? 'scale(1.1) rotate(45deg)' : 'scale(1) rotate(0deg)';
+      const isHidden = container.style.display === "none" || container.style.display === "";
+      container.style.display = isHidden ? "block" : "none";
+      btn.style.transform = isHidden ? "scale(1.1) rotate(45deg)" : "scale(1) rotate(0deg)";
     };
-
-    btn.addEventListener('click', handleToggle);
-
-    return () => {
-      btn.removeEventListener('click', handleToggle);
-    };
+    btn.addEventListener("click", handleToggle);
+    return () => btn.removeEventListener("click", handleToggle);
   }, []);
-
-  return (
-    <>
-      <button id="dalatech-chat-toggle" aria-label="Open chat"
-        style={{position: 'fixed', bottom: '20px', right: '20px', zIndex: 99999, width: '60px', height: '60px', borderRadius: '50%', background: 'linear-gradient(135deg, #2B2B2B 0%, #1F1F1F 100%)', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'var(--cursor-emoji), pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: 0}}>
-        <img src="/Photos/dalatech-logo.png" alt="DalaTech Chat" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-      </button>
-      <div id="dalatech-chatbot-container"
-        style={{display: 'none', position: 'fixed', bottom: '90px', right: '20px', width: '400px', height: '600px', maxHeight: '80vh', background: '#1F1F1F', borderRadius: '16px', boxShadow: '0 5px 40px rgba(0,0,0,0.5)', zIndex: 99999, overflow: 'hidden', border: '1px solid #333'}}>
-        <iframe src="https://dalatech-chatbot.vercel.app"
-                width="100%" height="100%" frameBorder="0"
-                style={{borderRadius: '16px'}}
-                title="DalaTech.ai Chatbot"></iframe>
-      </div>
-    </>
-  );
+  return null;
 }
 
 function Footer({ onOpenPrivacy }) {
   return (
-    <footer className="border-t border-zinc-200 py-10">
+    <footer className="relative border-t border-white/5 py-10">
       <Container>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-zinc-600">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2.5 text-[13px] text-fg-muted">
+            <span className="inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md ring-1 ring-white/10">
+              <img src="/Photos/dalatech-logo.png" alt="DalaTech" className="h-full w-full object-cover" />
+            </span>
             {new Date().getFullYear()} DalaTech.
           </div>
-          <div className="flex gap-4 text-sm text-zinc-600">
-            <button
-              type="button"
-              onClick={onOpenPrivacy}
-              className="hover:text-zinc-950"
-            >
-              Privacy&Terms
-            </button>
-          </div>
+          <button type="button" onClick={onOpenPrivacy} className="text-[13px] text-fg-muted transition-colors hover:text-fg">
+            Privacy & Terms
+          </button>
         </div>
       </Container>
     </footer>
@@ -1519,81 +1355,77 @@ function Footer({ onOpenPrivacy }) {
 function PrivacyTermsModal({ isOpen, onClose }) {
   React.useEffect(() => {
     if (!isOpen) return;
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
-      <button
-        type="button"
-        aria-label="Close Privacy Policy and Terms"
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative z-10 w-full max-w-3xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">Privacy Policy & Terms of Service</h2>
-            <p className="text-sm text-zinc-600">Effective Date: February 10, 2026</p>
-          </div>
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+          <motion.button
             type="button"
+            aria-label="Close Privacy Policy and Terms"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: EASE_OUT }}
+            className="absolute inset-0 bg-ink-950/70 backdrop-blur-md"
             onClick={onClose}
-            className="rounded-full border border-zinc-200 px-3 py-1 text-sm font-medium text-zinc-700 hover:text-zinc-950"
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.97 }}
+            transition={{ duration: 0.25, ease: EASE_OUT }}
+            className="relative z-10 w-full max-w-3xl rounded-2xl border border-white/10 bg-ink-800/95 p-7 shadow-2xl backdrop-blur"
           >
-            Close
-          </button>
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <h2 className="font-display text-[22px] font-semibold tracking-tight text-fg">Privacy Policy & Terms of Service</h2>
+                <p className="text-[13px] text-fg-muted">Effective Date: February 10, 2026</p>
+              </div>
+              <button type="button" onClick={onClose} className="pressable rounded-full border border-white/10 px-3.5 py-1.5 text-[12.5px] text-fg-muted hover:border-white/20 hover:text-fg">
+                Close
+              </button>
+            </div>
+            <div className="mt-6 max-h-[70vh] space-y-6 overflow-y-auto pr-2 text-[13.5px] leading-[1.65] text-fg-muted">
+              <div className="space-y-3">
+                <h3 className="font-display text-[16px] font-semibold text-fg">1. Introduction</h3>
+                <p>Welcome to DalaTech.ai ("we," "our," or "us"). This service is owned and operated by Tserentsoodol Bilguun (Sole Proprietorship), registered in Mongolia. By accessing or using our Facebook Messenger chatbot, you agree to these Terms and our Privacy Policy.</p>
+              </div>
+              <div className="space-y-3">
+                <h3 className="font-display text-[16px] font-semibold text-fg">2. Privacy Policy</h3>
+                <p>We respect your privacy and are committed to protecting your personal data.</p>
+                <ul className="list-disc space-y-2 pl-5">
+                  <li>Data We Collect: We collect your public Facebook profile information (name, profile picture) and the messages you send to our chatbot.</li>
+                  <li>How We Use Data: We use your messages solely to provide AI-generated responses via the Google Gemini API. We do not use your data for advertising or marketing purposes without your consent.</li>
+                  <li>Data Sharing: Your message data is processed by Google's AI services to generate replies but is not shared with any other third parties or sold.</li>
+                  <li>Data Deletion: If you wish to delete your data from our system, please contact us at bilguunbilly0214@gmail.com or reply "DELETE" in the chat.</li>
+                </ul>
+              </div>
+              <div className="space-y-3">
+                <h3 className="font-display text-[16px] font-semibold text-fg">3. Terms of Service</h3>
+                <ul className="list-disc space-y-2 pl-5">
+                  <li>Usage: You agree to use this chatbot only for lawful purposes. You must not send harmful, offensive, or illegal content.</li>
+                  <li>Liability: The AI responses are generated automatically. Tserentsoodol Bilguun and DalaTech.ai are not liable for any inaccuracies in the AI's answers.</li>
+                  <li>Termination: We reserve the right to block any user who violates these terms.</li>
+                </ul>
+              </div>
+              <div className="space-y-3">
+                <h3 className="font-display text-[16px] font-semibold text-fg">4. Contact Information</h3>
+                <p>Owner: Tserentsoodol Bilguun Address: Khan-Uul, Artsat apartment, 801, Ulaanbaatar, Mongolia Phone: +976 99273339 Email: bilguunbilly0214@gmail.com</p>
+              </div>
+            </div>
+          </motion.div>
         </div>
-
-        <div className="mt-6 max-h-[70vh] space-y-6 overflow-y-auto pr-2 text-sm text-zinc-600">
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-zinc-950">1. Introduction</h3>
-            <p>
-              Welcome to DalaTech.ai ("we," "our," or "us"). This service is owned and operated by Tserentsoodol Bilguun (Sole Proprietorship), registered in Mongolia. By accessing or using our Facebook Messenger chatbot, you agree to these Terms and our Privacy Policy.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-zinc-950">2. Privacy Policy</h3>
-            <p>We respect your privacy and are committed to protecting your personal data.</p>
-            <ul className="list-disc space-y-2 pl-5">
-              <li>Data We Collect: We collect your public Facebook profile information (name, profile picture) and the messages you send to our chatbot.</li>
-              <li>How We Use Data: We use your messages solely to provide AI-generated responses via the Google Gemini API. We do not use your data for advertising or marketing purposes without your consent.</li>
-              <li>Data Sharing: Your message data is processed by Google's AI services to generate replies but is not shared with any other third parties or sold.</li>
-              <li>Data Deletion: If you wish to delete your data from our system, please contact us at bilguunbilly0214@gmail.com or reply "DELETE" in the chat.</li>
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-zinc-950">3. Terms of Service</h3>
-            <ul className="list-disc space-y-2 pl-5">
-              <li>Usage: You agree to use this chatbot only for lawful purposes. You must not send harmful, offensive, or illegal content.</li>
-              <li>Liability: The AI responses are generated automatically. Tserentsoodol Bilguun and DalaTech.ai are not liable for any inaccuracies in the AI's answers.</li>
-              <li>Termination: We reserve the right to block any user who violates these terms.</li>
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-zinc-950">4. Contact Information</h3>
-            <p>
-              Owner: Tserentsoodol Bilguun Address: Khan-Uul, Artsat apartment, 801, Ulaanbaatar, Mongolia Phone: +976 99273339 Email: bilguunbilly0214@gmail.com
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -1603,36 +1435,26 @@ export default function App() {
 
   React.useEffect(() => {
     document.documentElement.style.scrollBehavior = "smooth";
-    return () => {
-      document.documentElement.style.scrollBehavior = "auto";
-    };
+    return () => { document.documentElement.style.scrollBehavior = "auto"; };
   }, []);
 
   React.useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash === "#/setup") {
-        setCurrentPage("setup");
-      } else {
-        setCurrentPage("home");
-      }
+      setCurrentPage(window.location.hash === "#/setup" ? "setup" : "home");
     };
-
     handleHashChange();
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
-  if (currentPage === "setup") {
-    return <Setup />;
-  }
+  if (currentPage === "setup") return <Setup />;
 
   return (
-    <div className="min-h-screen bg-white text-zinc-950">
+    <div className="relative min-h-screen overflow-x-hidden bg-ink-950 text-fg">
+      <CustomCursor />
       <Navbar />
-      <Hero />
-
       <main>
+        <Hero />
         <Features />
         <HowItWorks />
         <Portfolio />
@@ -1640,7 +1462,6 @@ export default function App() {
         <FAQ />
         <Contact />
       </main>
-
       <Footer onOpenPrivacy={() => setIsPrivacyOpen(true)} />
       <PrivacyTermsModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
       <Chatbot />
