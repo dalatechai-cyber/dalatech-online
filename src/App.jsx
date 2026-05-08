@@ -873,6 +873,522 @@ function Features() {
   );
 }
 
+function BentoCardShell({ children, onPointerEnter, onPointerLeave, className = "" }) {
+  return (
+    <div
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
+      className={["card-glow group relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-ink-800/55 p-6 shadow-card sm:p-7", className].join(" ")}
+    >
+      {children}
+    </div>
+  );
+}
+
+function BentoLabel({ children, dot = "sky" }) {
+  const dotColor = dot === "emerald" ? "bg-emerald-400" : "bg-sky-400";
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="relative flex h-2 w-2">
+        <span className={["absolute inline-flex h-full w-full rounded-full opacity-60 animate-ping", dotColor].join(" ")} />
+        <span className={["relative inline-flex h-2 w-2 rounded-full", dotColor].join(" ")} />
+      </span>
+      <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-fg-muted">{children}</span>
+    </div>
+  );
+}
+
+function ChatBubble({ side, children }) {
+  if (side === "user") {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-sky-400 px-3.5 py-2 text-[13px] leading-snug text-ink-950">
+          {children}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex justify-start">
+      <div className="max-w-[82%] rounded-2xl rounded-bl-md border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[13px] leading-snug text-fg">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function TypingDots() {
+  return (
+    <div className="flex justify-start">
+      <div className="rounded-2xl rounded-bl-md border border-white/10 bg-white/[0.04] px-3.5 py-2.5">
+        <div className="flex gap-1">
+          {[0, 1, 2].map((i) => (
+            <motion.span
+              key={i}
+              className="block h-1.5 w-1.5 rounded-full bg-fg-muted"
+              animate={{ opacity: [0.25, 1, 0.25], y: [0, -2, 0] }}
+              transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.14, ease: "easeInOut" }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BentoChatbotCard() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const [hovered, setHovered] = React.useState(false);
+  const [stage, setStage] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!hovered || reduced) {
+      setStage(0);
+      return;
+    }
+    setStage(1);
+    const t1 = setTimeout(() => setStage(2), 280);
+    const t2 = setTimeout(() => setStage(3), 1200);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [hovered, reduced]);
+
+  return (
+    <BentoCardShell onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
+      <BentoLabel dot="emerald">{t("bento.chatbot.label")}</BentoLabel>
+      <h3 className="mt-3 font-display text-[26px] font-semibold leading-[1.1] tracking-tight text-fg sm:text-[30px]">
+        {t("bento.chatbot.title")}
+      </h3>
+      <p className="mt-2.5 max-w-md text-[14.5px] leading-[1.55] text-fg-muted">
+        {t("bento.chatbot.description")}
+      </p>
+
+      <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-sky-400/[0.07] blur-3xl" />
+
+      <div className="mt-auto pt-7">
+        <div className="rounded-2xl border border-white/10 bg-ink-900/70 p-3.5 sm:p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-400/15 text-[10px] font-semibold text-sky-400">AI</span>
+              <span className="text-[12px] font-medium text-fg">{t("bento.chatbot.ai")}</span>
+            </div>
+            <span className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">online</span>
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            <ChatBubble side="user">{t("bento.chatbot.messages.user1")}</ChatBubble>
+            <ChatBubble side="ai">{t("bento.chatbot.messages.ai1")}</ChatBubble>
+
+            <AnimatePresence mode="popLayout" initial={false}>
+              {stage >= 1 && (
+                <motion.div
+                  key="user2"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <ChatBubble side="user">{t("bento.chatbot.messages.user2")}</ChatBubble>
+                </motion.div>
+              )}
+              {stage === 2 && (
+                <motion.div
+                  key="typing"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -2 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <TypingDots />
+                </motion.div>
+              )}
+              {stage >= 3 && (
+                <motion.div
+                  key="ai2"
+                  initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 24, mass: 0.55 }}
+                >
+                  <ChatBubble side="ai">{t("bento.chatbot.messages.ai2")}</ChatBubble>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </BentoCardShell>
+  );
+}
+
+function BentoAutomationCard() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const [hovered, setHovered] = React.useState(false);
+  const [done, setDone] = React.useState(0);
+  const total = 4;
+
+  React.useEffect(() => {
+    if (reduced) {
+      setDone(total);
+      return;
+    }
+    if (!hovered) {
+      setDone(0);
+      return;
+    }
+    const timers = [];
+    for (let i = 1; i <= total; i++) {
+      timers.push(setTimeout(() => setDone(i), 220 + (i - 1) * 320));
+    }
+    return () => timers.forEach(clearTimeout);
+  }, [hovered, reduced]);
+
+  const tasks = [
+    t("bento.automation.tasks.t1"),
+    t("bento.automation.tasks.t2"),
+    t("bento.automation.tasks.t3"),
+    t("bento.automation.tasks.t4"),
+  ];
+
+  return (
+    <BentoCardShell onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
+      <BentoLabel dot={done === total ? "emerald" : "sky"}>{t("bento.automation.label")}</BentoLabel>
+      <h3 className="mt-3 font-display text-[22px] font-semibold leading-[1.12] tracking-tight text-fg sm:text-[24px]">
+        {t("bento.automation.title")}
+      </h3>
+      <p className="mt-2 text-[13.5px] leading-[1.55] text-fg-muted">
+        {t("bento.automation.description")}
+      </p>
+
+      <div className="mt-auto pt-5">
+        <div className="rounded-xl border border-white/10 bg-ink-900/70 p-4">
+          <ul className="space-y-2.5">
+            {tasks.map((task, i) => {
+              const isDone = done > i;
+              return (
+                <li key={i} className="flex items-center gap-2.5">
+                  <span
+                    className={[
+                      "relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors duration-200",
+                      isDone ? "border-emerald-400/70 bg-emerald-400/15" : "border-white/15 bg-white/[0.02]",
+                    ].join(" ")}
+                  >
+                    {isDone && (
+                      <motion.svg
+                        viewBox="0 0 12 12"
+                        className="h-2.5 w-2.5 text-emerald-400"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.12 }}
+                      >
+                        <motion.path
+                          d="M2 6.5 L5 9 L10 3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          initial={{ pathLength: 0 }}
+                          animate={{ pathLength: 1 }}
+                          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                        />
+                      </motion.svg>
+                    )}
+                  </span>
+                  <span className={["text-[12.5px] transition-colors duration-200", isDone ? "text-fg" : "text-fg-muted"].join(" ")}>{task}</span>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="mt-4 h-[2px] overflow-hidden rounded-full bg-white/5">
+            <motion.div
+              className="h-full origin-left rounded-full"
+              style={{ background: "linear-gradient(90deg, #38BDF8 0%, #3B82F6 60%, #34D399 100%)" }}
+              animate={{ scaleX: done / total }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            />
+          </div>
+        </div>
+      </div>
+    </BentoCardShell>
+  );
+}
+
+function BentoWebCard() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const [hovered, setHovered] = React.useState(false);
+  const [lines, setLines] = React.useState(0);
+  const totalLines = 4;
+
+  React.useEffect(() => {
+    if (reduced) {
+      setLines(totalLines);
+      return;
+    }
+    if (!hovered) {
+      setLines(0);
+      return;
+    }
+    const timers = [];
+    for (let i = 1; i <= totalLines; i++) {
+      timers.push(setTimeout(() => setLines(i), 160 + (i - 1) * 180));
+    }
+    return () => timers.forEach(clearTimeout);
+  }, [hovered, reduced]);
+
+  const codeLines = [
+    { tag: "Header", attr: "" },
+    { tag: "Hero", attr: "animate" },
+    { tag: "Grid", attr: "items={3}" },
+    { tag: "Footer", attr: "" },
+  ];
+
+  return (
+    <BentoCardShell onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
+      <BentoLabel>{t("bento.web.label")}</BentoLabel>
+      <h3 className="mt-3 font-display text-[22px] font-semibold leading-[1.12] tracking-tight text-fg sm:text-[24px]">
+        {t("bento.web.title")}
+      </h3>
+      <p className="mt-2 text-[13.5px] leading-[1.55] text-fg-muted">
+        {t("bento.web.description")}
+      </p>
+
+      <div className="mt-auto pt-5">
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-ink-900/80">
+          <div className="flex items-center gap-1.5 border-b border-white/5 px-3 py-2">
+            <span className="h-2 w-2 rounded-full bg-white/15" />
+            <span className="h-2 w-2 rounded-full bg-white/15" />
+            <span className="h-2 w-2 rounded-full bg-white/15" />
+            <div className="ml-2 flex flex-1 items-center justify-center rounded-md bg-white/[0.03] px-2 py-0.5 text-[10px] tracking-tight text-fg-muted">
+              {t("bento.web.url")}
+            </div>
+          </div>
+          <div className="px-3 py-3 font-mono text-[12px] leading-[1.7]">
+            {codeLines.map((line, i) => (
+              <div
+                key={i}
+                className={[
+                  "flex items-center gap-3 transition-opacity duration-150",
+                  lines > i ? "opacity-100" : "opacity-30",
+                ].join(" ")}
+              >
+                <span className="w-3 text-right text-[10px] tabular-nums text-fg-dim">{i + 1}</span>
+                <div className="relative overflow-hidden">
+                  <motion.span
+                    initial={false}
+                    animate={{ clipPath: lines > i ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)" }}
+                    transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                    className="inline-block whitespace-nowrap text-fg"
+                  >
+                    <span className="text-fg-dim">{"<"}</span>
+                    <span className="text-sky-400">{line.tag}</span>
+                    {line.attr && <span className="text-fg/70"> {line.attr}</span>}
+                    <span className="text-fg-dim">{" />"}</span>
+                  </motion.span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </BentoCardShell>
+  );
+}
+
+function BentoFeatures() {
+  const { t } = useTranslation();
+  return (
+    <section id="bento" className="relative py-24 md:py-28">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div
+          className="mesh-blob animate-meshShift2 opacity-50"
+          style={{ top: "10%", right: "-12%", width: "30rem", height: "30rem", background: "radial-gradient(circle at 50% 50%, rgba(56,189,248,0.16), transparent 70%)" }}
+        />
+      </div>
+      <Container className="relative">
+        <SectionHeader
+          eyebrow={t("bento.section")}
+          title={t("bento.title")}
+          description={t("bento.description")}
+        />
+
+        <Reveal className="mt-14">
+          <div className="grid gap-5 md:grid-cols-3 md:grid-rows-2 md:gap-6">
+            <div className="md:col-span-2 md:row-span-2">
+              <BentoChatbotCard />
+            </div>
+            <div className="md:col-span-1 md:row-span-1">
+              <BentoWebCard />
+            </div>
+            <div className="md:col-span-1 md:row-span-1">
+              <BentoAutomationCard />
+            </div>
+          </div>
+        </Reveal>
+      </Container>
+    </section>
+  );
+}
+
+function ProcessStep({ label, title, desc, dotColor, opacity, y }) {
+  const reduced = useReducedMotion();
+  const style = reduced
+    ? undefined
+    : {
+        opacity,
+        transform: `translate3d(0, ${y}px, 0)`,
+        transition: "transform 520ms cubic-bezier(0.16,1,0.3,1), opacity 320ms ease-out",
+        willChange: "transform, opacity",
+      };
+  return (
+    <div style={style} className="flex items-start gap-5 md:flex-col md:items-center md:gap-0 md:text-center">
+      <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink-950 ring-1 ring-white/15 shadow-[0_0_0_4px_rgba(5,10,24,1)]">
+        <span
+          aria-hidden
+          className="absolute inset-1 rounded-full"
+          style={{ background: `radial-gradient(circle, ${dotColor}33 0%, transparent 70%)` }}
+        />
+        <span className="relative font-display text-[14px] font-semibold tracking-tight" style={{ color: dotColor }}>
+          {label}
+        </span>
+      </div>
+      <div className="pt-1.5 md:mt-6 md:max-w-xs md:pt-0">
+        <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg sm:text-[22px]">{title}</h3>
+        <p className="mt-2 text-[14px] leading-[1.6] text-fg-muted">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+function clamp(v, min, max) {
+  return v < min ? min : v > max ? max : v;
+}
+function lerpRange(v, fromA, fromB, toA, toB) {
+  const t = clamp((v - fromA) / (fromB - fromA), 0, 1);
+  return toA + (toB - toA) * t;
+}
+
+function ProcessTimeline() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const ref = React.useRef(null);
+  const [progress, setProgress] = React.useState(reduced ? 1 : 0);
+
+  React.useEffect(() => {
+    if (reduced) {
+      setProgress(1);
+      return;
+    }
+    const compute = () => {
+      const el = ref.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      const total = vh + r.height;
+      const traveled = vh - r.top;
+      const raw = traveled / total;
+      setProgress(clamp(raw, 0, 1));
+    };
+    compute();
+    window.addEventListener("scroll", compute, { passive: true });
+    window.addEventListener("resize", compute);
+    return () => {
+      window.removeEventListener("scroll", compute);
+      window.removeEventListener("resize", compute);
+    };
+  }, [reduced]);
+
+  const op1 = lerpRange(progress, 0.25, 0.4, 0, 1);
+  const ty1 = lerpRange(progress, 0.25, 0.4, 44, 0);
+  const op2 = lerpRange(progress, 0.45, 0.6, 0, 1);
+  const ty2 = lerpRange(progress, 0.45, 0.6, 44, 0);
+  const op3 = lerpRange(progress, 0.65, 0.8, 0, 1);
+  const ty3 = lerpRange(progress, 0.65, 0.8, 44, 0);
+  const lineProgress = lerpRange(progress, 0.25, 0.85, 0, 1);
+
+  return (
+    <section id="process" ref={ref} className="relative py-24 md:py-28">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div
+          className="mesh-blob animate-meshShift opacity-50"
+          style={{ bottom: "10%", left: "-10%", width: "28rem", height: "28rem", background: "radial-gradient(circle at 50% 50%, rgba(37,99,235,0.16), transparent 70%)" }}
+        />
+      </div>
+      <Container className="relative">
+        <SectionHeader
+          eyebrow={t("process.section")}
+          title={t("process.title")}
+          description={t("process.description")}
+        />
+
+        <div className="relative mx-auto mt-20 max-w-5xl">
+          <div className="pointer-events-none absolute left-[16.66%] right-[16.66%] top-6 hidden h-px md:block">
+            <div className="relative h-full bg-white/10">
+              <div
+                className="absolute inset-y-0 left-0 origin-left"
+                style={{
+                  transform: `scaleX(${reduced ? 1 : lineProgress})`,
+                  width: "100%",
+                  background: "linear-gradient(90deg, #38BDF8 0%, #3B82F6 50%, #34D399 100%)",
+                  transition: "transform 360ms cubic-bezier(0.16,1,0.3,1)",
+                  willChange: "transform",
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="pointer-events-none absolute left-6 top-6 bottom-6 w-px md:hidden">
+            <div className="relative h-full bg-white/10">
+              <div
+                className="absolute inset-x-0 top-0 origin-top"
+                style={{
+                  transform: `scaleY(${reduced ? 1 : lineProgress})`,
+                  height: "100%",
+                  background: "linear-gradient(180deg, #38BDF8 0%, #3B82F6 50%, #34D399 100%)",
+                  transition: "transform 360ms cubic-bezier(0.16,1,0.3,1)",
+                  willChange: "transform",
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-10 md:grid-cols-3 md:gap-8">
+            <ProcessStep
+              label={t("process.step1.label")}
+              title={t("process.step1.title")}
+              desc={t("process.step1.description")}
+              dotColor="#38BDF8"
+              opacity={op1}
+              y={ty1}
+            />
+            <ProcessStep
+              label={t("process.step2.label")}
+              title={t("process.step2.title")}
+              desc={t("process.step2.description")}
+              dotColor="#3B82F6"
+              opacity={op2}
+              y={ty2}
+            />
+            <ProcessStep
+              label={t("process.step3.label")}
+              title={t("process.step3.title")}
+              desc={t("process.step3.description")}
+              dotColor="#34D399"
+              opacity={op3}
+              y={ty3}
+            />
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 function StepCard({ step, title, desc, image }) {
   return (
     <StaggerItem>
@@ -1561,6 +2077,8 @@ export default function App() {
       <Navbar />
       <main>
         <Hero />
+        <BentoFeatures />
+        <ProcessTimeline />
         <Features />
         <HowItWorks />
         <Portfolio />

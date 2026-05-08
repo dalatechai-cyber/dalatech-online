@@ -350,5 +350,60 @@
       "title": "Fast response",
       "description": "We usually reply within 24 hours. If you need urgent help, message us on Facebook."
     }
+  },
+  "bento": {
+    "section": "CAPABILITIES",
+    "title": "Three products. Built to feel alive.",
+    "description": "Hover any card. These are not screenshots, every motion you see is the product itself.",
+    "chatbot": {
+      "label": "Live demo",
+      "title": "AI Chatbot",
+      "description": "A real conversation, trained on your business and answering customers in real time.",
+      "you": "You",
+      "ai": "AI Assistant",
+      "messages": {
+        "user1": "Do you have the new model in stock?",
+        "ai1": "Yes, three units left at the warehouse.",
+        "user2": "Can I reserve one until tomorrow?",
+        "ai2": "Done. Reserved until 6pm tomorrow under your number."
+      }
+    },
+    "automation": {
+      "label": "Running",
+      "title": "Business Automation",
+      "description": "Repetitive work, executed automatically while you focus on the work that matters.",
+      "tasks": {
+        "t1": "New lead detected",
+        "t2": "Customer info enriched",
+        "t3": "Welcome email sent",
+        "t4": "CRM record created"
+      }
+    },
+    "web": {
+      "label": "Crafted",
+      "title": "Custom Web Development",
+      "description": "Modern, fast, made to convert. Engineered like a product, not a brochure.",
+      "url": "yourbrand.com"
+    }
+  },
+  "process": {
+    "section": "PROCESS",
+    "title": "From idea to launch in three deliberate steps.",
+    "description": "A predictable path. The same one every time. So you always know where we are and what comes next.",
+    "step1": {
+      "label": "01",
+      "title": "Discovery",
+      "description": "We learn your business and your goals, then agree on a clear scope you can hold us to."
+    },
+    "step2": {
+      "label": "02",
+      "title": "Build",
+      "description": "Design and engineering happen in parallel, with progress you can see week by week."
+    },
+    "step3": {
+      "label": "03",
+      "title": "Launch",
+      "description": "We ship, monitor, and stay on call. Your first week is our priority, not an afterthought."
+    }
   }
 }
