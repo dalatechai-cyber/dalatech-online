@@ -2140,6 +2140,217 @@ function PrivacyTermsModal({ isOpen, onClose }) {
   );
 }
 
+function CapabilityMarquee() {
+  const { t } = useTranslation();
+  const items = [0, 1, 2, 3, 4, 5].map((i) => t(`marquee.items.${i}`));
+
+  return (
+    <section
+      aria-label={t("marquee.label")}
+      className="marquee-strip relative overflow-hidden border-y border-white/[0.06] bg-white/[0.012] py-5"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-ink-950 via-ink-950/85 to-transparent sm:w-32"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-ink-950 via-ink-950/85 to-transparent sm:w-32"
+      />
+      <div className="marquee-track flex w-max items-center">
+        {[0, 1].map((copy) => (
+          <div
+            key={copy}
+            aria-hidden={copy === 1 ? "true" : undefined}
+            className="flex shrink-0 items-center gap-10 pr-10 sm:gap-14 sm:pr-14"
+          >
+            {items.map((item, i) => (
+              <span key={i} className="flex shrink-0 items-center gap-10 sm:gap-14">
+                <span className="whitespace-nowrap font-display text-[14px] font-medium tracking-[-0.005em] text-fg-muted sm:text-[15px]">
+                  {item}
+                </span>
+                <span aria-hidden className="block h-1 w-1 rounded-full bg-sky-400/55" />
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const TECH_STACK = [
+  {
+    name: "React",
+    icon: (
+      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10">
+        <g fill="none" stroke="#61DAFB" strokeWidth="1.6">
+          <ellipse cx="24" cy="24" rx="16" ry="6" />
+          <ellipse cx="24" cy="24" rx="16" ry="6" transform="rotate(60 24 24)" />
+          <ellipse cx="24" cy="24" rx="16" ry="6" transform="rotate(-60 24 24)" />
+        </g>
+        <circle cx="24" cy="24" r="2.6" fill="#61DAFB" />
+      </svg>
+    ),
+  },
+  {
+    name: "Next.js",
+    icon: (
+      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10">
+        <circle cx="24" cy="24" r="22" fill="#0A0A0A" stroke="#F0F4FF" strokeOpacity="0.22" />
+        <path
+          d="M16.4 14.4h2.5v19.2h-2.5zM18.9 14.4h2L31 30.1V14.4h2.5v19.2H31L20.9 17.9v15.7h-2z"
+          fill="#F0F4FF"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "OpenAI",
+    icon: (
+      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#10A37F">
+        <path d="M44.56 19.64a11.97 11.97 0 0 0-1.03-9.82A12.09 12.09 0 0 0 30.51 3.99a12.13 12.13 0 0 0-20.59 4.36 11.97 11.97 0 0 0-8 5.8 12.09 12.09 0 0 0 1.49 14.19A11.96 11.96 0 0 0 4.45 38.16a12.1 12.1 0 0 0 13.03 5.8A11.97 11.97 0 0 0 26.52 48a12.11 12.11 0 0 0 11.55-8.41 11.98 11.98 0 0 0 7.99-5.8 12.11 12.11 0 0 0-1.5-14.15zM26.52 44.86a8.95 8.95 0 0 1-5.75-2.08l.28-.16 9.56-5.52a1.59 1.59 0 0 0 .79-1.36V22.27l4.04 2.34c.05.02.07.06.08.1v11.17a9 9 0 0 1-9 8.98zM7.2 36.61a8.94 8.94 0 0 1-1.07-6.03l.28.17 9.56 5.52a1.54 1.54 0 0 0 1.56 0l11.69-6.74v4.66a.16.16 0 0 1-.07.13l-9.66 5.57a8.99 8.99 0 0 1-12.29-3.28zm-2.5-20.82a8.97 8.97 0 0 1 4.73-3.94v11.36a1.53 1.53 0 0 0 .77 1.35l11.63 6.71-4.04 2.34a.15.15 0 0 1-.14 0l-9.66-5.57a8.99 8.99 0 0 1-3.29-12.25zm33.16 7.69-11.69-6.79 4.04-2.32a.16.16 0 0 1 .14 0l9.66 5.58a8.98 8.98 0 0 1-1.35 16.21V24.82a1.58 1.58 0 0 0-.8-1.34zm4.02-6.04-.28-.17-9.55-5.56a1.55 1.55 0 0 0-1.57 0L18.79 18.45v-4.66a.13.13 0 0 1 .06-.13l9.66-5.57a9 9 0 0 1 13.36 9.32zm-25.31 8.27-4.05-2.33a.16.16 0 0 1-.07-.11V12.15a8.99 8.99 0 0 1 14.74-6.9l-.28.16-9.56 5.51a1.59 1.59 0 0 0-.79 1.37zm2.19-4.73 5.21-3 5.21 3v6L18.86 26z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Tailwind CSS",
+    icon: (
+      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#38BDF8">
+        <path d="M24 9.6c-6.4 0-10.4 3.2-12 9.6 2.4-3.2 5.2-4.4 8.4-3.6 1.83.46 3.13 1.78 4.58 3.25C27.34 21.24 30.05 24 36 24c6.4 0 10.4-3.2 12-9.6-2.4 3.2-5.2 4.4-8.4 3.6-1.83-.46-3.13-1.78-4.58-3.25C32.66 12.36 29.95 9.6 24 9.6zM12 24c-6.4 0-10.4 3.2-12 9.6 2.4-3.2 5.2-4.4 8.4-3.6 1.83.46 3.13 1.78 4.58 3.25C15.34 35.64 18.05 38.4 24 38.4c6.4 0 10.4-3.2 12-9.6-2.4 3.2-5.2 4.4-8.4 3.6-1.83-.46-3.13-1.78-4.58-3.25C20.66 26.76 17.95 24 12 24z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Node.js",
+    icon: (
+      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#5FA04E">
+        <path d="M24 0a2.4 2.4 0 0 1 1.21.32l18.7 10.79c.75.43 1.21 1.24 1.21 2.1v21.58c0 .87-.46 1.67-1.21 2.1L25.21 47.68a2.4 2.4 0 0 1-2.42 0L4.09 36.89c-.75-.43-1.21-1.23-1.21-2.1V13.21c0-.86.46-1.67 1.21-2.1L22.79.32A2.4 2.4 0 0 1 24 0zm0 4.32L7.2 14V34l16.8 9.7L40.8 34V14L24 4.32zM20.4 16.32h2.4v15.36H20.4zm4.8 0h1.92l5.28 8.16v-8.16h2.4v15.36H32.4l-4.8-7.44v7.44H25.2z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Vercel",
+    icon: (
+      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-8 w-8 sm:h-9 sm:w-9" fill="#F0F4FF">
+        <path d="M24 5L46 43H2L24 5z" />
+      </svg>
+    ),
+  },
+  {
+    name: "MongoDB",
+    icon: (
+      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#47A248">
+        <path d="M24 2c-1 2-2 4-2 6 0 8 2 14 0 22 0 3-2 8-2 10 2 0 4 2 4 6 0-4 2-6 4-6 0-2-2-7-2-10-2-8 0-14 0-22 0-2-1-4-2-6z" />
+      </svg>
+    ),
+  },
+  {
+    name: "Framer Motion",
+    icon: (
+      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#FF0080">
+        <path d="M10 2h28v14H24l14 14H24v14L10 30V16h14L10 2z" />
+      </svg>
+    ),
+  },
+];
+
+function TechStack() {
+  const { t } = useTranslation();
+  return (
+    <section id="tech-stack" className="relative py-24 md:py-28">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div
+          className="mesh-blob animate-meshShift2 opacity-40"
+          style={{
+            top: "20%",
+            right: "-8%",
+            width: "26rem",
+            height: "26rem",
+            background: "radial-gradient(circle at 50% 50%, rgba(56,189,248,0.13), transparent 70%)",
+          }}
+        />
+      </div>
+      <Container className="relative">
+        <SectionHeader
+          eyebrow={t("techStack.section")}
+          title={t("techStack.title")}
+          description={t("techStack.description")}
+        />
+        <Reveal className="mt-16">
+          <ul
+            className="mx-auto grid max-w-5xl grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 sm:gap-x-8 sm:gap-y-12 lg:grid-cols-8 lg:gap-x-4"
+            role="list"
+          >
+            {TECH_STACK.map((tech, i) => (
+              <li key={tech.name} className="flex flex-col items-center gap-3">
+                <div
+                  className="animate-floatY pressable group relative flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.07] bg-white/[0.025] transition-[transform,border-color,box-shadow] duration-300 ease-out hover:scale-[1.06] hover:border-sky-400/45 hover:shadow-[0_0_38px_-10px_rgba(56,189,248,0.55)] sm:h-[72px] sm:w-[72px]"
+                  style={{
+                    animationDelay: `${i * 0.45}s`,
+                    animationDuration: `${5.4 + (i % 4) * 0.6}s`,
+                  }}
+                  data-cursor="hover"
+                >
+                  {tech.icon}
+                </div>
+                <span className="text-[12.5px] font-medium tracking-[-0.005em] text-fg-muted transition-colors duration-300 group-hover:text-fg sm:text-[13px]">
+                  {tech.name}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+      </Container>
+    </section>
+  );
+}
+
+function LocationBadge() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  return (
+    <section aria-label={t("location.eyebrow")} className="relative py-14 md:py-20">
+      <Container>
+        <motion.div
+          initial={reduced ? false : { opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.55 }}
+          transition={SPRING_REVEAL}
+          className="mx-auto flex max-w-[600px] flex-col items-center text-center"
+        >
+          <div className="flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.022] px-4 py-2.5 ring-1 ring-inset ring-white/[0.04]">
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden
+              focusable="false"
+              className="h-4 w-4 text-sky-400"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 21s7-7.3 7-12.5A7 7 0 1 0 5 8.5C5 13.7 12 21 12 21z" />
+              <circle cx="12" cy="9" r="2.4" />
+            </svg>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
+              {t("location.eyebrow")}
+            </span>
+            <span aria-hidden className="block h-3 w-px bg-white/15" />
+            <span className="font-display text-[14px] font-semibold tracking-tight text-fg">
+              {t("location.city")}, {t("location.country")}
+            </span>
+          </div>
+          <p className="mt-6 max-w-[44ch] text-[15px] leading-[1.65] text-fg-muted">
+            {t("location.tagline")}
+          </p>
+        </motion.div>
+      </Container>
+    </section>
+  );
+}
+
 export default function App() {
   const [isPrivacyOpen, setIsPrivacyOpen] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState("home");
@@ -2161,8 +2372,11 @@ export default function App() {
       <Navbar />
       <main>
         <Hero />
+        <CapabilityMarquee />
         <BentoFeatures />
         <ProcessTimeline />
+        <TechStack />
+        <LocationBadge />
         <Features />
         <HowItWorks />
         <Portfolio />

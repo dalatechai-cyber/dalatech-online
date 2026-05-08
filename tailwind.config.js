@@ -56,11 +56,16 @@ export default {
           "0%, 100%": { opacity: "0.18" },
           "50%": { opacity: "0.28" },
         },
+        floatY: {
+          "0%, 100%": { transform: "translate3d(0, 0, 0)" },
+          "50%": { transform: "translate3d(0, -8px, 0)" },
+        },
       },
       animation: {
         meshShift: "meshShift 14s ease-in-out infinite",
         meshShift2: "meshShift2 18s ease-in-out infinite",
         gridPulse: "gridPulse 6s ease-in-out infinite",
+        floatY: "floatY 6s ease-in-out infinite",
       },
     },
   },

@@ -393,6 +393,28 @@
       "url": "yourbrand.com"
     }
   },
+  "marquee": {
+    "label": "What we build",
+    "items": [
+      "Web Development",
+      "AI Chatbot",
+      "Business Automation",
+      "Ulaanbaatar, Mongolia",
+      "24/7 Support",
+      "Custom Solutions"
+    ]
+  },
+  "techStack": {
+    "section": "TOOLKIT",
+    "title": "What we build with",
+    "description": "The same modern stack the world's best product teams use, applied to every client we ship for."
+  },
+  "location": {
+    "eyebrow": "Based in",
+    "city": "Ulaanbaatar",
+    "country": "Mongolia",
+    "tagline": "Serving Mongolian businesses with technology built to a global standard."
+  },
   "process": {
     "section": "PROCESS",
     "title": "From idea to launch in three deliberate steps.",
