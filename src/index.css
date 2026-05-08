@@ -143,16 +143,24 @@ section {
 }
 
 .field {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.025);
   border: 1px solid rgba(255,255,255,0.08);
   color: var(--fg);
-  transition: border-color 200ms var(--ease-out-quart), background 200ms var(--ease-out-quart);
+  box-shadow: 0 0 0 0 rgba(56,189,248,0);
+  transition: border-color 200ms var(--ease-out-quart),
+              background 200ms var(--ease-out-quart),
+              box-shadow 200ms var(--ease-out-quart);
 }
 .field::placeholder { color: rgba(139,159,196,0.7); }
-.field:focus {
+.field:hover {
+  border-color: rgba(255,255,255,0.16);
+}
+.field:focus,
+.field:focus-visible {
   outline: none;
-  border-color: rgba(56,189,248,0.55);
-  background: rgba(255,255,255,0.04);
+  border-color: rgba(56,189,248,0.65);
+  background: rgba(255,255,255,0.045);
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.18);
 }
 
 .pressable {
@@ -160,4 +168,56 @@ section {
 }
 .pressable:active {
   transform: scale(0.97);
+}
+
+/* HowItWorks step illustrations — subtle ambient motion, livelier on hover. */
+@keyframes stepPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.18); opacity: 0.85; }
+}
+@keyframes stepWave {
+  0% { transform: translateY(2px); opacity: 0.35; }
+  50% { transform: translateY(-2px); opacity: 1; }
+  100% { transform: translateY(2px); opacity: 0.35; }
+}
+@keyframes stepNode {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+@keyframes stepLink {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes stepTrailDraw {
+  0% { stroke-dasharray: 400; stroke-dashoffset: 400; }
+  100% { stroke-dasharray: 400; stroke-dashoffset: 0; }
+}
+@keyframes stepRocket {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-2px, -2px); }
+}
+
+.step-art-pulse { animation: stepPulse 3.6s ease-in-out infinite; }
+.step-art-wave  { animation: stepWave 2.2s ease-in-out infinite; }
+.step-art-node  { animation: stepNode 2.4s ease-in-out infinite; }
+.step-art-link  { animation: stepLink 2.4s var(--ease-out-quart) forwards; }
+.step-art-trail { animation: stepTrailDraw 2.8s var(--ease-out-quart) forwards; }
+.step-art-rocket { animation: stepRocket 3.4s ease-in-out infinite; }
+
+.step-card:hover .step-art-pulse  { animation-duration: 1.6s; }
+.step-card:hover .step-art-wave   { animation-duration: 1.2s; }
+.step-card:hover .step-art-node   { animation-duration: 1.2s; }
+.step-card:hover .step-art-rocket { animation-duration: 1.6s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .step-art-pulse,
+  .step-art-wave,
+  .step-art-node,
+  .step-art-rocket {
+    animation: none !important;
+  }
+  .step-art-link,
+  .step-art-trail {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
 }

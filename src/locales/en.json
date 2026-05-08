@@ -114,23 +114,23 @@
       "pills": {
         "website": "Website",
         "chatbot": "AI Chatbot",
-        "productQA": "Product Q&A",
-        "availability": "24/7 Responses"
+        "productQA": "QPay",
+        "availability": "Online Booking"
       },
       "link": "Link:",
-      "title": "JapanTok Mongolia, AI-assisted product support",
-      "description": "We built a modern website and integrated an AI chatbot trained on the business's product catalog and common customer questions. The result: customers find information faster, and the team is freed from repetitive support work.",
+      "title": "Matrix Eco Salon, modern eco salon experience",
+      "description": "We built a modern website for Matrix Eco Salon that matches their eco-friendly brand, with online booking, QPay payment integration, and an AI chatbot. Clients now book appointments anytime, and the team spends less time answering repeat questions on the phone.",
       "whatWeBuilt": "What we built",
       "features": [
-        "Business website (mobile-friendly)",
-        "AI chatbot trained on products/FAQs",
-        "Conversation flow for product inquiries"
+        "Modern eco salon website",
+        "Online appointment booking",
+        "QPay integration with AI chatbot"
       ],
       "idealOutcomes": "Ideal outcomes",
       "outcomes": [
-        "Faster answers for customers",
-        "Less repetitive questions for staff",
-        "More leads captured via the website"
+        "24/7 online appointment booking",
+        "Less repetitive phone calls for staff",
+        "Booking and payment in one flow"
       ],
       "buttons": {
         "requestDemo": "Request a demo",
@@ -316,7 +316,7 @@
       "nameLabel": "Your name",
       "namePlaceholder": "e.g. Nury",
       "businessLabel": "Business name",
-      "businessPlaceholder": "e.g. JapanTok Mongolia",
+      "businessPlaceholder": "e.g. Matrix Eco Salon",
       "phoneLabel": "Phone",
       "phonePlaceholder": "e.g., 9999-9999",
       "serviceLabel": "Interested in",
@@ -418,6 +418,15 @@
     "city": "Ulaanbaatar",
     "country": "Mongolia",
     "tagline": "Serving Mongolian businesses with technology built to a global standard."
+  },
+  "footer": {
+    "tagline": "AI-powered websites, chatbots, and voice agents, engineered in Mongolia and built to a global standard.",
+    "services": "Services",
+    "company": "Company",
+    "legal": "Legal",
+    "privacy": "Privacy & Terms",
+    "rightsReserved": "All rights reserved.",
+    "builtIn": "Made in Ulaanbaatar"
   },
   "process": {
     "section": "PROCESS",

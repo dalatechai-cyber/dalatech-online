@@ -286,6 +286,19 @@ function Pill({ children }) {
   );
 }
 
+function CheckIcon({ className = "" }) {
+  return (
+    <span
+      aria-hidden
+      className={["mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-400/12 ring-1 ring-inset ring-sky-400/30", className].join(" ")}
+    >
+      <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#38BDF8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 6.5 L5 9 L10 3.5" />
+      </svg>
+    </span>
+  );
+}
+
 function BrandLockup({ size = 40 }) {
   return (
     <span className="flex items-center gap-2.5">
@@ -668,44 +681,174 @@ function HeroWords({ text, delay = 0 }) {
   );
 }
 
+function BrowserMockup({ url = "matrixecosalon.org", children, className = "" }) {
+  return (
+    <div className={["group relative overflow-hidden rounded-[20px] border border-white/10 bg-ink-800/70 shadow-[0_30px_80px_-30px_rgba(8,12,28,0.85)] backdrop-blur-sm", className].join(" ")}>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -inset-px rounded-[20px] bg-gradient-to-br from-sky-400/18 via-transparent to-brand-500/12"
+        style={{ WebkitMask: "linear-gradient(black, transparent 70%)", mask: "linear-gradient(black, transparent 70%)" }}
+      />
+      <div className="relative flex items-center gap-2 border-b border-white/[0.06] bg-ink-900/85 px-3.5 py-3 sm:px-4">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+        </div>
+        <div className="ml-3 flex flex-1 items-center justify-center gap-1.5 rounded-md bg-white/[0.04] px-3 py-1 text-[11px] tracking-tight text-fg-muted">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          <span className="truncate">{url}</span>
+        </div>
+        <div className="hidden h-6 w-6 shrink-0 items-center justify-center rounded-md text-fg-muted/70 sm:flex">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" />
+          </svg>
+        </div>
+      </div>
+      <div className="relative aspect-[16/10]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function MatrixSalonPreview() {
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 75% 0%, rgba(52,211,153,0.20) 0%, rgba(52,211,153,0) 55%), radial-gradient(90% 70% at 10% 110%, rgba(20,118,90,0.30) 0%, rgba(20,118,90,0) 60%), linear-gradient(180deg, #0E1A1F 0%, #0A1418 60%, #07101A 100%)",
+        }}
+      />
+      <div className="relative flex items-center justify-between px-5 py-3 sm:px-6 sm:py-3.5">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-400/15 ring-1 ring-emerald-400/30">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgb(110,231,183)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 3c-3.5 4-7 7-7 11a7 7 0 0 0 14 0c0-4-3.5-7-7-11z" />
+              <path d="M12 11v8" />
+            </svg>
+          </div>
+          <span className="font-display text-[11.5px] font-semibold tracking-tight text-white sm:text-[13px]">Matrix Eco Salon</span>
+        </div>
+        <div className="hidden items-center gap-4 text-[10.5px] text-white/55 sm:flex">
+          <span>Үйлчилгээ</span>
+          <span>Үнэ</span>
+          <span>Бидний тухай</span>
+        </div>
+        <div className="rounded-md bg-emerald-400 px-2.5 py-1 font-display text-[9.5px] font-semibold tracking-tight text-emerald-950 sm:text-[10.5px]">
+          Захиалах
+        </div>
+      </div>
+      <div className="relative grid grid-cols-[1.05fr_0.95fr] gap-3 px-5 pb-5 pt-1 sm:gap-5 sm:px-6 sm:pb-6">
+        <div className="flex flex-col justify-center">
+          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-emerald-400/12 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-emerald-300 sm:px-2 sm:text-[9px]">
+            <span className="h-1 w-1 rounded-full bg-emerald-400" />
+            Eco · Modern
+          </span>
+          <h3 className="mt-2 font-display text-[14px] font-semibold leading-[1.08] tracking-tight text-white sm:text-[18px] md:text-[22px]">
+            Байгальд ээлтэй
+            <br />орчин үеийн салон
+          </h3>
+          <p className="mt-2 text-[8.5px] leading-[1.5] text-white/55 sm:text-[10.5px]">
+            Онлайн захиалга · QPay · AI туслах
+          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <div className="rounded-md bg-emerald-400 px-2 py-1 font-display text-[9px] font-semibold text-emerald-950 sm:text-[10px]">Цаг авах</div>
+            <div className="rounded-md border border-white/15 bg-white/[0.03] px-2 py-1 font-display text-[9px] font-semibold text-white/85 sm:text-[10px]">Үйлчилгээ</div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 grid-rows-2 gap-1.5 sm:gap-2">
+          <div
+            className="row-span-2 rounded-md ring-1 ring-white/[0.04]"
+            style={{ background: "linear-gradient(150deg, rgba(110,231,183,0.32) 0%, rgba(20,90,65,0.75) 55%, rgba(8,30,25,0.92) 100%)" }}
+          />
+          <div
+            className="rounded-md ring-1 ring-white/[0.04]"
+            style={{ background: "linear-gradient(150deg, rgba(167,212,189,0.28) 0%, rgba(45,75,65,0.82) 100%)" }}
+          />
+          <div
+            className="rounded-md ring-1 ring-white/[0.04]"
+            style={{ background: "linear-gradient(150deg, rgba(52,211,153,0.18) 0%, rgba(15,45,35,0.85) 100%)" }}
+          />
+        </div>
+      </div>
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-ink-950/45 to-transparent" />
+    </div>
+  );
+}
+
+function FloatingChatbotBadge() {
+  const reduced = useReducedMotion();
+  return (
+    <motion.div
+      initial={reduced ? false : { opacity: 0, y: 12, scale: 0.94 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ ...SPRING_REVEAL, delay: 1.0 }}
+      className="absolute bottom-3.5 right-3.5 z-10 flex items-end gap-2.5 sm:bottom-5 sm:right-5"
+    >
+      <motion.div
+        initial={reduced ? false : { opacity: 0, x: 8 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ ...SPRING_REVEAL, delay: 1.4 }}
+        className="hidden max-w-[210px] rounded-2xl rounded-br-md border border-white/10 bg-ink-900/95 px-3 py-2 shadow-[0_20px_44px_-18px_rgba(0,0,0,0.75)] backdrop-blur md:block"
+      >
+        <p className="text-[11px] leading-[1.45] text-fg/90">Сайн байна уу 👋 Ямар үйлчилгээ авах вэ?</p>
+        <div className="mt-1 flex items-center gap-1.5">
+          <span className="text-[8.5px] font-semibold uppercase tracking-[0.14em] text-sky-300">DalaTech AI</span>
+          <span className="h-1 w-1 rounded-full bg-white/30" />
+          <span className="text-[9px] text-fg-muted">Live</span>
+        </div>
+      </motion.div>
+      <motion.button
+        type="button"
+        aria-label="DalaTech AI chatbot"
+        animate={reduced ? undefined : { y: [0, -3, 0] }}
+        transition={reduced ? undefined : { duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+        whileHover={reduced ? undefined : { scale: 1.04 }}
+        whileTap={reduced ? undefined : { scale: 0.95 }}
+        className="pressable relative flex h-11 w-11 items-center justify-center rounded-2xl border border-white/15 shadow-[0_18px_44px_-12px_rgba(56,189,248,0.55)] sm:h-12 sm:w-12"
+        style={{ background: "linear-gradient(155deg, #38BDF8 0%, #2563EB 100%)" }}
+      >
+        <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/70" />
+          <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-ink-950 bg-emerald-400" />
+        </span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </motion.button>
+    </motion.div>
+  );
+}
+
 function HeroDemoCard() {
   const { scrollY } = useScroll();
   const reduced = useReducedMotion();
-  const yT = useTransform(scrollY, [0, 600], [0, reduced ? 0 : -40]);
+  const yT = useTransform(scrollY, [0, 600], [0, reduced ? 0 : -36]);
   const y = useSpring(yT, { stiffness: 80, damping: 22, mass: 0.4 });
 
   return (
     <motion.div style={{ y }} className="relative">
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-ink-800/60 shadow-card">
-        <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-sky-400/20 via-transparent to-brand-500/15 [mask:linear-gradient(black,transparent_60%)]" />
-        <div className="relative aspect-video w-full">
-          <video className="h-full w-full object-cover" autoPlay loop muted playsInline webkit-playsinline="true" preload="auto">
-            <source src="/Videos/Matrix_Demo.mov" type="video/mp4" />
-            <source src="/Videos/Matrix_Demo.mov" type="video/quicktime" />
-          </video>
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/40 via-transparent to-transparent" />
-          <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-1.5 rounded-full border border-white/15 bg-ink-950/55 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-fg-muted backdrop-blur">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
-            </span>
-            Live demo
-          </div>
-        </div>
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...SPRING_REVEAL, delay: 0.9 }}
-        className="absolute -bottom-8 left-6 hidden w-72 rounded-2xl border border-white/10 bg-ink-800/85 p-4 shadow-card backdrop-blur md:block"
+      <BrowserMockup url="matrixecosalon.org">
+        <MatrixSalonPreview />
+      </BrowserMockup>
+      <FloatingChatbotBadge />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-4 top-[58px] z-10 flex items-center gap-1.5 rounded-full border border-white/15 bg-ink-950/60 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-fg-muted backdrop-blur sm:top-[62px]"
       >
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-fg-muted">Example</p>
-        <p className="mt-1.5 text-sm text-fg/85">"Do you have brake pads for a 2016 Corolla?"</p>
-        <div className="mt-3 rounded-xl bg-fg px-3 py-2 text-xs leading-relaxed text-ink-950">
-          Yes — we have multiple options. What brand do you prefer?
-        </div>
-      </motion.div>
+        <span className="relative flex h-1.5 w-1.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
+        </span>
+        Live client
+      </div>
     </motion.div>
   );
 }
@@ -807,61 +950,54 @@ function SectionHeader({ eyebrow, title, description, align = "center" }) {
   );
 }
 
-function FeatureCard({ index, title, subtitle, bullets, badge, image }) {
+function ServiceCard({ index, title, subtitle, bullets, badge, featured = false }) {
   return (
     <StaggerItem>
-      <article className="card-glow group flex h-full flex-col rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card backdrop-blur-sm">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] font-display text-[12px] font-semibold tracking-tight text-sky-400">
-              {String(index).padStart(2, "0")}
+      <article
+        className={[
+          "relative flex h-full flex-col overflow-hidden rounded-2xl p-7 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          featured
+            ? "border border-sky-400/40 bg-gradient-to-b from-sky-400/[0.07] to-ink-800/60 shadow-[0_30px_70px_-30px_rgba(56,189,248,0.45)] hover:-translate-y-1 hover:border-sky-400/60 hover:shadow-[0_40px_90px_-30px_rgba(56,189,248,0.55)] md:-translate-y-2"
+            : "border border-white/[0.08] bg-ink-800/45 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]",
+        ].join(" ")}
+      >
+        {featured && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-px left-1/2 h-[2px] w-2/3 -translate-x-1/2 rounded-full"
+            style={{ background: "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.7) 50%, transparent 100%)" }}
+          />
+        )}
+        <div className="flex items-center justify-between gap-3">
+          <span className={["text-[11px] font-semibold uppercase tracking-[0.16em]", featured ? "text-sky-300" : "text-fg-muted"].join(" ")}>
+            {String(index).padStart(2, "0")}
+          </span>
+          {badge && (
+            <span
+              className={[
+                "rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                featured
+                  ? "bg-sky-400/15 text-sky-200 ring-1 ring-inset ring-sky-400/40"
+                  : "bg-white/[0.03] text-fg-muted ring-1 ring-inset ring-white/10",
+              ].join(" ")}
+            >
+              {badge}
             </span>
-            <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{title}</p>
-          </div>
-          {badge && <Pill>{badge}</Pill>}
+          )}
         </div>
+        <h3 className="mt-5 font-display text-[22px] font-semibold leading-[1.15] tracking-tight text-fg sm:text-[24px]">
+          {title}
+        </h3>
         <p className="mt-3 text-[14px] leading-[1.6] text-fg-muted">{subtitle}</p>
-        <ul className="mt-5 space-y-2.5 text-[13.5px] leading-[1.55] text-fg/85">
+        <ul className="mt-6 space-y-3 text-[13.5px] leading-[1.55] text-fg/90">
           {bullets.map((b, i) => (
-            <li key={i} className="flex gap-2.5">
-              <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+            <li key={i} className="flex items-start gap-2.5">
+              <CheckIcon />
               <span>{b}</span>
             </li>
           ))}
         </ul>
-        {image && (
-          <div className="relative mt-6 overflow-hidden rounded-xl border border-white/10 bg-ink-900">
-            <div className="aspect-[16/10]">
-              <img
-                src={image}
-                alt={title}
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-              />
-            </div>
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/45 via-transparent to-transparent" />
-          </div>
-        )}
       </article>
-    </StaggerItem>
-  );
-}
-
-function StatCard({ label, value }) {
-  const hasLetters = /\p{L}/u.test(value);
-  const pureNumeric = /^\d+$/.test(value);
-
-  return (
-    <StaggerItem>
-      <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{label}</p>
-        <p className="mt-3 font-display text-[36px] font-semibold tracking-tightest text-fg">
-          {pureNumeric && !hasLetters ? (
-            <CountUp to={parseInt(value, 10) || 0} />
-          ) : (
-            <span>{value}</span>
-          )}
-        </p>
-      </div>
     </StaggerItem>
   );
 }
@@ -871,28 +1007,34 @@ function Features() {
   return (
     <section id="features" className="relative py-28">
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="mesh-blob animate-meshShift opacity-60" style={{ top: "20%", left: "-10%", width: "32rem", height: "32rem", background: "radial-gradient(circle at 50% 50%, rgba(37,99,235,0.2), transparent 70%)" }} />
+        <div className="mesh-blob animate-meshShift opacity-50" style={{ top: "20%", left: "-10%", width: "32rem", height: "32rem", background: "radial-gradient(circle at 50% 50%, rgba(37,99,235,0.2), transparent 70%)" }} />
       </div>
       <Container className="relative">
         <SectionHeader eyebrow={t("features.section")} title={t("features.title")} description={t("features.description")} />
 
-        <StaggerGroup className="mt-14 grid gap-6 md:grid-cols-3">
-          <FeatureCard index={1} title={t("features.chatbot.title")} badge={t("features.chatbot.badge")} subtitle={t("features.chatbot.subtitle")}
-            bullets={[t("features.chatbot.bullets.0"), t("features.chatbot.bullets.1"), t("features.chatbot.bullets.2")]}
-            image="/Photos/chatbot-feature.png" />
-          <FeatureCard index={2} title={t("features.voiceAgent.title")} badge={t("features.voiceAgent.badge")} subtitle={t("features.voiceAgent.subtitle")}
+        <StaggerGroup className="mt-14 grid items-stretch gap-5 md:grid-cols-3 md:items-end">
+          <ServiceCard
+            index={1}
+            title={t("features.voiceAgent.title")}
+            badge={t("features.voiceAgent.badge")}
+            subtitle={t("features.voiceAgent.subtitle")}
             bullets={[t("features.voiceAgent.bullets.0"), t("features.voiceAgent.bullets.1"), t("features.voiceAgent.bullets.2")]}
-            image="/Photos/voice-agent-feature.png" />
-          <FeatureCard index={3} title={t("features.fullIntegration.title")} badge={t("features.fullIntegration.badge")} subtitle={t("features.fullIntegration.subtitle")}
+          />
+          <ServiceCard
+            index={2}
+            title={t("features.chatbot.title")}
+            badge={t("features.chatbot.badge")}
+            subtitle={t("features.chatbot.subtitle")}
+            bullets={[t("features.chatbot.bullets.0"), t("features.chatbot.bullets.1"), t("features.chatbot.bullets.2")]}
+            featured
+          />
+          <ServiceCard
+            index={3}
+            title={t("features.fullIntegration.title")}
+            badge={t("features.fullIntegration.badge")}
+            subtitle={t("features.fullIntegration.subtitle")}
             bullets={[t("features.fullIntegration.bullets.0"), t("features.fullIntegration.bullets.1"), t("features.fullIntegration.bullets.2")]}
-            image="/Photos/full-integration-feature.png" />
-        </StaggerGroup>
-
-        <StaggerGroup className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label={t("features.stats.fasterResponses")} value={t("features.stats.fasterResponsesValue")} />
-          <StatCard label={t("features.stats.lessRepetitiveWork")} value={t("features.stats.lessRepetitiveWorkValue")} />
-          <StatCard label={t("features.stats.betterExperience")} value={t("features.stats.betterExperienceValue")} />
-          <StatCard label={t("features.stats.setupTime")} value={t("features.stats.setupTimeValue")} />
+          />
         </StaggerGroup>
       </Container>
     </section>
@@ -1494,10 +1636,138 @@ function ProcessTimeline() {
   );
 }
 
-function StepCard({ step, title, desc, image }) {
+function DiscoveryArt() {
+  return (
+    <svg viewBox="0 0 320 180" className="h-full w-full" aria-hidden>
+      <defs>
+        <linearGradient id="discWaveA" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stopColor="#38BDF8" stopOpacity="0" />
+          <stop offset="50%" stopColor="#38BDF8" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#38BDF8" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <g className="step-art-pulse" style={{ transformOrigin: "60px 90px" }}>
+        <circle cx="60" cy="90" r="6" fill="#38BDF8" />
+        <circle cx="60" cy="90" r="14" fill="none" stroke="#38BDF8" strokeOpacity="0.4" strokeWidth="1.2" />
+        <circle cx="60" cy="90" r="22" fill="none" stroke="#38BDF8" strokeOpacity="0.22" strokeWidth="1" />
+      </g>
+      <g stroke="url(#discWaveA)" strokeWidth="1.4" fill="none" strokeLinecap="round">
+        {[0, 1, 2, 3, 4, 5].map((i) => {
+          const offset = i * 22;
+          const amp = 14 + i * 2;
+          return (
+            <path
+              key={i}
+              className={`step-art-wave step-art-wave-${i}`}
+              d={`M ${90 + offset} 90 q 8 -${amp} 16 0 t 16 0`}
+              style={{ animationDelay: `${i * 0.12}s` }}
+            />
+          );
+        })}
+      </g>
+      <g fill="none" stroke="rgba(240,244,255,0.18)" strokeWidth="1">
+        {[40, 70, 100, 130].map((y) => (
+          <line key={y} x1="20" x2="300" y1={y} y2={y} strokeDasharray="2 6" />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+function BuildArt() {
+  const nodes = [
+    { x: 50, y: 50 }, { x: 50, y: 90 }, { x: 50, y: 130 },
+    { x: 160, y: 35 }, { x: 160, y: 75 }, { x: 160, y: 115 }, { x: 160, y: 155 },
+    { x: 270, y: 70 }, { x: 270, y: 110 },
+  ];
+  const links = [
+    [0, 3], [0, 4], [1, 3], [1, 4], [1, 5], [2, 5], [2, 6],
+    [3, 7], [4, 7], [4, 8], [5, 7], [5, 8], [6, 8],
+  ];
+  return (
+    <svg viewBox="0 0 320 180" className="h-full w-full" aria-hidden>
+      <g stroke="#38BDF8" strokeOpacity="0.35" strokeWidth="1">
+        {links.map(([a, b], i) => (
+          <line
+            key={i}
+            x1={nodes[a].x} y1={nodes[a].y}
+            x2={nodes[b].x} y2={nodes[b].y}
+            className={`step-art-link step-art-link-${i % 6}`}
+            strokeDasharray="120"
+            strokeDashoffset="120"
+            style={{ animationDelay: `${i * 0.06}s` }}
+          />
+        ))}
+      </g>
+      <g>
+        {nodes.map((n, i) => (
+          <g key={i}>
+            <circle cx={n.x} cy={n.y} r="8" fill="rgba(56,189,248,0.10)" />
+            <circle
+              cx={n.x} cy={n.y} r="3.5"
+              fill={i === 4 ? "#34D399" : "#38BDF8"}
+              className={`step-art-node step-art-node-${i % 5}`}
+              style={{ animationDelay: `${i * 0.12}s`, transformOrigin: `${n.x}px ${n.y}px` }}
+            />
+          </g>
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+function LaunchArt() {
+  return (
+    <svg viewBox="0 0 320 180" className="h-full w-full" aria-hidden>
+      <defs>
+        <linearGradient id="launchTrail" x1="0" x2="1" y1="1" y2="0">
+          <stop offset="0%" stopColor="#38BDF8" stopOpacity="0" />
+          <stop offset="100%" stopColor="#34D399" stopOpacity="0.95" />
+        </linearGradient>
+        <linearGradient id="launchGrid" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#34D399" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#34D399" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <g stroke="rgba(240,244,255,0.10)" strokeWidth="1">
+        {[140, 110, 80, 50].map((y) => (
+          <line key={y} x1="20" x2="300" y1={y} y2={y} strokeDasharray="2 6" />
+        ))}
+      </g>
+      <path
+        d="M 20 150 Q 90 120 150 95 T 295 25"
+        fill="none"
+        stroke="url(#launchTrail)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        className="step-art-trail"
+        strokeDasharray="400"
+        strokeDashoffset="0"
+      />
+      <path
+        d="M 20 150 Q 90 120 150 95 T 295 25 L 295 160 L 20 160 Z"
+        fill="url(#launchGrid)"
+        opacity="0.45"
+      />
+      <g className="step-art-rocket" style={{ transformOrigin: "295px 25px" }}>
+        <circle cx="295" cy="25" r="4.5" fill="#34D399" />
+        <circle cx="295" cy="25" r="9" fill="none" stroke="#34D399" strokeOpacity="0.5" strokeWidth="1" />
+      </g>
+    </svg>
+  );
+}
+
+const STEP_ART = {
+  "1": DiscoveryArt,
+  "2": BuildArt,
+  "3": LaunchArt,
+};
+
+function StepCard({ step, title, desc }) {
+  const Art = STEP_ART[step] || DiscoveryArt;
   return (
     <StaggerItem>
-      <article className="card-glow group h-full rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
+      <article className="step-card group flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-sky-400/30 hover:shadow-[0_28px_60px_-28px_rgba(56,189,248,0.32)]">
         <div className="flex items-center gap-4">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-400/10 font-display text-[15px] font-semibold tracking-tight text-sky-400">
             {step}
@@ -1505,14 +1775,60 @@ function StepCard({ step, title, desc, image }) {
           <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{title}</p>
         </div>
         <p className="mt-4 text-[14px] leading-[1.6] text-fg-muted">{desc}</p>
-        {image && (
-          <div className="mt-6 overflow-hidden rounded-xl border border-white/10 bg-ink-900">
-            <div className="aspect-[16/10]">
-              <img src={image} alt={title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
-            </div>
+        <div className="relative mt-6 overflow-hidden rounded-xl border border-white/[0.06] bg-ink-900/50">
+          <div className="absolute inset-0" style={{ background: "radial-gradient(80% 60% at 50% 100%, rgba(56,189,248,0.10) 0%, rgba(56,189,248,0) 60%)" }} aria-hidden />
+          <div className="aspect-[16/10] p-3">
+            <Art />
           </div>
-        )}
+        </div>
       </article>
+    </StaggerItem>
+  );
+}
+
+function DeliverableIcon({ kind }) {
+  const common = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" };
+  if (kind === "site") {
+    return (
+      <svg {...common} aria-hidden>
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M3 9h18" />
+        <path d="M7 6.5h.01M10 6.5h.01" />
+        <path d="M7 14h6" />
+      </svg>
+    );
+  }
+  if (kind === "ai") {
+    return (
+      <svg {...common} aria-hidden>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common} aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+
+function DeliverableCard({ icon, title, desc }) {
+  return (
+    <StaggerItem>
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-sky-400/30 hover:shadow-[0_28px_60px_-28px_rgba(56,189,248,0.32)]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-12 -right-10 h-32 w-32 rounded-full opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0) 70%)" }}
+        />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-sky-400 transition-colors duration-300 group-hover:border-sky-400/40 group-hover:bg-sky-400/10">
+          <DeliverableIcon kind={icon} />
+        </div>
+        <p className="mt-5 font-display text-[16px] font-semibold tracking-tight text-fg">{title}</p>
+        <p className="mt-2 text-[14px] leading-[1.6] text-fg-muted">{desc}</p>
+      </div>
     </StaggerItem>
   );
 }
@@ -1525,38 +1841,36 @@ function HowItWorks() {
         <SectionHeader eyebrow={t("howItWorks.section")} title={t("howItWorks.title")} description={t("howItWorks.description")} />
 
         <StaggerGroup className="mt-14 grid gap-6 md:grid-cols-3">
-          <StepCard step={t("howItWorks.discovery.step")} title={t("howItWorks.discovery.title")} desc={t("howItWorks.discovery.description")} image="/Photos/discovery-step.png" />
-          <StepCard step={t("howItWorks.buildTrain.step")} title={t("howItWorks.buildTrain.title")} desc={t("howItWorks.buildTrain.description")} image="/Photos/train-step.png" />
-          <StepCard step={t("howItWorks.launchImprove.step")} title={t("howItWorks.launchImprove.title")} desc={t("howItWorks.launchImprove.description")} image="/Photos/launch-step.png" />
+          <StepCard step={t("howItWorks.discovery.step")} title={t("howItWorks.discovery.title")} desc={t("howItWorks.discovery.description")} />
+          <StepCard step={t("howItWorks.buildTrain.step")} title={t("howItWorks.buildTrain.title")} desc={t("howItWorks.buildTrain.description")} />
+          <StepCard step={t("howItWorks.launchImprove.step")} title={t("howItWorks.launchImprove.title")} desc={t("howItWorks.launchImprove.description")} />
         </StaggerGroup>
 
-        <Reveal className="mt-16">
+        <Reveal className="mt-20">
           <h3 className="font-display text-[22px] font-semibold tracking-tight text-fg">{t("howItWorks.deliverables")}</h3>
           <p className="mt-2 text-[14.5px] text-fg-muted">{t("howItWorks.deliverablesDesc")}</p>
         </Reveal>
 
         <StaggerGroup className="mt-6 grid gap-5 md:grid-cols-3">
-          {[
-            { title: t("howItWorks.website.title"), desc: t("howItWorks.website.description") },
-            { title: t("howItWorks.aiAssistant.title"), desc: t("howItWorks.aiAssistant.description") },
-            { title: t("howItWorks.monthlySupport.title"), desc: t("howItWorks.monthlySupport.description") },
-          ].map((d) => (
-            <StaggerItem key={d.title}>
-              <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
-                <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{d.title}</p>
-                <p className="mt-2 text-[14px] leading-[1.6] text-fg-muted">{d.desc}</p>
-              </div>
-            </StaggerItem>
-          ))}
+          <DeliverableCard icon="site" title={t("howItWorks.website.title")} desc={t("howItWorks.website.description")} />
+          <DeliverableCard icon="ai" title={t("howItWorks.aiAssistant.title")} desc={t("howItWorks.aiAssistant.description")} />
+          <DeliverableCard icon="monthly" title={t("howItWorks.monthlySupport.title")} desc={t("howItWorks.monthlySupport.description")} />
         </StaggerGroup>
 
         <Reveal className="mt-14">
-          <div className="card-glow flex flex-col items-start justify-between gap-5 rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card sm:flex-row sm:items-center">
-            <div>
-              <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{t("howItWorks.cta")}</p>
-              <p className="mt-1.5 text-[14px] text-fg-muted">{t("howItWorks.ctaDesc")}</p>
+          <div className="relative overflow-hidden rounded-2xl border border-sky-400/20 bg-gradient-to-br from-sky-400/[0.06] via-ink-800/55 to-ink-800/55 p-7 shadow-[0_30px_70px_-30px_rgba(56,189,248,0.4)]">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full"
+              style={{ background: "radial-gradient(circle, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0) 65%)" }}
+            />
+            <div className="relative flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+              <div className="max-w-xl">
+                <p className="font-display text-[18px] font-semibold tracking-tight text-fg sm:text-[19px]">{t("howItWorks.cta")}</p>
+                <p className="mt-1.5 text-[14.5px] leading-[1.6] text-fg-muted">{t("howItWorks.ctaDesc")}</p>
+              </div>
+              <MagneticButton href="#contact" variant="primary">{t("pricing.paymentTerms.cta")}</MagneticButton>
             </div>
-            <MagneticButton href="#contact" variant="primary">{t("pricing.paymentTerms.cta")}</MagneticButton>
           </div>
         </Reveal>
       </Container>
@@ -1581,7 +1895,7 @@ function Portfolio() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <MagneticButton href="https://japantokmongolia.com/" variant="ghost">{t("portfolio.visitWebsite")}</MagneticButton>
+              <MagneticButton href="https://matrixecosalon.org" variant="ghost">{t("portfolio.visitWebsite")}</MagneticButton>
               <MagneticButton href="#contact" variant="primary">{t("portfolio.getDemo")}</MagneticButton>
             </div>
           </div>
@@ -1590,27 +1904,25 @@ function Portfolio() {
         <div className="mt-14 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <Reveal>
             <a
-              href="https://japantokmongolia.com/"
+              href="https://matrixecosalon.org"
               target="_blank"
               rel="noreferrer"
-              className="card-glow group block overflow-hidden rounded-2xl border border-white/10 bg-ink-800/55 p-3 shadow-card"
+              className="group block"
+              data-cursor="hover"
             >
-              <div className="overflow-hidden rounded-xl border border-white/10 bg-ink-900">
-                <div className="aspect-[16/10] overflow-hidden">
-                  <img
-                    src="/Photos/japantok-preview.png"
-                    alt="JapanTok Mongolia website preview"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
-                  />
-                </div>
+              <div className="relative">
+                <BrowserMockup url="matrixecosalon.org">
+                  <MatrixSalonPreview />
+                </BrowserMockup>
+                <FloatingChatbotBadge />
               </div>
-              <div className="flex flex-wrap items-center gap-2 px-2 pb-2 pt-4">
+              <div className="mt-5 flex flex-wrap items-center gap-2">
                 <Pill>{t("portfolio.japantok.pills.website")}</Pill>
                 <Pill>{t("portfolio.japantok.pills.chatbot")}</Pill>
                 <Pill>{t("portfolio.japantok.pills.productQA")}</Pill>
                 <Pill>{t("portfolio.japantok.pills.availability")}</Pill>
                 <span className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-sky-400">
-                  japantokmongolia.com
+                  matrixecosalon.org
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
                     <path d="M7 17 17 7" /><path d="M7 7h10v10" />
                   </svg>
@@ -1630,7 +1942,7 @@ function Portfolio() {
                   <ul className="mt-3 space-y-2 text-[13.5px] text-fg/85">
                     {[0, 1, 2].map((i) => (
                       <li key={i} className="flex gap-2.5">
-                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+                        <CheckIcon />
                         <span>{t(`portfolio.japantok.features.${i}`)}</span>
                       </li>
                     ))}
@@ -1641,7 +1953,7 @@ function Portfolio() {
                   <ul className="mt-3 space-y-2 text-[13.5px] text-fg/85">
                     {[0, 1, 2].map((i) => (
                       <li key={i} className="flex gap-2.5">
-                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+                        <CheckIcon />
                         <span>{t(`portfolio.japantok.outcomes.${i}`)}</span>
                       </li>
                     ))}
@@ -1651,7 +1963,7 @@ function Portfolio() {
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <MagneticButton href="#contact" variant="primary">{t("portfolio.japantok.buttons.requestDemo")}</MagneticButton>
-                <MagneticButton href="https://japantokmongolia.com/" variant="ghost">{t("portfolio.japantok.buttons.viewLive")}</MagneticButton>
+                <MagneticButton href="https://matrixecosalon.org" variant="ghost">{t("portfolio.japantok.buttons.viewLive")}</MagneticButton>
               </div>
             </div>
           </Reveal>
@@ -1664,32 +1976,57 @@ function Portfolio() {
 function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote }) {
   return (
     <StaggerItem>
-      <div className={["card-glow relative flex h-full flex-col rounded-2xl border bg-ink-800/55 p-6 shadow-card", primary ? "border-sky-400/40" : "border-white/10"].join(" ")}>
+      <div
+        className={[
+          "relative flex h-full flex-col overflow-hidden rounded-2xl p-6 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5",
+          primary
+            ? "border border-sky-400/55 bg-gradient-to-b from-sky-400/[0.06] to-ink-800/65 shadow-[0_0_0_1px_rgba(56,189,248,0.18),0_30px_70px_-30px_rgba(56,189,248,0.55)] hover:shadow-[0_0_0_1px_rgba(56,189,248,0.28),0_40px_80px_-30px_rgba(56,189,248,0.7)]"
+            : "border border-white/[0.08] bg-ink-800/45 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]",
+        ].join(" ")}
+      >
         {primary && (
-          <span className="absolute -top-2.5 left-6 rounded-full border border-sky-400/40 bg-sky-400/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-400 backdrop-blur">
-            Featured
-          </span>
+          <>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-px left-1/2 h-[2px] w-3/4 -translate-x-1/2 rounded-full"
+              style={{ background: "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.85) 50%, transparent 100%)" }}
+            />
+            <span className="absolute -top-2.5 left-6 rounded-full border border-sky-400/50 bg-sky-400/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-200 backdrop-blur">
+              Featured
+            </span>
+          </>
         )}
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{title}</p>
             {desc && <p className="mt-1.5 text-[13.5px] text-fg-muted">{desc}</p>}
           </div>
-          {badge && <Pill>{badge}</Pill>}
+          {badge && (
+            <span
+              className={[
+                "shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                primary
+                  ? "bg-sky-400/15 text-sky-200 ring-1 ring-inset ring-sky-400/40"
+                  : "bg-white/[0.03] text-fg-muted ring-1 ring-inset ring-white/10",
+              ].join(" ")}
+            >
+              {badge}
+            </span>
+          )}
         </div>
-        <div className="mt-6">
-          <p className="font-display text-[28px] font-semibold tracking-tightest text-fg">{priceLine}</p>
-          {subLine && <p className="mt-2 text-[13px] text-fg-muted">{subLine}</p>}
+        <div className="mt-7">
+          <p className="font-display text-[36px] font-semibold leading-none tracking-tightest text-fg sm:text-[40px]">{priceLine}</p>
+          {subLine && <p className="mt-3 text-[13px] leading-[1.55] text-fg-muted">{subLine}</p>}
         </div>
-        <ul className="mt-6 space-y-2.5 text-[13.5px] text-fg/85">
+        <ul className="mt-6 space-y-2.5 text-[13.5px] leading-[1.55] text-fg/90">
           {bullets.map((b, i) => (
-            <li key={i} className="flex gap-2.5">
-              <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+            <li key={i} className="flex items-start gap-2.5">
+              <CheckIcon />
               <span>{b}</span>
             </li>
           ))}
         </ul>
-        <div className="mt-7 pt-2">
+        <div className="mt-auto pt-7">
           <MagneticButton href="#contact" variant={primary ? "primary" : "ghost"} className="w-full">{cta}</MagneticButton>
         </div>
         {footnote && <p className="mt-4 text-[11px] leading-[1.55] text-fg-muted/80">{footnote}</p>}
@@ -1781,24 +2118,24 @@ function Pricing() {
 
         <StaggerGroup className="mt-7 grid gap-5 lg:grid-cols-2">
           <StaggerItem>
-            <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
+            <div className="rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
               <div>
-                <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{t("pricing.monthly.chatbot.title")}</p>
-                <p className="mt-1.5 text-[13.5px] text-fg-muted">{t("pricing.monthly.chatbot.description")}</p>
+                <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{t("pricing.monthly.chatbot.title")}</p>
+                <p className="mt-1.5 text-[13.5px] leading-[1.55] text-fg-muted">{t("pricing.monthly.chatbot.description")}</p>
               </div>
-              <div className="mt-5 overflow-hidden rounded-xl border border-white/10">
+              <div className="mt-5 overflow-hidden rounded-xl border border-white/[0.08]">
                 <table className="w-full text-left text-[13px]">
-                  <thead className="bg-white/[0.02]">
+                  <thead className="bg-white/[0.025]">
                     <tr>
                       <th className="px-4 py-3 font-semibold text-fg-muted">{t("pricing.monthly.chatbot.table.headers.feature")}</th>
                       <th className="px-4 py-3 font-semibold text-fg-muted">{t("pricing.monthly.chatbot.table.headers.basic")}</th>
                       <th className="px-4 py-3 font-semibold text-fg-muted">{t("pricing.monthly.chatbot.table.headers.growth")}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-white/[0.05]">
                     {["server", "dataUpdates", "support", "monitoring"].map((row) => (
-                      <tr key={row}>
-                        <td className="px-4 py-3 text-fg/85">{t(`pricing.monthly.chatbot.table.rows.${row}.feature`)}</td>
+                      <tr key={row} className="transition-colors hover:bg-white/[0.015]">
+                        <td className="px-4 py-3 text-fg/90">{t(`pricing.monthly.chatbot.table.rows.${row}.feature`)}</td>
                         <td className="px-4 py-3 text-fg/85">{t(`pricing.monthly.chatbot.table.rows.${row}.basic`)}</td>
                         <td className="px-4 py-3 text-fg/85">{t(`pricing.monthly.chatbot.table.rows.${row}.growth`)}</td>
                       </tr>
@@ -1814,28 +2151,39 @@ function Pricing() {
           </StaggerItem>
 
           <StaggerItem>
-            <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
+            <div className="rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
               <div>
-                <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{t("pricing.monthly.receptionist.title")}</p>
-                <p className="mt-1.5 text-[13.5px] text-fg-muted">{t("pricing.monthly.receptionist.description")}</p>
+                <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{t("pricing.monthly.receptionist.title")}</p>
+                <p className="mt-1.5 text-[13.5px] leading-[1.55] text-fg-muted">{t("pricing.monthly.receptionist.description")}</p>
               </div>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                {["standard", "premium"].map((tier) => (
-                  <div key={tier} className={["rounded-xl border p-5", tier === "premium" ? "border-sky-400/40 bg-sky-400/[0.04]" : "border-white/10 bg-white/[0.02]"].join(" ")}>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-display text-[15px] font-semibold tracking-tight text-fg">{t(`pricing.monthly.receptionist.${tier}.title`)}</p>
-                      <span className="font-display text-[15px] font-semibold text-fg">{t(`pricing.monthly.receptionist.${tier}.price`)}</span>
+                {["standard", "premium"].map((tier) => {
+                  const isPremium = tier === "premium";
+                  return (
+                    <div
+                      key={tier}
+                      className={[
+                        "relative overflow-hidden rounded-xl p-5 transition-colors",
+                        isPremium
+                          ? "border border-sky-400/45 bg-gradient-to-b from-sky-400/[0.06] to-transparent shadow-[0_0_0_1px_rgba(56,189,248,0.12),0_24px_50px_-24px_rgba(56,189,248,0.4)]"
+                          : "border border-white/[0.08] bg-white/[0.02]",
+                      ].join(" ")}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-display text-[15px] font-semibold tracking-tight text-fg">{t(`pricing.monthly.receptionist.${tier}.title`)}</p>
+                        <span className="font-display text-[15px] font-semibold text-fg">{t(`pricing.monthly.receptionist.${tier}.price`)}</span>
+                      </div>
+                      <ul className="mt-4 space-y-2.5 text-[13px] leading-[1.5] text-fg/90">
+                        {[0, 1, 2, 3].map((i) => (
+                          <li key={i} className="flex items-start gap-2.5">
+                            <CheckIcon />
+                            <span>{t(`pricing.monthly.receptionist.${tier}.features.${i}`)}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="mt-4 space-y-2 text-[13px] text-fg/85">
-                      {[0, 1, 2, 3].map((i) => (
-                        <li key={i} className="flex gap-2.5">
-                          <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
-                          <span>{t(`pricing.monthly.receptionist.${tier}.features.${i}`)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="mt-5 flex justify-end">
                 <MagneticButton href="#contact" variant="primary">{t("pricing.monthly.receptionist.cta")}</MagneticButton>
@@ -1845,20 +2193,22 @@ function Pricing() {
         </StaggerGroup>
 
         <Reveal className="mt-14">
-          <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card">
-            <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{t("pricing.paymentTerms.title")}</p>
-            <ul className="mt-4 space-y-2.5 text-[14px] text-fg/85">
-              {[0, 1, 2].map((i) => (
-                <li key={i} className="flex gap-2.5">
-                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-sky-400" />
-                  <span>{t(`pricing.paymentTerms.terms.${i}`)}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-[12px] text-fg-muted">{t("pricing.paymentTerms.note")}</p>
+          <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-800/45 p-7 transition-[border-color,box-shadow] duration-300 hover:border-sky-400/25 hover:shadow-[0_24px_60px_-24px_rgba(56,189,248,0.25)]">
+            <div className="grid gap-7 sm:grid-cols-[1fr_auto] sm:items-end">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">{t("pricing.paymentTerms.title")}</p>
+                <ul className="mt-5 grid gap-2.5 text-[14px] leading-[1.55] text-fg/90 sm:grid-cols-3 sm:gap-x-6">
+                  {[0, 1, 2].map((i) => (
+                    <li key={i} className="flex items-start gap-2.5">
+                      <CheckIcon />
+                      <span>{t(`pricing.paymentTerms.terms.${i}`)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <MagneticButton href="#contact" variant="primary">{t("contact.title")}</MagneticButton>
             </div>
+            <p className="mt-6 border-t border-white/[0.06] pt-5 text-[12.5px] leading-[1.55] text-fg-muted">{t("pricing.paymentTerms.note")}</p>
           </div>
         </Reveal>
       </Container>
@@ -1870,14 +2220,28 @@ function FAQItem({ question, answer }) {
   const [open, setOpen] = React.useState(false);
   return (
     <StaggerItem>
-      <div className={["card-glow rounded-2xl border bg-ink-800/55 shadow-card", open ? "border-sky-400/30" : "border-white/10"].join(" ")}>
+      <div
+        className={[
+          "rounded-2xl border bg-ink-800/45 transition-[border-color,box-shadow,background] duration-200",
+          open
+            ? "border-sky-400/35 bg-sky-400/[0.025] shadow-[0_18px_44px_-24px_rgba(56,189,248,0.32)]"
+            : "border-white/[0.08] hover:border-white/20",
+        ].join(" ")}
+      >
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="pressable flex w-full items-start justify-between gap-5 p-6 text-left"
+          aria-expanded={open}
+          className="pressable flex w-full items-start justify-between gap-5 px-5 py-4 text-left sm:px-6 sm:py-5"
+          data-cursor="hover"
         >
-          <p className="font-display text-[15.5px] font-semibold tracking-tight text-fg">{question}</p>
-          <span className={["mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-fg transition-all duration-300", open ? "rotate-45 border-sky-400/40 bg-sky-400/10 text-sky-400" : "border-white/10 bg-white/[0.03]"].join(" ")}>
+          <p className="font-display text-[15.5px] font-semibold leading-[1.4] tracking-tight text-fg">{question}</p>
+          <span
+            className={[
+              "mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-fg transition-[transform,border-color,background-color,color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              open ? "rotate-45 border-sky-400/50 bg-sky-400/10 text-sky-300" : "border-white/10 bg-white/[0.03]",
+            ].join(" ")}
+          >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14" /><path d="M5 12h14" />
             </svg>
@@ -1890,10 +2254,13 @@ function FAQItem({ question, answer }) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ height: { duration: 0.32, ease: EASE_OUT }, opacity: { duration: 0.22, ease: EASE_OUT } }}
+              transition={{
+                height: { duration: 0.24, ease: [0.16, 1, 0.3, 1] },
+                opacity: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
+              }}
               className="overflow-hidden"
             >
-              <p className="px-6 pb-6 text-[14px] leading-[1.65] text-fg-muted">{answer}</p>
+              <p className="px-5 pb-5 text-[14px] leading-[1.65] text-fg-muted sm:px-6 sm:pb-6">{answer}</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1905,23 +2272,40 @@ function FAQItem({ question, answer }) {
 function FAQ() {
   const { t } = useTranslation();
   return (
-    <section id="faq" className="relative py-28">
+    <section id="faq" className="relative py-20 md:py-24">
       <Container>
         <SectionHeader eyebrow={t("faq.section")} title={t("faq.title")} description={t("faq.description")} />
 
-        <StaggerGroup className="mt-14 grid gap-4 md:grid-cols-2">
+        <StaggerGroup className="mt-12 grid gap-3.5 md:grid-cols-2">
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <FAQItem key={n} question={t(`faq.q${n}.question`)} answer={t(`faq.q${n}.answer`)} />
           ))}
         </StaggerGroup>
 
-        <Reveal className="mt-12">
-          <div className="card-glow flex flex-col items-start justify-between gap-4 rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card sm:flex-row sm:items-center">
-            <div>
-              <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{t("faq.stillHaveQuestions")}</p>
-              <p className="mt-1.5 text-[14px] text-fg-muted">{t("faq.contactPrompt")}</p>
+        <Reveal className="mt-10">
+          <div
+            className="relative overflow-hidden rounded-2xl p-7 transition-[border-color,box-shadow] duration-300"
+            style={{
+              backgroundImage:
+                "linear-gradient(180deg, rgba(13,20,48,0.55) 0%, rgba(13,20,48,0.55) 100%), linear-gradient(135deg, rgba(56,189,248,0.55) 0%, rgba(56,189,248,0) 40%, rgba(37,99,235,0.5) 100%)",
+              backgroundOrigin: "border-box",
+              backgroundClip: "padding-box, border-box",
+              border: "1px solid transparent",
+              boxShadow: "0 30px 70px -32px rgba(56,189,248,0.4)",
+            }}
+          >
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full"
+              style={{ background: "radial-gradient(circle, rgba(56,189,248,0.2) 0%, rgba(56,189,248,0) 65%)" }}
+            />
+            <div className="relative flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+              <div className="max-w-xl">
+                <p className="font-display text-[18px] font-semibold tracking-tight text-fg sm:text-[19px]">{t("faq.stillHaveQuestions")}</p>
+                <p className="mt-1.5 text-[14.5px] leading-[1.6] text-fg-muted">{t("faq.contactPrompt")}</p>
+              </div>
+              <MagneticButton href="#contact" variant="primary">{t("faq.talkToUs")}</MagneticButton>
             </div>
-            <MagneticButton href="#contact" variant="primary">{t("faq.talkToUs")}</MagneticButton>
           </div>
         </Reveal>
       </Container>
@@ -1971,63 +2355,73 @@ function Contact() {
 
         <div className="mt-14 grid gap-7 lg:grid-cols-[1.05fr_0.95fr]">
           <Reveal>
-            <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card">
-              <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{t("contact.form.title")}</p>
-              <p className="mt-1.5 text-[14px] text-fg-muted">{t("contact.form.description")}</p>
+            <div className="rounded-2xl border border-white/[0.08] bg-ink-800/45 p-7 transition-[border-color,box-shadow] duration-300 hover:border-white/15 hover:shadow-[0_30px_70px_-30px_rgba(8,12,28,0.7)]">
+              <p className="font-display text-[18px] font-semibold tracking-tight text-fg">{t("contact.form.title")}</p>
+              <p className="mt-1.5 text-[14px] leading-[1.55] text-fg-muted">{t("contact.form.description")}</p>
 
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.nameLabel")}</label>
-                    <input name="name" required placeholder={t("contact.form.namePlaceholder")} className="field mt-2 w-full rounded-xl px-3.5 py-2.5 text-sm" />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.businessLabel")}</label>
-                    <input name="business" required placeholder={t("contact.form.businessPlaceholder")} className="field mt-2 w-full rounded-xl px-3.5 py-2.5 text-sm" />
-                  </div>
+              <form onSubmit={handleSubmit} className="mt-7 space-y-5">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.nameLabel")}</span>
+                    <input name="name" required placeholder={t("contact.form.namePlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
+                  </label>
+                  <label className="block">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.businessLabel")}</span>
+                    <input name="business" required placeholder={t("contact.form.businessPlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
+                  </label>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.phoneLabel")}</label>
-                    <input name="phone" required placeholder={t("contact.form.phonePlaceholder")} className="field mt-2 w-full rounded-xl px-3.5 py-2.5 text-sm" />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.serviceLabel")}</label>
-                    <select name="service" defaultValue="Website + AI Chatbot" className="field mt-2 w-full rounded-xl px-3.5 py-2.5 text-sm">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.phoneLabel")}</span>
+                    <input name="phone" required placeholder={t("contact.form.phonePlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
+                  </label>
+                  <label className="block">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.serviceLabel")}</span>
+                    <select name="service" defaultValue="Website + AI Chatbot" className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm">
                       <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteOnly")}</option>
                       <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteChatbot")}</option>
                       <option className="bg-ink-800">{t("contact.form.serviceOptions.chatbotOnly")}</option>
                       <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteVoice")}</option>
                       <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteBoth")}</option>
                     </select>
-                  </div>
+                  </label>
                 </div>
-                <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.messageLabel")}</label>
-                  <textarea name="message" rows={5} placeholder={t("contact.form.messagePlaceholder")} className="field mt-2 w-full rounded-xl px-3.5 py-2.5 text-sm" />
-                </div>
+                <label className="block">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.messageLabel")}</span>
+                  <textarea name="message" rows={5} placeholder={t("contact.form.messagePlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
+                </label>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <MagneticButton type="submit" variant="primary">{t("contact.form.submitButton")}</MagneticButton>
-                  <p className="text-[11.5px] leading-[1.55] text-fg-muted">{t("contact.form.consentText")}</p>
+                  <MagneticButton type="submit" variant="primary">
+                    {t("contact.form.submitButton")}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </MagneticButton>
+                  <p className="max-w-[34ch] text-[11.5px] leading-[1.55] text-fg-muted">{t("contact.form.consentText")}</p>
                 </div>
               </form>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <a href="https://www.facebook.com/profile.php?id=61586065058744" target="_blank" rel="noreferrer" className="pressable rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-white/20">
+              <div className="mt-7 flex flex-wrap gap-3 border-t border-white/[0.06] pt-5">
+                <a href="https://www.facebook.com/profile.php?id=61586065058744" target="_blank" rel="noreferrer" className="pressable inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-sky-400/30 hover:bg-sky-400/[0.04] hover:text-fg" data-cursor="hover">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M22 12a10 10 0 1 0-11.6 9.9V14.9H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3V22A10 10 0 0 0 22 12z"/></svg>
                   {t("contact.form.facebookButton")}
                 </a>
-                <a href="mailto:dalatech.ai@gmail.com" className="pressable rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-white/20">
+                <a href="mailto:dalatech.ai@gmail.com" className="pressable inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-sky-400/30 hover:bg-sky-400/[0.04] hover:text-fg" data-cursor="hover">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="m3 7 9 6 9-6" />
+                  </svg>
                   {t("contact.form.emailButton")}
                 </a>
               </div>
             </div>
           </Reveal>
 
-          <StaggerGroup className="space-y-5">
+          <StaggerGroup className="space-y-4" stagger={0.08}>
             {[1, 2, 3].map((n) => (
               <StaggerItem key={n}>
-                <div className="card-glow flex gap-5 rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] font-display text-[13px] font-semibold tracking-tight text-sky-400">
+                <div className="group flex gap-5 rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-sky-400/30 hover:shadow-[0_24px_56px_-24px_rgba(56,189,248,0.28)]">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-400/10 font-display text-[13px] font-semibold tracking-tight text-sky-400 transition-colors group-hover:border-sky-400/50 group-hover:bg-sky-400/15">
                     {String(n).padStart(2, "0")}
                   </span>
                   <div>
@@ -2038,9 +2432,17 @@ function Contact() {
               </StaggerItem>
             ))}
             <StaggerItem>
-              <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
-                <p className="font-display text-[15.5px] font-semibold tracking-tight text-fg">{t("contact.responseTime.title")}</p>
-                <p className="mt-1.5 text-[14px] leading-[1.6] text-fg-muted">{t("contact.responseTime.description")}</p>
+              <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-sky-400/[0.05] to-ink-800/45 p-6">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-400/10 text-sky-400">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 7v5l3 2" />
+                    </svg>
+                  </span>
+                  <p className="font-display text-[15.5px] font-semibold tracking-tight text-fg">{t("contact.responseTime.title")}</p>
+                </div>
+                <p className="mt-3 text-[14px] leading-[1.6] text-fg-muted">{t("contact.responseTime.description")}</p>
               </div>
             </StaggerItem>
           </StaggerGroup>
@@ -2066,20 +2468,128 @@ function Chatbot() {
   return null;
 }
 
-function Footer({ onOpenPrivacy }) {
+function FooterColumn({ heading, links }) {
   return (
-    <footer className="relative border-t border-white/5 py-10">
-      <Container>
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3 text-[13px] text-fg-muted">
-            <BrandLockup size={40} />
-            <span className="text-fg-muted/80">© {new Date().getFullYear()}</span>
+    <div>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted/80">{heading}</p>
+      <ul className="mt-4 space-y-2.5">
+        {links.map((l) => (
+          <li key={l.label}>
+            {l.onClick ? (
+              <button
+                type="button"
+                onClick={l.onClick}
+                className="text-[13.5px] text-fg/85 transition-colors duration-200 hover:text-sky-300"
+                data-cursor="hover"
+              >
+                {l.label}
+              </button>
+            ) : (
+              <a
+                href={l.href}
+                {...(l.external ? { target: "_blank", rel: "noreferrer" } : {})}
+                className="text-[13.5px] text-fg/85 transition-colors duration-200 hover:text-sky-300"
+                data-cursor="hover"
+              >
+                {l.label}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Footer({ onOpenPrivacy }) {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+
+  const services = [
+    { label: t("nav.features"), href: "#features" },
+    { label: t("nav.howItWorks"), href: "#how" },
+    { label: t("nav.capabilities"), href: "#bento" },
+    { label: t("nav.pricing"), href: "#pricing" },
+  ];
+  const company = [
+    { label: t("nav.portfolio"), href: "#portfolio" },
+    { label: t("nav.process"), href: "#process" },
+    { label: t("nav.location"), href: "#location" },
+    { label: t("nav.contact"), href: "#contact" },
+  ];
+  const legal = [
+    { label: t("footer.privacy"), onClick: onOpenPrivacy },
+    { label: t("nav.faq"), href: "#faq" },
+  ];
+
+  return (
+    <footer
+      className="relative"
+      style={{ borderTop: "1px solid rgba(56,189,248,0.15)" }}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{ background: "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.55) 50%, transparent 100%)" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -top-32 h-32"
+        style={{ background: "radial-gradient(50% 100% at 50% 100%, rgba(56,189,248,0.10) 0%, rgba(56,189,248,0) 70%)" }}
+      />
+      <motion.div
+        initial={reduced ? false : { opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={SPRING_REVEAL}
+      >
+        <Container className="pt-16 pb-10">
+          <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+            <div>
+              <BrandLockup size={40} />
+              <p className="mt-5 max-w-[34ch] text-[14px] leading-[1.6] text-fg-muted">
+                {t("footer.tagline")}
+              </p>
+              <div className="mt-6 flex items-center gap-2.5">
+                <a
+                  href="https://www.facebook.com/profile.php?id=61586065058744"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="DalaTech on Facebook"
+                  data-cursor="hover"
+                  className="pressable flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.02] text-fg-muted transition-[border-color,color,background-color] duration-200 hover:border-sky-400/40 hover:bg-sky-400/[0.06] hover:text-sky-300"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <path d="M22 12a10 10 0 1 0-11.6 9.9V14.9H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3V22A10 10 0 0 0 22 12z" />
+                  </svg>
+                </a>
+                <a
+                  href="mailto:bilguunbilly0214@gmail.com"
+                  aria-label="Email DalaTech"
+                  data-cursor="hover"
+                  className="pressable inline-flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-[12.5px] font-medium text-fg/85 transition-[border-color,color,background-color] duration-200 hover:border-sky-400/40 hover:bg-sky-400/[0.06] hover:text-sky-300"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="m3 7 9 6 9-6" />
+                  </svg>
+                  bilguunbilly0214@gmail.com
+                </a>
+              </div>
+            </div>
+            <FooterColumn heading={t("footer.services")} links={services} />
+            <FooterColumn heading={t("footer.company")} links={company} />
+            <FooterColumn heading={t("footer.legal")} links={legal} />
           </div>
-          <button type="button" onClick={onOpenPrivacy} className="text-[13px] text-fg-muted transition-colors hover:text-fg">
-            Privacy &amp; Terms
-          </button>
-        </div>
-      </Container>
+
+          <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-white/[0.05] pt-6 sm:flex-row sm:items-center">
+            <p className="text-[12.5px] text-fg-muted">
+              © {new Date().getFullYear()} DalaTech. {t("footer.rightsReserved")}
+            </p>
+            <p className="text-[12.5px] text-fg-muted/80">{t("footer.builtIn")}</p>
+          </div>
+        </Container>
+      </motion.div>
     </footer>
   );
 }

@@ -114,23 +114,23 @@
       "pills": {
         "website": "網站",
         "chatbot": "AI 聊天機器人",
-        "productQA": "產品問答",
-        "availability": "24/7 即時回應"
+        "productQA": "QPay",
+        "availability": "線上預約"
       },
       "link": "連結：",
-      "title": "JapanTok Mongolia — AI 輔助產品客服",
-      "description": "我們建立了一個現代化網站，並整合了根據業務產品清單和常見客戶問題訓練的 AI 聊天機器人。目標是幫助客戶快速找到資訊，並減少重複性客服工作。",
+      "title": "Matrix Eco Salon：現代環保美髮體驗",
+      "description": "我們為 Matrix Eco Salon 打造了一個契合環保品牌的現代化網站，內建線上預約、QPay 金流整合與 AI 聊天機器人。客戶可隨時自行預約，員工也能減少重複的電話應對。",
       "whatWeBuilt": "我們建置了什麼",
       "features": [
-        "企業網站（適合行動裝置）",
-        "根據產品／常見問題訓練的 AI 聊天機器人",
-        "針對產品諮詢的對話流程"
+        "現代環保美髮網站",
+        "線上預約系統",
+        "QPay 金流與 AI 聊天機器人整合"
       ],
       "idealOutcomes": "預期成效",
       "outcomes": [
-        "為客戶提供更快速的解答",
-        "減少員工處理重複問題的工作量",
-        "透過網站獲取更多潛在客戶"
+        "24/7 線上預約",
+        "減少員工重複性接聽",
+        "預約與付款一站完成"
       ],
       "buttons": {
         "requestDemo": "申請試用示範",
@@ -316,7 +316,7 @@
       "nameLabel": "您的姓名",
       "namePlaceholder": "例如：王小明",
       "businessLabel": "企業名稱",
-      "businessPlaceholder": "例如：JapanTok Mongolia",
+      "businessPlaceholder": "例如：Matrix Eco Salon",
       "phoneLabel": "電話",
       "phonePlaceholder": "例如：9999-9999",
       "serviceLabel": "感興趣的服務",
@@ -418,6 +418,15 @@
     "city": "烏蘭巴托",
     "country": "蒙古",
     "tagline": "以世界級的技術，服務蒙古在地的企業。"
+  },
+  "footer": {
+    "tagline": "於蒙古打造的 AI 驅動網站、聊天機器人與語音助理，以世界級的標準交付。",
+    "services": "服務",
+    "company": "公司",
+    "legal": "法律",
+    "privacy": "隱私權與服務條款",
+    "rightsReserved": "保留一切權利。",
+    "builtIn": "誕生於烏蘭巴托"
   },
   "process": {
     "section": "工作流程",
