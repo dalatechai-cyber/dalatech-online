@@ -1,7 +1,7 @@
 {
   "nav": {
     "brand": "DalaTech",
-    "features": "Features",
+    "features": "Services",
     "howItWorks": "How it works",
     "portfolio": "Portfolio",
     "pricing": "Pricing",
@@ -12,7 +12,7 @@
   "hero": {
     "badge": "AI-powered websites for businesses",
     "title": "Professional websites with AI chatbots and voice agents.",
-    "description": "Automate repetitive customer questions, respond instantly 24/7, and reduce workload — without adding staff. Built for small to medium-sized businesses and growing teams.",
+    "description": "Automate repetitive customer questions, respond instantly 24/7, and reduce workload without adding staff. Built for small and mid-sized businesses, and growing teams.",
     "buttons": {
       "getDemo": "Get a free demo",
       "seeWork": "See our work"
@@ -20,9 +20,9 @@
     "tech": "Built with modern technology"
   },
   "features": {
-    "section": "FEATURES",
+    "section": "SERVICES",
     "title": "Everything you need to automate customer communication",
-    "description": "We build modern websites with integrated AI that handle common questions, product inquiries, and basic support — so your team can focus on what matters.",
+    "description": "We build modern websites with integrated AI that handle common questions, product inquiries, and basic support, so your team can focus on what matters.",
     "chatbot": {
       "title": "Website + AI Chatbot",
       "badge": "Most popular",
@@ -67,7 +67,7 @@
   "howItWorks": {
     "section": "HOW IT WORKS",
     "title": "Simple setup. Fast launch. Ongoing optimization.",
-    "description": "We keep the process straightforward so you can start seeing results quickly — without technical headaches.",
+    "description": "A straightforward process so you can see results quickly, without the technical headaches.",
     "discovery": {
       "step": "1",
       "title": "Discovery",
@@ -114,8 +114,8 @@
         "availability": "24/7 Responses"
       },
       "link": "Link:",
-      "title": "JapanTok Mongolia — AI-assisted product support",
-      "description": "We built a modern website and integrated an AI chatbot trained on the business's product list and common customer questions. The goal is to help customers find information quickly and reduce repetitive support work.",
+      "title": "JapanTok Mongolia, AI-assisted product support",
+      "description": "We built a modern website and integrated an AI chatbot trained on the business's product catalog and common customer questions. The result: customers find information faster, and the team is freed from repetitive support work.",
       "whatWeBuilt": "What we built",
       "features": [
         "Business website (mobile-friendly)",
@@ -137,7 +137,7 @@
   "pricing": {
     "section": "PRICE QUOTE",
     "title": "Simple pricing, clear value",
-    "description": "One-time website and AI setup, plus a monthly AI usage fee. No hidden costs.",
+    "description": "A one-time fee for website and AI setup, plus a monthly AI usage fee. No hidden costs.",
     "oneTimeSetup": "One-time setup",
     "promoBadge": "Valid for 7 days",
     "cards": {
@@ -160,7 +160,7 @@
         "badge": "50% OFF",
         "price": "195,000₮",
         "subLine": "Facebook Messenger • Trained on your business info • 24/7 replies",
-        "description": "Automate customer questions with a trained chatbot.",
+        "description": "Automate customer questions with a chatbot trained on your business.",
         "bullets": [
           "Facebook Messenger connection",
           "Trained on your business info",
@@ -173,7 +173,7 @@
         "badge": "One-time",
         "price": "590,000₮",
         "subLine": "24/7 phone answering • Appointment booking • Voice AI trained on your info",
-        "description": "A voice agent that answers calls and handles basic workflows.",
+        "description": "A voice agent that answers calls and handles routine workflows.",
         "bullets": [
           "Answers phone calls 24/7",
           "Appointment booking & scheduling",
@@ -199,8 +199,8 @@
       "title": "Monthly packages",
       "description": "Monthly plans cover server/API costs and ongoing support.",
       "chatbot": {
-        "title": "AI Chatbot — Monthly plans",
-        "description": "Basic for stable info, Growth for frequently changing promos/prices.",
+        "title": "AI Chatbot, monthly plans",
+        "description": "Basic for stable info; Growth for frequently changing promotions and prices.",
         "table": {
           "headers": {
             "feature": "Feature",
@@ -234,8 +234,8 @@
         "cta": "Ask about chatbot plans"
       },
       "receptionist": {
-        "title": "AI Receptionist — Monthly plans",
-        "description": "Standard for essentials, Premium for fine-tuning + analytics.",
+        "title": "AI Receptionist, monthly plans",
+        "description": "Standard for essentials; Premium for fine-tuning and analytics.",
         "standard": {
           "title": "Standard",
           "price": "120,000₮ / mo",
@@ -264,7 +264,7 @@
       "terms": [
         "50% upfront when the contract is signed",
         "50% after completion and handover",
-        "Delivery: within 7–10 working days from start"
+        "Delivery: within 7 to 10 working days from start"
       ],
       "note": "Want a tailored quote? Tell us your business type and what you want to automate.",
       "cta": "Get a free demo"
@@ -296,7 +296,7 @@
     },
     "q6": {
       "question": "How long does setup take?",
-      "answer": "Website delivery usually takes 7–10 days. AI setup and training are completed alongside the website build."
+      "answer": "Website delivery usually takes 7 to 10 days. AI setup and training are completed alongside the website build."
     },
     "stillHaveQuestions": "Still have questions?",
     "contactPrompt": "We're happy to explain everything in a short call or demo.",
@@ -305,7 +305,7 @@
   "contact": {
     "sectionLabel": "CONTACT",
     "title": "Get a free demo",
-    "description": "Tell us about your business and we'll recommend the simplest setup that saves time and reduces repetitive work.",
+    "description": "Tell us about your business. We'll recommend the simplest setup that saves time and reduces repetitive work.",
     "form": {
       "title": "Request a demo",
       "description": "Fill this out and we'll get back to you shortly.",

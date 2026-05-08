@@ -16,12 +16,24 @@ const EASE_OUT = [0.16, 1, 0.3, 1];
 const SPRING_REVEAL = { type: "spring", stiffness: 110, damping: 22, mass: 0.6 };
 const SPRING_HEADLINE = { type: "spring", stiffness: 140, damping: 18, mass: 0.55 };
 
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 220, damping: 32, mass: 0.4 });
+  return (
+    <motion.div
+      aria-hidden
+      style={{ scaleX, transformOrigin: "0% 50%", backgroundColor: "#38BDF8" }}
+      className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[2px]"
+    />
+  );
+}
+
 function CustomCursor() {
   const reduced = useReducedMotion();
   const x = useMotionValue(-100);
   const y = useMotionValue(-100);
-  const sx = useSpring(x, { stiffness: 380, damping: 32, mass: 0.4 });
-  const sy = useSpring(y, { stiffness: 380, damping: 32, mass: 0.4 });
+  const sx = useSpring(x, { stiffness: 200, damping: 28, mass: 0.5 });
+  const sy = useSpring(y, { stiffness: 200, damping: 28, mass: 0.5 });
   const [hover, setHover] = React.useState(false);
   const [visible, setVisible] = React.useState(false);
 
@@ -65,16 +77,26 @@ function CustomCursor() {
     <>
       <motion.div
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[100001] hidden h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fg md:block"
-        style={{ x, y, opacity: visible ? 1 : 0, scale: hover ? 0.5 : 1 }}
-        transition={{ scale: { type: "spring", stiffness: 300, damping: 25 } }}
-      />
+        className="pointer-events-none fixed left-0 top-0 z-[100001] hidden md:block"
+        style={{ x, y, opacity: visible ? 1 : 0 }}
+      >
+        <motion.div
+          className="h-2 w-2 rounded-full bg-fg"
+          style={{ x: "-50%", y: "-50%", scale: hover ? 0.5 : 1 }}
+          transition={{ scale: { type: "spring", stiffness: 300, damping: 25 } }}
+        />
+      </motion.div>
       <motion.div
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[100000] hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-sky-400/60 mix-blend-difference md:block"
-        style={{ x: sx, y: sy, opacity: visible ? 1 : 0, scale: hover ? 1.6 : 1 }}
-        transition={{ scale: { type: "spring", stiffness: 220, damping: 20 } }}
-      />
+        className="pointer-events-none fixed left-0 top-0 z-[100000] hidden md:block"
+        style={{ x: sx, y: sy, opacity: visible ? 1 : 0 }}
+      >
+        <motion.div
+          className="h-9 w-9 rounded-full border border-sky-400/60 mix-blend-difference"
+          style={{ x: "-50%", y: "-50%", scale: hover ? 1.6 : 1 }}
+          transition={{ scale: { type: "spring", stiffness: 220, damping: 20 } }}
+        />
+      </motion.div>
     </>
   );
 }
@@ -275,19 +297,42 @@ function Pill({ children }) {
   );
 }
 
+function BrandLockup({ size = 32 }) {
+  return (
+    <span className="flex items-center gap-2.5">
+      <img
+        src="/dalatech_logo.jpg"
+        alt=""
+        aria-hidden="true"
+        style={{ height: size, width: size, filter: "brightness(0) invert(1)" }}
+        className="block object-contain"
+      />
+      <span
+        className="font-display text-[18px] font-bold text-fg"
+        style={{ letterSpacing: "-0.02em", color: "#F0F4FF" }}
+      >
+        DalaTech
+      </span>
+    </span>
+  );
+}
+
 function NavLink({ children, href, active, onClick }) {
   return (
     <a
       href={href}
       onClick={onClick}
-      className="relative px-1 py-1 text-sm font-medium text-fg-muted transition-colors duration-200 hover:text-fg"
+      className={[
+        "relative px-1 py-2 text-[14px] font-medium transition-colors duration-200",
+        active ? "text-[#38BDF8]" : "text-fg-muted hover:text-fg",
+      ].join(" ")}
       data-cursor="hover"
     >
-      <span className={active ? "text-fg" : ""}>{children}</span>
+      <span>{children}</span>
       {active && (
         <motion.span
           layoutId="nav-underline"
-          className="absolute -bottom-1 left-0 h-px w-full bg-gradient-to-r from-sky-400/0 via-sky-400 to-sky-400/0"
+          className="absolute -bottom-0.5 left-0 right-0 h-[2px] bg-[#38BDF8]"
           transition={{ type: "spring", stiffness: 350, damping: 30 }}
         />
       )}
@@ -300,6 +345,8 @@ const LANGUAGES = [
   { code: "mn", label: "Монгол" },
   { code: "zh-TW", label: "繁體中文" },
 ];
+
+const NAV_ITEMS = ["features", "portfolio", "pricing", "how", "contact"];
 
 function Navbar() {
   const { t, i18n } = useTranslation();
@@ -327,7 +374,7 @@ function Navbar() {
   React.useEffect(() => {
     const ids = ["features", "how", "portfolio", "pricing", "faq", "contact"];
     const onScroll = () => {
-      setScrolled(window.scrollY > 12);
+      setScrolled(window.scrollY > 60);
       const y = window.scrollY + 140;
       let cur = "features";
       for (const id of ids) {
@@ -342,6 +389,13 @@ function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  React.useEffect(() => {
+    if (!mobileOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [mobileOpen]);
+
   const scrollToId = (id) => (e) => {
     e.preventDefault();
     setMobileOpen(false);
@@ -352,36 +406,45 @@ function Navbar() {
     setActive(id);
   };
 
+  const navLabel = (id) => id === "how" ? t("nav.howItWorks") : t(`nav.${id}`);
+
   return (
     <motion.header
       initial={{ y: -16, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ ...SPRING_REVEAL, delay: 0.05 }}
-      className={[
-        "fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color,padding] duration-300",
+      style={
         scrolled
-          ? "bg-ink-950/65 backdrop-blur-xl border-b border-white/5"
-          : "bg-transparent border-b border-transparent",
-      ].join(" ")}
+          ? {
+              backgroundColor: "rgba(5,10,24,0.85)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              borderBottom: "1px solid rgba(56,189,248,0.20)",
+            }
+          : {
+              backgroundColor: "transparent",
+              borderBottom: "1px solid transparent",
+            }
+      }
+      className="fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color,padding] duration-300"
     >
-      <Container>
+      <div className="mx-auto w-full max-w-7xl px-5 sm:px-7 lg:px-10">
         <div className={["flex items-center justify-between transition-all duration-300", scrolled ? "h-14" : "h-20"].join(" ")}>
-          <a href="#top" className="flex items-center gap-2.5" data-cursor="hover">
-            <span className="relative inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg ring-1 ring-white/10">
-              <img src="/Photos/dalatech-logo.png" alt="DalaTech" className="h-full w-full object-cover" />
-            </span>
-            <span className="font-display text-[15px] font-semibold tracking-tight text-fg">
-              {t("nav.brand")}
-            </span>
+          <a href="#top" className="flex shrink-0 items-center" data-cursor="hover" aria-label="DalaTech home">
+            <BrandLockup size={32} />
           </a>
 
-          <nav className="hidden items-center gap-7 md:flex">
-            <NavLink href="#features" active={active === "features"} onClick={scrollToId("features")}>{t("nav.features")}</NavLink>
-            <NavLink href="#how" active={active === "how"} onClick={scrollToId("how")}>{t("nav.howItWorks")}</NavLink>
-            <NavLink href="#portfolio" active={active === "portfolio"} onClick={scrollToId("portfolio")}>{t("nav.portfolio")}</NavLink>
-            <NavLink href="#pricing" active={active === "pricing"} onClick={scrollToId("pricing")}>{t("nav.pricing")}</NavLink>
-            <NavLink href="#faq" active={active === "faq"} onClick={scrollToId("faq")}>{t("nav.faq")}</NavLink>
-            <NavLink href="#contact" active={active === "contact"} onClick={scrollToId("contact")}>{t("nav.contact")}</NavLink>
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
+            {NAV_ITEMS.map((id) => (
+              <NavLink
+                key={id}
+                href={`#${id}`}
+                active={active === id}
+                onClick={scrollToId(id)}
+              >
+                {navLabel(id)}
+              </NavLink>
+            ))}
           </nav>
 
           <div className="flex items-center gap-2.5">
@@ -430,12 +493,13 @@ function Navbar() {
 
             <button
               type="button"
-              onClick={() => setMobileOpen((o) => !o)}
+              onClick={() => setMobileOpen(true)}
               className="pressable flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-fg md:hidden"
-              aria-label="Toggle menu"
+              aria-label="Open menu"
+              aria-expanded={mobileOpen}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {mobileOpen ? <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></> : <><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></>}
+                <path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" />
               </svg>
             </button>
 
@@ -449,54 +513,92 @@ function Navbar() {
             </div>
           </div>
         </div>
-      </Container>
+      </div>
 
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: EASE_OUT }}
-            className="md:hidden border-t border-white/5 bg-ink-950/95 backdrop-blur-xl overflow-hidden"
+            key="mobile-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: EASE_OUT }}
+            className="fixed inset-0 z-[100] flex flex-col bg-ink-950/98 backdrop-blur-xl md:hidden"
+            style={{ backgroundColor: "rgba(5,10,24,0.98)" }}
           >
-            <Container>
-              <nav className="flex flex-col gap-1 py-4">
-                {[
-                  ["features", t("nav.features")],
-                  ["how", t("nav.howItWorks")],
-                  ["portfolio", t("nav.portfolio")],
-                  ["pricing", t("nav.pricing")],
-                  ["faq", t("nav.faq")],
-                  ["contact", t("nav.contact")],
-                ].map(([id, label]) => (
-                  <a
-                    key={id}
-                    href={`#${id}`}
-                    onClick={scrollToId(id)}
-                    className="rounded-lg px-3 py-2.5 text-base font-medium text-fg-muted hover:bg-white/[0.03] hover:text-fg"
+            <div className="flex items-center justify-between px-5 pt-5 sm:px-7">
+              <a href="#top" onClick={scrollToId("top")} className="flex items-center" aria-label="DalaTech home">
+                <BrandLockup size={32} />
+              </a>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="pressable flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-fg"
+                aria-label="Close menu"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <motion.nav
+              initial="hidden"
+              animate="show"
+              variants={{
+                hidden: {},
+                show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
+              }}
+              className="flex flex-1 flex-col justify-center gap-2 px-5 sm:px-7"
+            >
+              {NAV_ITEMS.map((id) => (
+                <motion.a
+                  key={id}
+                  href={`#${id}`}
+                  onClick={scrollToId(id)}
+                  variants={{
+                    hidden: { opacity: 0, y: 24 },
+                    show: { opacity: 1, y: 0, transition: SPRING_REVEAL },
+                  }}
+                  className={[
+                    "block py-1 font-display font-semibold tracking-tight transition-colors",
+                    active === id ? "text-[#38BDF8]" : "text-fg hover:text-[#38BDF8]",
+                  ].join(" ")}
+                  style={{ fontSize: "48px", lineHeight: 1.05, letterSpacing: "-0.02em" }}
+                >
+                  {navLabel(id)}
+                </motion.a>
+              ))}
+            </motion.nav>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0, transition: { delay: 0.4, ...SPRING_REVEAL } }}
+              className="px-5 pb-8 sm:px-7"
+            >
+              <div className="mb-4 flex flex-wrap gap-2">
+                {LANGUAGES.map(({ code, label }) => (
+                  <button
+                    key={code}
+                    onClick={() => changeLanguage(code)}
+                    className={[
+                      "rounded-full border px-3.5 py-1.5 text-xs font-medium",
+                      i18n.language === code
+                        ? "border-[#38BDF8]/50 bg-[#38BDF8]/10 text-[#38BDF8]"
+                        : "border-white/10 text-fg-muted",
+                    ].join(" ")}
                   >
                     {label}
-                  </a>
+                  </button>
                 ))}
-                <div className="mt-2 flex items-center gap-2 px-3">
-                  {LANGUAGES.map(({ code, label }) => (
-                    <button
-                      key={code}
-                      onClick={() => changeLanguage(code)}
-                      className={[
-                        "rounded-full border px-3 py-1.5 text-xs",
-                        i18n.language === code
-                          ? "border-sky-400/40 bg-sky-400/10 text-fg"
-                          : "border-white/10 text-fg-muted",
-                      ].join(" ")}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </nav>
-            </Container>
+              </div>
+              <MagneticButton href="#contact" variant="primary" onClick={(e) => { scrollToId("contact")(e); }}>
+                {t("nav.getDemo")}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
+              </MagneticButton>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -709,18 +811,19 @@ function FeatureCard({ index, title, subtitle, bullets, badge, image }) {
 }
 
 function StatCard({ label, value }) {
-  const m = value.match(/\d+/);
-  const num = m ? m[0] : "0";
-  const before = value.slice(0, value.indexOf(num));
-  const after = value.slice(value.indexOf(num) + num.length);
+  const hasLetters = /\p{L}/u.test(value);
+  const pureNumeric = /^\d+$/.test(value);
+
   return (
     <StaggerItem>
       <div className="card-glow rounded-2xl border border-white/10 bg-ink-800/55 p-6 shadow-card">
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{label}</p>
         <p className="mt-3 font-display text-[36px] font-semibold tracking-tightest text-fg">
-          {before}
-          <CountUp to={parseInt(num, 10) || 0} />
-          {after}
+          {pureNumeric && !hasLetters ? (
+            <CountUp to={parseInt(value, 10) || 0} />
+          ) : (
+            <span>{value}</span>
+          )}
         </p>
       </div>
     </StaggerItem>
@@ -1337,14 +1440,12 @@ function Footer({ onOpenPrivacy }) {
     <footer className="relative border-t border-white/5 py-10">
       <Container>
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2.5 text-[13px] text-fg-muted">
-            <span className="inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-md ring-1 ring-white/10">
-              <img src="/Photos/dalatech-logo.png" alt="DalaTech" className="h-full w-full object-cover" />
-            </span>
-            {new Date().getFullYear()} DalaTech.
+          <div className="flex items-center gap-3 text-[13px] text-fg-muted">
+            <BrandLockup size={32} />
+            <span className="text-fg-muted/80">© {new Date().getFullYear()}</span>
           </div>
           <button type="button" onClick={onOpenPrivacy} className="text-[13px] text-fg-muted transition-colors hover:text-fg">
-            Privacy & Terms
+            Privacy &amp; Terms
           </button>
         </div>
       </Container>
@@ -1451,6 +1552,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-ink-950 text-fg">
+      <ScrollProgress />
       <CustomCursor />
       <Navbar />
       <main>
