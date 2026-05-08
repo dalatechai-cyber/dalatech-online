@@ -4,60 +4,9 @@ import * as THREE from "three";
 const ULAANBAATAR = { lat: 47.9077, lng: 106.8832 };
 
 const ACCENT_HEX = 0x38bdf8;
-const LAND_HEX = 0x3b82f6;
-const OCEAN_HEX = 0x0c1a3a;
-const ATMO_COLOR = new THREE.Color(0x38bdf8);
-
 const GLOBE_RADIUS = 1.4;
-
-const LAND_MASK = [
-  "........................................................................",
-  "........................................................................",
-  ".........................###############...............................",
-  ".................#####################################.................",
-  ".................############################################..........",
-  "...........#######################################################......",
-  "..........###################################..######################...",
-  ".........###################################......##########..########..",
-  ".........#################################........###########..#######..",
-  "...........#############################...........###############......",
-  "..............########################..............#############.......",
-  ".............#######################.................##########........#",
-  ".............######################...................#########........#",
-  "............#####################......................########........",
-  "............####################........................######.........",
-  "...........###################...........................####..........",
-  "...........#################..............................####.........",
-  "...........###############.................................###.........",
-  "...........#############....................................##.........",
-  "............#########.........................................#........",
-  ".............########..........................................#.......",
-  ".............######.............................................#......",
-  "..............#####.............................................##.....",
-  "...............####..............................................###...",
-  "................###...............................................##...",
-  "................##.................................................#...",
-  ".................#......................................................",
-  ".................#......................................................",
-  "..................#.....................................................",
-  "...................#....................................................",
-  ".....................###################................................",
-  "....................########################...........................",
-  "..................############################.........................",
-  "................################################.......................",
-  "...........#######################################.....................",
-  "........................................................................",
-];
-
-function isLand(lat, lng) {
-  const rows = LAND_MASK.length;
-  const cols = LAND_MASK[0].length;
-  const rowF = ((90 - lat) / 180) * rows;
-  const colF = ((lng + 180) / 360) * cols;
-  const row = Math.max(0, Math.min(rows - 1, Math.floor(rowF)));
-  const col = Math.max(0, Math.min(cols - 1, Math.floor(colF)));
-  return LAND_MASK[row][col] === "#";
-}
+const EARTH_TEXTURE_URL =
+  "https://unpkg.com/three-globe/example/img/earth-night.jpg";
 
 function latLngToVector3(lat, lng, radius) {
   const phi = (90 - lat) * (Math.PI / 180);
@@ -67,66 +16,6 @@ function latLngToVector3(lat, lng, radius) {
     radius * Math.cos(phi),
     radius * Math.sin(phi) * Math.sin(theta)
   );
-}
-
-function buildDotGeometry() {
-  const N = 5800;
-  const phi = Math.PI * (3 - Math.sqrt(5));
-  const positions = new Float32Array(N * 3);
-  const colors = new Float32Array(N * 3);
-  const land = new THREE.Color(LAND_HEX);
-  const ocean = new THREE.Color(OCEAN_HEX);
-  const surfaceR = GLOBE_RADIUS * 1.005;
-
-  for (let i = 0; i < N; i++) {
-    const y = 1 - (i / (N - 1)) * 2;
-    const r = Math.sqrt(1 - y * y);
-    const t = phi * i;
-    const x = Math.cos(t) * r;
-    const z = Math.sin(t) * r;
-
-    positions[i * 3] = x * surfaceR;
-    positions[i * 3 + 1] = y * surfaceR;
-    positions[i * 3 + 2] = z * surfaceR;
-
-    const lat = Math.asin(y) * (180 / Math.PI);
-    const lng = Math.atan2(z, x) * (180 / Math.PI);
-    const c = isLand(lat, lng) ? land : ocean;
-    colors[i * 3] = c.r;
-    colors[i * 3 + 1] = c.g;
-    colors[i * 3 + 2] = c.b;
-  }
-
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-  return geo;
-}
-
-function makeAtmosphereMaterial() {
-  return new THREE.ShaderMaterial({
-    uniforms: { uColor: { value: ATMO_COLOR } },
-    vertexShader: `
-      varying vec3 vNormal;
-      void main() {
-        vNormal = normalize(normalMatrix * normal);
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
-    fragmentShader: `
-      uniform vec3 uColor;
-      varying vec3 vNormal;
-      void main() {
-        float rim = max(0.0, 0.48 - dot(vNormal, vec3(0.0, 0.0, 1.0)));
-        float intensity = pow(rim, 5.5) * 0.55;
-        gl_FragColor = vec4(uColor, 1.0) * intensity;
-      }
-    `,
-    blending: THREE.AdditiveBlending,
-    side: THREE.BackSide,
-    transparent: true,
-    depthWrite: false,
-  });
 }
 
 export default function Globe({ className = "", reducedMotion = false }) {
@@ -156,22 +45,44 @@ export default function Globe({ className = "", reducedMotion = false }) {
     renderer.domElement.style.display = "block";
     mount.appendChild(renderer.domElement);
 
+    const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+    scene.add(ambient);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    dirLight.position.set(-5, 2, 3);
+    scene.add(dirLight);
+
     const globeGroup = new THREE.Group();
     globeGroup.rotation.z = 0.32;
     globeGroup.rotation.y = -1.85;
     scene.add(globeGroup);
 
-    const dotsGeo = buildDotGeometry();
-    const dotsMat = new THREE.PointsMaterial({
-      size: 0.024,
-      sizeAttenuation: true,
-      vertexColors: true,
+    const earthGeo = new THREE.SphereGeometry(GLOBE_RADIUS, 64, 64);
+    const earthMat = new THREE.MeshPhongMaterial({
+      color: 0xffffff,
+      shininess: 6,
+    });
+    const earth = new THREE.Mesh(earthGeo, earthMat);
+    globeGroup.add(earth);
+
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin("anonymous");
+    loader.load(EARTH_TEXTURE_URL, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      earthMat.map = tex;
+      earthMat.needsUpdate = true;
+    });
+
+    const atmoGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.025, 64, 64);
+    const atmoMat = new THREE.MeshPhongMaterial({
+      color: 0x38bdf8,
       transparent: true,
-      opacity: 0.95,
+      opacity: 0.08,
+      side: THREE.BackSide,
       depthWrite: false,
     });
-    const dots = new THREE.Points(dotsGeo, dotsMat);
-    globeGroup.add(dots);
+    const atmo = new THREE.Mesh(atmoGeo, atmoMat);
+    globeGroup.add(atmo);
 
     const pinPos = latLngToVector3(
       ULAANBAATAR.lat,
@@ -208,11 +119,6 @@ export default function Globe({ className = "", reducedMotion = false }) {
     ring.position.copy(pinPos);
     ring.lookAt(pinPos.clone().multiplyScalar(2));
     globeGroup.add(ring);
-
-    const atmoGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.06, 64, 64);
-    const atmoMat = makeAtmosphereMaterial();
-    const atmo = new THREE.Mesh(atmoGeo, atmoMat);
-    scene.add(atmo);
 
     let speed = reducedMotion ? 0 : 0.0021;
     const baseSpeed = reducedMotion ? 0 : 0.0021;
@@ -267,16 +173,17 @@ export default function Globe({ className = "", reducedMotion = false }) {
         mount.removeChild(renderer.domElement);
       }
 
-      dotsGeo.dispose();
-      dotsMat.dispose();
+      earthGeo.dispose();
+      if (earthMat.map) earthMat.map.dispose();
+      earthMat.dispose();
+      atmoGeo.dispose();
+      atmoMat.dispose();
       pinGeo.dispose();
       pinMat.dispose();
       haloGeo.dispose();
       haloMat.dispose();
       ringGeo.dispose();
       ringMat.dispose();
-      atmoGeo.dispose();
-      atmoMat.dispose();
       renderer.dispose();
     };
   }, [reducedMotion]);
