@@ -14,7 +14,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   background: var(--ink-950);
   color-scheme: dark;
 }
@@ -112,7 +111,6 @@ section {
   .animate-gridPulse {
     animation: none !important;
   }
-  html { scroll-behavior: auto; }
 }
 
 .marquee-track {

@@ -16,18 +16,6 @@ const EASE_OUT = [0.16, 1, 0.3, 1];
 const SPRING_REVEAL = { type: "spring", stiffness: 110, damping: 22, mass: 0.6 };
 const SPRING_HEADLINE = { type: "spring", stiffness: 140, damping: 18, mass: 0.55 };
 
-function ScrollProgress() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 220, damping: 32, mass: 0.4 });
-  return (
-    <motion.div
-      aria-hidden
-      style={{ scaleX, transformOrigin: "0% 50%", backgroundColor: "#38BDF8" }}
-      className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[2px]"
-    />
-  );
-}
-
 function CustomCursor() {
   const reduced = useReducedMotion();
   const x = useMotionValue(-100);
@@ -297,19 +285,19 @@ function Pill({ children }) {
   );
 }
 
-function BrandLockup({ size = 32 }) {
+function BrandLockup({ size = 40 }) {
   return (
     <span className="flex items-center gap-2.5">
       <img
-        src="/dalatech_logo.jpg"
+        src="/dalatech_logo_v3.jpg"
         alt=""
         aria-hidden="true"
-        style={{ height: size, width: size, filter: "brightness(0) invert(1)" }}
+        style={{ height: size, width: size, borderRadius: 8 }}
         className="block object-contain"
       />
       <span
         className="font-display text-[18px] font-bold text-fg"
-        style={{ letterSpacing: "-0.02em", color: "#F0F4FF" }}
+        style={{ letterSpacing: "-0.02em", color: "#F0F4FF", fontWeight: 700 }}
       >
         DalaTech
       </span>
@@ -355,6 +343,8 @@ function Navbar() {
   const [langOpen, setLangOpen] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const langTimer = React.useRef(null);
+  const programmaticScroll = React.useRef(false);
+  const programmaticEndTimer = React.useRef(null);
 
   const clearTimer = () => {
     if (langTimer.current) { clearTimeout(langTimer.current); langTimer.current = null; }
@@ -375,6 +365,7 @@ function Navbar() {
     const ids = ["features", "how", "portfolio", "pricing", "faq", "contact"];
     const onScroll = () => {
       setScrolled(window.scrollY > 60);
+      if (programmaticScroll.current) return;
       const y = window.scrollY + 140;
       let cur = "features";
       for (const id of ids) {
@@ -401,9 +392,28 @@ function Navbar() {
     setMobileOpen(false);
     const el = document.getElementById(id);
     if (!el) return;
-    const y = el.getBoundingClientRect().top + window.scrollY - 88;
-    window.scrollTo({ top: y, behavior: "smooth" });
+    const headerH = window.scrollY > 60 ? 56 : 80;
+    const y = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
     setActive(id);
+    programmaticScroll.current = true;
+    if (programmaticEndTimer.current) clearTimeout(programmaticEndTimer.current);
+    let lastY = window.scrollY;
+    let still = 0;
+    const watch = () => {
+      if (Math.abs(window.scrollY - lastY) < 0.5) {
+        still += 1;
+      } else {
+        still = 0;
+        lastY = window.scrollY;
+      }
+      if (still >= 4) {
+        programmaticScroll.current = false;
+        return;
+      }
+      programmaticEndTimer.current = setTimeout(watch, 80);
+    };
+    window.scrollTo({ top: y, behavior: "smooth" });
+    programmaticEndTimer.current = setTimeout(watch, 80);
   };
 
   const navLabel = (id) => id === "how" ? t("nav.howItWorks") : t(`nav.${id}`);
@@ -431,7 +441,7 @@ function Navbar() {
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-7 lg:px-10">
         <div className={["flex items-center justify-between transition-all duration-300", scrolled ? "h-14" : "h-20"].join(" ")}>
           <a href="#top" className="flex shrink-0 items-center" data-cursor="hover" aria-label="DalaTech home">
-            <BrandLockup size={32} />
+            <BrandLockup size={40} />
           </a>
 
           <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
@@ -528,7 +538,7 @@ function Navbar() {
           >
             <div className="flex items-center justify-between px-5 pt-5 sm:px-7">
               <a href="#top" onClick={scrollToId("top")} className="flex items-center" aria-label="DalaTech home">
-                <BrandLockup size={32} />
+                <BrandLockup size={40} />
               </a>
               <button
                 type="button"
@@ -1441,7 +1451,7 @@ function Footer({ onOpenPrivacy }) {
       <Container>
         <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3 text-[13px] text-fg-muted">
-            <BrandLockup size={32} />
+            <BrandLockup size={40} />
             <span className="text-fg-muted/80">© {new Date().getFullYear()}</span>
           </div>
           <button type="button" onClick={onOpenPrivacy} className="text-[13px] text-fg-muted transition-colors hover:text-fg">
@@ -1535,11 +1545,6 @@ export default function App() {
   const [currentPage, setCurrentPage] = React.useState("home");
 
   React.useEffect(() => {
-    document.documentElement.style.scrollBehavior = "smooth";
-    return () => { document.documentElement.style.scrollBehavior = "auto"; };
-  }, []);
-
-  React.useEffect(() => {
     const handleHashChange = () => {
       setCurrentPage(window.location.hash === "#/setup" ? "setup" : "home");
     };
@@ -1552,7 +1557,6 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-ink-950 text-fg">
-      <ScrollProgress />
       <CustomCursor />
       <Navbar />
       <main>
