@@ -13,8 +13,9 @@
     "i18next": "^25.7.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-globe.gl": "^2.37.1",
     "react-i18next": "^16.5.2",
-    "three": "^0.160.1"
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.2",
