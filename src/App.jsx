@@ -288,13 +288,18 @@ function Pill({ children }) {
 function BrandLockup({ size = 40 }) {
   return (
     <span className="flex items-center gap-2.5">
-      <img
-        src="/dalatech_logo_v3.jpg"
-        alt=""
-        aria-hidden="true"
+      <span
+        className="block overflow-hidden"
         style={{ height: size, width: size, borderRadius: 8 }}
-        className="block object-contain"
-      />
+      >
+        <img
+          src="/dalatech_logo_v3.jpg"
+          alt=""
+          aria-hidden="true"
+          style={{ height: "100%", width: "100%", transform: "scale(1.18)" }}
+          className="block object-cover"
+        />
+      </span>
       <span
         className="font-display text-[18px] font-bold text-fg"
         style={{ letterSpacing: "-0.02em", color: "#F0F4FF", fontWeight: 700 }}
@@ -947,13 +952,19 @@ function BentoChatbotCard() {
       setStage(0);
       return;
     }
-    setStage(1);
-    const t1 = setTimeout(() => setStage(2), 280);
-    const t2 = setTimeout(() => setStage(3), 1200);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
+    const schedule = [
+      [280, 1],
+      [580, 2],
+      [1380, 3],
+      [2200, 4],
+      [2480, 5],
+      [3280, 6],
+      [4080, 7],
+      [4360, 8],
+      [5160, 9],
+    ];
+    const timers = schedule.map(([ms, s]) => setTimeout(() => setStage(s), ms));
+    return () => timers.forEach(clearTimeout);
   }, [hovered, reduced]);
 
   return (
@@ -996,7 +1007,7 @@ function BentoChatbotCard() {
               )}
               {stage === 2 && (
                 <motion.div
-                  key="typing"
+                  key="typing1"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -2 }}
@@ -1016,6 +1027,72 @@ function BentoChatbotCard() {
                   <ChatBubble side="ai">{t("bento.chatbot.messages.ai2")}</ChatBubble>
                 </motion.div>
               )}
+              {stage >= 4 && (
+                <motion.div
+                  key="user3"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <ChatBubble side="user">{t("bento.chatbot.messages.user3")}</ChatBubble>
+                </motion.div>
+              )}
+              {stage === 5 && (
+                <motion.div
+                  key="typing2"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -2 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <TypingDots />
+                </motion.div>
+              )}
+              {stage >= 6 && (
+                <motion.div
+                  key="ai3"
+                  initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 24, mass: 0.55 }}
+                >
+                  <ChatBubble side="ai">{t("bento.chatbot.messages.ai3")}</ChatBubble>
+                </motion.div>
+              )}
+              {stage >= 7 && (
+                <motion.div
+                  key="user4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <ChatBubble side="user">{t("bento.chatbot.messages.user4")}</ChatBubble>
+                </motion.div>
+              )}
+              {stage === 8 && (
+                <motion.div
+                  key="typing3"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -2 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <TypingDots />
+                </motion.div>
+              )}
+              {stage >= 9 && (
+                <motion.div
+                  key="ai4"
+                  initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 24, mass: 0.55 }}
+                >
+                  <ChatBubble side="ai">{t("bento.chatbot.messages.ai4")}</ChatBubble>
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
         </div>
@@ -1029,7 +1106,7 @@ function BentoAutomationCard() {
   const reduced = useReducedMotion();
   const [hovered, setHovered] = React.useState(false);
   const [done, setDone] = React.useState(0);
-  const total = 4;
+  const total = 7;
 
   React.useEffect(() => {
     if (reduced) {
@@ -1042,7 +1119,7 @@ function BentoAutomationCard() {
     }
     const timers = [];
     for (let i = 1; i <= total; i++) {
-      timers.push(setTimeout(() => setDone(i), 220 + (i - 1) * 320));
+      timers.push(setTimeout(() => setDone(i), 220 + (i - 1) * 280));
     }
     return () => timers.forEach(clearTimeout);
   }, [hovered, reduced]);
@@ -1052,6 +1129,9 @@ function BentoAutomationCard() {
     t("bento.automation.tasks.t2"),
     t("bento.automation.tasks.t3"),
     t("bento.automation.tasks.t4"),
+    t("bento.automation.tasks.t5"),
+    t("bento.automation.tasks.t6"),
+    t("bento.automation.tasks.t7"),
   ];
 
   return (
@@ -1123,7 +1203,18 @@ function BentoWebCard() {
   const reduced = useReducedMotion();
   const [hovered, setHovered] = React.useState(false);
   const [lines, setLines] = React.useState(0);
-  const totalLines = 4;
+  const codeLines = [
+    { tag: "Header", attr: "sticky" },
+    { tag: "Hero", attr: "animate" },
+    { tag: "Features", attr: "cols={3}" },
+    { tag: "Showcase", attr: "loop" },
+    { tag: "Stats", attr: "live" },
+    { tag: "Testimonials", attr: "" },
+    { tag: "Pricing", attr: "tiers={3}" },
+    { tag: "CTA", attr: "" },
+    { tag: "Footer", attr: "" },
+  ];
+  const totalLines = codeLines.length;
 
   React.useEffect(() => {
     if (reduced) {
@@ -1136,17 +1227,10 @@ function BentoWebCard() {
     }
     const timers = [];
     for (let i = 1; i <= totalLines; i++) {
-      timers.push(setTimeout(() => setLines(i), 160 + (i - 1) * 180));
+      timers.push(setTimeout(() => setLines(i), 160 + (i - 1) * 150));
     }
     return () => timers.forEach(clearTimeout);
-  }, [hovered, reduced]);
-
-  const codeLines = [
-    { tag: "Header", attr: "" },
-    { tag: "Hero", attr: "animate" },
-    { tag: "Grid", attr: "items={3}" },
-    { tag: "Footer", attr: "" },
-  ];
+  }, [hovered, reduced, totalLines]);
 
   return (
     <BentoCardShell onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
@@ -1303,13 +1387,13 @@ function ProcessTimeline() {
     };
   }, [reduced]);
 
-  const op1 = lerpRange(progress, 0.25, 0.4, 0, 1);
-  const ty1 = lerpRange(progress, 0.25, 0.4, 44, 0);
-  const op2 = lerpRange(progress, 0.45, 0.6, 0, 1);
-  const ty2 = lerpRange(progress, 0.45, 0.6, 44, 0);
-  const op3 = lerpRange(progress, 0.65, 0.8, 0, 1);
-  const ty3 = lerpRange(progress, 0.65, 0.8, 44, 0);
-  const lineProgress = lerpRange(progress, 0.25, 0.85, 0, 1);
+  const op1 = lerpRange(progress, 0.15, 0.28, 0, 1);
+  const ty1 = lerpRange(progress, 0.15, 0.28, 44, 0);
+  const op2 = lerpRange(progress, 0.26, 0.40, 0, 1);
+  const ty2 = lerpRange(progress, 0.26, 0.40, 44, 0);
+  const op3 = lerpRange(progress, 0.38, 0.52, 0, 1);
+  const ty3 = lerpRange(progress, 0.38, 0.52, 44, 0);
+  const lineProgress = lerpRange(progress, 0.15, 0.55, 0, 1);
 
   return (
     <section id="process" ref={ref} className="relative py-24 md:py-28">

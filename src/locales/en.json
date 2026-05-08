@@ -365,7 +365,11 @@
         "user1": "Do you have the new model in stock?",
         "ai1": "Yes, three units left at the warehouse.",
         "user2": "Can I reserve one until tomorrow?",
-        "ai2": "Done. Reserved until 6pm tomorrow under your number."
+        "ai2": "Done. Reserved until 6pm tomorrow under your number.",
+        "user3": "Can you send me the spec sheet?",
+        "ai3": "Sent to the email on file. Anything else?",
+        "user4": "What's the warranty?",
+        "ai4": "Two years, parts and labour included."
       }
     },
     "automation": {
@@ -376,7 +380,10 @@
         "t1": "New lead detected",
         "t2": "Customer info enriched",
         "t3": "Welcome email sent",
-        "t4": "CRM record created"
+        "t4": "CRM record created",
+        "t5": "Slack channel notified",
+        "t6": "Calendar invite scheduled",
+        "t7": "Pipeline stage updated"
       }
     },
     "web": {
