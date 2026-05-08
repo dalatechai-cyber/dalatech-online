@@ -1976,60 +1976,63 @@ function Portfolio() {
 function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote }) {
   return (
     <StaggerItem>
-      <div
-        className={[
-          "relative flex h-full flex-col overflow-hidden rounded-2xl p-6 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5",
-          primary
-            ? "border border-sky-400/55 bg-gradient-to-b from-sky-400/[0.06] to-ink-800/65 shadow-[0_0_0_1px_rgba(56,189,248,0.18),0_30px_70px_-30px_rgba(56,189,248,0.55)] hover:shadow-[0_0_0_1px_rgba(56,189,248,0.28),0_40px_80px_-30px_rgba(56,189,248,0.7)]"
-            : "border border-white/[0.08] bg-ink-800/45 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]",
-        ].join(" ")}
-      >
+      <div className="relative h-full pt-3 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5">
         {primary && (
-          <>
+          <span className="absolute left-6 top-0 z-10 inline-flex items-center gap-1.5 rounded-full border border-sky-400/55 bg-sky-400/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-100 shadow-[0_8px_22px_-6px_rgba(56,189,248,0.7)] backdrop-blur">
+            <span className="h-1 w-1 rounded-full bg-sky-300" />
+            Featured
+          </span>
+        )}
+        <div
+          className={[
+            "relative flex h-full flex-col overflow-hidden rounded-2xl p-6 transition-[border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            primary
+              ? "border border-sky-400/55 bg-gradient-to-b from-sky-400/[0.06] to-ink-800/65 shadow-[0_0_0_1px_rgba(56,189,248,0.18),0_30px_70px_-30px_rgba(56,189,248,0.55)]"
+              : "border border-white/[0.08] bg-ink-800/45 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]",
+          ].join(" ")}
+        >
+          {primary && (
             <div
               aria-hidden
-              className="pointer-events-none absolute -top-px left-1/2 h-[2px] w-3/4 -translate-x-1/2 rounded-full"
+              className="pointer-events-none absolute inset-x-0 top-0 h-[2px]"
               style={{ background: "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.85) 50%, transparent 100%)" }}
             />
-            <span className="absolute -top-2.5 left-6 rounded-full border border-sky-400/50 bg-sky-400/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-200 backdrop-blur">
-              Featured
-            </span>
-          </>
-        )}
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{title}</p>
-            {desc && <p className="mt-1.5 text-[13.5px] text-fg-muted">{desc}</p>}
-          </div>
-          {badge && (
-            <span
-              className={[
-                "shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]",
-                primary
-                  ? "bg-sky-400/15 text-sky-200 ring-1 ring-inset ring-sky-400/40"
-                  : "bg-white/[0.03] text-fg-muted ring-1 ring-inset ring-white/10",
-              ].join(" ")}
-            >
-              {badge}
-            </span>
           )}
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{title}</p>
+              {desc && <p className="mt-1.5 text-[13.5px] text-fg-muted">{desc}</p>}
+            </div>
+            {badge && (
+              <span
+                className={[
+                  "shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                  primary
+                    ? "bg-sky-400/15 text-sky-200 ring-1 ring-inset ring-sky-400/40"
+                    : "bg-white/[0.03] text-fg-muted ring-1 ring-inset ring-white/10",
+                ].join(" ")}
+              >
+                {badge}
+              </span>
+            )}
+          </div>
+          <div className="mt-7">
+            <p className="font-display text-[36px] font-semibold leading-none tracking-tightest text-fg sm:text-[40px]">{priceLine}</p>
+            {subLine && <p className="mt-3 text-[13px] leading-[1.55] text-fg-muted">{subLine}</p>}
+          </div>
+          <ul className="mt-6 space-y-2.5 text-[13.5px] leading-[1.55] text-fg/90">
+            {bullets.map((b, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <CheckIcon />
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-auto pt-7">
+            <MagneticButton href="#contact" variant={primary ? "primary" : "ghost"} className="w-full">{cta}</MagneticButton>
+          </div>
+          {footnote && <p className="mt-4 text-[11px] leading-[1.55] text-fg-muted/80">{footnote}</p>}
         </div>
-        <div className="mt-7">
-          <p className="font-display text-[36px] font-semibold leading-none tracking-tightest text-fg sm:text-[40px]">{priceLine}</p>
-          {subLine && <p className="mt-3 text-[13px] leading-[1.55] text-fg-muted">{subLine}</p>}
-        </div>
-        <ul className="mt-6 space-y-2.5 text-[13.5px] leading-[1.55] text-fg/90">
-          {bullets.map((b, i) => (
-            <li key={i} className="flex items-start gap-2.5">
-              <CheckIcon />
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-auto pt-7">
-          <MagneticButton href="#contact" variant={primary ? "primary" : "ghost"} className="w-full">{cta}</MagneticButton>
-        </div>
-        {footnote && <p className="mt-4 text-[11px] leading-[1.55] text-fg-muted/80">{footnote}</p>}
       </div>
     </StaggerItem>
   );
