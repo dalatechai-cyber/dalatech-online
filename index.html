@@ -18,55 +18,208 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
 
-    <!-- DalaTech.ai Chatbot Widget -->
-    <!-- Copy and paste this entire code snippet before the closing </body> tag of your HTML -->
-
-    <button id="dalatech-chat-toggle"
-            aria-label="Open chat"
-            style="position: fixed; bottom: 20px; right: 20px; z-index: 99999; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #2B2B2B 0%, #1F1F1F 100%); border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; overflow: hidden; padding: 8px; transition: transform 0.3s ease, box-shadow 0.2s; display: flex; align-items: center; justify-content: center;">
-      <img src="/Photos/dalatech-logo.png" alt="DalaTech Chat" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
-    </button>
-
-    <div id="dalatech-chatbot-container"
-         style="display: none; position: fixed; bottom: 90px; right: 20px; width: 400px; height: 600px; max-height: 80vh; background: #1F1F1F; border-radius: 16px; box-shadow: 0 5px 40px rgba(0,0,0,0.5); z-index: 99999; overflow: hidden; border: 1px solid #333;">
-      <iframe src="https://dalatech-chatbot.vercel.app"
-              width="100%" height="100%" frameborder="0"
-              style="border-radius: 16px;"
-              title="DalaTech.ai Chatbot"></iframe>
-    </div>
-
+    <!-- DalaTech.ai chatbot widget — JS-injected for guaranteed clickability -->
     <style>
-      #dalatech-chat-toggle:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      #dt-chat-toggle, #dt-chat-frame { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+      #dt-chat-toggle * , #dt-chat-frame * { box-sizing: border-box; }
+      #dt-chat-toggle {
+        position: fixed;
+        bottom: 22px;
+        right: 22px;
+        z-index: 2147483646;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        border: 1px solid rgba(56, 189, 248, 0.30);
+        background:
+          radial-gradient(60% 60% at 50% 50%, rgba(56, 189, 248, 0.18), transparent 70%),
+          linear-gradient(180deg, #0F1838 0%, #0A1128 100%);
+        color: #F0F4FF;
+        cursor: pointer;
+        pointer-events: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        box-shadow:
+          0 18px 40px -14px rgba(56, 189, 248, 0.55),
+          0 0 0 1px rgba(56, 189, 248, 0.18) inset,
+          0 0 36px -6px rgba(37, 99, 235, 0.55);
+        transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1), border-color 280ms cubic-bezier(0.16, 1, 0.3, 1);
+        outline: none;
+        isolation: isolate;
       }
-      
+      #dt-chat-toggle:hover {
+        transform: translateY(-2px);
+        border-color: rgba(56, 189, 248, 0.55);
+        box-shadow:
+          0 24px 50px -14px rgba(56, 189, 248, 0.7),
+          0 0 0 1px rgba(56, 189, 248, 0.32) inset,
+          0 0 48px -6px rgba(56, 189, 248, 0.55);
+      }
+      #dt-chat-toggle:focus-visible { outline: 2px solid #38BDF8; outline-offset: 3px; }
+      #dt-chat-toggle:active { transform: translateY(0) scale(0.96); }
+      #dt-chat-toggle .dt-orb,
+      #dt-chat-toggle .dt-cross {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1), transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      #dt-chat-toggle .dt-cross { opacity: 0; transform: rotate(-45deg) scale(0.7); }
+      #dt-chat-toggle.is-open .dt-orb { opacity: 0; transform: scale(0.7); }
+      #dt-chat-toggle.is-open .dt-cross { opacity: 1; transform: rotate(0deg) scale(1); }
+      #dt-chat-toggle .dt-halo {
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 1px solid rgba(56, 189, 248, 0.20);
+        opacity: 0.7;
+        animation: dt-halo 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        pointer-events: none;
+      }
+      @keyframes dt-halo {
+        0%   { transform: scale(0.95); opacity: 0.55; }
+        70%  { transform: scale(1.18); opacity: 0; }
+        100% { transform: scale(1.18); opacity: 0; }
+      }
+      #dt-chat-toggle.is-open .dt-halo { display: none; }
+
+      #dt-chat-frame {
+        position: fixed;
+        bottom: 96px;
+        right: 22px;
+        z-index: 2147483645;
+        width: 392px;
+        height: 620px;
+        max-height: calc(100dvh - 116px);
+        background: #0D1430;
+        border: 1px solid rgba(56, 189, 248, 0.15);
+        border-radius: 20px;
+        box-shadow:
+          0 30px 80px -20px rgba(2, 8, 23, 0.85),
+          0 0 0 1px rgba(56, 189, 248, 0.10);
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+        transform-origin: bottom right;
+        transition: opacity 240ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 280ms;
+        visibility: hidden;
+        pointer-events: auto;
+      }
+      #dt-chat-frame.is-open {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        visibility: visible;
+        transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 320ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0s;
+      }
+      #dt-chat-frame iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        border-radius: inherit;
+        background: #0D1430;
+      }
+
       @media (max-width: 480px) {
-        #dalatech-chatbot-container {
-          width: calc(100% - 32px) !important;
-          height: 70vh !important;
-          bottom: 90px !important;
-          right: 16px !important;
+        #dt-chat-toggle { bottom: 16px; right: 16px; }
+        #dt-chat-frame {
+          width: calc(100% - 16px);
+          height: calc(100dvh - 96px);
+          max-height: calc(100dvh - 96px);
+          right: 8px;
+          bottom: 86px;
+          border-radius: 18px;
         }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #dt-chat-toggle .dt-halo,
+        #dt-chat-toggle .dt-orb svg circle,
+        #dt-chat-toggle .dt-orb svg g circle { animation: none !important; }
       }
     </style>
 
     <script>
-      (function() {
-        const container = document.getElementById('dalatech-chatbot-container');
-        const btn = document.getElementById('dalatech-chat-toggle');
+      (function () {
+        function mount() {
+          if (document.getElementById('dt-chat-toggle')) return;
 
-        if (!container || !btn) {
-          console.error('DalaTech chatbot elements not found');
-          return;
+          var btn = document.createElement('button');
+          btn.id = 'dt-chat-toggle';
+          btn.type = 'button';
+          btn.setAttribute('aria-label', 'Open DalaTech.ai assistant');
+          btn.setAttribute('aria-expanded', 'false');
+          btn.setAttribute('aria-controls', 'dt-chat-frame');
+          btn.setAttribute('data-cursor', 'hover');
+          btn.innerHTML =
+            '<span class="dt-halo" aria-hidden="true"></span>' +
+            '<span class="dt-orb" aria-hidden="true">' +
+              '<svg viewBox="0 0 40 40" width="30" height="30" focusable="false">' +
+                '<defs>' +
+                  '<radialGradient id="dt-toggle-core" cx="50%" cy="50%" r="50%">' +
+                    '<stop offset="0%" stop-color="#7DD3FC" stop-opacity="1"/>' +
+                    '<stop offset="55%" stop-color="#38BDF8" stop-opacity="0.9"/>' +
+                    '<stop offset="100%" stop-color="#2563EB" stop-opacity="0"/>' +
+                  '</radialGradient>' +
+                '</defs>' +
+                '<circle cx="20" cy="20" r="6.5" fill="url(#dt-toggle-core)">' +
+                  '<animate attributeName="r" values="6;7.6;6" dur="2.6s" repeatCount="indefinite"/>' +
+                  '<animate attributeName="opacity" values="0.85;1;0.85" dur="2.6s" repeatCount="indefinite"/>' +
+                '</circle>' +
+                '<g fill="none" stroke="#38BDF8" stroke-width="1" stroke-linecap="round" opacity="0.75">' +
+                  '<circle cx="20" cy="20" r="12" stroke-dasharray="20 56">' +
+                    '<animateTransform attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="7s" repeatCount="indefinite"/>' +
+                  '</circle>' +
+                '</g>' +
+                '<g fill="none" stroke="#2563EB" stroke-width="0.8" stroke-linecap="round" opacity="0.8">' +
+                  '<circle cx="20" cy="20" r="16" stroke-dasharray="6 96">' +
+                    '<animateTransform attributeName="transform" type="rotate" from="360 20 20" to="0 20 20" dur="9s" repeatCount="indefinite"/>' +
+                  '</circle>' +
+                '</g>' +
+              '</svg>' +
+            '</span>' +
+            '<span class="dt-cross" aria-hidden="true">' +
+              '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="#F0F4FF" stroke-width="1.8" stroke-linecap="round">' +
+                '<path d="M5 5l10 10"/>' +
+                '<path d="M15 5L5 15"/>' +
+              '</svg>' +
+            '</span>';
+
+          var frame = document.createElement('div');
+          frame.id = 'dt-chat-frame';
+          frame.setAttribute('role', 'dialog');
+          frame.setAttribute('aria-label', 'DalaTech.ai Chatbot');
+          frame.innerHTML = '<iframe src="https://dalatech-chatbot.vercel.app" title="DalaTech.ai Chatbot" allow="clipboard-write" loading="lazy"></iframe>';
+
+          document.body.appendChild(btn);
+          document.body.appendChild(frame);
+
+          function setOpen(open) {
+            btn.classList.toggle('is-open', open);
+            frame.classList.toggle('is-open', open);
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            btn.setAttribute('aria-label', open ? 'Close DalaTech.ai assistant' : 'Open DalaTech.ai assistant');
+          }
+
+          btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen(!btn.classList.contains('is-open'));
+          });
+
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && btn.classList.contains('is-open')) setOpen(false);
+          });
         }
 
-        btn.addEventListener('click', function() {
-          const isHidden = container.style.display === 'none' || container.style.display === '';
-          container.style.display = isHidden ? 'block' : 'none';
-          btn.style.transform = isHidden ? 'rotate(45deg)' : 'rotate(0deg)';
-          btn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
-        });
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', mount);
+        } else {
+          mount();
+        }
       })();
     </script>
   </body>
