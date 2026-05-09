@@ -352,17 +352,10 @@
     "talkToUs": "Talk to us"
   },
   "contact": {
-    "sectionLabel": "CONTACT",
-    "title": "Get a free demo",
-    "description": "Tell us about your business. We'll recommend the simplest setup that saves time and reduces repetitive work.",
-    "interim": {
-      "badge": "System upgrade in progress",
-      "messageMn": "Демо захиалгын систем шинэчлэгдэж байна. Одоогоор имэйлээр холбогдоно уу.",
-      "messageEn": "Our demo booking system is being upgraded. Please contact us by email for now.",
-      "messageZh": "演示預約系統正在升級中，請暫時透過電子郵件聯絡我們。",
-      "cta": "Email us",
-      "automatedDemo": "Get Automated Demo"
-    }
+    "title": "Your automated demo is waiting.",
+    "description": "Drop in a few sentences about your business. Within seconds, your own AI agent comes alive, shaped around what you give it.",
+    "demoCta": "Get automated demo",
+    "emailCta": "Email us"
   },
   "bento": {
     "section": "CAPABILITIES",

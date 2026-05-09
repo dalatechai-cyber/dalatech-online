@@ -2595,54 +2595,104 @@ function FAQ() {
   );
 }
 
+function ContactOrbField() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-grid opacity-[0.55]" />
+
+      <div
+        className="contact-orb-glow absolute left-1/2 top-1/2 h-[44rem] w-[44rem] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(56,189,248,0.34) 0%, rgba(56,189,248,0.10) 28%, rgba(37,99,235,0.04) 50%, rgba(56,189,248,0) 70%)",
+          filter: "blur(48px)",
+        }}
+      />
+
+      <svg
+        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2"
+        viewBox="-200 -200 400 400"
+      >
+        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
+        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
+        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
+      </svg>
+
+      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-2 w-2 rounded-full bg-sky-300"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
+        />
+      </div>
+      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
+        />
+      </div>
+      <div className="contact-orbit contact-orbit-3 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-1 w-1 rounded-full bg-white/85"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(190px)", boxShadow: "0 0 14px 2px rgba(255,255,255,0.55)" }}
+        />
+      </div>
+
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink-950 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink-950 to-transparent" />
+    </div>
+  );
+}
+
 function Contact() {
   const { t } = useTranslation();
   const mailtoHref = `mailto:bilguunbilly0214@gmail.com?subject=${encodeURIComponent("Демо хүсэлт / Demo Request")}`;
 
   return (
-    <section id="contact" className="relative py-28">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="mesh-blob animate-meshShift opacity-50" style={{ top: "0%", right: "-10%", width: "40rem", height: "40rem", background: "radial-gradient(circle at 50% 50%, rgba(56,189,248,0.18), transparent 70%)" }} />
-      </div>
+    <section id="contact" className="relative overflow-hidden py-32 sm:py-40">
+      <ContactOrbField />
+
       <Container className="relative">
-        <SectionHeader eyebrow={t("contact.sectionLabel")} title={t("contact.title")} description={t("contact.description")} />
+        <StaggerGroup className="text-center" stagger={0.08} amount={0.3}>
+          <StaggerItem>
+            <h2 className="font-display mx-auto max-w-[22ch] text-[clamp(40px,7vw,80px)] font-semibold leading-[1.02] tracking-[-0.035em] text-fg">
+              {t("contact.title")}
+            </h2>
+          </StaggerItem>
 
-        <Reveal>
-          <div className="mx-auto mt-14 max-w-[640px] overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-800/45 p-8 text-center transition-[border-color,box-shadow] duration-300 hover:border-white/15 hover:shadow-[0_30px_70px_-30px_rgba(8,12,28,0.7)] sm:p-10">
-            <span className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-300">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <path d="M12 2v4" /><path d="M12 18v4" /><path d="m4.93 4.93 2.83 2.83" /><path d="m16.24 16.24 2.83 2.83" /><path d="M2 12h4" /><path d="M18 12h4" /><path d="m4.93 19.07 2.83-2.83" /><path d="m16.24 7.76 2.83-2.83" />
-              </svg>
-              {t("contact.interim.badge")}
-            </span>
+          <StaggerItem>
+            <p className="mx-auto mt-7 max-w-[54ch] text-[16px] leading-[1.55] text-fg-muted sm:text-[17px]">
+              {t("contact.description")}
+            </p>
+          </StaggerItem>
 
-            <div className="mt-6 space-y-4 text-[15px] leading-[1.65] text-fg/90">
-              <p lang="mn">{t("contact.interim.messageMn")}</p>
-              <p lang="en" className="text-fg-muted">{t("contact.interim.messageEn")}</p>
-              <p lang="zh-Hant" className="text-fg-muted">{t("contact.interim.messageZh")}</p>
-            </div>
-
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <StaggerItem>
+            <div className="mt-11 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
               <MagneticButton href="https://app.dalatech.online" variant="primary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
-                </svg>
-                {t("contact.interim.automatedDemo")} →
+                <span>{t("contact.demoCta")}</span>
+                <span aria-hidden className="contact-arrow inline-block">→</span>
               </MagneticButton>
               <MagneticButton href={mailtoHref} variant="ghost">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <rect x="3" y="5" width="18" height="14" rx="2" />
                   <path d="m3 7 9 6 9-6" />
                 </svg>
-                {t("contact.interim.cta")}
+                {t("contact.emailCta")}
               </MagneticButton>
             </div>
+          </StaggerItem>
 
-            <p className="mt-5 text-[12.5px] leading-[1.55] text-fg-muted">
-              <a href={mailtoHref} className="text-fg/80 underline-offset-4 transition-colors hover:text-sky-300 hover:underline" data-cursor="hover">bilguunbilly0214@gmail.com</a>
+          <StaggerItem>
+            <p className="mt-7 text-[12.5px] text-fg-muted">
+              <a
+                href={mailtoHref}
+                className="text-fg/75 underline-offset-4 transition-colors duration-200 hover:text-sky-300 hover:underline"
+                data-cursor="hover"
+              >
+                bilguunbilly0214@gmail.com
+              </a>
             </p>
-          </div>
-        </Reveal>
+          </StaggerItem>
+        </StaggerGroup>
       </Container>
     </section>
   );

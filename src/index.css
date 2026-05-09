@@ -241,3 +241,51 @@ section {
     stroke-dashoffset: 0 !important;
   }
 }
+
+/* Contact section — orbiting points around a glowing core. */
+@keyframes contactOrbDrift {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.05); }
+}
+@keyframes contactOrbit {
+  to { transform: rotate(360deg); }
+}
+@keyframes contactOrbitReverse {
+  to { transform: rotate(-360deg); }
+}
+.contact-orb-glow {
+  animation: contactOrbDrift 11s ease-in-out infinite;
+  will-change: transform;
+}
+.contact-orbit {
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+.contact-orbit-1 {
+  animation: contactOrbit 26s linear infinite;
+}
+.contact-orbit-2 {
+  animation: contactOrbitReverse 38s linear infinite;
+}
+.contact-orbit-3 {
+  animation: contactOrbit 18s linear infinite;
+}
+.contact-arrow {
+  transition: transform 220ms var(--ease-out-quart);
+}
+.group:hover .contact-arrow {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-orb-glow,
+  .contact-orbit-1,
+  .contact-orbit-2,
+  .contact-orbit-3 {
+    animation: none !important;
+  }
+  .contact-arrow {
+    transition: none !important;
+  }
+}

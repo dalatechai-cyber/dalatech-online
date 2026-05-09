@@ -352,17 +352,10 @@
     "talkToUs": "與我們聯繫"
   },
   "contact": {
-    "sectionLabel": "聯絡我們",
-    "title": "免費試用示範",
-    "description": "告訴我們您的業務狀況，我們將推薦最簡單的設置方案，幫助您節省時間並減少重複性工作。",
-    "interim": {
-      "badge": "系統升級中",
-      "messageMn": "Демо захиалгын систем шинэчлэгдэж байна. Одоогоор имэйлээр холбогдоно уу.",
-      "messageEn": "Our demo booking system is being upgraded. Please contact us by email for now.",
-      "messageZh": "演示預約系統正在升級中，請暫時透過電子郵件聯絡我們。",
-      "cta": "發送電子郵件",
-      "automatedDemo": "獲取自動演示"
-    }
+    "title": "您的自動示範，正在等待。",
+    "description": "用幾句話描述您的業務，數秒之內，專屬於您的 AI 助手便會依資料活起來。",
+    "demoCta": "獲取自動演示",
+    "emailCta": "發送電子郵件"
   },
   "bento": {
     "section": "產品能力",
