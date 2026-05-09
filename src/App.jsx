@@ -2622,8 +2622,14 @@ function Contact() {
               <p lang="zh-Hant" className="text-fg-muted">{t("contact.interim.messageZh")}</p>
             </div>
 
-            <div className="mt-8 flex justify-center">
-              <MagneticButton href={mailtoHref} variant="primary">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+              <MagneticButton href="https://app.dalatech.online" variant="primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
+                </svg>
+                {t("contact.interim.automatedDemo")} →
+              </MagneticButton>
+              <MagneticButton href={mailtoHref} variant="ghost">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <rect x="3" y="5" width="18" height="14" rx="2" />
                   <path d="m3 7 9 6 9-6" />

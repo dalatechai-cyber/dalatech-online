@@ -360,7 +360,8 @@
       "messageMn": "Демо захиалгын систем шинэчлэгдэж байна. Одоогоор имэйлээр холбогдоно уу.",
       "messageEn": "Our demo booking system is being upgraded. Please contact us by email for now.",
       "messageZh": "演示預約系統正在升級中，請暫時透過電子郵件聯絡我們。",
-      "cta": "Имэйл бичих"
+      "cta": "Имэйл бичих",
+      "automatedDemo": "Автомат демо авах"
     }
   },
   "bento": {
