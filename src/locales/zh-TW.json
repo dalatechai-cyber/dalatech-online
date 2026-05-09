@@ -138,6 +138,29 @@
       }
     }
   },
+  "liveDemo": {
+    "section": "即時示範",
+    "title": "親眼看真實對話，正在發生。",
+    "description": "這就是 DalaTech 聊天機器人在客戶網站上的真實樣貌。不需要點擊，不需要註冊，對話會自行進行。",
+    "ctaLabel": "為您的業務打造一個",
+    "widget": {
+      "businessName": "Matrix Eco Salon",
+      "statusOnline": "線上",
+      "statusReply": "平均回應 1.2 秒",
+      "agentName": "DalaTech AI",
+      "agentRole": "客服助理",
+      "inputPlaceholder": "輸入訊息…",
+      "typing": "AI 正在輸入",
+      "footnote": "由 DalaTech AI 提供支援"
+    },
+    "messages": {
+      "user1": "你好，請問明天有營業嗎？",
+      "ai1": "您好 👋 是的，我們明天 10:00 到 20:00 營業。",
+      "user2": "想預約明天下午 4 點兩個人，可以嗎？",
+      "ai2": "已為您預約明天 16:00 兩位的時段，稍後會收到確認訊息。",
+      "ai3": "如果您希望直接與真人對談，我現在可以為您接通團隊。"
+    }
+  },
   "pricing": {
     "section": "報價方案",
     "title": "透明定價，清晰價值",

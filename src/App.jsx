@@ -1927,6 +1927,230 @@ function Portfolio() {
   );
 }
 
+function LiveDemo() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const scrollRef = React.useRef(null);
+  const [step, setStep] = React.useState(0);
+  const [typing, setTyping] = React.useState(false);
+
+  React.useEffect(() => {
+    if (reduced) {
+      setStep(5);
+      setTyping(false);
+      return;
+    }
+
+    let timers = [];
+    const runOnce = () => {
+      const timeline = [
+        { at: 0,    fn: () => { setStep(0); setTyping(false); } },
+        { at: 350,  fn: () => { setStep(1); } },
+        { at: 1500, fn: () => { setTyping(true); } },
+        { at: 2700, fn: () => { setStep(2); setTyping(false); } },
+        { at: 4200, fn: () => { setStep(3); } },
+        { at: 5400, fn: () => { setTyping(true); } },
+        { at: 7000, fn: () => { setStep(4); setTyping(false); } },
+        { at: 8400, fn: () => { setTyping(true); } },
+        { at: 9900, fn: () => { setStep(5); setTyping(false); } },
+      ];
+      timeline.forEach(({ at, fn }) => {
+        timers.push(setTimeout(fn, at));
+      });
+    };
+
+    runOnce();
+    const loop = setInterval(runOnce, 13500);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      clearInterval(loop);
+    };
+  }, [reduced]);
+
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const id = requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: reduced ? "auto" : "smooth" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [step, typing, reduced]);
+
+  const messages = [
+    { from: "user", key: "user1", at: 1 },
+    { from: "ai",   key: "ai1",   at: 2 },
+    { from: "user", key: "user2", at: 3 },
+    { from: "ai",   key: "ai2",   at: 4 },
+    { from: "ai",   key: "ai3",   at: 5 },
+  ];
+
+  return (
+    <section id="live-demo" className="relative py-28">
+      <Container>
+        <div className="grid items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
+          <Reveal>
+            <SectionLabel>{t("liveDemo.section")}</SectionLabel>
+            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
+              {t("liveDemo.title")}
+            </h2>
+            <p className="mt-5 max-w-[44ch] text-[15.5px] leading-[1.65] text-fg-muted">
+              {t("liveDemo.description")}
+            </p>
+            <div className="mt-9">
+              <MagneticButton href="#contact" variant="ghost">
+                {t("liveDemo.ctaLabel")}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </MagneticButton>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.08}>
+            <div className="relative mx-auto w-full max-w-[440px]">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -inset-6 -z-10 rounded-[32px]"
+                style={{
+                  background:
+                    "radial-gradient(60% 60% at 50% 25%, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0) 70%)",
+                }}
+              />
+              <div className="overflow-hidden rounded-[22px] border border-white/[0.08] bg-ink-900/85 shadow-[0_40px_90px_-30px_rgba(8,12,28,0.9)] backdrop-blur">
+                <div className="relative flex items-center justify-between gap-3 border-b border-white/[0.06] bg-white/[0.015] px-4 py-3.5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-400/30 to-sky-400/[0.06] ring-1 ring-inset ring-sky-400/45">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(186,230,253)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d="M12 2 14.5 8.5 21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z" />
+                      </svg>
+                      <span className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-ink-900" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-display text-[14px] font-semibold tracking-tight text-fg">
+                        {t("liveDemo.widget.businessName")}
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-fg-muted">
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="relative inline-flex h-1.5 w-1.5">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/60" />
+                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                          </span>
+                          {t("liveDemo.widget.statusOnline")}
+                        </span>
+                        <span className="text-fg-muted/40">·</span>
+                        <span className="truncate">{t("liveDemo.widget.statusReply")}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1 text-fg-muted/60">
+                    <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-md">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14" />
+                      </svg>
+                    </span>
+                    <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-md">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+
+                <div
+                  ref={scrollRef}
+                  className="relative h-[380px] overflow-y-auto px-4 py-5"
+                  style={{ scrollbarWidth: "none" }}
+                >
+                  <div className="flex flex-col gap-3">
+                    <AnimatePresence initial={false}>
+                      {messages
+                        .filter((m) => step >= m.at)
+                        .map((m) => (
+                          <motion.div
+                            key={m.key}
+                            layout
+                            initial={reduced ? false : { opacity: 0, y: 8, scale: 0.97 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                            className={[
+                              "flex w-full items-end gap-2",
+                              m.from === "user" ? "justify-end" : "justify-start",
+                            ].join(" ")}
+                          >
+                            {m.from === "ai" && (
+                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
+                                <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
+                              </div>
+                            )}
+                            <div
+                              className={[
+                                "max-w-[78%] px-3.5 py-2.5 text-[13.5px] leading-[1.5]",
+                                m.from === "user"
+                                  ? "rounded-2xl rounded-br-md bg-sky-400/[0.14] text-fg ring-1 ring-inset ring-sky-400/25"
+                                  : "rounded-2xl rounded-bl-md bg-white/[0.04] text-fg/95 ring-1 ring-inset ring-white/[0.06]",
+                              ].join(" ")}
+                            >
+                              {t(`liveDemo.messages.${m.key}`)}
+                            </div>
+                          </motion.div>
+                        ))}
+                      {typing && !reduced && (
+                        <motion.div
+                          key="typing"
+                          layout
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4, transition: { duration: 0.14 } }}
+                          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+                          className="flex w-full items-end gap-2"
+                        >
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
+                            <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
+                          </div>
+                          <div className="rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-3 ring-1 ring-inset ring-white/[0.06]">
+                            <span className="flex items-center gap-1.5">
+                              {[0, 1, 2].map((i) => (
+                                <motion.span
+                                  key={i}
+                                  className="h-1.5 w-1.5 rounded-full bg-fg-muted/75"
+                                  animate={{ y: [0, -3, 0], opacity: [0.45, 1, 0.45] }}
+                                  transition={{ duration: 1.0, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
+                                />
+                              ))}
+                            </span>
+                            <span className="sr-only">{t("liveDemo.widget.typing")}</span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                <div className="border-t border-white/[0.06] bg-white/[0.015] px-3 py-3">
+                  <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-ink-950/45 px-3.5 py-2.5 text-[13px] text-fg-muted/80">
+                    <span className="flex-1 truncate">{t("liveDemo.widget.inputPlaceholder")}</span>
+                    <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-400/15 text-sky-300 ring-1 ring-inset ring-sky-400/30">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m5 12 14-7-7 14-2-5z" />
+                      </svg>
+                    </span>
+                  </div>
+                  <p className="mt-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/55">
+                    {t("liveDemo.widget.footnote")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote }) {
   return (
     <StaggerItem>
@@ -2880,6 +3104,7 @@ export default function App() {
         <Features />
         <HowItWorks />
         <Portfolio />
+        <LiveDemo />
         <Pricing />
         <FAQ />
         <Contact />

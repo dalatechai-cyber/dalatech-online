@@ -138,6 +138,29 @@
       }
     }
   },
+  "liveDemo": {
+    "section": "LIVE DEMO",
+    "title": "Watch a real conversation, in real time.",
+    "description": "This is exactly how a DalaTech chatbot behaves on a real client site. No clicks, no signup, the conversation runs on its own.",
+    "ctaLabel": "Build one for your business",
+    "widget": {
+      "businessName": "Matrix Eco Salon",
+      "statusOnline": "Online",
+      "statusReply": "Avg. reply 1.2s",
+      "agentName": "DalaTech AI",
+      "agentRole": "Customer assistant",
+      "inputPlaceholder": "Type a message…",
+      "typing": "AI is typing",
+      "footnote": "Powered by DalaTech AI"
+    },
+    "messages": {
+      "user1": "Hi, are you open tomorrow?",
+      "ai1": "Hi there 👋 Yes, we're open tomorrow from 10:00 to 20:00.",
+      "user2": "Could I book an appointment for two at 4pm?",
+      "ai2": "All set. Two seats reserved under your name for 16:00 tomorrow. A confirmation message is on its way.",
+      "ai3": "If you'd like to talk to a person, I can connect you with our team right now."
+    }
+  },
   "pricing": {
     "section": "PRICE QUOTE",
     "title": "Simple pricing, clear value",
