@@ -161,6 +161,28 @@
       "ai3": "If you'd like to talk to a person, I can connect you with our team right now."
     }
   },
+  "testimonials": {
+    "section": "CLIENT STORIES",
+    "title": "What operators say after launch.",
+    "description": "Three Mongolian businesses tell us what changed once their AI went live.",
+    "items": {
+      "0": {
+        "name": "Munkhzaya",
+        "business": "Matrix Eco Salon",
+        "quote": "After we launched the AI chatbot, our bookings tripled. Customers can ask questions even at midnight and get a clear answer right away."
+      },
+      "1": {
+        "name": "Enkhbold",
+        "business": "Mongolian business owner",
+        "quote": "I used to spend two hours a day answering Facebook messages. Now the chatbot handles all of it on its own. I can finally focus on the work that actually matters."
+      },
+      "2": {
+        "name": "Battsetseg",
+        "business": "Beauty salon",
+        "quote": "It has been working from day one. I have no technical background and it is still simple to use. The DalaTech team delivered fast and at a serious professional level."
+      }
+    }
+  },
   "pricing": {
     "section": "PRICE QUOTE",
     "title": "Simple pricing, clear value",

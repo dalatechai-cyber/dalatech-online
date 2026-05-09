@@ -161,6 +161,28 @@
       "ai3": "如果您希望直接與真人對談，我現在可以為您接通團隊。"
     }
   },
+  "testimonials": {
+    "section": "客戶故事",
+    "title": "上線之後，他們這樣說。",
+    "description": "三位蒙古經營者親口分享 AI 上線後的改變。",
+    "items": {
+      "0": {
+        "name": "Munkhzaya",
+        "business": "Matrix Eco Salon",
+        "quote": "導入 AI 聊天機器人之後，預約量翻成三倍。顧客就算半夜詢問，也能立刻得到清楚的回覆。"
+      },
+      "1": {
+        "name": "Enkhbold",
+        "business": "蒙古企業主",
+        "quote": "以前每天要花兩小時回覆 Facebook 訊息，現在聊天機器人全部自動處理。我終於可以專注在真正重要的事情上。"
+      },
+      "2": {
+        "name": "Battsetseg",
+        "business": "美容沙龍",
+        "quote": "從上線第一天就順暢運作。即使沒有技術背景，使用上也非常簡單。DalaTech 團隊速度快、做得專業到位。"
+      }
+    }
+  },
   "pricing": {
     "section": "報價方案",
     "title": "透明定價，清晰價值",

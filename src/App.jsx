@@ -2151,6 +2151,74 @@ function LiveDemo() {
   );
 }
 
+function TestimonialCard({ quote, name, business, featured = false, offsetClass = "" }) {
+  return (
+    <StaggerItem className={offsetClass}>
+      <figure
+        className={[
+          "group relative flex h-full flex-col rounded-2xl border bg-ink-800/45 p-7 sm:p-8",
+          "transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]",
+          featured
+            ? "border-sky-400/35 bg-gradient-to-b from-sky-400/[0.05] to-transparent shadow-[0_0_0_1px_rgba(56,189,248,0.10),0_24px_60px_-30px_rgba(56,189,248,0.35)] hover:border-sky-400/60"
+            : "border-white/[0.08]",
+        ].join(" ")}
+      >
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className={[
+            "h-7 w-7 shrink-0 transition-colors duration-300",
+            featured ? "text-sky-300/70" : "text-sky-400/40 group-hover:text-sky-300/55",
+          ].join(" ")}
+        >
+          <path d="M9 7H5.5A3.5 3.5 0 0 0 2 10.5v2A3.5 3.5 0 0 0 5.5 16H7v.6A4.4 4.4 0 0 1 2.6 21H2v2h.6A6.4 6.4 0 0 0 9 16.6V8a1 1 0 0 0-1-1Zm12 0h-3.5A3.5 3.5 0 0 0 14 10.5v2A3.5 3.5 0 0 0 17.5 16H19v.6A4.4 4.4 0 0 1 14.6 21H14v2h.6A6.4 6.4 0 0 0 21 16.6V8a1 1 0 0 0-1-1Z" />
+        </svg>
+        <blockquote className="mt-5 flex-1 text-[15.5px] leading-[1.7] text-fg/95 sm:text-[16px]">
+          {quote}
+        </blockquote>
+        <figcaption className="mt-7 flex flex-col gap-0.5 border-t border-white/[0.06] pt-5">
+          <span className="font-display text-[14.5px] font-semibold tracking-tight text-fg">{name}</span>
+          <span className="text-[12.5px] text-fg-muted">{business}</span>
+        </figcaption>
+      </figure>
+    </StaggerItem>
+  );
+}
+
+function Testimonials() {
+  const { t } = useTranslation();
+  const items = [
+    { key: "0", offsetClass: "" },
+    { key: "1", offsetClass: "lg:mt-10", featured: true },
+    { key: "2", offsetClass: "" },
+  ];
+  return (
+    <section id="testimonials" className="relative py-28">
+      <Container>
+        <SectionHeader
+          eyebrow={t("testimonials.section")}
+          title={t("testimonials.title")}
+          description={t("testimonials.description")}
+        />
+        <StaggerGroup className="mt-14 grid gap-5 lg:grid-cols-3 lg:items-start lg:gap-6">
+          {items.map((item) => (
+            <TestimonialCard
+              key={item.key}
+              offsetClass={item.offsetClass}
+              featured={item.featured}
+              quote={t(`testimonials.items.${item.key}.quote`)}
+              name={t(`testimonials.items.${item.key}.name`)}
+              business={t(`testimonials.items.${item.key}.business`)}
+            />
+          ))}
+        </StaggerGroup>
+      </Container>
+    </section>
+  );
+}
+
 function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote }) {
   return (
     <StaggerItem>
@@ -3105,6 +3173,7 @@ export default function App() {
         <HowItWorks />
         <Portfolio />
         <LiveDemo />
+        <Testimonials />
         <Pricing />
         <FAQ />
         <Contact />
