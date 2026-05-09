@@ -8,14 +8,33 @@ import {
   useSpring,
   useMotionValue,
   useReducedMotion,
-  useInView as useFmInView,
 } from "framer-motion";
-import Setup from "./Setup";
-import Globe from "./Globe";
+
+const Setup = React.lazy(() => import("./Setup"));
+const Globe = React.lazy(() => import("./Globe"));
 
 const EASE_OUT = [0.16, 1, 0.3, 1];
 const SPRING_REVEAL = { type: "spring", stiffness: 110, damping: 22, mass: 0.6 };
 const SPRING_HEADLINE = { type: "spring", stiffness: 140, damping: 18, mass: 0.55 };
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error, info) {
+    if (typeof console !== "undefined") {
+      console.error("ErrorBoundary caught:", error, info);
+    }
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback ?? null;
+    return this.props.children;
+  }
+}
 
 function CustomCursor() {
   const reduced = useReducedMotion();
@@ -25,6 +44,11 @@ function CustomCursor() {
   const sy = useSpring(y, { stiffness: 200, damping: 28, mass: 0.5 });
   const [hover, setHover] = React.useState(false);
   const [visible, setVisible] = React.useState(false);
+  const visibleRef = React.useRef(false);
+
+  React.useEffect(() => {
+    visibleRef.current = visible;
+  }, [visible]);
 
   React.useEffect(() => {
     if (reduced) return;
@@ -36,7 +60,7 @@ function CustomCursor() {
     const move = (e) => {
       x.set(e.clientX);
       y.set(e.clientY);
-      if (!visible) setVisible(true);
+      if (!visibleRef.current) setVisible(true);
     };
     const leave = () => setVisible(false);
     const enter = () => setVisible(true);
@@ -58,7 +82,7 @@ function CustomCursor() {
       window.removeEventListener("pointerleave", leave);
       window.removeEventListener("pointerenter", enter);
     };
-  }, [reduced, visible, x, y]);
+  }, [reduced, x, y]);
 
   if (reduced) return null;
 
@@ -137,7 +161,7 @@ function StaggerItem({ children, className = "", y = 24 }) {
   );
 }
 
-function MagneticButton({ children, href = "#", variant = "primary", onClick, type = "button", className = "" }) {
+function MagneticButton({ children, href = "#", variant = "primary", onClick, type = "button", className = "", disabled = false }) {
   const reduced = useReducedMotion();
   const ref = React.useRef(null);
   const x = useMotionValue(0);
@@ -146,7 +170,7 @@ function MagneticButton({ children, href = "#", variant = "primary", onClick, ty
   const sy = useSpring(y, { stiffness: 220, damping: 18, mass: 0.5 });
 
   const onMove = (e) => {
-    if (reduced || !ref.current) return;
+    if (reduced || !ref.current || disabled) return;
     const r = ref.current.getBoundingClientRect();
     const relX = e.clientX - (r.left + r.width / 2);
     const relY = e.clientY - (r.top + r.height / 2);
@@ -167,12 +191,12 @@ function MagneticButton({ children, href = "#", variant = "primary", onClick, ty
     <motion.span
       ref={ref}
       style={{ x: sx, y: sy }}
-      className={[base, styles, className].join(" ")}
+      className={[base, styles, disabled ? "opacity-60 cursor-not-allowed" : "", className].join(" ")}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
     >
       <span className="relative z-10 flex items-center gap-2">{children}</span>
-      {variant === "primary" && (
+      {variant === "primary" && !disabled && (
         <span
           aria-hidden
           className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
@@ -182,13 +206,16 @@ function MagneticButton({ children, href = "#", variant = "primary", onClick, ty
     </motion.span>
   );
 
+  const outerClass = ["inline-block", className].join(" ").trim();
+
   if (onClick || type === "submit") {
     return (
       <motion.button
         type={type}
         onClick={onClick}
-        className="inline-block"
-        whileTap={reduced ? undefined : { scale: 0.97 }}
+        disabled={disabled}
+        className={outerClass}
+        whileTap={reduced || disabled ? undefined : { scale: 0.97 }}
       >
         {Inner}
       </motion.button>
@@ -198,7 +225,7 @@ function MagneticButton({ children, href = "#", variant = "primary", onClick, ty
   return (
     <motion.a
       href={href}
-      className="inline-block"
+      className={outerClass}
       whileTap={reduced ? undefined : { scale: 0.97 }}
     >
       {Inner}
@@ -237,28 +264,6 @@ function MeshBackground({ intensity = 1 }) {
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink-950" />
     </div>
   );
-}
-
-function CountUp({ to, prefix = "", suffix = "", duration = 1400 }) {
-  const ref = React.useRef(null);
-  const inView = useFmInView(ref, { once: true, amount: 0.4 });
-  const [val, setVal] = React.useState(0);
-
-  React.useEffect(() => {
-    if (!inView) return;
-    let raf = 0;
-    const start = performance.now();
-    const ease = (t) => 1 - Math.pow(1 - t, 4);
-    const tick = (now) => {
-      const t = Math.min(1, (now - start) / duration);
-      setVal(Math.round(ease(t) * to));
-      if (t < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [inView, to, duration]);
-
-  return <span ref={ref}>{prefix}{val}{suffix}</span>;
 }
 
 function Container({ children, className = "" }) {
@@ -376,6 +381,22 @@ const SCROLLSPY_IDS = [
   "contact",
 ];
 
+let bodyScrollLockCount = 0;
+let bodyScrollPrevOverflow = "";
+function lockBodyScroll() {
+  if (bodyScrollLockCount === 0) {
+    bodyScrollPrevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+  }
+  bodyScrollLockCount += 1;
+}
+function unlockBodyScroll() {
+  bodyScrollLockCount = Math.max(0, bodyScrollLockCount - 1);
+  if (bodyScrollLockCount === 0) {
+    document.body.style.overflow = bodyScrollPrevOverflow;
+  }
+}
+
 function Navbar() {
   const { t, i18n } = useTranslation();
   const [active, setActive] = React.useState("bento");
@@ -385,6 +406,7 @@ function Navbar() {
   const langTimer = React.useRef(null);
   const programmaticScroll = React.useRef(false);
   const programmaticEndTimer = React.useRef(null);
+  const scrollSessionRef = React.useRef(0);
 
   const clearTimer = () => {
     if (langTimer.current) { clearTimeout(langTimer.current); langTimer.current = null; }
@@ -399,7 +421,13 @@ function Navbar() {
     setLangOpen(false);
   };
 
-  React.useEffect(() => () => clearTimer(), []);
+  React.useEffect(() => () => {
+    clearTimer();
+    if (programmaticEndTimer.current) {
+      clearTimeout(programmaticEndTimer.current);
+      programmaticEndTimer.current = null;
+    }
+  }, []);
 
   React.useEffect(() => {
     const onScroll = () => {
@@ -421,9 +449,8 @@ function Navbar() {
 
   React.useEffect(() => {
     if (!mobileOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    lockBodyScroll();
+    return () => { unlockBodyScroll(); };
   }, [mobileOpen]);
 
   const scrollToId = (id) => (e) => {
@@ -435,10 +462,15 @@ function Navbar() {
     const y = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
     setActive(id);
     programmaticScroll.current = true;
-    if (programmaticEndTimer.current) clearTimeout(programmaticEndTimer.current);
+    if (programmaticEndTimer.current) {
+      clearTimeout(programmaticEndTimer.current);
+      programmaticEndTimer.current = null;
+    }
+    const sessionId = ++scrollSessionRef.current;
     let lastY = window.scrollY;
     let still = 0;
     const watch = () => {
+      if (sessionId !== scrollSessionRef.current) return;
       if (Math.abs(window.scrollY - lastY) < 0.5) {
         still += 1;
       } else {
@@ -447,6 +479,7 @@ function Navbar() {
       }
       if (still >= 4) {
         programmaticScroll.current = false;
+        programmaticEndTimer.current = null;
         return;
       }
       programmaticEndTimer.current = setTimeout(watch, 80);
@@ -1861,7 +1894,7 @@ function Portfolio() {
             <a
               href="https://matrixecosalon.org"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="group block"
               data-cursor="hover"
             >
@@ -2372,8 +2405,8 @@ function Pricing() {
                 <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{t("pricing.monthly.chatbot.title")}</p>
                 <p className="mt-1.5 text-[13.5px] leading-[1.55] text-fg-muted">{t("pricing.monthly.chatbot.description")}</p>
               </div>
-              <div className="mt-5 overflow-hidden rounded-xl border border-white/[0.08]">
-                <table className="w-full text-left text-[13px]">
+              <div className="mt-5 overflow-x-auto rounded-xl border border-white/[0.08]">
+                <table className="w-full min-w-[460px] text-left text-[13px]">
                   <thead className="bg-white/[0.025]">
                     <tr>
                       <th className="px-4 py-3 font-semibold text-fg-muted">{t("pricing.monthly.chatbot.table.headers.feature")}</th>
@@ -2564,10 +2597,14 @@ function FAQ() {
 
 function Contact() {
   const { t } = useTranslation();
+  const [submitting, setSubmitting] = React.useState(false);
+  const [formStatus, setFormStatus] = React.useState({ type: "idle", message: "" });
 
   function handleSubmit(e) {
     e.preventDefault();
-    const form = new FormData(e.currentTarget);
+    if (submitting) return;
+    const formEl = e.currentTarget;
+    const form = new FormData(formEl);
     const data = {
       name: form.get("name")?.toString().trim() || "-",
       business: form.get("business")?.toString().trim() || "-",
@@ -2575,6 +2612,8 @@ function Contact() {
       service: form.get("service")?.toString().trim() || "-",
       message: form.get("message")?.toString().trim() || "-",
     };
+    setSubmitting(true);
+    setFormStatus({ type: "idle", message: "" });
     fetch("https://formspree.io/f/xqeekjap", {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -2582,15 +2621,18 @@ function Contact() {
     })
       .then((response) => {
         if (response.ok) {
-          alert(t("contact.form.successMessage"));
-          e.currentTarget.reset();
+          formEl.reset();
+          setFormStatus({ type: "success", message: t("contact.form.successMessage") });
           return;
         }
         return response.json().then((d) => { throw new Error(d.error || "Form submission failed"); });
       })
       .catch((error) => {
         console.error("Error:", error);
-        alert(t("contact.form.errorMessage"));
+        setFormStatus({ type: "error", message: t("contact.form.errorMessage") });
+      })
+      .finally(() => {
+        setSubmitting(false);
       });
   }
 
@@ -2622,16 +2664,16 @@ function Contact() {
                 <div className="grid gap-5 sm:grid-cols-2">
                   <label className="block">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.phoneLabel")}</span>
-                    <input name="phone" required placeholder={t("contact.form.phonePlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
+                    <input name="phone" type="tel" autoComplete="tel" required placeholder={t("contact.form.phonePlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
                   </label>
                   <label className="block">
                     <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.serviceLabel")}</span>
-                    <select name="service" defaultValue="Website + AI Chatbot" className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm">
-                      <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteOnly")}</option>
-                      <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteChatbot")}</option>
-                      <option className="bg-ink-800">{t("contact.form.serviceOptions.chatbotOnly")}</option>
-                      <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteVoice")}</option>
-                      <option className="bg-ink-800">{t("contact.form.serviceOptions.websiteBoth")}</option>
+                    <select name="service" defaultValue="websiteChatbot" className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm">
+                      <option value="websiteOnly" className="bg-ink-800">{t("contact.form.serviceOptions.websiteOnly")}</option>
+                      <option value="websiteChatbot" className="bg-ink-800">{t("contact.form.serviceOptions.websiteChatbot")}</option>
+                      <option value="chatbotOnly" className="bg-ink-800">{t("contact.form.serviceOptions.chatbotOnly")}</option>
+                      <option value="websiteVoice" className="bg-ink-800">{t("contact.form.serviceOptions.websiteVoice")}</option>
+                      <option value="websiteBoth" className="bg-ink-800">{t("contact.form.serviceOptions.websiteBoth")}</option>
                     </select>
                   </label>
                 </div>
@@ -2640,7 +2682,7 @@ function Contact() {
                   <textarea name="message" rows={5} placeholder={t("contact.form.messagePlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
                 </label>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <MagneticButton type="submit" variant="primary">
+                  <MagneticButton type="submit" variant="primary" disabled={submitting}>
                     {t("contact.form.submitButton")}
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
@@ -2648,10 +2690,18 @@ function Contact() {
                   </MagneticButton>
                   <p className="max-w-[34ch] text-[11.5px] leading-[1.55] text-fg-muted">{t("contact.form.consentText")}</p>
                 </div>
+                <div role="status" aria-live="polite" aria-atomic="true" className="min-h-[1.25rem]">
+                  {formStatus.type === "success" && (
+                    <p className="text-[13px] leading-[1.55] text-emerald-300">{formStatus.message}</p>
+                  )}
+                  {formStatus.type === "error" && (
+                    <p className="text-[13px] leading-[1.55] text-rose-300" role="alert">{formStatus.message}</p>
+                  )}
+                </div>
               </form>
 
               <div className="mt-7 flex flex-wrap gap-3 border-t border-white/[0.06] pt-5">
-                <a href="https://www.facebook.com/profile.php?id=61586065058744" target="_blank" rel="noreferrer" className="pressable inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-sky-400/30 hover:bg-sky-400/[0.04] hover:text-fg" data-cursor="hover">
+                <a href="https://www.facebook.com/profile.php?id=61586065058744" target="_blank" rel="noopener noreferrer" className="pressable inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-sky-400/30 hover:bg-sky-400/[0.04] hover:text-fg" data-cursor="hover">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M22 12a10 10 0 1 0-11.6 9.9V14.9H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3V22A10 10 0 0 0 22 12z"/></svg>
                   {t("contact.form.facebookButton")}
                 </a>
@@ -2736,7 +2786,7 @@ function FooterColumn({ heading, links }) {
             ) : (
               <a
                 href={l.href}
-                {...(l.external ? { target: "_blank", rel: "noreferrer" } : {})}
+                {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 className="text-[13.5px] text-fg/85 transition-colors duration-200 hover:text-sky-300"
                 data-cursor="hover"
               >
@@ -2803,7 +2853,7 @@ function Footer({ onOpenPrivacy }) {
                 <a
                   href="https://www.facebook.com/profile.php?id=61586065058744"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   aria-label="DalaTech on Facebook"
                   data-cursor="hover"
                   className="pressable flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.02] text-fg-muted transition-[border-color,color,background-color] duration-200 hover:border-sky-400/40 hover:bg-sky-400/[0.06] hover:text-sky-300"
@@ -2848,17 +2898,22 @@ function PrivacyTermsModal({ isOpen, onClose }) {
     if (!isOpen) return;
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
+    lockBodyScroll();
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
+      unlockBodyScroll();
     };
   }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-[100000] flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="privacy-terms-title"
+        >
           <motion.button
             type="button"
             aria-label="Close Privacy Policy and Terms"
@@ -2878,7 +2933,7 @@ function PrivacyTermsModal({ isOpen, onClose }) {
           >
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <h2 className="font-display text-[22px] font-semibold tracking-tight text-fg">Privacy Policy & Terms of Service</h2>
+                <h2 id="privacy-terms-title" className="font-display text-[22px] font-semibold tracking-tight text-fg">Privacy Policy & Terms of Service</h2>
                 <p className="text-[13px] text-fg-muted">Effective Date: February 10, 2026</p>
               </div>
               <button type="button" onClick={onClose} className="pressable rounded-full border border-white/10 px-3.5 py-1.5 text-[12.5px] text-fg-muted hover:border-white/20 hover:text-fg">
@@ -3117,7 +3172,11 @@ function LocationBadge() {
           className="grid items-center gap-12 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-16"
         >
           <div className="mx-auto w-full max-w-[360px] sm:max-w-[420px] md:mx-0 md:max-w-[480px]">
-            <Globe reducedMotion={reduced} />
+            <ErrorBoundary fallback={<div className="aspect-square w-full" aria-hidden />}>
+              <React.Suspense fallback={<div className="aspect-square w-full" aria-hidden />}>
+                <Globe reducedMotion={reduced} />
+              </React.Suspense>
+            </ErrorBoundary>
           </div>
           <div className="text-center md:text-left">
             <SectionLabel>{t("location.eyebrow")}</SectionLabel>
@@ -3156,31 +3215,53 @@ export default function App() {
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
-  if (currentPage === "setup") return <Setup />;
+  if (currentPage === "setup") {
+    return (
+      <React.Suspense fallback={<div className="min-h-screen bg-ink-950" />}>
+        <Setup />
+      </React.Suspense>
+    );
+  }
+
+  const sections = [
+    ["hero", <Hero />],
+    ["marquee", <CapabilityMarquee />],
+    ["bentoFeatures", <BentoFeatures />],
+    ["processTimeline", <ProcessTimeline />],
+    ["techStack", <TechStack />],
+    ["location", <LocationBadge />],
+    ["features", <Features />],
+    ["howItWorks", <HowItWorks />],
+    ["portfolio", <Portfolio />],
+    ["liveDemo", <LiveDemo />],
+    ["testimonials", <Testimonials />],
+    ["pricing", <Pricing />],
+    ["faq", <FAQ />],
+    ["contact", <Contact />],
+  ];
 
   return (
     <div className="relative min-h-screen bg-ink-950 text-fg">
-      <CustomCursor />
-      <Navbar />
+      <ErrorBoundary>
+        <CustomCursor />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <Navbar />
+      </ErrorBoundary>
       <main>
-        <Hero />
-        <CapabilityMarquee />
-        <BentoFeatures />
-        <ProcessTimeline />
-        <TechStack />
-        <LocationBadge />
-        <Features />
-        <HowItWorks />
-        <Portfolio />
-        <LiveDemo />
-        <Testimonials />
-        <Pricing />
-        <FAQ />
-        <Contact />
+        {sections.map(([key, node]) => (
+          <ErrorBoundary key={key}>{node}</ErrorBoundary>
+        ))}
       </main>
-      <Footer onOpenPrivacy={() => setIsPrivacyOpen(true)} />
-      <PrivacyTermsModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
-      <Chatbot />
+      <ErrorBoundary>
+        <Footer onOpenPrivacy={() => setIsPrivacyOpen(true)} />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <PrivacyTermsModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
+      </ErrorBoundary>
+      <ErrorBoundary>
+        <Chatbot />
+      </ErrorBoundary>
     </div>
   );
 }
