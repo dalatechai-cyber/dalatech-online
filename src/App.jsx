@@ -2597,44 +2597,7 @@ function FAQ() {
 
 function Contact() {
   const { t } = useTranslation();
-  const [submitting, setSubmitting] = React.useState(false);
-  const [formStatus, setFormStatus] = React.useState({ type: "idle", message: "" });
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (submitting) return;
-    const formEl = e.currentTarget;
-    const form = new FormData(formEl);
-    const data = {
-      name: form.get("name")?.toString().trim() || "-",
-      business: form.get("business")?.toString().trim() || "-",
-      phone: form.get("phone")?.toString().trim() || "-",
-      service: form.get("service")?.toString().trim() || "-",
-      message: form.get("message")?.toString().trim() || "-",
-    };
-    setSubmitting(true);
-    setFormStatus({ type: "idle", message: "" });
-    fetch("https://formspree.io/f/xqeekjap", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(data),
-    })
-      .then((response) => {
-        if (response.ok) {
-          formEl.reset();
-          setFormStatus({ type: "success", message: t("contact.form.successMessage") });
-          return;
-        }
-        return response.json().then((d) => { throw new Error(d.error || "Form submission failed"); });
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        setFormStatus({ type: "error", message: t("contact.form.errorMessage") });
-      })
-      .finally(() => {
-        setSubmitting(false);
-      });
-  }
+  const mailtoHref = `mailto:bilguunbilly0214@gmail.com?subject=${encodeURIComponent("Демо хүсэлт / Demo Request")}`;
 
   return (
     <section id="contact" className="relative py-28">
@@ -2644,108 +2607,36 @@ function Contact() {
       <Container className="relative">
         <SectionHeader eyebrow={t("contact.sectionLabel")} title={t("contact.title")} description={t("contact.description")} />
 
-        <div className="mt-14 grid gap-7 lg:grid-cols-[1.05fr_0.95fr]">
-          <Reveal>
-            <div className="rounded-2xl border border-white/[0.08] bg-ink-800/45 p-7 transition-[border-color,box-shadow] duration-300 hover:border-white/15 hover:shadow-[0_30px_70px_-30px_rgba(8,12,28,0.7)]">
-              <p className="font-display text-[18px] font-semibold tracking-tight text-fg">{t("contact.form.title")}</p>
-              <p className="mt-1.5 text-[14px] leading-[1.55] text-fg-muted">{t("contact.form.description")}</p>
+        <Reveal>
+          <div className="mx-auto mt-14 max-w-[640px] overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-800/45 p-8 text-center transition-[border-color,box-shadow] duration-300 hover:border-white/15 hover:shadow-[0_30px_70px_-30px_rgba(8,12,28,0.7)] sm:p-10">
+            <span className="inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-300">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M12 2v4" /><path d="M12 18v4" /><path d="m4.93 4.93 2.83 2.83" /><path d="m16.24 16.24 2.83 2.83" /><path d="M2 12h4" /><path d="M18 12h4" /><path d="m4.93 19.07 2.83-2.83" /><path d="m16.24 7.76 2.83-2.83" />
+              </svg>
+              {t("contact.interim.badge")}
+            </span>
 
-              <form onSubmit={handleSubmit} className="mt-7 space-y-5">
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <label className="block">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.nameLabel")}</span>
-                    <input name="name" required placeholder={t("contact.form.namePlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
-                  </label>
-                  <label className="block">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.businessLabel")}</span>
-                    <input name="business" required placeholder={t("contact.form.businessPlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
-                  </label>
-                </div>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <label className="block">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.phoneLabel")}</span>
-                    <input name="phone" type="tel" autoComplete="tel" required placeholder={t("contact.form.phonePlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
-                  </label>
-                  <label className="block">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.serviceLabel")}</span>
-                    <select name="service" defaultValue="websiteChatbot" className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm">
-                      <option value="websiteOnly" className="bg-ink-800">{t("contact.form.serviceOptions.websiteOnly")}</option>
-                      <option value="websiteChatbot" className="bg-ink-800">{t("contact.form.serviceOptions.websiteChatbot")}</option>
-                      <option value="chatbotOnly" className="bg-ink-800">{t("contact.form.serviceOptions.chatbotOnly")}</option>
-                      <option value="websiteVoice" className="bg-ink-800">{t("contact.form.serviceOptions.websiteVoice")}</option>
-                      <option value="websiteBoth" className="bg-ink-800">{t("contact.form.serviceOptions.websiteBoth")}</option>
-                    </select>
-                  </label>
-                </div>
-                <label className="block">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("contact.form.messageLabel")}</span>
-                  <textarea name="message" rows={5} placeholder={t("contact.form.messagePlaceholder")} className="field mt-2.5 w-full rounded-xl px-3.5 py-3 text-sm" />
-                </label>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <MagneticButton type="submit" variant="primary" disabled={submitting}>
-                    {t("contact.form.submitButton")}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                    </svg>
-                  </MagneticButton>
-                  <p className="max-w-[34ch] text-[11.5px] leading-[1.55] text-fg-muted">{t("contact.form.consentText")}</p>
-                </div>
-                <div role="status" aria-live="polite" aria-atomic="true" className="min-h-[1.25rem]">
-                  {formStatus.type === "success" && (
-                    <p className="text-[13px] leading-[1.55] text-emerald-300">{formStatus.message}</p>
-                  )}
-                  {formStatus.type === "error" && (
-                    <p className="text-[13px] leading-[1.55] text-rose-300" role="alert">{formStatus.message}</p>
-                  )}
-                </div>
-              </form>
-
-              <div className="mt-7 flex flex-wrap gap-3 border-t border-white/[0.06] pt-5">
-                <a href="https://www.facebook.com/profile.php?id=61586065058744" target="_blank" rel="noopener noreferrer" className="pressable inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-sky-400/30 hover:bg-sky-400/[0.04] hover:text-fg" data-cursor="hover">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M22 12a10 10 0 1 0-11.6 9.9V14.9H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3V22A10 10 0 0 0 22 12z"/></svg>
-                  {t("contact.form.facebookButton")}
-                </a>
-                <a href="mailto:dalatech.ai@gmail.com" className="pressable inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-sky-400/30 hover:bg-sky-400/[0.04] hover:text-fg" data-cursor="hover">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <rect x="3" y="5" width="18" height="14" rx="2" />
-                    <path d="m3 7 9 6 9-6" />
-                  </svg>
-                  {t("contact.form.emailButton")}
-                </a>
-              </div>
+            <div className="mt-6 space-y-4 text-[15px] leading-[1.65] text-fg/90">
+              <p lang="mn">{t("contact.interim.messageMn")}</p>
+              <p lang="en" className="text-fg-muted">{t("contact.interim.messageEn")}</p>
+              <p lang="zh-Hant" className="text-fg-muted">{t("contact.interim.messageZh")}</p>
             </div>
-          </Reveal>
 
-          <StaggerGroup className="space-y-4" stagger={0.08}>
-            {[1, 2, 3].map((n) => (
-              <StaggerItem key={n}>
-                <div className="group flex gap-5 rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-sky-400/30 hover:shadow-[0_24px_56px_-24px_rgba(56,189,248,0.28)]">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-400/10 font-display text-[13px] font-semibold tracking-tight text-sky-400 transition-colors group-hover:border-sky-400/50 group-hover:bg-sky-400/15">
-                    {String(n).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <p className="font-display text-[15.5px] font-semibold tracking-tight text-fg">{t(`contact.steps.step${n}.title`)}</p>
-                    <p className="mt-1.5 text-[14px] leading-[1.6] text-fg-muted">{t(`contact.steps.step${n}.description`)}</p>
-                  </div>
-                </div>
-              </StaggerItem>
-            ))}
-            <StaggerItem>
-              <div className="rounded-2xl border border-white/[0.08] bg-gradient-to-br from-sky-400/[0.05] to-ink-800/45 p-6">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-400/30 bg-sky-400/10 text-sky-400">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                      <circle cx="12" cy="12" r="9" />
-                      <path d="M12 7v5l3 2" />
-                    </svg>
-                  </span>
-                  <p className="font-display text-[15.5px] font-semibold tracking-tight text-fg">{t("contact.responseTime.title")}</p>
-                </div>
-                <p className="mt-3 text-[14px] leading-[1.6] text-fg-muted">{t("contact.responseTime.description")}</p>
-              </div>
-            </StaggerItem>
-          </StaggerGroup>
-        </div>
+            <div className="mt-8 flex justify-center">
+              <MagneticButton href={mailtoHref} variant="primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="m3 7 9 6 9-6" />
+                </svg>
+                {t("contact.interim.cta")}
+              </MagneticButton>
+            </div>
+
+            <p className="mt-5 text-[12.5px] leading-[1.55] text-fg-muted">
+              <a href={mailtoHref} className="text-fg/80 underline-offset-4 transition-colors hover:text-sky-300 hover:underline" data-cursor="hover">bilguunbilly0214@gmail.com</a>
+            </p>
+          </div>
+        </Reveal>
       </Container>
     </section>
   );

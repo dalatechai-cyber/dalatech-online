@@ -355,49 +355,12 @@
     "sectionLabel": "聯絡我們",
     "title": "免費試用示範",
     "description": "告訴我們您的業務狀況，我們將推薦最簡單的設置方案，幫助您節省時間並減少重複性工作。",
-    "form": {
-      "title": "申請示範",
-      "description": "填寫表單後，我們將盡快與您聯繫。",
-      "nameLabel": "您的姓名",
-      "namePlaceholder": "例如：王小明",
-      "businessLabel": "企業名稱",
-      "businessPlaceholder": "例如：Matrix Eco Salon",
-      "phoneLabel": "電話",
-      "phonePlaceholder": "例如：9999-9999",
-      "serviceLabel": "感興趣的服務",
-      "serviceOptions": {
-        "websiteOnly": "網站（僅限）",
-        "websiteChatbot": "網站 + AI 聊天機器人",
-        "chatbotOnly": "AI 聊天機器人（僅限）",
-        "websiteVoice": "網站 + AI 語音助理",
-        "websiteBoth": "網站 + 聊天機器人 + 語音助理"
-      },
-      "messageLabel": "留言",
-      "messagePlaceholder": "客戶最常問您什麼問題？",
-      "submitButton": "送出",
-      "consentText": "送出即代表您同意我們就您的請求與您聯繫。",
-      "facebookButton": "透過 Facebook 聯絡我們",
-      "emailButton": "發送電子郵件",
-      "successMessage": "感謝您！我們已收到您的申請，將盡快與您聯繫。",
-      "errorMessage": "表單送出時發生錯誤，請重試或直接發送電子郵件至 dalatech.ai@gmail.com"
-    },
-    "steps": {
-      "step1": {
-        "title": "1) 快速需求了解",
-        "description": "我們將了解您的業務、產品／服務，以及客戶最常問的 10 個問題。"
-      },
-      "step2": {
-        "title": "2) 建置 + AI 設置",
-        "description": "我們建立網站，並使用您的真實業務數據配置 AI 聊天機器人（和／或語音助理）。"
-      },
-      "step3": {
-        "title": "3) 上線 + 持續優化",
-        "description": "我們上線後協助您持續改善回應品質。選擇月費方案後，所有內容都能保持最新狀態。"
-      }
-    },
-    "responseTime": {
-      "title": "快速回應",
-      "description": "我們通常在 24 小時內回覆。如有緊急需求，請透過 Facebook 聯絡我們。"
+    "interim": {
+      "badge": "系統升級中",
+      "messageMn": "Демо захиалгын систем шинэчлэгдэж байна. Одоогоор имэйлээр холбогдоно уу.",
+      "messageEn": "Our demo booking system is being upgraded. Please contact us by email for now.",
+      "messageZh": "演示預約系統正在升級中，請暫時透過電子郵件聯絡我們。",
+      "cta": "發送電子郵件"
     }
   },
   "bento": {
