@@ -2645,7 +2645,7 @@ function ContactOrbField() {
 
 function Contact() {
   const { t } = useTranslation();
-  const mailtoHref = `mailto:bilguunbilly0214@gmail.com?subject=${encodeURIComponent("Демо хүсэлт / Demo Request")}`;
+  const mailtoHref = `mailto:dalatech.ai@gmail.com?subject=${encodeURIComponent("Демо хүсэлт / Demo Request")}`;
 
   return (
     <section id="contact" className="relative overflow-hidden py-32 sm:py-40">
@@ -2688,7 +2688,7 @@ function Contact() {
                 className="text-fg/75 underline-offset-4 transition-colors duration-200 hover:text-sky-300 hover:underline"
                 data-cursor="hover"
               >
-                bilguunbilly0214@gmail.com
+                dalatech.ai@gmail.com
               </a>
             </p>
           </StaggerItem>
@@ -2810,7 +2810,7 @@ function Footer({ onOpenPrivacy }) {
                   </svg>
                 </a>
                 <a
-                  href="mailto:bilguunbilly0214@gmail.com"
+                  href="mailto:dalatech.ai@gmail.com"
                   aria-label="Email DalaTech"
                   data-cursor="hover"
                   className="pressable inline-flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-[12.5px] font-medium text-fg/85 transition-[border-color,color,background-color] duration-200 hover:border-sky-400/40 hover:bg-sky-400/[0.06] hover:text-sky-300"
@@ -2819,7 +2819,7 @@ function Footer({ onOpenPrivacy }) {
                     <rect x="3" y="5" width="18" height="14" rx="2" />
                     <path d="m3 7 9 6 9-6" />
                   </svg>
-                  bilguunbilly0214@gmail.com
+                  dalatech.ai@gmail.com
                 </a>
               </div>
             </div>
@@ -2899,7 +2899,7 @@ function PrivacyTermsModal({ isOpen, onClose }) {
                   <li>Data We Collect: We collect your public Facebook profile information (name, profile picture) and the messages you send to our chatbot.</li>
                   <li>How We Use Data: We use your messages solely to provide AI-generated responses via the Google Gemini API. We do not use your data for advertising or marketing purposes without your consent.</li>
                   <li>Data Sharing: Your message data is processed by Google's AI services to generate replies but is not shared with any other third parties or sold.</li>
-                  <li>Data Deletion: If you wish to delete your data from our system, please contact us at bilguunbilly0214@gmail.com or reply "DELETE" in the chat.</li>
+                  <li>Data Deletion: If you wish to delete your data from our system, please contact us at dalatech.ai@gmail.com or reply "DELETE" in the chat.</li>
                 </ul>
               </div>
               <div className="space-y-3">
@@ -2912,7 +2912,7 @@ function PrivacyTermsModal({ isOpen, onClose }) {
               </div>
               <div className="space-y-3">
                 <h3 className="font-display text-[16px] font-semibold text-fg">4. Contact Information</h3>
-                <p>Owner: Tserentsoodol Bilguun Address: Khan-Uul, Artsat apartment, 801, Ulaanbaatar, Mongolia Phone: +976 99273339 Email: bilguunbilly0214@gmail.com</p>
+                <p>Owner: Tserentsoodol Bilguun Address: Khan-Uul, Artsat apartment, 801, Ulaanbaatar, Mongolia Phone: +976 99273339 Email: dalatech.ai@gmail.com</p>
               </div>
             </div>
           </motion.div>
