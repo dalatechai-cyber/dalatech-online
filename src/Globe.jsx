@@ -32,8 +32,11 @@ export default function Globe({ className = "", reducedMotion = false }) {
     const labelEl = labelRef.current;
     if (!mount) return;
 
+    // The mount has aspect-square CSS, but in some grid layouts the cell can
+    // stretch the box vertically before useEffect runs. Use width for both
+    // dimensions so the WebGL canvas always matches the intended 1:1 ratio.
     let width = mount.clientWidth || 1;
-    let height = mount.clientHeight || width;
+    let height = width;
 
     const scene = new THREE.Scene();
 
@@ -70,8 +73,18 @@ export default function Globe({ className = "", reducedMotion = false }) {
 
     const globeGroup = new THREE.Group();
     globeGroup.rotation.z = 0.18;
-    globeGroup.rotation.y = 2.7;
+    // Start with Ulaanbaatar facing the camera (computed from its lat/lng so
+    // the pin is visible immediately, not after a slow drift into view).
+    {
+      const p = latLngToVector3(ULAANBAATAR.lat, ULAANBAATAR.lng, GLOBE_RADIUS);
+      globeGroup.rotation.y = Math.atan2(-p.x, p.z);
+    }
     scene.add(globeGroup);
+
+    const isTouchOnly =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(hover: none)").matches;
 
     const earthGeo = new THREE.SphereGeometry(GLOBE_RADIUS, 96, 96);
     const earthMat = new THREE.MeshPhongMaterial({
@@ -187,9 +200,13 @@ export default function Globe({ className = "", reducedMotion = false }) {
     ring.lookAt(pinSurface.clone().multiplyScalar(2));
     globeGroup.add(ring);
 
-    let speed = reducedMotion ? 0 : 0.0019;
-    const baseSpeed = reducedMotion ? 0 : 0.0019;
+    // Touch devices have no hover, so the rotation never slows. Keep the
+    // base speed gentle there so the Ulaanbaatar pin stays readable.
+    const desktopBase = 0.0019;
+    const touchBase = 0.0006;
+    const baseSpeed = reducedMotion ? 0 : isTouchOnly ? touchBase : desktopBase;
     const slowSpeed = reducedMotion ? 0 : 0.0004;
+    let speed = baseSpeed;
     const start = performance.now();
     let raf = 0;
 
@@ -235,10 +252,9 @@ export default function Globe({ className = "", reducedMotion = false }) {
 
     const onResize = () => {
       const w = mount.clientWidth || 1;
-      const h = mount.clientHeight || w;
       width = w;
-      height = h;
-      camera.aspect = width / height;
+      height = w;
+      camera.aspect = 1;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
     };
