@@ -796,7 +796,7 @@ function HeroDemoCard() {
       </BrowserMockup>
       <div
         aria-hidden
-        className="pointer-events-none absolute left-4 top-[58px] z-10 flex items-center gap-1.5 rounded-full border border-white/15 bg-ink-950/60 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-fg-muted backdrop-blur sm:top-[62px]"
+        className="pointer-events-none absolute left-0 bottom-full z-10 mb-3 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-ink-900/80 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-fg-muted backdrop-blur"
       >
         <span className="relative flex h-1.5 w-1.5">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
