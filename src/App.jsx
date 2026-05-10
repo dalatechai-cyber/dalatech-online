@@ -1105,7 +1105,25 @@ function ChatBubble({ side, children }) {
   );
 }
 
-function TypingDots() {
+function TypingDots({ side = "ai" }) {
+  if (side === "user") {
+    return (
+      <div className="flex justify-end">
+        <div className="rounded-2xl rounded-br-md bg-sky-400 px-3.5 py-2.5">
+          <div className="flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                className="block h-1.5 w-1.5 rounded-full bg-ink-950/70"
+                animate={{ opacity: [0.35, 1, 0.35], y: [0, -2, 0] }}
+                transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.14, ease: "easeInOut" }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex justify-start">
       <div className="rounded-2xl rounded-bl-md border border-white/10 bg-white/[0.04] px-3.5 py-2.5">
@@ -1124,32 +1142,65 @@ function TypingDots() {
   );
 }
 
+const BENTO_CHAT_MESSAGES = [
+  { side: "user", key: "user1" },
+  { side: "ai", key: "ai1" },
+  { side: "user", key: "user2" },
+  { side: "ai", key: "ai2" },
+  { side: "user", key: "user3" },
+  { side: "ai", key: "ai3" },
+  { side: "user", key: "user4" },
+  { side: "ai", key: "ai4" },
+];
+
 function BentoChatbotCard() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const [hovered, setHovered] = React.useState(false);
   const [cardRef, inViewOnce] = useTouchInViewOnce();
   const playing = hovered || inViewOnce;
-  const [stage, setStage] = React.useState(0);
+  const [visibleCount, setVisibleCount] = React.useState(0);
+  const [typingSide, setTypingSide] = React.useState(null);
 
   React.useEffect(() => {
-    if (!playing || reduced) {
-      setStage(0);
+    if (reduced) {
+      setVisibleCount(BENTO_CHAT_MESSAGES.length);
+      setTypingSide(null);
       return;
     }
-    const schedule = [
-      [280, 1],
-      [580, 2],
-      [1380, 3],
-      [2200, 4],
-      [2480, 5],
-      [3280, 6],
-      [4080, 7],
-      [4360, 8],
-      [5160, 9],
-    ];
-    const timers = schedule.map(([ms, s]) => setTimeout(() => setStage(s), ms));
-    return () => timers.forEach(clearTimeout);
+    if (!playing) {
+      setVisibleCount(0);
+      setTypingSide(null);
+      return;
+    }
+
+    const TYPING_MS = 720;
+    const GAP_MS = 720;
+    const LOOP_PAUSE_MS = 2600;
+    let timer;
+
+    const step = (i) => {
+      if (i >= BENTO_CHAT_MESSAGES.length) {
+        timer = setTimeout(() => {
+          setVisibleCount(0);
+          setTypingSide(null);
+          timer = setTimeout(() => step(0), 480);
+        }, LOOP_PAUSE_MS);
+        return;
+      }
+      setTypingSide(BENTO_CHAT_MESSAGES[i].side);
+      timer = setTimeout(() => {
+        setTypingSide(null);
+        setVisibleCount(i + 1);
+        timer = setTimeout(() => step(i + 1), GAP_MS);
+      }, TYPING_MS);
+    };
+
+    setVisibleCount(0);
+    setTypingSide(null);
+    timer = setTimeout(() => step(0), 240);
+
+    return () => clearTimeout(timer);
   }, [playing, reduced]);
 
   return (
@@ -1175,107 +1226,27 @@ function BentoChatbotCard() {
           </div>
 
           <div className="flex flex-col gap-2.5">
-            <ChatBubble side="user">{t("bento.chatbot.messages.user1")}</ChatBubble>
-            <ChatBubble side="ai">{t("bento.chatbot.messages.ai1")}</ChatBubble>
-
             <AnimatePresence mode="popLayout" initial={false}>
-              {stage >= 1 && (
+              {BENTO_CHAT_MESSAGES.slice(0, visibleCount).map((m) => (
                 <motion.div
-                  key="user2"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <ChatBubble side="user">{t("bento.chatbot.messages.user2")}</ChatBubble>
-                </motion.div>
-              )}
-              {stage === 2 && (
-                <motion.div
-                  key="typing1"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -2 }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <TypingDots />
-                </motion.div>
-              )}
-              {stage >= 3 && (
-                <motion.div
-                  key="ai2"
-                  initial={{ opacity: 0, y: 12, scale: 0.97 }}
+                  key={m.key}
+                  initial={reduced ? false : { opacity: 0, y: 10, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -4 }}
+                  exit={{ opacity: 0, y: -4, transition: { duration: 0.18 } }}
                   transition={{ type: "spring", stiffness: 260, damping: 24, mass: 0.55 }}
                 >
-                  <ChatBubble side="ai">{t("bento.chatbot.messages.ai2")}</ChatBubble>
+                  <ChatBubble side={m.side}>{t(`bento.chatbot.messages.${m.key}`)}</ChatBubble>
                 </motion.div>
-              )}
-              {stage >= 4 && (
+              ))}
+              {typingSide && !reduced && (
                 <motion.div
-                  key="user3"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <ChatBubble side="user">{t("bento.chatbot.messages.user3")}</ChatBubble>
-                </motion.div>
-              )}
-              {stage === 5 && (
-                <motion.div
-                  key="typing2"
+                  key={`typing-${typingSide}`}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -2 }}
+                  exit={{ opacity: 0, y: -2, transition: { duration: 0.14 } }}
                   transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <TypingDots />
-                </motion.div>
-              )}
-              {stage >= 6 && (
-                <motion.div
-                  key="ai3"
-                  initial={{ opacity: 0, y: 12, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 24, mass: 0.55 }}
-                >
-                  <ChatBubble side="ai">{t("bento.chatbot.messages.ai3")}</ChatBubble>
-                </motion.div>
-              )}
-              {stage >= 7 && (
-                <motion.div
-                  key="user4"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <ChatBubble side="user">{t("bento.chatbot.messages.user4")}</ChatBubble>
-                </motion.div>
-              )}
-              {stage === 8 && (
-                <motion.div
-                  key="typing3"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -2 }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <TypingDots />
-                </motion.div>
-              )}
-              {stage >= 9 && (
-                <motion.div
-                  key="ai4"
-                  initial={{ opacity: 0, y: 12, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 24, mass: 0.55 }}
-                >
-                  <ChatBubble side="ai">{t("bento.chatbot.messages.ai4")}</ChatBubble>
+                  <TypingDots side={typingSide} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -2719,17 +2690,6 @@ function Contact() {
             </div>
           </StaggerItem>
 
-          <StaggerItem>
-            <p className="mt-7 text-[12.5px] text-fg-muted">
-              <a
-                href={mailtoHref}
-                className="text-fg/75 underline-offset-4 transition-colors duration-200 hover:text-sky-300 hover:underline"
-                data-cursor="hover"
-              >
-                dalatech.ai@gmail.com
-              </a>
-            </p>
-          </StaggerItem>
         </StaggerGroup>
       </Container>
     </section>

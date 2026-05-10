@@ -198,6 +198,10 @@ export default function Globe({ className = "", reducedMotion = false }) {
     const baseSpeed = reducedMotion ? 0 : 0.0019;
     const slowSpeed = reducedMotion ? 0 : 0.0004;
     let speed = baseSpeed;
+    let isDragging = false;
+    let activePointerId = null;
+    let lastDragX = 0;
+    let lastDragY = 0;
     const start = performance.now();
     let raf = 0;
 
@@ -206,9 +210,11 @@ export default function Globe({ className = "", reducedMotion = false }) {
     const projected = new THREE.Vector3();
 
     const tick = (now) => {
-      const target = hoverRef.current ? slowSpeed : baseSpeed;
-      speed += (target - speed) * 0.06;
-      globeGroup.rotation.y += speed;
+      if (!isDragging) {
+        const target = hoverRef.current ? slowSpeed : baseSpeed;
+        speed += (target - speed) * 0.06;
+        globeGroup.rotation.y += speed;
+      }
 
       const cycle = ((now - start) % 2200) / 2200;
       const eased = 1 - Math.pow(1 - cycle, 3);
@@ -261,11 +267,64 @@ export default function Globe({ className = "", reducedMotion = false }) {
     mount.addEventListener("pointerenter", onEnter);
     mount.addEventListener("pointerleave", onLeave);
 
+    // Drag-to-spin: pointer events unify mouse and touch. While dragging we
+    // pause the auto-rotation tick, apply the delta directly to the globe
+    // group, and clamp the X-axis tilt so the camera never flips past poles.
+    const DRAG_SENS = 0.005;
+    const X_TILT_CLAMP = 0.6;
+    const previousTouchAction = mount.style.touchAction;
+    mount.style.touchAction = "none";
+
+    const onPointerDown = (e) => {
+      if (isDragging) return;
+      isDragging = true;
+      activePointerId = e.pointerId;
+      lastDragX = e.clientX;
+      lastDragY = e.clientY;
+      try {
+        mount.setPointerCapture(e.pointerId);
+      } catch (_) {
+        /* setPointerCapture may throw on some legacy browsers */
+      }
+    };
+    const onPointerMove = (e) => {
+      if (!isDragging || e.pointerId !== activePointerId) return;
+      const dx = e.clientX - lastDragX;
+      const dy = e.clientY - lastDragY;
+      lastDragX = e.clientX;
+      lastDragY = e.clientY;
+      globeGroup.rotation.y += dx * DRAG_SENS;
+      const nextX = globeGroup.rotation.x + dy * DRAG_SENS;
+      globeGroup.rotation.x = Math.max(-X_TILT_CLAMP, Math.min(X_TILT_CLAMP, nextX));
+    };
+    const endDrag = (e) => {
+      if (!isDragging) return;
+      if (e && activePointerId !== null && e.pointerId !== activePointerId) return;
+      isDragging = false;
+      if (activePointerId !== null) {
+        try {
+          mount.releasePointerCapture(activePointerId);
+        } catch (_) {
+          /* releasePointerCapture may throw if already released */
+        }
+      }
+      activePointerId = null;
+    };
+    mount.addEventListener("pointerdown", onPointerDown);
+    mount.addEventListener("pointermove", onPointerMove);
+    mount.addEventListener("pointerup", endDrag);
+    mount.addEventListener("pointercancel", endDrag);
+
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
       mount.removeEventListener("pointerenter", onEnter);
       mount.removeEventListener("pointerleave", onLeave);
+      mount.removeEventListener("pointerdown", onPointerDown);
+      mount.removeEventListener("pointermove", onPointerMove);
+      mount.removeEventListener("pointerup", endDrag);
+      mount.removeEventListener("pointercancel", endDrag);
+      mount.style.touchAction = previousTouchAction;
       if (renderer.domElement.parentNode === mount) {
         mount.removeChild(renderer.domElement);
       }
