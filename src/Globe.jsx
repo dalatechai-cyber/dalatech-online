@@ -81,11 +81,6 @@ export default function Globe({ className = "", reducedMotion = false }) {
     }
     scene.add(globeGroup);
 
-    const isTouchOnly =
-      typeof window !== "undefined" &&
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(hover: none)").matches;
-
     const earthGeo = new THREE.SphereGeometry(GLOBE_RADIUS, 96, 96);
     const earthMat = new THREE.MeshPhongMaterial({
       color: 0xffffff,
@@ -200,11 +195,7 @@ export default function Globe({ className = "", reducedMotion = false }) {
     ring.lookAt(pinSurface.clone().multiplyScalar(2));
     globeGroup.add(ring);
 
-    // Touch devices have no hover, so the rotation never slows. Keep the
-    // base speed gentle there so the Ulaanbaatar pin stays readable.
-    const desktopBase = 0.0019;
-    const touchBase = 0.0006;
-    const baseSpeed = reducedMotion ? 0 : isTouchOnly ? touchBase : desktopBase;
+    const baseSpeed = reducedMotion ? 0 : 0.0019;
     const slowSpeed = reducedMotion ? 0 : 0.0004;
     let speed = baseSpeed;
     const start = performance.now();

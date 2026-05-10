@@ -829,7 +829,7 @@ function HeroDemoCard() {
       </BrowserMockup>
       <div
         aria-hidden
-        className="pointer-events-none absolute left-0 bottom-full z-10 mb-3 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-ink-900/80 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-fg-muted backdrop-blur"
+        className="pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-ink-900/80 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-fg-muted backdrop-blur md:left-0 md:top-auto md:bottom-full md:mb-3"
       >
         <span className="relative flex h-1.5 w-1.5">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
@@ -1029,9 +1029,10 @@ function Features() {
   );
 }
 
-function BentoCardShell({ children, onPointerEnter, onPointerLeave, className = "" }) {
+function BentoCardShell({ children, onPointerEnter, onPointerLeave, innerRef, className = "" }) {
   return (
     <div
+      ref={innerRef}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
       className={["card-glow group relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-ink-800/55 p-6 shadow-card sm:p-7", className].join(" ")}
@@ -1039,6 +1040,37 @@ function BentoCardShell({ children, onPointerEnter, onPointerLeave, className = 
       {children}
     </div>
   );
+}
+
+// Touch devices don't get a sustained pointerenter, so the bento micro-animations
+// would never play on mobile. Watch the card and flip an "in view" flag once per
+// session so the animation runs automatically. Desktop hover paths are untouched.
+function useTouchInViewOnce() {
+  const ref = React.useRef(null);
+  const [inView, setInView] = React.useState(false);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isTouch =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(hover: none)").matches;
+    if (!isTouch) return;
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setInView(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return [ref, inView];
 }
 
 function BentoLabel({ children, dot = "sky" }) {
@@ -1096,10 +1128,12 @@ function BentoChatbotCard() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const [hovered, setHovered] = React.useState(false);
+  const [cardRef, inViewOnce] = useTouchInViewOnce();
+  const playing = hovered || inViewOnce;
   const [stage, setStage] = React.useState(0);
 
   React.useEffect(() => {
-    if (!hovered || reduced) {
+    if (!playing || reduced) {
       setStage(0);
       return;
     }
@@ -1116,10 +1150,10 @@ function BentoChatbotCard() {
     ];
     const timers = schedule.map(([ms, s]) => setTimeout(() => setStage(s), ms));
     return () => timers.forEach(clearTimeout);
-  }, [hovered, reduced]);
+  }, [playing, reduced]);
 
   return (
-    <BentoCardShell onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
+    <BentoCardShell innerRef={cardRef} onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
       <BentoLabel dot="emerald">{t("bento.chatbot.label")}</BentoLabel>
       <h3 className="mt-3 font-display text-[26px] font-semibold leading-[1.1] tracking-tight text-fg sm:text-[30px]">
         {t("bento.chatbot.title")}
@@ -1256,6 +1290,8 @@ function BentoAutomationCard() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const [hovered, setHovered] = React.useState(false);
+  const [cardRef, inViewOnce] = useTouchInViewOnce();
+  const playing = hovered || inViewOnce;
   const [done, setDone] = React.useState(0);
   const total = 7;
 
@@ -1264,7 +1300,7 @@ function BentoAutomationCard() {
       setDone(total);
       return;
     }
-    if (!hovered) {
+    if (!playing) {
       setDone(0);
       return;
     }
@@ -1273,7 +1309,7 @@ function BentoAutomationCard() {
       timers.push(setTimeout(() => setDone(i), 220 + (i - 1) * 280));
     }
     return () => timers.forEach(clearTimeout);
-  }, [hovered, reduced]);
+  }, [playing, reduced]);
 
   const tasks = [
     t("bento.automation.tasks.t1"),
@@ -1286,7 +1322,7 @@ function BentoAutomationCard() {
   ];
 
   return (
-    <BentoCardShell onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
+    <BentoCardShell innerRef={cardRef} onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
       <BentoLabel dot={done === total ? "emerald" : "sky"}>{t("bento.automation.label")}</BentoLabel>
       <h3 className="mt-3 font-display text-[22px] font-semibold leading-[1.12] tracking-tight text-fg sm:text-[24px]">
         {t("bento.automation.title")}
@@ -1353,6 +1389,8 @@ function BentoWebCard() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const [hovered, setHovered] = React.useState(false);
+  const [cardRef, inViewOnce] = useTouchInViewOnce();
+  const playing = hovered || inViewOnce;
   const [lines, setLines] = React.useState(0);
   const codeLines = [
     { tag: "Header", attr: "sticky" },
@@ -1372,7 +1410,7 @@ function BentoWebCard() {
       setLines(totalLines);
       return;
     }
-    if (!hovered) {
+    if (!playing) {
       setLines(0);
       return;
     }
@@ -1381,10 +1419,10 @@ function BentoWebCard() {
       timers.push(setTimeout(() => setLines(i), 160 + (i - 1) * 150));
     }
     return () => timers.forEach(clearTimeout);
-  }, [hovered, reduced, totalLines]);
+  }, [playing, reduced, totalLines]);
 
   return (
-    <BentoCardShell onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
+    <BentoCardShell innerRef={cardRef} onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
       <BentoLabel>{t("bento.web.label")}</BentoLabel>
       <h3 className="mt-3 font-display text-[22px] font-semibold leading-[1.12] tracking-tight text-fg sm:text-[24px]">
         {t("bento.web.title")}
