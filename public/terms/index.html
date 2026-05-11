@@ -1,470 +1,310 @@
 <!DOCTYPE html>
-<html lang="mn">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#050A18" />
     <meta name="robots" content="index, follow" />
-    <title>Үйлчилгээний нөхцөл · DalaTech.ai</title>
+    <title>Terms of Service &middot; Dalatech</title>
     <meta
       name="description"
-      content="DalaTech.ai-ийн үйлчилгээний нөхцөл. Манай вэбсайт, AI чатбот, автоматжуулалтын үйлчилгээг ашиглах эрх, үүрэг, нөхцөлүүд."
+      content="Terms of Service for Dalatech — a Mongolian tech agency offering web development, AI chatbot implementation, and business automation."
     />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
-    />
     <style>
-      :root {
-        color-scheme: dark;
-        --bg: #050A18;
-        --bg-soft: #0A1128;
-        --line: rgba(240, 244, 255, 0.08);
-        --line-strong: rgba(56, 189, 248, 0.22);
-        --fg: #F0F4FF;
-        --fg-muted: #A6B0C7;
-        --fg-dim: #6B7591;
-        --accent: #38BDF8;
-        --accent-deep: #2563EB;
-      }
-      *, *::before, *::after { box-sizing: border-box; }
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; }
-      html { scroll-behavior: smooth; }
       body {
-        background: var(--bg);
-        color: var(--fg);
-        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        font-size: 16px;
-        line-height: 1.7;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        overflow-x: hidden;
+        background: #fafafa;
+        color: #18181b;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.65;
       }
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background:
-          radial-gradient(60% 50% at 15% 0%, rgba(37, 99, 235, 0.18), transparent 70%),
-          radial-gradient(50% 40% at 95% 10%, rgba(56, 189, 248, 0.10), transparent 70%);
-        pointer-events: none;
-        z-index: 0;
-      }
-
       header.site {
+        border-bottom: 1px solid #e4e4e7;
+        background: #ffffffcc;
+        backdrop-filter: saturate(140%) blur(8px);
         position: sticky;
         top: 0;
-        z-index: 50;
-        background: rgba(5, 10, 24, 0.82);
-        backdrop-filter: saturate(160%) blur(18px);
-        -webkit-backdrop-filter: saturate(160%) blur(18px);
-        border-bottom: 1px solid var(--line-strong);
+        z-index: 10;
       }
-      .wrap {
-        max-width: 760px;
-        margin: 0 auto;
-        padding: 0 24px;
-      }
+      .wrap { max-width: 768px; margin: 0 auto; padding: 0 24px; }
       header.site .wrap {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        height: 68px;
-        gap: 16px;
+        display: flex; align-items: center; justify-content: space-between; height: 64px;
       }
       .brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        text-decoration: none;
-        color: var(--fg);
-        font-family: 'Outfit', sans-serif;
-        font-weight: 700;
-        font-size: 17px;
-        letter-spacing: -0.02em;
-        transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1);
+        display: inline-flex; align-items: center; gap: 10px;
+        text-decoration: none; color: #09090b; font-weight: 700; font-size: 16px;
       }
-      .brand:hover { opacity: 0.85; }
-      .brand-logo {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        overflow: hidden;
-        background: var(--bg-soft);
-        flex-shrink: 0;
+      .brand img { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; }
+      nav a {
+        color: #3f3f46; text-decoration: none; font-size: 14px; margin-left: 18px;
       }
-      .brand-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transform: scale(1.18);
-        display: block;
-      }
-      nav.nav-links {
-        display: flex;
-        align-items: center;
-        gap: 22px;
-      }
-      nav.nav-links a {
-        color: var(--fg-muted);
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 500;
-        transition: color 200ms cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      nav.nav-links a:hover { color: var(--fg); }
-      nav.nav-links a.is-current { color: var(--accent); }
-
-      main {
-        position: relative;
-        z-index: 1;
-        padding: 72px 0 120px;
-      }
-
-      .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-family: 'Inter', sans-serif;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: var(--accent);
-        margin: 0 0 18px;
-      }
-      .eyebrow::before {
-        content: "";
-        width: 22px;
-        height: 1px;
-        background: var(--accent);
-        opacity: 0.7;
-      }
-
+      nav a:hover { color: #09090b; }
+      main { padding: 48px 0 96px; }
       h1 {
-        font-family: 'Outfit', sans-serif;
-        font-size: clamp(34px, 5.5vw, 48px);
-        line-height: 1.08;
-        letter-spacing: -0.03em;
-        font-weight: 700;
-        margin: 0 0 18px;
-        color: var(--fg);
+        font-size: 36px; line-height: 1.15; letter-spacing: -0.02em;
+        margin: 0 0 8px; color: #09090b;
       }
-      .lede {
-        font-size: 17px;
-        color: var(--fg-muted);
-        margin: 0 0 14px;
-        max-width: 62ch;
-      }
-      .meta {
-        font-size: 13px;
-        color: var(--fg-dim);
-        margin: 0 0 56px;
-        font-variant-numeric: tabular-nums;
-      }
-
+      .lede { color: #52525b; margin: 0 0 32px; }
       h2 {
-        font-family: 'Outfit', sans-serif;
-        font-size: 22px;
-        font-weight: 600;
-        letter-spacing: -0.015em;
-        margin: 56px 0 14px;
-        color: var(--fg);
-        display: flex;
-        align-items: baseline;
-        gap: 14px;
+        font-size: 20px; margin: 36px 0 8px;
+        color: #09090b; letter-spacing: -0.01em;
       }
-      h2 .num {
-        font-family: 'Inter', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--accent);
-        font-variant-numeric: tabular-nums;
-        letter-spacing: 0;
+      p, li { color: #27272a; }
+      ul { padding-left: 22px; }
+      a.inline { color: #09090b; text-decoration: underline; text-underline-offset: 3px; }
+      a.inline:hover { color: #2563eb; }
+      .meta { font-size: 13px; color: #71717a; margin-top: 0; }
+      .card {
+        margin-top: 32px; padding: 20px 22px;
+        background: #ffffff; border: 1px solid #e4e4e7; border-radius: 14px;
       }
-
-      p, li { color: #C9D2E6; }
-      p { margin: 0 0 14px; max-width: 65ch; }
-      ul {
-        padding-left: 0;
-        margin: 0 0 14px;
-        list-style: none;
-        max-width: 65ch;
+      footer {
+        border-top: 1px solid #e4e4e7; padding: 24px 0;
+        color: #71717a; font-size: 13px;
       }
-      li {
-        position: relative;
-        padding: 4px 0 4px 22px;
+      footer .wrap {
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
       }
-      li::before {
-        content: "";
-        position: absolute;
-        left: 4px;
-        top: 14px;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--accent);
-        opacity: 0.85;
-      }
-      strong { color: var(--fg); font-weight: 600; }
-      em { color: var(--fg); font-style: italic; }
-
-      a.inline {
-        color: var(--accent);
-        text-decoration: none;
-        border-bottom: 1px solid rgba(56, 189, 248, 0.35);
-        padding-bottom: 1px;
-        transition: border-color 200ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      a.inline:hover {
-        color: var(--fg);
-        border-bottom-color: var(--fg);
-      }
-
-      .contact {
-        margin-top: 64px;
-        padding: 28px 28px 30px;
-        background: linear-gradient(180deg, rgba(15, 24, 56, 0.55) 0%, rgba(10, 17, 40, 0.35) 100%);
-        border: 1px solid var(--line-strong);
-        border-radius: 18px;
-      }
-      .contact h3 {
-        font-family: 'Outfit', sans-serif;
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0 0 8px;
-        color: var(--fg);
-        letter-spacing: -0.01em;
-      }
-      .contact p { margin: 0; color: var(--fg-muted); }
-
-      footer.site {
-        position: relative;
-        z-index: 1;
-        border-top: 1px solid var(--line);
-        padding: 28px 0;
-        color: var(--fg-dim);
-        font-size: 13px;
-      }
-      footer.site .wrap {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-      }
-      footer.site a {
-        color: var(--fg-muted);
-        text-decoration: none;
-        margin-left: 22px;
-        transition: color 200ms cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      footer.site .links a:first-child { margin-left: 0; }
-      footer.site a:hover { color: var(--fg); }
-
-      @media (max-width: 640px) {
-        header.site .wrap { height: 60px; padding: 0 18px; }
-        .wrap { padding: 0 18px; }
-        nav.nav-links { gap: 14px; }
-        nav.nav-links a { font-size: 13px; }
-        main { padding: 48px 0 80px; }
-        h1 { font-size: 30px; }
-        .meta { margin-bottom: 40px; }
-        h2 { font-size: 19px; margin: 40px 0 10px; gap: 10px; }
-        .contact { padding: 22px; }
-        footer.site .wrap { flex-direction: column; align-items: flex-start; }
-        footer.site .links { display: flex; flex-wrap: wrap; }
-        footer.site .links a { margin-left: 0; margin-right: 18px; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        html { scroll-behavior: auto; }
-      }
+      footer a { color: #3f3f46; text-decoration: none; margin-right: 16px; }
+      footer a:hover { color: #09090b; }
     </style>
   </head>
   <body>
     <header class="site">
       <div class="wrap">
-        <a class="brand" href="https://dalatech.online" aria-label="DalaTech.ai нүүр хуудас">
-          <span class="brand-logo">
-            <img src="/dalatech_logo_v3.jpg" alt="" aria-hidden="true" />
-          </span>
-          <span>DalaTech</span>
+        <a class="brand" href="/">
+          <img src="/Photos/dalatech-logo.png" alt="Dalatech logo" />
+          Dalatech
         </a>
-        <nav class="nav-links" aria-label="Хуудасны навигаци">
-          <a href="https://dalatech.online">Нүүр</a>
-          <a href="/privacy/">Нууцлал</a>
-          <a href="/terms/" class="is-current" aria-current="page">Үйлчилгээний нөхцөл</a>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/privacy/">Privacy</a>
+          <a href="/data-deletion/">Data deletion</a>
         </nav>
       </div>
     </header>
 
     <main>
       <div class="wrap">
-        <p class="eyebrow">Хууль зүйн мэдээлэл</p>
-        <h1>Үйлчилгээний нөхцөл</h1>
+        <h1>Terms of Service</h1>
         <p class="lede">
-          Энэхүү нөхцөл нь DalaTech.ai-ийн вэбсайт, AI чатбот, мөн вэб хөгжүүлэлт,
-          бизнесийн автоматжуулалтын үйлчилгээг ашиглах журмыг тогтоосон болно.
-          Манайхтай ажиллах, эсвэл вэб дээрх чатбот, Facebook Page руу мессеж бичих
-          үед та эдгээр нөхцөлийг хүлээн зөвшөөрсөнд тооцогдоно.
+          These Terms of Service govern your use of Dalatech&rsquo;s website,
+          our Facebook Page, and any web development, AI chatbot, or business
+          automation services we deliver. By engaging us or messaging our Page,
+          you agree to these Terms.
         </p>
-        <p class="meta">Сүүлд шинэчилсэн огноо: 2026 оны 5 сар</p>
+        <p class="meta">Last updated: 8 May 2026</p>
 
-        <h2><span class="num">01</span> Бид хэн бэ</h2>
+        <h2>1. Who we are</h2>
         <p>
-          DalaTech.ai (цаашид "бид", "DalaTech") нь Улаанбаатар, Монгол улсад
-          үйл ажиллагаагаа явуулдаг технологийн агентлаг юм. Бидэнтэй
+          Dalatech (&ldquo;we&rdquo;, &ldquo;us&rdquo;) is a tech agency based
+          in Ulaanbaatar, Mongolia, owned and operated by Tserentsoodol
+          Bilguun. You can reach us at
+          <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>.
+        </p>
+
+        <h2>2. Services we offer</h2>
+        <p>
+          Dalatech provides paid professional services to businesses,
+          including:
+        </p>
+        <ul>
+          <li>Custom website design and development.</li>
+          <li>
+            AI chatbot implementation, including Facebook Messenger bots and
+            site-embedded chat widgets.
+          </li>
+          <li>
+            Business automation &mdash; integrating tools, lead pipelines, and
+            workflows so repeat tasks run by themselves.
+          </li>
+          <li>
+            Related advisory work: technical consulting, scoping, and ongoing
+            support of the systems we deliver.
+          </li>
+        </ul>
+        <p>
+          The exact deliverables, timeline, and price for any project are
+          defined in a written proposal or contract agreed between you and
+          Dalatech before work begins. Those project documents prevail over
+          these Terms if anything conflicts.
+        </p>
+
+        <h2>3. Engagement and payment</h2>
+        <p>
+          Unless we agree otherwise in writing:
+        </p>
+        <ul>
+          <li>
+            A project deposit is required before development starts; remaining
+            milestones are invoiced as work is delivered.
+          </li>
+          <li>Invoices are payable within 14 days of issue.</li>
+          <li>
+            Quoted prices exclude third-party costs (domains, hosting,
+            paid APIs, advertising spend) unless explicitly bundled.
+          </li>
+          <li>
+            We may suspend work or access to systems we host for accounts that
+            are more than 30 days overdue.
+          </li>
+        </ul>
+
+        <h2>4. Your responsibilities</h2>
+        <p>
+          To deliver good work on time, we rely on you to:
+        </p>
+        <ul>
+          <li>
+            Provide accurate brand assets, content, accounts, and any
+            credentials required to integrate the systems we agree to build.
+          </li>
+          <li>
+            Respond to review requests within a reasonable window. Sustained
+            silence may extend the project timeline or trigger a pause fee.
+          </li>
+          <li>
+            Use the deliverables lawfully and not for spam, scams, harassment,
+            adult content involving minors, or anything that violates Meta or
+            other platform policies your project relies on.
+          </li>
+        </ul>
+
+        <h2>5. Intellectual property</h2>
+        <p>
+          On full payment of the agreed fee, you own the custom code,
+          configurations, copy, and visual assets we produced specifically for
+          your project. Dalatech retains ownership of:
+        </p>
+        <ul>
+          <li>
+            Pre-existing tools, libraries, internal templates, and reusable
+            components we bring into the project.
+          </li>
+          <li>
+            General know-how, ideas, and techniques we develop while doing the
+            work.
+          </li>
+        </ul>
+        <p>
+          We grant you a perpetual, non-exclusive license to use those
+          pre-existing components as embedded in your delivered project.
+          Open-source dependencies remain governed by their own licenses.
+        </p>
+
+        <h2>6. Showcase rights</h2>
+        <p>
+          Unless you ask us in writing not to, we may display your project name,
+          logo, and selected screenshots on our website, Facebook Page, and in
+          proposals to other prospective clients, as case study and portfolio
+          material.
+        </p>
+
+        <h2>7. Confidentiality</h2>
+        <p>
+          We treat any non-public information you share with us &mdash;
+          business plans, customer data, credentials, internal documents
+          &mdash; as confidential, and we use it only to perform the agreed
+          services. We expect the same of you regarding our pricing,
+          methodology, and any internal materials we share.
+        </p>
+
+        <h2>8. Third-party platforms</h2>
+        <p>
+          Many of our deliverables run on or integrate with third-party
+          platforms &mdash; Meta (Facebook, Messenger, Instagram), hosting
+          providers, OpenAI and other AI vendors, payment processors, etc.
+          Dalatech does not control those platforms. We are not liable for
+          downtime, policy changes, account bans, or pricing changes that
+          originate from them.
+        </p>
+
+        <h2>9. Acceptable use of our site and chatbot</h2>
+        <p>
+          When you use this website or chat with us through Facebook Messenger
+          or our embedded chat widget, you agree not to:
+        </p>
+        <ul>
+          <li>
+            Probe, scan, or attempt to compromise our systems or hosting
+            infrastructure.
+          </li>
+          <li>
+            Submit content that is unlawful, defamatory, or that infringes
+            someone else&rsquo;s rights.
+          </li>
+          <li>Attempt to extract credentials, prompts, or training data.</li>
+          <li>
+            Impersonate another person, business, or Dalatech staff member.
+          </li>
+        </ul>
+
+        <h2>10. Warranties and disclaimers</h2>
+        <p>
+          We deliver our services with reasonable skill and care and to the
+          standard expected of a professional Mongolian agency. Beyond that,
+          our website, content, and any AI-generated chatbot responses are
+          provided <em>as is</em>. AI assistants can make mistakes &mdash;
+          please verify any specific commercial, legal, or technical claim
+          with us directly before relying on it.
+        </p>
+
+        <h2>11. Limitation of liability</h2>
+        <p>
+          To the maximum extent allowed by Mongolian law, Dalatech&rsquo;s
+          total liability arising out of any project or use of this site is
+          limited to the amount you paid us for the specific service that gave
+          rise to the claim, in the 12 months before the claim. We are not
+          liable for indirect or consequential losses, including lost profits,
+          lost data, or business interruption.
+        </p>
+
+        <h2>12. Termination</h2>
+        <p>
+          Either party may end an engagement by written notice if the other
+          party materially breaches these Terms or the project agreement and
+          does not fix the breach within 14 days of notice. On termination,
+          you pay for work delivered and reasonably-incurred costs up to that
+          date. Sections that by their nature should survive termination
+          &mdash; payment, IP, confidentiality, liability &mdash; survive.
+        </p>
+
+        <h2>13. Governing law</h2>
+        <p>
+          These Terms are governed by the laws of Mongolia. Any dispute that
+          cannot be resolved in good-faith discussion will be brought before
+          the competent courts of Ulaanbaatar.
+        </p>
+
+        <h2>14. Changes to these Terms</h2>
+        <p>
+          We may update these Terms from time to time. The &ldquo;Last
+          updated&rdquo; date at the top of the page reflects the current
+          version. Material changes will be communicated to active clients
+          before they take effect.
+        </p>
+
+        <div class="card">
+          <strong>Questions or want a quote?</strong><br />
+          Email
           <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>
-          хаягаар холбогдох боломжтой.
-        </p>
-
-        <h2><span class="num">02</span> Манай үйлчилгээнүүд</h2>
-        <p>DalaTech.ai нь бизнест зориулсан дараах мэргэжлийн үйлчилгээг үзүүлдэг:</p>
-        <ul>
-          <li>Захиалгат вэбсайтын дизайн, хөгжүүлэлт.</li>
-          <li>AI чатбот нэвтрүүлэлт. Үүнд Facebook Messenger бот, вэбсайтад суулгасан чат widget багтана.</li>
-          <li>Бизнесийн автоматжуулалт. Хэрэгслүүдийг холбож, lead-ийн урсгал, давтан үйл явцыг автомат болгох.</li>
-          <li>Холбогдох зөвлөгөө. Техникийн зөвлөх, төслийн хамрах хүрээ тогтоох, нэвтрүүлсэн системээ тогтвортой ажиллуулах дэмжлэг.</li>
-        </ul>
-        <p>
-          Аливаа төслийн нарийн агуулга, хугацаа, төлбөрийг ажил эхлэхээс өмнө талуудын
-          хооронд бичгээр гарын үсэг зурсан санал буюу гэрээгээр тогтооно. Тухайн
-          гэрээний нөхцөл энэхүү нөхцөлтэй зөрчилдсөн тохиолдолд гэрээ давамгайлна.
-        </p>
-
-        <h2><span class="num">03</span> Гэрээ байгуулах, төлбөр тооцоо</h2>
-        <p>Бичгээр өөрөөр тохиролцоогүй бол:</p>
-        <ul>
-          <li>Хөгжүүлэлт эхлэхээс өмнө <strong>урьдчилгаа төлбөр</strong> хийгдсэн байна; үлдсэн дүн нь үе шатны ажил хүлээлгэн өгөх тутамд нэхэмжлэгдэнэ.</li>
-          <li>Нэхэмжлэхийг гарсан өдрөөс хойш <strong>14 хоногийн дотор</strong> төлнө.</li>
-          <li>Үнийн санал нь гуравдагч талын зардлыг (домэйн, host, төлбөрт API, сурталчилгааны зардал) гадуурх байна, тусгайлан багтаагаагүй бол.</li>
-          <li>30 хоногоос дээш хугацаагаар хугацаа хэтэрсэн төлбөртэй харилцагчийн ажлыг түр зогсоох, эсхүл бид host хийсэн системд хандах эрхийг хязгаарлах эрхтэй.</li>
-        </ul>
-
-        <h2><span class="num">04</span> Танай үүрэг</h2>
-        <p>Чанартай үр дүнг хугацаандаа хүргэхийн тулд танаас дараах зүйлийг хүсэх болно:</p>
-        <ul>
-          <li>Шаардлагатай брэндийн материал, контент, акаунт, нэвтрэх эрхийг үнэн зөв өгөх.</li>
-          <li>Хяналт, шийдвэрийн хүсэлтэд хугацаанд нь хариулах. Урт хугацаагаар чимээгүй байх нь төслийн хугацааг сунгах эсвэл түр зогсолтын төлбөр тооцох үндэслэл болж болно.</li>
-          <li>Хүргэгдсэн бүтээгдэхүүнийг хууль ёсны зорилгоор ашиглах. Спам, луйвар, дарамтлал, насанд хүрээгүй хүний эсрэг хууль бус контент, эсвэл Meta болон бусад платформын журам зөрчсөн зорилгоор ашиглахгүй байх.</li>
-        </ul>
-
-        <h2><span class="num">05</span> Оюуны өмч</h2>
-        <p>
-          Тохиролцсон төлбөрөө бүрэн төлсний дараа танай төсөлд тусгайлан бэлтгэсэн
-          захиалгат код, тохиргоо, текст, дизайны материал танай өмч болно. DalaTech нь
-          дараах зүйлсийн өмчлөгч хэвээр үлдэнэ:
-        </p>
-        <ul>
-          <li>Урьдчилан бэлтгэсэн хэрэгсэл, ном сан, дотоод загвар, дахин хэрэглэгддэг компонентууд.</li>
-          <li>Ажлын явцад олж авсан ерөнхий мэдлэг, арга барил, шинэ санаа.</li>
-        </ul>
-        <p>
-          Бид танай төсөлд суулгасан хэлбэрээр эдгээр урьдчилан бэлтгэсэн компонентыг
-          байнга ашиглах нээлттэй лицензийг танд олгоно. Нээлттэй эхийн (open-source)
-          сангуудын хувьд тэдгээрийн өөрсдийн лиценз нөхцөл хүчинтэй хэвээр байна.
-        </p>
-
-        <h2><span class="num">06</span> Жишээ ажил болгон ашиглах эрх</h2>
-        <p>
-          Та бичгээр татгалзаагүй бол бид танай төслийн нэр, лого, сонгосон
-          screenshot-уудыг манай вэбсайт, Facebook Page, бусад үйлчлүүлэгчдэд
-          илгээх саналд жишээ ажил, портфолио маягаар ашиглаж болно.
-        </p>
-
-        <h2><span class="num">07</span> Нууцлал</h2>
-        <p>
-          Танаас хүлээн авсан нийтэд нээлттэй биш мэдээллийг (бизнес төлөвлөгөө,
-          харилцагчийн өгөгдөл, нэвтрэх мэдээлэл, дотоод баримт) бид нууц гэж үзэн,
-          зөвхөн тохиролцсон үйлчилгээг хүргэх зорилгоор ашиглана. Танаас ч бас манай
-          үнийн санал, арга барил, дотоод материалд адил хандахыг хүлээж байна.
-        </p>
-
-        <h2><span class="num">08</span> Гуравдагч талын платформ</h2>
-        <p>
-          Манай ихэнх үйлчилгээ нь гуравдагч талын платформ дээр ажилладаг буюу
-          тэдгээртэй холбогдоно. Үүнд Meta (Facebook, Messenger, Instagram), host
-          үйлчилгээ үзүүлэгчид, Anthropic болон бусад AI үйлчилгээ үзүүлэгчид,
-          төлбөрийн системүүд орно. Эдгээр платформын талаар DalaTech хяналт хийдэггүй
-          бөгөөд тэдгээрээс үүдсэн доголдол, журмын өөрчлөлт, акаунтын хориг, үнийн
-          өөрчлөлтийн төлөө хариуцлага хүлээхгүй.
-        </p>
-
-        <h2><span class="num">09</span> Манай вэб болон чатботыг ашиглах журам</h2>
-        <p>
-          Энэхүү вэбсайт, Facebook Messenger, эсвэл вэбсайтад суусан чат widget-ийг
-          ашиглахдаа та дараах зүйлийг хийхгүй байхаар үүрэг хүлээнэ:
-        </p>
-        <ul>
-          <li>Манай систем буюу host дэд бүтцийг сканнердах, эмзэг газрыг хайх, халдлага үйлдэхгүй байх.</li>
-          <li>Хууль бус, бусдын нэр хүндийг гутаах, бусдын эрхийг зөрчсөн контент илгээхгүй байх.</li>
-          <li>Нэвтрэх мэдээлэл, prompt, сургалтын өгөгдлийг гарган авахыг оролдохгүй байх.</li>
-          <li>Өөр хүн, бизнес буюу DalaTech-ийн ажилтан мэт хувирахгүй байх.</li>
-        </ul>
-
-        <h2><span class="num">10</span> Баталгаа, татгалзал</h2>
-        <p>
-          Бид мэргэжлийн агентлагт тавигдах стандартын дагуу ажлаа гүйцэтгэхээр
-          үүрэг хүлээнэ. Үүнээс гадна манай вэбсайт, контент болон AI-ийн үүсгэсэн
-          чатботын хариулт нь <em>"байгаагаар нь"</em> үндсэн дээр үзүүлэгдэнэ.
-          AI туслахууд алдаа гаргах магадлалтай тул аливаа арилжааны, хууль зүйн,
-          техникийн нарийн мэдээллийг бидэнтэй шууд лавлаж баталгаажуулна уу.
-        </p>
-
-        <h2><span class="num">11</span> Хариуцлагын хязгаарлалт</h2>
-        <p>
-          Монгол улсын хуулийн зөвшөөрсөн дээд хэмжээгээр DalaTech-ийн төсөл болон
-          энэ вэб сайтыг ашигласантай холбоотой нийт хариуцлага нь нэхэмжлэлд хүргэсэн
-          үйлчилгээний төлөө сүүлийн 12 сард танаас авсан төлбөрийн хэмжээгээр
-          хязгаарлагдана. Бид шууд бус буюу үр дагаврын алдагдал (орлогын алдагдал,
-          өгөгдлийн алдагдал, бизнесийн тасалдал) хариуцахгүй.
-        </p>
-
-        <h2><span class="num">12</span> Гэрээг цуцлах</h2>
-        <p>
-          Аль нэг тал нь үндсэн нөхцөл зөрчсөн бөгөөд 14 хоногийн дотор зөрчлийг
-          арилгаагүй тохиолдолд нөгөө тал нь бичгээр мэдэгдсэнээр гэрээг цуцалж
-          болно. Цуцлах үед та хүргэгдсэн ажил болон тухайн өдөр хүртэл бодитоор
-          гарсан зардлыг төлнө. Төлбөр, оюуны өмч, нууцлал, хариуцлагын хязгаарлалт
-          зэрэг бусад зүйлийн нөхцөл цуцлалтын дараа ч хүчинтэй хэвээр байна.
-        </p>
-
-        <h2><span class="num">13</span> Хэрэглэх хууль</h2>
-        <p>
-          Энэхүү нөхцөл нь Монгол улсын хуулиар зохицуулагдана. Аливаа маргаан
-          сайн санааны хүрээнд шийдвэрлэгдээгүй тохиолдолд Улаанбаатар хотын
-          эрх бүхий шүүхээр шийдвэрлэнэ.
-        </p>
-
-        <h2><span class="num">14</span> Нөхцөлийг шинэчлэх</h2>
-        <p>
-          Бид энэ нөхцөлийг үе үе шинэчилж болно. Хуудасны дээд хэсэгт байрлах
-          "Сүүлд шинэчилсэн огноо" нь одоо хүчин төгөлдөр хувилбарыг илэрхийлнэ.
-          Үндсэн өөрчлөлтийг идэвхтэй харилцагчдад хүчин төгөлдөр болохоос өмнө
-          мэдэгдэнэ.
-        </p>
-
-        <div class="contact">
-          <h3>Асуулт байна уу, эсвэл үнийн санал хүсэх үү?</h3>
-          <p>
-            <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>
-            хаягт бичээрэй. Бид 2 ажлын өдрийн дотор хариу өгнө.
-          </p>
+          and we will respond within 2 business days.
         </div>
       </div>
     </main>
 
-    <footer class="site">
+    <footer>
       <div class="wrap">
-        <div>© 2026 DalaTech.ai · Улаанбаатар, Монгол</div>
-        <div class="links">
-          <a href="https://dalatech.online">Нүүр</a>
-          <a href="/privacy/">Нууцлал</a>
-          <a href="/terms/">Үйлчилгээний нөхцөл</a>
+        <div>&copy; 2026 Dalatech &middot; Ulaanbaatar, Mongolia</div>
+        <div>
+          <a href="/">Home</a>
+          <a href="/privacy/">Privacy</a>
+          <a href="/terms/">Terms</a>
+          <a href="/data-deletion/">Data deletion</a>
         </div>
       </div>
     </footer>
