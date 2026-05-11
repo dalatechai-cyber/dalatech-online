@@ -89,6 +89,11 @@ section {
   }
 }
 
+html.nav-menu-open #dt-chat-toggle,
+html.nav-menu-open #dt-chat-frame {
+  visibility: hidden;
+}
+
 .bg-grid {
   background-image:
     linear-gradient(rgba(56,189,248,0.06) 1px, transparent 1px),

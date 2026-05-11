@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
   motion,
@@ -16,6 +17,21 @@ const Globe = React.lazy(() => import("./Globe"));
 const EASE_OUT = [0.16, 1, 0.3, 1];
 const SPRING_REVEAL = { type: "spring", stiffness: 110, damping: 22, mass: 0.6 };
 const SPRING_HEADLINE = { type: "spring", stiffness: 140, damping: 18, mass: 0.55 };
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(max-width: 767px)");
+    const onChange = () => setIsMobile(mq.matches);
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
+  return isMobile;
+}
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -234,6 +250,24 @@ function MagneticButton({ children, href = "#", variant = "primary", onClick, ty
 }
 
 function MeshBackground({ intensity = 1 }) {
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-grid" />
+        <div
+          className="mesh-blob"
+          style={{
+            top: "-8%", left: "-10%",
+            width: "26rem", height: "26rem",
+            background: "radial-gradient(circle at 50% 50%, rgba(37,99,235,0.45), rgba(37,99,235,0) 65%)",
+            filter: "blur(48px)",
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink-950" />
+      </div>
+    );
+  }
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 bg-grid animate-gridPulse" />
@@ -450,7 +484,11 @@ function Navbar() {
   React.useEffect(() => {
     if (!mobileOpen) return;
     lockBodyScroll();
-    return () => { unlockBodyScroll(); };
+    document.documentElement.classList.add("nav-menu-open");
+    return () => {
+      unlockBodyScroll();
+      document.documentElement.classList.remove("nav-menu-open");
+    };
   }, [mobileOpen]);
 
   const scrollToId = (id) => (e) => {
@@ -597,6 +635,7 @@ function Navbar() {
         </div>
       </div>
 
+      {typeof document !== "undefined" && createPortal(
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -605,8 +644,8 @@ function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22, ease: EASE_OUT }}
-            className="fixed inset-0 z-[100] flex flex-col bg-ink-950/98 backdrop-blur-xl md:hidden"
-            style={{ backgroundColor: "rgba(5,10,24,0.98)" }}
+            className="fixed inset-0 flex flex-col md:hidden"
+            style={{ backgroundColor: "#050A18", zIndex: 2147483647 }}
           >
             <div className="flex items-center justify-between px-5 pt-5 sm:px-7">
               <a href="#top" onClick={scrollToId("top")} className="flex items-center" aria-label="DalaTech home">
@@ -683,7 +722,9 @@ function Navbar() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+      )}
     </motion.header>
   );
 }
@@ -819,11 +860,13 @@ function MatrixSalonPreview() {
 function HeroDemoCard() {
   const { scrollY } = useScroll();
   const reduced = useReducedMotion();
-  const yT = useTransform(scrollY, [0, 600], [0, reduced ? 0 : -36]);
+  const isMobile = useIsMobile();
+  const parallaxDistance = reduced || isMobile ? 0 : -36;
+  const yT = useTransform(scrollY, [0, 600], [0, parallaxDistance]);
   const y = useSpring(yT, { stiffness: 80, damping: 22, mass: 0.4 });
 
   return (
-    <motion.div style={{ y }} className="relative">
+    <motion.div style={isMobile ? undefined : { y }} className="relative">
       <BrowserMockup url="matrixecosalon.org">
         <MatrixSalonPreview />
       </BrowserMockup>
@@ -844,7 +887,7 @@ function HeroDemoCard() {
 function Hero() {
   const { t } = useTranslation();
   return (
-    <section id="top" className="relative overflow-hidden pt-32 pb-24 md:pt-40 md:pb-36">
+    <section id="top" className="relative overflow-hidden pt-24 pb-16 md:pt-40 md:pb-36">
       <MeshBackground />
       <Container className="relative">
         <div className="grid items-center gap-14 md:grid-cols-[1fr_1fr] md:gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16">
@@ -1057,6 +1100,11 @@ function useTouchInViewOnce() {
     if (!isTouch) return;
     const el = ref.current;
     if (!el) return;
+    // Only start the animation once the card's center has crossed roughly
+    // 60% of the viewport from the top. Bottom rootMargin of -38% delays the
+    // intersection until the card is comfortably in view, so the visitor
+    // catches the animation at its start instead of arriving on a finished
+    // state. threshold 0 keeps the firing crisp at that boundary.
     const io = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
@@ -1064,7 +1112,7 @@ function useTouchInViewOnce() {
           io.disconnect();
         }
       },
-      { threshold: 0.35 }
+      { threshold: 0, rootMargin: "0px 0px -38% 0px" }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -1161,6 +1209,16 @@ function BentoChatbotCard() {
   const playing = hovered || inViewOnce;
   const [visibleCount, setVisibleCount] = React.useState(0);
   const [typingSide, setTypingSide] = React.useState(null);
+  const transcriptRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const el = transcriptRef.current;
+    if (!el) return;
+    const id = requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: reduced ? "auto" : "smooth" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [visibleCount, typingSide, reduced]);
 
   React.useEffect(() => {
     if (reduced) {
@@ -1225,31 +1283,37 @@ function BentoChatbotCard() {
             <span className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">online</span>
           </div>
 
-          <div className="flex flex-col gap-2.5">
-            <AnimatePresence mode="popLayout" initial={false}>
-              {BENTO_CHAT_MESSAGES.slice(0, visibleCount).map((m) => (
-                <motion.div
-                  key={m.key}
-                  initial={reduced ? false : { opacity: 0, y: 10, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -4, transition: { duration: 0.18 } }}
-                  transition={{ type: "spring", stiffness: 260, damping: 24, mass: 0.55 }}
-                >
-                  <ChatBubble side={m.side}>{t(`bento.chatbot.messages.${m.key}`)}</ChatBubble>
-                </motion.div>
-              ))}
-              {typingSide && !reduced && (
-                <motion.div
-                  key={`typing-${typingSide}`}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -2, transition: { duration: 0.14 } }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <TypingDots side={typingSide} />
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div
+            ref={transcriptRef}
+            className="h-[280px] overflow-y-auto sm:h-[300px]"
+            style={{ scrollbarWidth: "none", maskImage: "linear-gradient(to bottom, transparent 0, #000 28px, #000 100%)", WebkitMaskImage: "linear-gradient(to bottom, transparent 0, #000 28px, #000 100%)" }}
+          >
+            <div className="flex min-h-full flex-col justify-end gap-2.5">
+              <AnimatePresence mode="popLayout" initial={false}>
+                {BENTO_CHAT_MESSAGES.slice(0, visibleCount).map((m) => (
+                  <motion.div
+                    key={m.key}
+                    initial={reduced ? false : { opacity: 0, y: 10, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, transition: { duration: 0.18 } }}
+                    transition={{ type: "spring", stiffness: 260, damping: 24, mass: 0.55 }}
+                  >
+                    <ChatBubble side={m.side}>{t(`bento.chatbot.messages.${m.key}`)}</ChatBubble>
+                  </motion.div>
+                ))}
+                {typingSide && !reduced && (
+                  <motion.div
+                    key={`typing-${typingSide}`}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -2, transition: { duration: 0.14 } }}
+                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <TypingDots side={typingSide} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>
@@ -1447,7 +1511,7 @@ function BentoWebCard() {
 function BentoFeatures() {
   const { t } = useTranslation();
   return (
-    <section id="bento" className="relative py-24 md:py-28">
+    <section id="bento" className="relative py-16 md:py-28">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
           className="mesh-blob animate-meshShift2 opacity-50"
@@ -1556,7 +1620,7 @@ function ProcessTimeline() {
   const lineProgress = lerpRange(progress, 0.15, 0.55, 0, 1);
 
   return (
-    <section id="process" ref={ref} className="relative py-24 md:py-28">
+    <section id="process" ref={ref} className="relative py-16 md:py-28">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
           className="mesh-blob animate-meshShift opacity-50"
@@ -1878,7 +1942,7 @@ function HowItWorks() {
 function Portfolio() {
   const { t } = useTranslation();
   return (
-    <section id="portfolio" className="relative py-28">
+    <section id="portfolio" className="relative py-16 md:py-28">
       <Container>
         <Reveal>
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
@@ -2329,7 +2393,7 @@ function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, prima
 function Pricing() {
   const { t } = useTranslation();
   return (
-    <section id="pricing" className="relative py-28">
+    <section id="pricing" className="relative py-16 md:py-28">
       <Container>
         <SectionHeader eyebrow={t("pricing.section")} title={t("pricing.title")} description={t("pricing.description")} />
 
@@ -2695,7 +2759,7 @@ function Contact() {
   const mailtoHref = `mailto:dalatech.ai@gmail.com?subject=${encodeURIComponent("Демо хүсэлт / Demo Request")}`;
 
   return (
-    <section id="contact" className="relative overflow-hidden py-32 sm:py-40">
+    <section id="contact" className="relative overflow-hidden py-20 sm:py-40">
       <ContactOrbField />
 
       <Container className="relative">
@@ -2786,13 +2850,21 @@ function FooterColumn({ heading, links }) {
 function Footer({ onOpenPrivacy }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
+  const isMobile = useIsMobile();
 
-  const services = [
-    { label: t("nav.features"), href: "#features" },
-    { label: t("nav.howItWorks"), href: "#how" },
-    { label: t("nav.capabilities"), href: "#bento" },
-    { label: t("nav.pricing"), href: "#pricing" },
-  ];
+  // #features and #how are hidden on mobile, so omit them from the mobile
+  // footer rather than scrolling the visitor to nothing.
+  const services = (isMobile
+    ? [
+        { label: t("nav.capabilities"), href: "#bento" },
+        { label: t("nav.pricing"), href: "#pricing" },
+      ]
+    : [
+        { label: t("nav.features"), href: "#features" },
+        { label: t("nav.howItWorks"), href: "#how" },
+        { label: t("nav.capabilities"), href: "#bento" },
+        { label: t("nav.pricing"), href: "#pricing" },
+      ]);
   const company = [
     { label: t("nav.portfolio"), href: "#portfolio" },
     { label: t("nav.process"), href: "#process" },
@@ -3076,7 +3148,7 @@ const TECH_STACK = [
 function TechStack() {
   const { t } = useTranslation();
   return (
-    <section id="tech-stack" className="relative py-24 md:py-28">
+    <section id="tech-stack" className="relative py-16 md:py-28">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
           className="mesh-blob animate-meshShift2 opacity-40"
@@ -3131,7 +3203,7 @@ function LocationBadge() {
     <section
       id="location"
       aria-label={t("location.eyebrow")}
-      className="relative py-24 md:py-28"
+      className="relative py-16 md:py-28"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div
@@ -3206,21 +3278,24 @@ export default function App() {
     );
   }
 
+  // On mobile we hide every section the navbar does NOT link to, so each
+  // nav tap lands on a focused section instead of an endless scroll. Desktop
+  // layout is untouched.
   const sections = [
-    ["hero", <Hero />],
-    ["marquee", <CapabilityMarquee />],
-    ["bentoFeatures", <BentoFeatures />],
-    ["processTimeline", <ProcessTimeline />],
-    ["techStack", <TechStack />],
-    ["location", <LocationBadge />],
-    ["features", <Features />],
-    ["howItWorks", <HowItWorks />],
-    ["portfolio", <Portfolio />],
-    ["liveDemo", <LiveDemo />],
-    ["testimonials", <Testimonials />],
-    ["pricing", <Pricing />],
-    ["faq", <FAQ />],
-    ["contact", <Contact />],
+    ["hero", <Hero />, false],
+    ["marquee", <CapabilityMarquee />, true],
+    ["bentoFeatures", <BentoFeatures />, false],
+    ["processTimeline", <ProcessTimeline />, false],
+    ["techStack", <TechStack />, false],
+    ["location", <LocationBadge />, false],
+    ["features", <Features />, true],
+    ["howItWorks", <HowItWorks />, true],
+    ["portfolio", <Portfolio />, false],
+    ["liveDemo", <LiveDemo />, true],
+    ["testimonials", <Testimonials />, true],
+    ["pricing", <Pricing />, false],
+    ["faq", <FAQ />, false],
+    ["contact", <Contact />, false],
   ];
 
   return (
@@ -3232,8 +3307,14 @@ export default function App() {
         <Navbar />
       </ErrorBoundary>
       <main>
-        {sections.map(([key, node]) => (
-          <ErrorBoundary key={key}>{node}</ErrorBoundary>
+        {sections.map(([key, node, mobileHidden]) => (
+          <ErrorBoundary key={key}>
+            {mobileHidden ? (
+              <div className="hidden md:block">{node}</div>
+            ) : (
+              node
+            )}
+          </ErrorBoundary>
         ))}
       </main>
       <ErrorBoundary>
