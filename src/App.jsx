@@ -2916,39 +2916,39 @@ function PrivacyTermsModal({ isOpen, onClose }) {
           >
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <h2 id="privacy-terms-title" className="font-display text-[22px] font-semibold tracking-tight text-fg">Privacy Policy & Terms of Service</h2>
-                <p className="text-[13px] text-fg-muted">Effective Date: February 10, 2026</p>
+                <h2 id="privacy-terms-title" className="font-display text-[22px] font-semibold tracking-tight text-fg">Нууцлалын бодлого ба Үйлчилгээний нөхцөл</h2>
+                <p className="text-[13px] text-fg-muted">Хүчин төгөлдөр болсон огноо: 2026 оны 2 дугаар сарын 10</p>
               </div>
               <button type="button" onClick={onClose} className="pressable rounded-full border border-white/10 px-3.5 py-1.5 text-[12.5px] text-fg-muted hover:border-white/20 hover:text-fg">
-                Close
+                Хаах
               </button>
             </div>
             <div className="mt-6 max-h-[70vh] space-y-6 overflow-y-auto pr-2 text-[13.5px] leading-[1.65] text-fg-muted">
               <div className="space-y-3">
-                <h3 className="font-display text-[16px] font-semibold text-fg">1. Introduction</h3>
-                <p>Welcome to DalaTech.ai ("we," "our," or "us"). This service is owned and operated by Tserentsoodol Bilguun (Sole Proprietorship), registered in Mongolia. By accessing or using our Facebook Messenger chatbot, you agree to these Terms and our Privacy Policy.</p>
+                <h3 className="font-display text-[16px] font-semibold text-fg">1. Танилцуулга</h3>
+                <p>DalaTech.ai ("бид", "бидний" эсвэл "манай") үйлчилгээнд тавтай морилно уу. Энэхүү үйлчилгээг Монгол Улсад бүртгэлтэй Цэрэнцоодол Билгүүн (Хувиараа эрхлэгч) эзэмшиж, ажиллуулдаг. Манай Facebook Messenger чатботод нэвтрэх буюу ашиглах замаар та энэхүү Үйлчилгээний нөхцөл болон Нууцлалын бодлогыг хүлээн зөвшөөрсөнд тооцогдоно.</p>
               </div>
               <div className="space-y-3">
-                <h3 className="font-display text-[16px] font-semibold text-fg">2. Privacy Policy</h3>
-                <p>We respect your privacy and are committed to protecting your personal data.</p>
+                <h3 className="font-display text-[16px] font-semibold text-fg">2. Нууцлалын бодлого</h3>
+                <p>Бид таны хувийн мэдээллийн нууцлалыг хүндэтгэн, түүнийг хамгаалахыг эрхэмлэдэг.</p>
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>Data We Collect: We collect your public Facebook profile information (name, profile picture) and the messages you send to our chatbot.</li>
-                  <li>How We Use Data: We use your messages solely to provide AI-generated responses via the Google Gemini API. We do not use your data for advertising or marketing purposes without your consent.</li>
-                  <li>Data Sharing: Your message data is processed by Google's AI services to generate replies but is not shared with any other third parties or sold.</li>
-                  <li>Data Deletion: If you wish to delete your data from our system, please contact us at dalatech.ai@gmail.com or reply "DELETE" in the chat.</li>
+                  <li>Цуглуулдаг мэдээлэл: Бид таны Facebook-ийн нийтийн профайлын мэдээлэл (нэр, профайл зураг) болон чатботод илгээсэн зурвасуудыг цуглуулдаг.</li>
+                  <li>Мэдээллийг хэрхэн ашигладаг: Бид таны зурвасуудыг зөвхөн Google Gemini API-аар дамжуулан AI хариулт үүсгэхэд ашигладаг. Таны зөвшөөрөлгүйгээр зар сурталчилгаа, маркетингийн зорилгоор таны мэдээллийг ашиглахгүй.</li>
+                  <li>Мэдээлэл хуваалцах: Таны зурвасын өгөгдлийг хариулт үүсгэх зорилгоор Google-ийн AI үйлчилгээ боловсруулах боловч бусад гуравдагч этгээдэд дамжуулагдахгүй, худалдаалагдахгүй.</li>
+                  <li>Мэдээлэл устгах: Хэрэв та манай системээс өөрийн мэдээллийг устгуулахыг хүсвэл dalatech.ai@gmail.com хаягаар холбогдох эсвэл чатад "DELETE" гэж хариу бичнэ үү.</li>
                 </ul>
               </div>
               <div className="space-y-3">
-                <h3 className="font-display text-[16px] font-semibold text-fg">3. Terms of Service</h3>
+                <h3 className="font-display text-[16px] font-semibold text-fg">3. Үйлчилгээний нөхцөл</h3>
                 <ul className="list-disc space-y-2 pl-5">
-                  <li>Usage: You agree to use this chatbot only for lawful purposes. You must not send harmful, offensive, or illegal content.</li>
-                  <li>Liability: The AI responses are generated automatically. Tserentsoodol Bilguun and DalaTech.ai are not liable for any inaccuracies in the AI's answers.</li>
-                  <li>Termination: We reserve the right to block any user who violates these terms.</li>
+                  <li>Ашиглалт: Та энэхүү чатботыг зөвхөн хууль ёсны зорилгоор ашиглахыг зөвшөөрч байна. Хортой, доромжилсон болон хууль бус агуулга илгээхийг хориглоно.</li>
+                  <li>Хариуцлага: AI-ийн хариултууд автоматаар үүсгэгддэг. Цэрэнцоодол Билгүүн болон DalaTech.ai нь AI-ийн хариултын алдаа, нарийвчлалгүй мэдээллийн төлөө хариуцлага хүлээхгүй.</li>
+                  <li>Үйлчилгээг зогсоох: Энэхүү нөхцөлийг зөрчсөн аливаа хэрэглэгчийг хориглох эрхийг бид өөртөө хадгална.</li>
                 </ul>
               </div>
               <div className="space-y-3">
-                <h3 className="font-display text-[16px] font-semibold text-fg">4. Contact Information</h3>
-                <p>Owner: Tserentsoodol Bilguun Address: Khan-Uul, Artsat apartment, 801, Ulaanbaatar, Mongolia Phone: +976 99273339 Email: dalatech.ai@gmail.com</p>
+                <h3 className="font-display text-[16px] font-semibold text-fg">4. Холбоо барих мэдээлэл</h3>
+                <p>Эзэмшигч: Цэрэнцоодол Билгүүн И-мэйл: dalatech.ai@gmail.com</p>
               </div>
             </div>
           </motion.div>
