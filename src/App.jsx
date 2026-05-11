@@ -2948,7 +2948,7 @@ function PrivacyTermsModal({ isOpen, onClose }) {
               </div>
               <div className="space-y-3">
                 <h3 className="font-display text-[16px] font-semibold text-fg">4. Холбоо барих мэдээлэл</h3>
-                <p>Эзэмшигч: Цэрэнцоодол Билгүүн И-мэйл: dalatech.ai@gmail.com</p>
+                <p>И-мэйл: dalatech.ai@gmail.com</p>
               </div>
             </div>
           </motion.div>
