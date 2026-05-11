@@ -1,39 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mn">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#050A18" />
     <meta name="robots" content="index, follow" />
-    <title>Privacy Policy &middot; Dalatech</title>
+    <title>Нууцлалын бодлого · DalaTech.ai</title>
     <meta
       name="description"
-      content="Privacy policy for Dalatech — what data we collect through Facebook Pages Messenger, why, how long we keep it, and how to request deletion."
+      content="DalaTech.ai-ийн нууцлалын бодлого. Бид ямар мэдээлэл цуглуулдаг, хэрхэн ашигладаг, хэр удаан хадгалдаг, хэнтэй хуваалцдаг тухай."
     />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    />
     <style>
       :root {
-        color-scheme: light;
+        color-scheme: dark;
+        --bg: #050A18;
+        --bg-soft: #0A1128;
+        --line: rgba(240, 244, 255, 0.08);
+        --line-strong: rgba(56, 189, 248, 0.22);
+        --fg: #F0F4FF;
+        --fg-muted: #A6B0C7;
+        --fg-dim: #6B7591;
+        --accent: #38BDF8;
+        --accent-deep: #2563EB;
       }
-      * { box-sizing: border-box; }
+      *, *::before, *::after { box-sizing: border-box; }
       html, body { margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
       body {
-        background: #fafafa;
-        color: #18181b;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        line-height: 1.65;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
       }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(60% 50% at 15% 0%, rgba(37, 99, 235, 0.18), transparent 70%),
+          radial-gradient(50% 40% at 95% 10%, rgba(56, 189, 248, 0.10), transparent 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
       header.site {
-        border-bottom: 1px solid #e4e4e7;
-        background: #ffffffcc;
-        backdrop-filter: saturate(140%) blur(8px);
         position: sticky;
         top: 0;
-        z-index: 10;
+        z-index: 50;
+        background: rgba(5, 10, 24, 0.82);
+        backdrop-filter: saturate(160%) blur(18px);
+        -webkit-backdrop-filter: saturate(160%) blur(18px);
+        border-bottom: 1px solid var(--line-strong);
       }
       .wrap {
-        max-width: 768px;
+        max-width: 760px;
         margin: 0 auto;
         padding: 0 24px;
       }
@@ -41,237 +73,389 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        height: 64px;
+        height: 68px;
+        gap: 16px;
       }
       .brand {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         text-decoration: none;
-        color: #09090b;
+        color: var(--fg);
+        font-family: 'Outfit', sans-serif;
         font-weight: 700;
-        font-size: 16px;
+        font-size: 17px;
+        letter-spacing: -0.02em;
+        transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1);
       }
-      .brand img { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; }
-      nav a {
-        color: #3f3f46;
+      .brand:hover { opacity: 0.85; }
+      .brand-logo {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--bg-soft);
+        flex-shrink: 0;
+      }
+      .brand-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scale(1.18);
+        display: block;
+      }
+      nav.nav-links {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      nav.nav-links a {
+        color: var(--fg-muted);
         text-decoration: none;
         font-size: 14px;
-        margin-left: 18px;
+        font-weight: 500;
+        transition: color 200ms cubic-bezier(0.16, 1, 0.3, 1);
       }
-      nav a:hover { color: #09090b; }
-      main { padding: 48px 0 96px; }
+      nav.nav-links a:hover { color: var(--fg); }
+      nav.nav-links a.is-current { color: var(--accent); }
+
+      main {
+        position: relative;
+        z-index: 1;
+        padding: 72px 0 120px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin: 0 0 18px;
+      }
+      .eyebrow::before {
+        content: "";
+        width: 22px;
+        height: 1px;
+        background: var(--accent);
+        opacity: 0.7;
+      }
+
       h1 {
-        font-size: 36px;
-        line-height: 1.15;
-        letter-spacing: -0.02em;
-        margin: 0 0 8px;
-        color: #09090b;
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(34px, 5.5vw, 48px);
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+        font-weight: 700;
+        margin: 0 0 18px;
+        color: var(--fg);
       }
-      .lede { color: #52525b; margin: 0 0 32px; }
-      h2 {
-        font-size: 20px;
-        margin: 36px 0 8px;
-        color: #09090b;
-        letter-spacing: -0.01em;
+      .lede {
+        font-size: 17px;
+        color: var(--fg-muted);
+        margin: 0 0 14px;
+        max-width: 62ch;
       }
-      p, li { color: #27272a; }
-      ul { padding-left: 22px; }
-      a.inline { color: #09090b; text-decoration: underline; text-underline-offset: 3px; }
-      a.inline:hover { color: #2563eb; }
       .meta {
         font-size: 13px;
-        color: #71717a;
-        margin-top: 0;
+        color: var(--fg-dim);
+        margin: 0 0 56px;
+        font-variant-numeric: tabular-nums;
       }
-      .card {
-        margin-top: 32px;
-        padding: 20px 22px;
-        background: #ffffff;
-        border: 1px solid #e4e4e7;
-        border-radius: 14px;
+
+      h2 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        margin: 56px 0 14px;
+        color: var(--fg);
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
       }
-      footer {
-        border-top: 1px solid #e4e4e7;
-        padding: 24px 0;
-        color: #71717a;
+      h2 .num {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0;
+      }
+
+      p, li { color: #C9D2E6; }
+      p { margin: 0 0 14px; max-width: 65ch; }
+      ul {
+        padding-left: 0;
+        margin: 0 0 14px;
+        list-style: none;
+        max-width: 65ch;
+      }
+      li {
+        position: relative;
+        padding: 4px 0 4px 22px;
+      }
+      li::before {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 14px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        opacity: 0.85;
+      }
+      strong { color: var(--fg); font-weight: 600; }
+
+      a.inline {
+        color: var(--accent);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(56, 189, 248, 0.35);
+        padding-bottom: 1px;
+        transition: border-color 200ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      a.inline:hover {
+        color: var(--fg);
+        border-bottom-color: var(--fg);
+      }
+
+      .contact {
+        margin-top: 64px;
+        padding: 28px 28px 30px;
+        background: linear-gradient(180deg, rgba(15, 24, 56, 0.55) 0%, rgba(10, 17, 40, 0.35) 100%);
+        border: 1px solid var(--line-strong);
+        border-radius: 18px;
+      }
+      .contact h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 8px;
+        color: var(--fg);
+        letter-spacing: -0.01em;
+      }
+      .contact p { margin: 0; color: var(--fg-muted); }
+
+      footer.site {
+        position: relative;
+        z-index: 1;
+        border-top: 1px solid var(--line);
+        padding: 28px 0;
+        color: var(--fg-dim);
         font-size: 13px;
       }
-      footer .wrap {
+      footer.site .wrap {
         display: flex;
-        justify-content: space-between;
         flex-wrap: wrap;
-        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
       }
-      footer a { color: #3f3f46; text-decoration: none; margin-right: 16px; }
-      footer a:hover { color: #09090b; }
+      footer.site a {
+        color: var(--fg-muted);
+        text-decoration: none;
+        margin-left: 22px;
+        transition: color 200ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      footer.site .links a:first-child { margin-left: 0; }
+      footer.site a:hover { color: var(--fg); }
+
+      @media (max-width: 640px) {
+        header.site .wrap { height: 60px; padding: 0 18px; }
+        .wrap { padding: 0 18px; }
+        nav.nav-links { gap: 14px; }
+        nav.nav-links a { font-size: 13px; }
+        main { padding: 48px 0 80px; }
+        h1 { font-size: 30px; }
+        .meta { margin-bottom: 40px; }
+        h2 { font-size: 19px; margin: 40px 0 10px; gap: 10px; }
+        .contact { padding: 22px; }
+        footer.site .wrap { flex-direction: column; align-items: flex-start; }
+        footer.site .links { display: flex; flex-wrap: wrap; }
+        footer.site .links a { margin-left: 0; margin-right: 18px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
     </style>
   </head>
   <body>
     <header class="site">
       <div class="wrap">
-        <a class="brand" href="/">
-          <img src="/Photos/dalatech-logo.png" alt="Dalatech logo" />
-          Dalatech
+        <a class="brand" href="https://dalatech.online" aria-label="DalaTech.ai нүүр хуудас">
+          <span class="brand-logo">
+            <img src="/dalatech_logo_v3.jpg" alt="" aria-hidden="true" />
+          </span>
+          <span>DalaTech</span>
         </a>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/terms/">Terms</a>
-          <a href="/data-deletion/">Data deletion</a>
+        <nav class="nav-links" aria-label="Хуудасны навигаци">
+          <a href="https://dalatech.online">Нүүр</a>
+          <a href="/privacy/" class="is-current" aria-current="page">Нууцлал</a>
+          <a href="/terms/">Үйлчилгээний нөхцөл</a>
         </nav>
       </div>
     </header>
 
     <main>
       <div class="wrap">
-        <h1>Privacy Policy</h1>
+        <p class="eyebrow">Хууль зүйн мэдээлэл</p>
+        <h1>Нууцлалын бодлого</h1>
         <p class="lede">
-          This Privacy Policy explains what information Dalatech collects when
-          you contact us through our Facebook Page on Messenger, why we collect
-          it, how long we keep it, and the choices you have over your data.
+          DalaTech.ai нь танай бизнест зориулсан вэбсайт, AI чатбот, автоматжуулалтын
+          үйлчилгээ үзүүлдэг бөгөөд таны өгсөн мэдээллийг хэрхэн цуглуулж, ашиглаж,
+          хамгаалдаг тухай энэхүү бодлогод тодорхой тайлбарласан болно.
         </p>
-        <p class="meta">Last updated: 8 May 2026</p>
+        <p class="meta">Сүүлд шинэчилсэн огноо: 2026 оны 5 сар</p>
 
-        <h2>1. Who we are</h2>
+        <h2><span class="num">01</span> Бид хэн бэ</h2>
         <p>
-          Dalatech is a tech agency based in Ulaanbaatar, Mongolia, owned and
-          operated by Tserentsoodol Bilguun. We build websites, AI chatbots,
-          and business automation for small and mid-size businesses.
+          DalaTech.ai (цаашид "бид", "DalaTech") нь Улаанбаатар, Монгол улсад
+          үйл ажиллагаагаа явуулдаг технологийн агентлаг бөгөөд жижиг, дунд бизнест
+          зориулсан вэбсайт, AI чатбот, бизнесийн автоматжуулалт хийдэг.
         </p>
         <p>
-          For any privacy question, you can reach us at
-          <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>.
-        </p>
-
-        <h2>2. What data we collect through Facebook Messenger</h2>
-        <p>
-          When you message our Facebook Page, we receive and store the
-          following information from Meta&rsquo;s Messenger Platform:
-        </p>
-        <ul>
-          <li>The content of the messages you send to us, and our replies.</li>
-          <li>Your Facebook user ID (a numeric identifier scoped to our Page).</li>
-          <li>Your public profile name and profile picture as shown on Facebook.</li>
-          <li>
-            The timestamp and language of each message, plus any attachments
-            (images, files, audio) you choose to send us.
-          </li>
-        </ul>
-        <p>
-          We do <strong>not</strong> ask for, collect, or store your password,
-          payment card numbers, government IDs, or any sensitive personal data
-          through Messenger.
-        </p>
-
-        <h2>3. Why we collect this data</h2>
-        <p>
-          We use the data above for one purpose only: to read and respond to
-          customer inquiries sent to our Facebook Page. Specifically, we use it
-          to:
-        </p>
-        <ul>
-          <li>Reply to your questions about our services and pricing.</li>
-          <li>Continue an ongoing conversation across multiple messages.</li>
-          <li>
-            Send a follow-up reply within Facebook&rsquo;s allowed messaging
-            window if you previously contacted us.
-          </li>
-        </ul>
-
-        <h2>4. How long we keep it</h2>
-        <p>
-          We retain Messenger conversations for up to <strong>24 months</strong>
-          from the date of your last message, after which they are deleted from
-          our records. You may ask us to delete your conversation sooner at any
-          time (see Section 7).
-        </p>
-
-        <h2>5. Sharing &mdash; we do not sell your data</h2>
-        <p>
-          We do <strong>not</strong> sell, rent, or trade your personal data to
-          any third party. We do not use your Messenger data for advertising or
-          to build profiles about you.
-        </p>
-        <p>
-          The only parties with incidental access to your data are:
-        </p>
-        <ul>
-          <li>
-            <strong>Meta Platforms, Inc.</strong> &mdash; because the messages
-            travel through Facebook Messenger&rsquo;s infrastructure under
-            Meta&rsquo;s own privacy terms.
-          </li>
-          <li>
-            Authorized Dalatech staff who handle customer support, who are
-            bound by confidentiality.
-          </li>
-        </ul>
-        <p>
-          We may disclose data only if compelled by valid Mongolian law (for
-          example, a court order).
-        </p>
-
-        <h2>6. How we protect it</h2>
-        <p>
-          Conversations are accessed through Facebook&rsquo;s Page Inbox and any
-          tooling we connect via the official Messenger Platform API. Access is
-          limited to authorized personnel, protected by Facebook
-          authentication, and we follow standard practices such as two-factor
-          authentication on accounts that can read Page messages.
-        </p>
-
-        <h2>7. Your rights &mdash; access, correction, deletion</h2>
-        <p>
-          You can ask us, at any time, to:
-        </p>
-        <ul>
-          <li>Tell you what data we hold about you from Messenger.</li>
-          <li>Correct anything that is wrong.</li>
-          <li>Delete your conversation history with our Page.</li>
-        </ul>
-        <p>
-          To make any of these requests, email
+          Нууцлалтай холбоотой ямар ч асуудлаар бидэнтэй
           <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>
-          from the email associated with your Facebook account, or reply on
-          Messenger asking us to delete your data. We will action the request
-          within 30 days.
-        </p>
-        <p>
-          For full deletion instructions, see our
-          <a class="inline" href="/data-deletion/">Data Deletion page</a>.
+          хаягаар холбогдох боломжтой.
         </p>
 
-        <h2>8. Children</h2>
+        <h2><span class="num">02</span> Ямар мэдээлэл цуглуулдаг вэ</h2>
+        <p>Бид зөвхөн та өөрөө идэвхтэй өгсөн мэдээллийг цуглуулдаг. Үүнд:</p>
+        <ul>
+          <li>Манай вэб дээрх форм буюу чатбот руу оруулсан <strong>нэр</strong>.</li>
+          <li>Холбоо барих <strong>имэйл хаяг</strong>.</li>
+          <li>Холбоо барих <strong>утасны дугаар</strong> (та өөрөө сайн дураар оруулсан тохиолдолд).</li>
+          <li>Танай <strong>бизнесийн нэр, чиглэл, төслийн тухай тайлбар</strong> зэрэг хүсэлтэндээ оруулсан агуулга.</li>
+          <li>Facebook Messenger-ээр бичсэн тохиолдолд мессежний агуулга, нийтийн профайл нэр, Page-д харагдах Facebook ID.</li>
+        </ul>
         <p>
-          Our services are intended for businesses and adults. We do not
-          knowingly collect data from children under 13. If you believe a child
-          has contacted us, email us and we will delete the conversation.
+          Бид нууц үг, банкны картын мэдээлэл, иргэний үнэмлэхний дугаар зэрэг
+          мэдрэмтгий хувийн мэдээллийг <strong>асуудаггүй, хадгалдаггүй</strong>.
         </p>
 
-        <h2>9. Changes to this policy</h2>
+        <h2><span class="num">03</span> Энэ мэдээллийг хэрхэн ашигладаг вэ</h2>
+        <p>Бид цуглуулсан мэдээллийг зөвхөн дараах зорилгоор ашигладаг:</p>
+        <ul>
+          <li>Танай бизнест тохирсон <strong>демо вэбсайт үүсгэх</strong> AI үйл явцад оролцуулах.</li>
+          <li>Танай төслийн талаар <strong>имэйл, утсаар холбогдох</strong> ба санал, үнийн саналаар хариулах.</li>
+          <li>Манай <strong>Facebook Page</strong> руу илгээсэн мессежид хариулах.</li>
+          <li>Үйлчилгээгээ сайжруулах зорилгоор статистик байдлаар (хувь хүн таних боломжгүй) дүн шинжилгээ хийх.</li>
+        </ul>
         <p>
-          If we update this policy, we will change the &ldquo;Last updated&rdquo;
-          date at the top of this page. Material changes will also be announced
-          on our Facebook Page.
+          Бид таны мэдээллийг <strong>маркетингийн профайл</strong> үүсгэх,
+          сурталчилгаа танд харуулах, эсвэл бусдад зарах зорилгоор ашиглахгүй.
         </p>
 
-        <div class="card">
-          <strong>Questions?</strong><br />
-          Email
+        <h2><span class="num">04</span> Хэнтэй хуваалцдаг вэ</h2>
+        <p>
+          Үйлчилгээгээ хүргэхийн тулд бид дараах гуравдагч талын дэд бүтцийг
+          ашигладаг. Эдгээр нь зөвхөн техникийн шаардлагатай хэмжээгээр мэдээлэлд хүрч,
+          өөрсдийн нийтлэг нууцлалын бодлогын дагуу ажилладаг:
+        </p>
+        <ul>
+          <li>
+            <strong>Anthropic (Claude API)</strong>. Таны хүсэлтийг боловсруулж,
+            демо вэбсайт болон чатботын хариултыг AI-аар үүсгэхэд ашигладаг.
+          </li>
+          <li>
+            <strong>Vercel</strong>. Манай вэбсайт болон серверлес ажиллагааг
+            host хийдэг үйлчилгээ үзүүлэгч.
+          </li>
+          <li>
+            <strong>Resend</strong>. Танай төслийн талаар имэйлийн харилцаа
+            автоматаар явуулдаг имэйл хүргэлтийн үйлчилгээ.
+          </li>
+          <li>
+            <strong>Meta Platforms (Facebook Messenger)</strong>. Манай Page руу
+            бичсэн тохиолдолд мессеж Meta-гийн дэд бүтцээр дамждаг бөгөөд тэдний
+            өөрийн нь нөхцөл, нууцлалын бодлогод захирагдана.
+          </li>
+        </ul>
+        <p>
+          Бид таны мэдээллийг хэн нэгэнд <strong>зардаггүй, түрээслүүлдэггүй,
+          солилцдоггүй</strong>. Зөвхөн Монгол улсын хууль ёсны шаардлагаар
+          (жишээ нь, шүүхийн шийдвэр) бол шаардлагатай хэмжээнд гаргаж өгөх боломжтой.
+        </p>
+
+        <h2><span class="num">05</span> Хэр удаан хадгалдаг вэ</h2>
+        <p>
+          Манай форм буюу чатбот руу илгээсэн lead-ийн мэдээллийг хамгийн сүүлд
+          холбогдсон өдрөөс хойш <strong>1 жилийн хугацаанд</strong> хадгална.
+          Уг хугацаа дууссаны дараа автоматаар устгана. Та энэ хугацаанаас өмнө
+          хүсэлт гаргавал мэдээллээ нэн даруй устгуулах боломжтой (доорх 6-р хэсэг).
+        </p>
+
+        <h2><span class="num">06</span> Таны эрх</h2>
+        <p>Та өөрийн мэдээллийнхээ хувьд хэдийд ч дараах эрхээ хэрэгжүүлж болно:</p>
+        <ul>
+          <li>Бид танай тухай ямар мэдээлэл хадгалж байгааг асуух эрхтэй.</li>
+          <li>Буруу эсвэл хуучирсан мэдээллээ засуулах эрхтэй.</li>
+          <li>Мэдээллээ бүхэлд нь <strong>устгуулах эрхтэй</strong>.</li>
+        </ul>
+        <p>
+          Эдгээр эрхээ эдлэхийн тулд
           <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>
-          and we will respond within 30 days.
+          хаягт хүсэлт илгээнэ үү. Бид 30 хоногийн дотор хариу өгч, хүсэлтийг биелүүлнэ.
+        </p>
+
+        <h2><span class="num">07</span> Facebook Messenger-ийн нэгтгэл</h2>
+        <p>
+          DalaTech.ai-ийн Facebook Page руу бичсэн мессеж Meta-гийн Messenger
+          Platform-аар дамжин ирдэг. Бид зөвхөн танай асуултад хариулах зорилгоор
+          мессежний агуулга, нийтийн профайл нэр, Page-ийн хүрээнд олгогддог
+          Facebook ID-г хүлээн авч хадгалдаг. Эдгээр мэдээллийг сурталчилгааны
+          зорилгоор ашиглахгүй, мөн гуравдагч талд дамжуулахгүй.
+        </p>
+        <p>
+          Messenger-ийн харилцаагаа устгуулахыг хүсвэл бидэнд имэйлээр болон
+          Page-ийн чатаар мэдэгдэхэд хангалттай.
+        </p>
+
+        <h2><span class="num">08</span> Аюулгүй байдал</h2>
+        <p>
+          Мэдээллийг хязгаарлагдсан, нэвтрэх эрх бүхий ажилтнууд л үзэх боломжтой
+          бөгөөд бид хоёр алхамт баталгаажуулалт, найдвартай үйлчилгээ үзүүлэгчдийн
+          стандарт хамгаалалтыг ашигладаг. Гэвч интернетээр дамждаг аливаа мэдээлэл
+          100% аюулгүй байдлыг бат баталж болохгүйг анхааруулж байна.
+        </p>
+
+        <h2><span class="num">09</span> Хүүхдийн мэдээлэл</h2>
+        <p>
+          Манай үйлчилгээ бизнес эрхлэгчид, насанд хүрэгчдэд зориулагдсан. Бид
+          13-аас доош насны хүүхдээс мэдлэгтэйгээр мэдээлэл цуглуулдаггүй. Хэрэв
+          хүүхэд бидэнтэй холбогдсон гэж үзвэл бидэнд мэдэгдээрэй, харилцааг нэн
+          даруй устгана.
+        </p>
+
+        <h2><span class="num">10</span> Энэхүү бодлогын өөрчлөлт</h2>
+        <p>
+          Энэ бодлогыг шинэчлэх тохиолдолд хуудасны дээд хэсэгт байрлах
+          "Сүүлд шинэчилсэн огноо" өөрчлөгдөнө. Үндсэн өөрчлөлтүүдийг манай
+          вэбсайт болон Facebook Page-ээр зарлана.
+        </p>
+
+        <div class="contact">
+          <h3>Асуулт байна уу?</h3>
+          <p>
+            <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>
+            хаягт бичээрэй. Бид 30 хоногийн дотор хариу өгнө.
+          </p>
         </div>
       </div>
     </main>
 
-    <footer>
+    <footer class="site">
       <div class="wrap">
-        <div>&copy; 2026 Dalatech &middot; Ulaanbaatar, Mongolia</div>
-        <div>
-          <a href="/">Home</a>
-          <a href="/privacy/">Privacy</a>
-          <a href="/terms/">Terms</a>
-          <a href="/data-deletion/">Data deletion</a>
+        <div>© 2026 DalaTech.ai · Улаанбаатар, Монгол</div>
+        <div class="links">
+          <a href="https://dalatech.online">Нүүр</a>
+          <a href="/privacy/">Нууцлал</a>
+          <a href="/terms/">Үйлчилгээний нөхцөл</a>
         </div>
       </div>
     </footer>
