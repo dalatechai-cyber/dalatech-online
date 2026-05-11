@@ -2414,7 +2414,45 @@ function Pricing() {
                 <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{t("pricing.monthly.chatbot.title")}</p>
                 <p className="mt-1.5 text-[13.5px] leading-[1.55] text-fg-muted">{t("pricing.monthly.chatbot.description")}</p>
               </div>
-              <div className="mt-5 overflow-x-auto rounded-xl border border-white/[0.08]">
+              {/* Mobile: stacked per-tier blocks. A 3-column comparison table
+                  cannot read at 390px (forces ~460px width and scrolls inside
+                  the card), so below sm we split into one block per tier with
+                  feature/value rows that fit edge-to-edge. */}
+              <div className="mt-5 grid gap-4 sm:hidden">
+                {[
+                  { id: "basic", primary: false },
+                  { id: "growth", primary: true },
+                ].map(({ id, primary }) => (
+                  <div
+                    key={id}
+                    className={[
+                      "rounded-xl p-5",
+                      primary
+                        ? "border border-sky-400/40 bg-gradient-to-b from-sky-400/[0.06] to-transparent shadow-[0_0_0_1px_rgba(56,189,248,0.12),0_18px_40px_-24px_rgba(56,189,248,0.35)]"
+                        : "border border-white/[0.08] bg-white/[0.02]",
+                    ].join(" ")}
+                  >
+                    <p className="font-display text-[15px] font-semibold tracking-tight text-fg">
+                      {t(`pricing.monthly.chatbot.table.headers.${id}`)}
+                    </p>
+                    <dl className="mt-3 divide-y divide-white/[0.06]">
+                      {["server", "dataUpdates", "support", "monitoring"].map((row) => (
+                        <div key={row} className="flex items-baseline justify-between gap-4 py-2.5">
+                          <dt className="text-[12.5px] leading-snug text-fg-muted">
+                            {t(`pricing.monthly.chatbot.table.rows.${row}.feature`)}
+                          </dt>
+                          <dd className="text-right text-[13px] font-medium leading-snug text-fg">
+                            {t(`pricing.monthly.chatbot.table.rows.${row}.${id}`)}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                ))}
+              </div>
+
+              {/* sm+: original comparison table */}
+              <div className="mt-5 hidden overflow-x-auto rounded-xl border border-white/[0.08] sm:block">
                 <table className="w-full min-w-[460px] text-left text-[13px]">
                   <thead className="bg-white/[0.025]">
                     <tr>
