@@ -2,6 +2,16 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  NavLink as RouterNavLink,
+  useLocation,
+  useNavigate,
+  Navigate,
+} from "react-router-dom";
+import {
   motion,
   AnimatePresence,
   useScroll,
@@ -177,13 +187,35 @@ function StaggerItem({ children, className = "", y = 24 }) {
   );
 }
 
+function useContactJump() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return React.useCallback(() => {
+    if (location.pathname === "/") {
+      const el = document.getElementById("contact");
+      if (el) {
+        const headerH = window.scrollY > 60 ? 56 : 80;
+        const y = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    } else {
+      navigate("/", { state: { scrollTo: "contact" } });
+    }
+  }, [location.pathname, navigate]);
+}
+
 function MagneticButton({ children, href = "#", variant = "primary", onClick, type = "button", className = "", disabled = false }) {
   const reduced = useReducedMotion();
+  const jumpToContact = useContactJump();
   const ref = React.useRef(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const sx = useSpring(x, { stiffness: 220, damping: 18, mass: 0.5 });
   const sy = useSpring(y, { stiffness: 220, damping: 18, mass: 0.5 });
+
+  // Centralised contact-jump: any href="#contact" routes home and scrolls.
+  const resolvedOnClick =
+    onClick || (href === "#contact" ? jumpToContact : undefined);
 
   const onMove = (e) => {
     if (reduced || !ref.current || disabled) return;
@@ -224,17 +256,32 @@ function MagneticButton({ children, href = "#", variant = "primary", onClick, ty
 
   const outerClass = ["inline-block", className].join(" ").trim();
 
-  if (onClick || type === "submit") {
+  if (resolvedOnClick || type === "submit") {
     return (
       <motion.button
         type={type}
-        onClick={onClick}
+        onClick={resolvedOnClick}
         disabled={disabled}
         className={outerClass}
         whileTap={reduced || disabled ? undefined : { scale: 0.97 }}
       >
         {Inner}
       </motion.button>
+    );
+  }
+
+  const isInternalRoute =
+    typeof href === "string" &&
+    href.startsWith("/") &&
+    !href.startsWith("//");
+
+  if (isInternalRoute) {
+    return (
+      <motion.span className={outerClass} whileTap={reduced ? undefined : { scale: 0.97 }}>
+        <Link to={href} className="contents">
+          {Inner}
+        </Link>
+      </motion.span>
     );
   }
 
@@ -363,29 +410,6 @@ function BrandLockup({ size = 40 }) {
   );
 }
 
-function NavLink({ children, href, active, onClick }) {
-  return (
-    <a
-      href={href}
-      onClick={onClick}
-      className={[
-        "relative px-1 py-2 text-[14px] font-medium transition-colors duration-200",
-        active ? "text-[#38BDF8]" : "text-fg-muted hover:text-fg",
-      ].join(" ")}
-      data-cursor="hover"
-    >
-      <span>{children}</span>
-      {active && (
-        <motion.span
-          layoutId="nav-underline"
-          className="absolute -bottom-0.5 left-0 right-0 h-[2px] bg-[#38BDF8]"
-          transition={{ type: "spring", stiffness: 350, damping: 30 }}
-        />
-      )}
-    </a>
-  );
-}
-
 const LANGUAGES = [
   { code: "en", label: "English" },
   { code: "mn", label: "Монгол" },
@@ -393,26 +417,13 @@ const LANGUAGES = [
 ];
 
 const NAV_ITEMS = [
-  { id: "bento", labelKey: "capabilities" },
-  { id: "process", labelKey: "process" },
-  { id: "tech-stack", labelKey: "stack" },
-  { id: "location", labelKey: "location" },
-  { id: "portfolio", labelKey: "portfolio" },
-  { id: "pricing", labelKey: "pricing" },
-  { id: "faq", labelKey: "faq" },
-];
-
-const SCROLLSPY_IDS = [
-  "bento",
-  "process",
-  "tech-stack",
-  "location",
-  "features",
-  "how",
-  "portfolio",
-  "pricing",
-  "faq",
-  "contact",
+  { to: "/products", labelKey: "capabilities" },
+  { to: "/process", labelKey: "process" },
+  { to: "/technology", labelKey: "stack" },
+  { to: "/location", labelKey: "location" },
+  { to: "/portfolio", labelKey: "portfolio" },
+  { to: "/pricing", labelKey: "pricing" },
+  { to: "/faq", labelKey: "faq" },
 ];
 
 let bodyScrollLockCount = 0;
@@ -433,14 +444,12 @@ function unlockBodyScroll() {
 
 function Navbar() {
   const { t, i18n } = useTranslation();
-  const [active, setActive] = React.useState("bento");
+  const location = useLocation();
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = React.useState(false);
   const [langOpen, setLangOpen] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const langTimer = React.useRef(null);
-  const programmaticScroll = React.useRef(false);
-  const programmaticEndTimer = React.useRef(null);
-  const scrollSessionRef = React.useRef(0);
 
   const clearTimer = () => {
     if (langTimer.current) { clearTimeout(langTimer.current); langTimer.current = null; }
@@ -457,24 +466,16 @@ function Navbar() {
 
   React.useEffect(() => () => {
     clearTimer();
-    if (programmaticEndTimer.current) {
-      clearTimeout(programmaticEndTimer.current);
-      programmaticEndTimer.current = null;
-    }
   }, []);
+
+  // Close mobile menu on route change.
+  React.useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   React.useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 60);
-      if (programmaticScroll.current) return;
-      const y = window.scrollY + 140;
-      let cur = "bento";
-      for (const id of SCROLLSPY_IDS) {
-        const el = document.getElementById(id);
-        if (!el) continue;
-        if (y >= el.offsetTop) cur = id;
-      }
-      setActive(cur);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -491,39 +492,19 @@ function Navbar() {
     };
   }, [mobileOpen]);
 
-  const scrollToId = (id) => (e) => {
-    e.preventDefault();
+  const goToContact = (e) => {
+    if (e) e.preventDefault();
     setMobileOpen(false);
-    const el = document.getElementById(id);
-    if (!el) return;
-    const headerH = window.scrollY > 60 ? 56 : 80;
-    const y = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
-    setActive(id);
-    programmaticScroll.current = true;
-    if (programmaticEndTimer.current) {
-      clearTimeout(programmaticEndTimer.current);
-      programmaticEndTimer.current = null;
+    if (location.pathname === "/") {
+      const el = document.getElementById("contact");
+      if (el) {
+        const headerH = window.scrollY > 60 ? 56 : 80;
+        const y = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    } else {
+      navigate("/", { state: { scrollTo: "contact" } });
     }
-    const sessionId = ++scrollSessionRef.current;
-    let lastY = window.scrollY;
-    let still = 0;
-    const watch = () => {
-      if (sessionId !== scrollSessionRef.current) return;
-      if (Math.abs(window.scrollY - lastY) < 0.5) {
-        still += 1;
-      } else {
-        still = 0;
-        lastY = window.scrollY;
-      }
-      if (still >= 4) {
-        programmaticScroll.current = false;
-        programmaticEndTimer.current = null;
-        return;
-      }
-      programmaticEndTimer.current = setTimeout(watch, 80);
-    };
-    window.scrollTo({ top: y, behavior: "smooth" });
-    programmaticEndTimer.current = setTimeout(watch, 80);
   };
 
   const navLabel = (labelKey) => t(`nav.${labelKey}`);
@@ -550,20 +531,36 @@ function Navbar() {
     >
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-7 lg:px-10">
         <div className={["flex items-center justify-between transition-all duration-300", scrolled ? "h-14" : "h-20"].join(" ")}>
-          <a href="#top" className="flex shrink-0 items-center" data-cursor="hover" aria-label="DalaTech home">
+          <Link to="/" className="flex shrink-0 items-center" data-cursor="hover" aria-label="DalaTech home">
             <BrandLockup size={40} />
-          </a>
+          </Link>
 
           <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 md:flex lg:gap-7">
-            {NAV_ITEMS.map(({ id, labelKey }) => (
-              <NavLink
-                key={id}
-                href={`#${id}`}
-                active={active === id}
-                onClick={scrollToId(id)}
+            {NAV_ITEMS.map(({ to, labelKey }) => (
+              <RouterNavLink
+                key={to}
+                to={to}
+                data-cursor="hover"
+                className={({ isActive }) =>
+                  [
+                    "relative text-[13.5px] font-medium tracking-[-0.005em] transition-colors duration-200",
+                    isActive ? "text-fg" : "text-fg-muted hover:text-fg",
+                  ].join(" ")
+                }
               >
-                {navLabel(labelKey)}
-              </NavLink>
+                {({ isActive }) => (
+                  <span className="relative inline-block">
+                    {navLabel(labelKey)}
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-active-underline"
+                        className="absolute -bottom-1.5 left-0 right-0 h-px bg-sky-400/70"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </span>
+                )}
+              </RouterNavLink>
             ))}
           </nav>
 
@@ -624,7 +621,7 @@ function Navbar() {
             </button>
 
             <div className="hidden md:block">
-              <MagneticButton href="#contact" variant="primary">
+              <MagneticButton onClick={goToContact} variant="primary">
                 {t("nav.getDemo")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
@@ -648,9 +645,14 @@ function Navbar() {
             style={{ backgroundColor: "#050A18", zIndex: 2147483647 }}
           >
             <div className="flex items-center justify-between px-5 pt-5 sm:px-7">
-              <a href="#top" onClick={scrollToId("top")} className="flex items-center" aria-label="DalaTech home">
+              <Link
+                to="/"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center"
+                aria-label="DalaTech home"
+              >
                 <BrandLockup size={40} />
-              </a>
+              </Link>
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
@@ -672,24 +674,30 @@ function Navbar() {
               }}
               className="flex flex-1 flex-col justify-center gap-2 px-5 sm:px-7"
             >
-              {NAV_ITEMS.map(({ id, labelKey }) => (
-                <motion.a
-                  key={id}
-                  href={`#${id}`}
-                  onClick={scrollToId(id)}
-                  variants={{
-                    hidden: { opacity: 0, y: 24 },
-                    show: { opacity: 1, y: 0, transition: SPRING_REVEAL },
-                  }}
-                  className={[
-                    "block py-1 font-display font-semibold tracking-tight transition-colors",
-                    active === id ? "text-[#38BDF8]" : "text-fg hover:text-[#38BDF8]",
-                  ].join(" ")}
-                  style={{ fontSize: "40px", lineHeight: 1.08, letterSpacing: "-0.02em" }}
-                >
-                  {navLabel(labelKey)}
-                </motion.a>
-              ))}
+              {NAV_ITEMS.map(({ to, labelKey }) => {
+                const isActive = location.pathname === to;
+                return (
+                  <motion.div
+                    key={to}
+                    variants={{
+                      hidden: { opacity: 0, y: 24 },
+                      show: { opacity: 1, y: 0, transition: SPRING_REVEAL },
+                    }}
+                  >
+                    <Link
+                      to={to}
+                      onClick={() => setMobileOpen(false)}
+                      className={[
+                        "block py-1 font-display font-semibold tracking-tight transition-colors",
+                        isActive ? "text-[#38BDF8]" : "text-fg hover:text-[#38BDF8]",
+                      ].join(" ")}
+                      style={{ fontSize: "40px", lineHeight: 1.08, letterSpacing: "-0.02em" }}
+                    >
+                      {navLabel(labelKey)}
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </motion.nav>
 
             <motion.div
@@ -713,7 +721,7 @@ function Navbar() {
                   </button>
                 ))}
               </div>
-              <MagneticButton href="#contact" variant="primary" onClick={(e) => { scrollToId("contact")(e); }}>
+              <MagneticButton onClick={goToContact} variant="primary">
                 {t("nav.getDemo")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
@@ -930,7 +938,7 @@ function Hero() {
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                 </svg>
               </MagneticButton>
-              <MagneticButton href="#portfolio" variant="ghost">
+              <MagneticButton href="/portfolio" variant="ghost">
                 {t("hero.buttons.seeWork")}
               </MagneticButton>
             </motion.div>
@@ -2035,6 +2043,7 @@ function Portfolio() {
 
 function LiveDemo() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const reduced = useReducedMotion();
   const scrollRef = React.useRef(null);
   const [step, setStep] = React.useState(0);
@@ -2104,7 +2113,10 @@ function LiveDemo() {
               {t("liveDemo.description")}
             </p>
             <div className="mt-9">
-              <MagneticButton href="#contact" variant="ghost">
+              <MagneticButton
+                variant="ghost"
+                onClick={() => navigate("/", { state: { scrollTo: "contact" } })}
+              >
                 {t("liveDemo.ctaLabel")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" />
@@ -2815,6 +2827,7 @@ function Chatbot() {
 }
 
 function FooterColumn({ heading, links }) {
+  const linkClass = "text-[13.5px] text-fg/85 transition-colors duration-200 hover:text-sky-300";
   return (
     <div>
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted/80">{heading}</p>
@@ -2825,16 +2838,20 @@ function FooterColumn({ heading, links }) {
               <button
                 type="button"
                 onClick={l.onClick}
-                className="text-[13.5px] text-fg/85 transition-colors duration-200 hover:text-sky-300"
+                className={linkClass}
                 data-cursor="hover"
               >
                 {l.label}
               </button>
+            ) : l.to ? (
+              <Link to={l.to} className={linkClass} data-cursor="hover">
+                {l.label}
+              </Link>
             ) : (
               <a
                 href={l.href}
                 {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                className="text-[13.5px] text-fg/85 transition-colors duration-200 hover:text-sky-300"
+                className={linkClass}
                 data-cursor="hover"
               >
                 {l.label}
@@ -2850,30 +2867,35 @@ function FooterColumn({ heading, links }) {
 function Footer({ onOpenPrivacy }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
-  const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // #features and #how are hidden on mobile, so omit them from the mobile
-  // footer rather than scrolling the visitor to nothing.
-  const services = (isMobile
-    ? [
-        { label: t("nav.capabilities"), href: "#bento" },
-        { label: t("nav.pricing"), href: "#pricing" },
-      ]
-    : [
-        { label: t("nav.features"), href: "#features" },
-        { label: t("nav.howItWorks"), href: "#how" },
-        { label: t("nav.capabilities"), href: "#bento" },
-        { label: t("nav.pricing"), href: "#pricing" },
-      ]);
+  const goToContact = () => {
+    if (location.pathname === "/") {
+      const el = document.getElementById("contact");
+      if (el) {
+        const headerH = window.scrollY > 60 ? 56 : 80;
+        const y = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    } else {
+      navigate("/", { state: { scrollTo: "contact" } });
+    }
+  };
+
+  const services = [
+    { label: t("nav.capabilities"), to: "/products" },
+    { label: t("nav.pricing"), to: "/pricing" },
+  ];
   const company = [
-    { label: t("nav.portfolio"), href: "#portfolio" },
-    { label: t("nav.process"), href: "#process" },
-    { label: t("nav.location"), href: "#location" },
-    { label: t("nav.contact"), href: "#contact" },
+    { label: t("nav.portfolio"), to: "/portfolio" },
+    { label: t("nav.process"), to: "/process" },
+    { label: t("nav.location"), to: "/location" },
+    { label: t("nav.contact"), onClick: goToContact },
   ];
   const legal = [
     { label: t("footer.privacy"), onClick: onOpenPrivacy },
-    { label: t("nav.faq"), href: "#faq" },
+    { label: t("nav.faq"), to: "/faq" },
   ];
 
   return (
@@ -3257,46 +3279,111 @@ function LocationBadge() {
   );
 }
 
-export default function App() {
-  const [isPrivacyOpen, setIsPrivacyOpen] = React.useState(false);
-  const [currentPage, setCurrentPage] = React.useState("home");
+// Page wrappers: each route renders only its own sections. The bento grid
+// repeats on the landing page and /products by design — landing surfaces it
+// as a teaser, /products treats it as part of a deeper product story.
+function LandingPage() {
+  return (
+    <>
+      <Hero />
+      <BentoFeatures />
+      <Contact />
+    </>
+  );
+}
 
+function ProductsPage() {
+  return (
+    <PageShell>
+      <CapabilityMarquee />
+      <Features />
+      <BentoFeatures />
+      <LiveDemo />
+    </PageShell>
+  );
+}
+
+function ProcessPage() {
+  return (
+    <PageShell>
+      <HowItWorks />
+      <ProcessTimeline />
+    </PageShell>
+  );
+}
+
+function TechnologyPage() {
+  return (
+    <PageShell>
+      <TechStack />
+    </PageShell>
+  );
+}
+
+function LocationPage() {
+  return (
+    <PageShell>
+      <LocationBadge />
+    </PageShell>
+  );
+}
+
+function PortfolioPage() {
+  return (
+    <PageShell>
+      <Portfolio />
+    </PageShell>
+  );
+}
+
+function PricingPage() {
+  return (
+    <PageShell>
+      <Pricing />
+    </PageShell>
+  );
+}
+
+function FAQPage() {
+  return (
+    <PageShell>
+      <FAQ />
+      <Testimonials />
+    </PageShell>
+  );
+}
+
+// Pads non-landing pages so content sits below the fixed navbar.
+function PageShell({ children }) {
+  return <div className="pt-24 md:pt-28">{children}</div>;
+}
+
+// On route change: scroll to top (or to a hash target if state.scrollTo set).
+function RouteScrollManager() {
+  const location = useLocation();
   React.useEffect(() => {
-    const handleHashChange = () => {
-      setCurrentPage(window.location.hash === "#/setup" ? "setup" : "home");
-    };
-    handleHashChange();
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
+    const target = location.state && location.state.scrollTo;
+    if (target) {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(target);
+        if (!el) {
+          window.scrollTo({ top: 0, behavior: "auto" });
+          return;
+        }
+        const headerH = window.scrollY > 60 ? 56 : 80;
+        const y = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      });
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [location.pathname, location.state]);
+  return null;
+}
 
-  if (currentPage === "setup") {
-    return (
-      <React.Suspense fallback={<div className="min-h-screen bg-ink-950" />}>
-        <Setup />
-      </React.Suspense>
-    );
-  }
-
-  // On mobile we hide every section the navbar does NOT link to, so each
-  // nav tap lands on a focused section instead of an endless scroll. Desktop
-  // layout is untouched.
-  const sections = [
-    ["hero", <Hero />, false],
-    ["marquee", <CapabilityMarquee />, true],
-    ["bentoFeatures", <BentoFeatures />, false],
-    ["processTimeline", <ProcessTimeline />, false],
-    ["techStack", <TechStack />, false],
-    ["location", <LocationBadge />, false],
-    ["features", <Features />, true],
-    ["howItWorks", <HowItWorks />, true],
-    ["portfolio", <Portfolio />, false],
-    ["liveDemo", <LiveDemo />, true],
-    ["testimonials", <Testimonials />, true],
-    ["pricing", <Pricing />, false],
-    ["faq", <FAQ />, false],
-    ["contact", <Contact />, false],
-  ];
+function Shell() {
+  const [isPrivacyOpen, setIsPrivacyOpen] = React.useState(false);
+  const location = useLocation();
 
   return (
     <div className="relative min-h-screen bg-ink-950 text-fg">
@@ -3306,16 +3393,39 @@ export default function App() {
       <ErrorBoundary>
         <Navbar />
       </ErrorBoundary>
+      <RouteScrollManager />
       <main>
-        {sections.map(([key, node, mobileHidden]) => (
-          <ErrorBoundary key={key}>
-            {mobileHidden ? (
-              <div className="hidden md:block">{node}</div>
-            ) : (
-              node
-            )}
-          </ErrorBoundary>
-        ))}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: EASE_OUT }}
+          >
+            <ErrorBoundary>
+              <Routes location={location}>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/process" element={<ProcessPage />} />
+                <Route path="/technology" element={<TechnologyPage />} />
+                <Route path="/location" element={<LocationPage />} />
+                <Route path="/portfolio" element={<PortfolioPage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route
+                  path="/setup"
+                  element={
+                    <React.Suspense fallback={<div className="min-h-screen bg-ink-950" />}>
+                      <Setup />
+                    </React.Suspense>
+                  }
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </ErrorBoundary>
+          </motion.div>
+        </AnimatePresence>
       </main>
       <ErrorBoundary>
         <Footer onOpenPrivacy={() => setIsPrivacyOpen(true)} />
@@ -3327,5 +3437,13 @@ export default function App() {
         <Chatbot />
       </ErrorBoundary>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Shell />
+    </BrowserRouter>
   );
 }

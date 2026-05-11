@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Setup() {
   const [isSDKLoaded, setIsSDKLoaded] = React.useState(false);
@@ -93,12 +94,12 @@ export default function Setup() {
             Check the browser console for authorization response details.
           </p>
 
-          <a
-            href="#"
+          <Link
+            to="/"
             className="inline-block mt-6 text-sm text-blue-600 hover:text-blue-700 font-medium"
           >
             ← Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     </div>
