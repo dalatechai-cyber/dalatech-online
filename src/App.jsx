@@ -396,6 +396,11 @@ function BrandLockup({ size = 40 }) {
           src="/dalatech_logo_v3.jpg"
           alt=""
           aria-hidden="true"
+          width={size}
+          height={size}
+          loading="eager"
+          decoding="sync"
+          fetchpriority="high"
           style={{ height: "100%", width: "100%", transform: "scale(1.18)" }}
           className="block object-cover"
         />
@@ -446,6 +451,7 @@ function Navbar() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [scrolled, setScrolled] = React.useState(false);
   const [langOpen, setLangOpen] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -511,9 +517,9 @@ function Navbar() {
 
   return (
     <motion.header
-      initial={{ y: -16, opacity: 0 }}
+      initial={isMobile ? false : { y: -16, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ ...SPRING_REVEAL, delay: 0.05 }}
+      transition={isMobile ? { duration: 0 } : { ...SPRING_REVEAL, delay: 0.05 }}
       style={
         scrolled
           ? {
@@ -530,7 +536,7 @@ function Navbar() {
       className="fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color,padding] duration-300"
     >
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-7 lg:px-10">
-        <div className={["flex items-center justify-between transition-all duration-300", scrolled ? "h-14" : "h-20"].join(" ")}>
+        <div className={["flex items-center justify-between md:transition-all md:duration-300", scrolled ? "h-14" : "h-20"].join(" ")}>
           <Link to="/" className="flex shrink-0 items-center" data-cursor="hover" aria-label="DalaTech home">
             <BrandLockup size={40} />
           </Link>
