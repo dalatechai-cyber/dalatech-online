@@ -447,10 +447,19 @@ async function sendEmail(lead) {
 export default async function handler(req, res) {
   // Health check: lets the deployment be verified without exposing any secret
   // value — it only ever reports whether a channel has been configured.
+  //
+  // environment and commit are here because "missing" has two very different
+  // causes: the variable was never set for this environment, or it was set
+  // after this deployment was built. Vercel binds environment variables at
+  // deploy time, so a build older than the variables will keep reporting
+  // missing until it is redeployed, and these two fields are what tell the
+  // two apart at a glance.
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
       endpoint: "demo-request",
+      environment: process.env.VERCEL_ENV || "unknown",
+      commit: (process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 7) || "unknown",
       channels: {
         telegram:
           process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID
