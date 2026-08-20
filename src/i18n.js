@@ -30,4 +30,15 @@ i18n
     },
   });
 
+// Keep <html lang> in step with the UI language. Without this a screen reader
+// reads every Mongolian string with an English voice, which is unusable.
+const applyDocumentLanguage = (language) => {
+  if (typeof document !== 'undefined' && language) {
+    document.documentElement.setAttribute('lang', language);
+  }
+};
+
+applyDocumentLanguage(savedLanguage);
+i18n.on('languageChanged', applyDocumentLanguage);
+
 export default i18n;

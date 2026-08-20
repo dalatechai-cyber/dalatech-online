@@ -355,7 +355,8 @@
     "title": "Your automated demo is waiting.",
     "description": "Drop in a few sentences about your business. Within seconds, your own AI agent comes alive, shaped around what you give it.",
     "demoCta": "Get automated demo",
-    "emailCta": "Email us"
+    "emailCta": "Email us",
+    "requestCta": "Request a demo"
   },
   "bento": {
     "section": "CAPABILITIES",
@@ -448,6 +449,72 @@
       "label": "03",
       "title": "Launch",
       "description": "We ship, monitor, and stay on call. Your first week is our priority, not an afterthought."
+    }
+  },
+  "demoForm": {
+    "eyebrow": "FREE DEMO",
+    "title": "Request a demo",
+    "subtitle": "A short form. We'll call you back and talk through what would work for your business.",
+    "close": "Close",
+    "optional": "Optional",
+    "fields": {
+      "name": {
+        "label": "Your name",
+        "placeholder": "e.g. Bold"
+      },
+      "phone": {
+        "label": "Phone number",
+        "placeholder": "9911 2233",
+        "hint": "This is the number we'll call."
+      },
+      "business": {
+        "label": "Business name and what you do",
+        "placeholder": "e.g. Matrix Salon"
+      },
+      "services": {
+        "label": "What are you interested in?",
+        "hint": "Pick as many as you like."
+      },
+      "note": {
+        "label": "Anything else",
+        "placeholder": "What would you like to automate? What is slowing you down?"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "name@example.com"
+      }
+    },
+    "services": {
+      "website": "Website",
+      "chatbot": "AI chatbot",
+      "voice": "AI voice agent",
+      "unsure": "Not sure yet"
+    },
+    "errors": {
+      "name": "Please enter your name.",
+      "phone": "Please enter your 8-digit phone number.",
+      "business": "Please tell us your business name and what you do.",
+      "email": "That email address does not look right."
+    },
+    "submit": "Send request",
+    "submitting": "Sending…",
+    "retry": "Send again",
+    "startOver": "Clear the form",
+    "privacy": "We use your details only to get in touch with you.",
+    "success": {
+      "title": "Request received.",
+      "body": "We'll call you on {{phone}} shortly.",
+      "close": "Thanks"
+    },
+    "failure": {
+      "title": "That didn't send.",
+      "body": "Everything you typed is still here. Try again, or reach us directly.",
+      "rejectedTitle": "Something's missing.",
+      "rejectedBody": "Please check the fields and send again.",
+      "crashBody": "The form failed to open. Please reach us directly.",
+      "messenger": "Messenger",
+      "email": "Email us",
+      "reload": "Reload the page"
     }
   }
 }
