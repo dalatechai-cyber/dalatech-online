@@ -1,0 +1,136 @@
+# Sends one real demo request to a deployed /api/demo-request and reports what
+# came back. Manual only — it never runs on push, and every run puts a message
+# on the owner's phone.
+#
+# Needs the repository secret VERCEL_AUTOMATION_BYPASS_SECRET when the target
+# is a preview URL (Vercel Authentication sits in front of those). Production
+# on dalatech.online needs no secret.
+name: Demo request smoke test
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Deployment to test, without a trailing slash"
+        required: true
+        default: "https://dalatech.online"
+      expect:
+        description: "Expected outcome: delivered (200) or undelivered (502, no channel configured)"
+        required: true
+        default: "delivered"
+        type: choice
+        options:
+          - delivered
+          - undelivered
+      note:
+        description: "Note field sent with the request"
+        required: false
+        default: "Автомат тест — хариу шаардлагагүй."
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build the target URL
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -euo pipefail
+          url="${BASE_URL%/}/api/demo-request"
+          if [ -n "${BYPASS:-}" ]; then
+            url="${url}?x-vercel-protection-bypass=${BYPASS}&x-vercel-set-bypass-cookie=true"
+          fi
+          # The secret is masked in logs by Actions; keep it out of the step
+          # summary regardless by only echoing the bare endpoint.
+          echo "::add-mask::${BYPASS:-placeholder-not-set}"
+          echo "TARGET_URL=$url" >> "$GITHUB_ENV"
+          echo "Testing ${BASE_URL%/}/api/demo-request"
+
+      - name: Health check (GET)
+        run: |
+          set -euo pipefail
+          status=$(curl -sS -o health.json -w '%{http_code}' -L "$TARGET_URL")
+          echo "status: $status"
+          echo "body:"
+          cat health.json
+          echo
+          if [ "$status" != "200" ]; then
+            echo "::error::health check returned $status — the endpoint is not reachable"
+            exit 1
+          fi
+          if ! grep -q '"endpoint":"demo-request"' health.json; then
+            echo "::error::the response did not come from the function (the SPA rewrite may be swallowing /api)"
+            exit 1
+          fi
+
+      - name: Send a demo request (POST)
+        env:
+          NOTE: ${{ inputs.note }}
+        run: |
+          set -euo pipefail
+          request_id="smoke-$(date -u +%Y%m%dT%H%M%SZ)"
+          cat > payload.json <<JSON
+          {
+            "requestId": "$request_id",
+            "name": "ТЕСТ — GitHub Actions",
+            "phone": "99112233",
+            "business": "ТЕСТ — dalatech.online smoke test",
+            "services": ["website", "chatbot"],
+            "note": $(printf '%s' "$NOTE" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))'),
+            "email": "",
+            "page": "/ci-smoke-test",
+            "locale": "mn"
+          }
+          JSON
+          echo "payload:"
+          cat payload.json
+
+          status=$(curl -sS -o response.json -w '%{http_code}' -L \
+            -X POST -H 'Content-Type: application/json' \
+            --data @payload.json "$TARGET_URL")
+          echo "status: $status"
+          echo "body:"
+          cat response.json
+          echo
+          echo "REQUEST_ID=$request_id" >> "$GITHUB_ENV"
+          echo "POST_STATUS=$status" >> "$GITHUB_ENV"
+
+      - name: Check the outcome
+        env:
+          EXPECT: ${{ inputs.expect }}
+        run: |
+          set -euo pipefail
+          if [ "$EXPECT" = "delivered" ]; then
+            if [ "$POST_STATUS" != "200" ]; then
+              echo "::error::expected 200, got $POST_STATUS"
+              exit 1
+            fi
+            grep -q '"ok":true' response.json || { echo "::error::response was not ok"; exit 1; }
+            grep -q '"telegram":"sent"' response.json \
+              || echo "::warning::telegram did not report sent — check the Vercel runtime logs"
+            grep -q '"email":"sent"' response.json \
+              || echo "::warning::email did not report sent — check the Vercel runtime logs"
+            echo "Delivered. Request id: $REQUEST_ID"
+          else
+            if [ "$POST_STATUS" != "502" ]; then
+              echo "::error::expected 502 with no channel configured, got $POST_STATUS"
+              exit 1
+            fi
+            grep -q '"ok":false' response.json || { echo "::error::a failed delivery must never report ok"; exit 1; }
+            echo "Correctly refused to claim success. Request id: $REQUEST_ID"
+          fi
+
+      - name: Reject an invalid request
+        run: |
+          set -euo pipefail
+          status=$(curl -sS -o invalid.json -w '%{http_code}' -L \
+            -X POST -H 'Content-Type: application/json' \
+            --data '{"name":"","phone":"1","business":""}' "$TARGET_URL")
+          echo "status: $status"
+          cat invalid.json
+          echo
+          if [ "$status" != "400" ]; then
+            echo "::error::expected 400 for an invalid payload, got $status"
+            exit 1
+          fi
