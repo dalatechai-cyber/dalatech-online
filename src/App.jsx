@@ -204,18 +204,31 @@ function useContactJump() {
   }, [location.pathname, navigate]);
 }
 
-function MagneticButton({ children, href = "#", variant = "primary", onClick, type = "button", className = "", disabled = false }) {
+function MagneticButton({
+  children,
+  href = "#",
+  variant = "primary",
+  onClick,
+  type = "button",
+  className = "",
+  disabled = false,
+  demoServices,
+}) {
   const reduced = useReducedMotion();
   const jumpToContact = useContactJump();
+  const { open: openDemoRequest } = useDemoRequest();
   const ref = React.useRef(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const sx = useSpring(x, { stiffness: 220, damping: 18, mass: 0.5 });
   const sy = useSpring(y, { stiffness: 220, damping: 18, mass: 0.5 });
 
-  // Centralised contact-jump: any href="#contact" routes home and scrolls.
+  // Two centralised sentinels: href="#demo" opens the demo request dialog,
+  // href="#contact" routes home and scrolls to the contact section.
   const resolvedOnClick =
-    onClick || (href === "#contact" ? jumpToContact : undefined);
+    onClick ||
+    (href === "#demo" ? () => openDemoRequest(demoServices) : undefined) ||
+    (href === "#contact" ? jumpToContact : undefined);
 
   const onMove = (e) => {
     if (reduced || !ref.current || disabled) return;
@@ -450,8 +463,8 @@ function unlockBodyScroll() {
 function Navbar() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { open: openDemoRequest } = useDemoRequest();
   const [scrolled, setScrolled] = React.useState(false);
   const [langOpen, setLangOpen] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -498,19 +511,9 @@ function Navbar() {
     };
   }, [mobileOpen]);
 
-  const goToContact = (e) => {
-    if (e) e.preventDefault();
+  const openDemo = () => {
     setMobileOpen(false);
-    if (location.pathname === "/") {
-      const el = document.getElementById("contact");
-      if (el) {
-        const headerH = window.scrollY > 60 ? 56 : 80;
-        const y = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      }
-    } else {
-      navigate("/", { state: { scrollTo: "contact" } });
-    }
+    openDemoRequest();
   };
 
   const navLabel = (labelKey) => t(`nav.${labelKey}`);
@@ -627,7 +630,7 @@ function Navbar() {
             </button>
 
             <div className="hidden md:block">
-              <MagneticButton onClick={goToContact} variant="primary">
+              <MagneticButton onClick={openDemo} variant="primary">
                 {t("nav.getDemo")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
@@ -727,7 +730,7 @@ function Navbar() {
                   </button>
                 ))}
               </div>
-              <MagneticButton onClick={goToContact} variant="primary">
+              <MagneticButton onClick={openDemo} variant="primary">
                 {t("nav.getDemo")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
@@ -938,7 +941,7 @@ function Hero() {
               transition={{ ...SPRING_REVEAL, delay: 0.7 }}
               className="mt-9 flex flex-col gap-3 sm:flex-row"
             >
-              <MagneticButton href="#contact" variant="primary">
+              <MagneticButton href="#demo" variant="primary">
                 {t("hero.buttons.getDemo")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
@@ -1944,7 +1947,7 @@ function HowItWorks() {
                 <p className="font-display text-[18px] font-semibold tracking-tight text-fg sm:text-[19px]">{t("howItWorks.cta")}</p>
                 <p className="mt-1.5 text-[14.5px] leading-[1.6] text-fg-muted">{t("howItWorks.ctaDesc")}</p>
               </div>
-              <MagneticButton href="#contact" variant="primary">{t("pricing.paymentTerms.cta")}</MagneticButton>
+              <MagneticButton href="#demo" variant="primary">{t("pricing.paymentTerms.cta")}</MagneticButton>
             </div>
           </div>
         </Reveal>
@@ -1971,7 +1974,7 @@ function Portfolio() {
             </div>
             <div className="flex flex-wrap gap-3">
               <MagneticButton href="https://matrixecosalon.org" variant="ghost">{t("portfolio.visitWebsite")}</MagneticButton>
-              <MagneticButton href="#contact" variant="primary">{t("portfolio.getDemo")}</MagneticButton>
+              <MagneticButton href="#demo" variant="primary" demoServices={WEB_CHATBOT_DEMO_SERVICES}>{t("portfolio.getDemo")}</MagneticButton>
             </div>
           </div>
         </Reveal>
@@ -2036,7 +2039,7 @@ function Portfolio() {
               </div>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <MagneticButton href="#contact" variant="primary">{t("portfolio.japantok.buttons.requestDemo")}</MagneticButton>
+                <MagneticButton href="#demo" variant="primary" demoServices={WEB_CHATBOT_DEMO_SERVICES}>{t("portfolio.japantok.buttons.requestDemo")}</MagneticButton>
                 <MagneticButton href="https://matrixecosalon.org" variant="ghost">{t("portfolio.japantok.buttons.viewLive")}</MagneticButton>
               </div>
             </div>
@@ -2049,7 +2052,6 @@ function Portfolio() {
 
 function LiveDemo() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const reduced = useReducedMotion();
   const scrollRef = React.useRef(null);
   const [step, setStep] = React.useState(0);
@@ -2119,10 +2121,7 @@ function LiveDemo() {
               {t("liveDemo.description")}
             </p>
             <div className="mt-9">
-              <MagneticButton
-                variant="ghost"
-                onClick={() => navigate("/", { state: { scrollTo: "contact" } })}
-              >
+              <MagneticButton variant="ghost" href="#demo">
                 {t("liveDemo.ctaLabel")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" />
@@ -2343,7 +2342,7 @@ function Testimonials() {
   );
 }
 
-function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote }) {
+function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote, demoServices }) {
   return (
     <StaggerItem>
       <div className="relative h-full pt-3 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5">
@@ -2399,7 +2398,7 @@ function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, prima
             ))}
           </ul>
           <div className="mt-auto pt-7">
-            <MagneticButton href="#contact" variant={primary ? "primary" : "ghost"} className="w-full">{cta}</MagneticButton>
+            <MagneticButton href="#demo" variant={primary ? "primary" : "ghost"} className="w-full" demoServices={demoServices}>{cta}</MagneticButton>
           </div>
           {footnote && <p className="mt-4 text-[11px] leading-[1.55] text-fg-muted/80">{footnote}</p>}
         </div>
@@ -2436,6 +2435,7 @@ function Pricing() {
               t("pricing.cards.website.bullets.3"),
             ]}
             cta={t("pricing.cards.website.cta")}
+            demoServices={WEBSITE_DEMO_SERVICES}
           />
           <PriceCard
             title={t("pricing.cards.chatbot.title")}
@@ -2454,6 +2454,7 @@ function Pricing() {
               t("pricing.cards.chatbot.bullets.2"),
             ]}
             cta={t("pricing.cards.chatbot.cta")}
+            demoServices={CHATBOT_DEMO_SERVICES}
             primary
           />
           <PriceCard
@@ -2468,6 +2469,7 @@ function Pricing() {
               t("pricing.cards.voice.bullets.2"),
             ]}
             cta={t("pricing.cards.voice.cta")}
+            demoServices={VOICE_DEMO_SERVICES}
           />
           <PriceCard
             title={t("pricing.cards.combo.title")}
@@ -2481,6 +2483,7 @@ function Pricing() {
               t("pricing.cards.combo.bullets.2"),
             ]}
             cta={t("pricing.cards.combo.cta")}
+            demoServices={WEB_CHATBOT_DEMO_SERVICES}
           />
         </StaggerGroup>
 
@@ -2556,7 +2559,7 @@ function Pricing() {
               </div>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-[12px] text-fg-muted">{t("pricing.monthly.chatbot.tip")}</p>
-                <MagneticButton href="#contact" variant="primary">{t("pricing.monthly.chatbot.cta")}</MagneticButton>
+                <MagneticButton href="#demo" variant="primary" demoServices={CHATBOT_DEMO_SERVICES}>{t("pricing.monthly.chatbot.cta")}</MagneticButton>
               </div>
             </div>
           </StaggerItem>
@@ -2597,7 +2600,7 @@ function Pricing() {
                 })}
               </div>
               <div className="mt-5 flex justify-end">
-                <MagneticButton href="#contact" variant="primary">{t("pricing.monthly.receptionist.cta")}</MagneticButton>
+                <MagneticButton href="#demo" variant="primary" demoServices={VOICE_DEMO_SERVICES}>{t("pricing.monthly.receptionist.cta")}</MagneticButton>
               </div>
             </div>
           </StaggerItem>
@@ -2617,7 +2620,7 @@ function Pricing() {
                   ))}
                 </ul>
               </div>
-              <MagneticButton href="#contact" variant="primary">{t("contact.title")}</MagneticButton>
+              <MagneticButton href="#demo" variant="primary">{t("contact.title")}</MagneticButton>
             </div>
             <p className="mt-6 border-t border-white/[0.06] pt-5 text-[12.5px] leading-[1.55] text-fg-muted">{t("pricing.paymentTerms.note")}</p>
           </div>
@@ -2715,7 +2718,7 @@ function FAQ() {
                 <p className="font-display text-[18px] font-semibold tracking-tight text-fg sm:text-[19px]">{t("faq.stillHaveQuestions")}</p>
                 <p className="mt-1.5 text-[14.5px] leading-[1.6] text-fg-muted">{t("faq.contactPrompt")}</p>
               </div>
-              <MagneticButton href="#contact" variant="primary">{t("faq.talkToUs")}</MagneticButton>
+              <MagneticButton href="#demo" variant="primary">{t("faq.talkToUs")}</MagneticButton>
             </div>
           </div>
         </Reveal>
@@ -2772,9 +2775,847 @@ function ContactOrbField() {
   );
 }
 
+/* ----------------------------------------------------------- demo request */
+
+/** Options offered as chips, in display order. Keys are shared with the API. */
+const DEMO_SERVICES = ["website", "chatbot", "voice", "unsure"];
+
+const DEMO_DRAFT_KEY = "dalatech:demo-draft";
+/** Pre-selected chips for CTAs whose context already implies a product. */
+const WEB_CHATBOT_DEMO_SERVICES = ["website", "chatbot"];
+const CHATBOT_DEMO_SERVICES = ["chatbot"];
+const VOICE_DEMO_SERVICES = ["voice"];
+const WEBSITE_DEMO_SERVICES = ["website"];
+
+const DEMO_ENDPOINT = "/api/demo-request";
+const DEMO_SUBMIT_TIMEOUT_MS = 25000;
+const DEMO_DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
+
+const DEMO_EMAIL = "dalatech.ai@gmail.com";
+const DEMO_MESSENGER = "https://m.me/61586065058744";
+
+const EMPTY_DEMO_FORM = {
+  name: "",
+  phone: "",
+  business: "",
+  services: [],
+  note: "",
+  email: "",
+  // Honeypot. Hidden from people, usually filled by bots. A filled value is
+  // still delivered — flagged, never dropped — so a stray autofill cannot
+  // silently swallow a real request.
+  website: "",
+};
+
+const DemoRequestContext = React.createContext({
+  open: () => {
+    console.error("DemoRequestProvider is missing — the demo form cannot open.");
+  },
+});
+
+function useDemoRequest() {
+  return React.useContext(DemoRequestContext);
+}
+
+/**
+ * localStorage, not sessionStorage: Facebook's in-app browser is routinely
+ * torn down when the visitor switches apps, and every link they open can start
+ * a fresh session — which is exactly when a half-typed form needs recovering.
+ * The TTL keeps a stale draft from surfacing days later on a shared phone.
+ */
+function readDemoDraft() {
+  try {
+    const raw = window.localStorage.getItem(DEMO_DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || !parsed.values) return null;
+    if (!parsed.savedAt || Date.now() - parsed.savedAt > DEMO_DRAFT_TTL_MS) {
+      clearDemoDraft();
+      return null;
+    }
+    return {
+      ...EMPTY_DEMO_FORM,
+      ...parsed.values,
+      services: Array.isArray(parsed.values.services)
+        ? parsed.values.services.filter((s) => DEMO_SERVICES.includes(s))
+        : [],
+    };
+  } catch (error) {
+    // Private browsing and quota errors must never stop the form from opening.
+    console.error("demo form: could not read the saved draft:", error);
+    return null;
+  }
+}
+
+function writeDemoDraft(values) {
+  try {
+    window.localStorage.setItem(
+      DEMO_DRAFT_KEY,
+      JSON.stringify({ savedAt: Date.now(), values })
+    );
+  } catch (error) {
+    console.error("demo form: could not save the draft:", error);
+  }
+}
+
+function clearDemoDraft() {
+  try {
+    window.localStorage.removeItem(DEMO_DRAFT_KEY);
+  } catch (error) {
+    console.error("demo form: could not clear the draft:", error);
+  }
+}
+
+function newRequestId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `dt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/** Digits only, with an optional 976 country prefix removed. */
+function demoPhoneDigits(value) {
+  return value.replace(/[^\d]/g, "").replace(/^976/, "");
+}
+
+function validateDemoForm(values, t) {
+  const errors = {};
+  if (values.name.trim().length < 2) errors.name = t("demoForm.errors.name");
+  // Eight digits is the Mongolian shape and what the copy asks for, but a
+  // number typed in international form is accepted too — the client must never
+  // turn away someone the API would have taken.
+  const phone = values.phone.trim();
+  const local = demoPhoneDigits(phone);
+  const international = phone.startsWith("+") && local.length >= 8 && local.length <= 15;
+  if (local.length !== 8 && !international) errors.phone = t("demoForm.errors.phone");
+  if (values.business.trim().length < 2) errors.business = t("demoForm.errors.business");
+  const email = values.email.trim();
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    errors.email = t("demoForm.errors.email");
+  }
+  return errors;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function postDemoRequest(payload, signal) {
+  const response = await fetch(DEMO_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    signal,
+  });
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch (error) {
+    // A body we cannot parse is only fatal when the status is also bad; the
+    // status check below decides, so record the reason and carry on.
+    console.error("demo form: response body was not JSON:", error);
+  }
+
+  if (!response.ok) {
+    const error = new Error((data && data.error) || `http_${response.status}`);
+    error.status = response.status;
+    error.fields = data && data.fields;
+    throw error;
+  }
+  return data;
+}
+
+/** Everything the visitor typed, as a mail body, so a failed send loses nothing. */
+function demoMailtoHref(values, t) {
+  const lines = [
+    `${t("demoForm.fields.name.label")}: ${values.name}`,
+    `${t("demoForm.fields.phone.label")}: ${values.phone}`,
+    `${t("demoForm.fields.business.label")}: ${values.business}`,
+    `${t("demoForm.fields.services.label")} ${values.services
+      .map((s) => t(`demoForm.services.${s}`))
+      .join(", ")}`,
+  ];
+  if (values.email.trim()) lines.push(`${t("demoForm.fields.email.label")}: ${values.email}`);
+  if (values.note.trim()) lines.push("", values.note);
+  return (
+    `mailto:${DEMO_EMAIL}` +
+    `?subject=${encodeURIComponent(t("demoForm.title"))}` +
+    `&body=${encodeURIComponent(lines.join("\n"))}`
+  );
+}
+
+function DemoField({ id, label, optional, error, hint, children }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor={id} className="text-[13px] font-medium text-fg">
+          {label}
+        </label>
+        {optional && <span className="text-[11.5px] text-fg-dim">{optional}</span>}
+      </div>
+      <div className="mt-2">{children}</div>
+      {error ? (
+        <p id={`${id}-error`} className="mt-1.5 text-[12.5px] text-rose-300">
+          {error}
+        </p>
+      ) : (
+        hint && <p className="mt-1.5 text-[12px] text-fg-dim">{hint}</p>
+      )}
+    </div>
+  );
+}
+
+const DEMO_INPUT_CLASS =
+  "field w-full rounded-xl px-3.5 py-3 text-[16px] leading-[1.4] outline-none";
+
+function DemoRequestDialog({ isOpen, onClose, preset }) {
+  const { t, i18n } = useTranslation();
+  const location = useLocation();
+  const isMobile = useIsMobile();
+  const reduced = useReducedMotion();
+
+  const [values, setValues] = React.useState(EMPTY_DEMO_FORM);
+  const [errors, setErrors] = React.useState({});
+  const [status, setStatus] = React.useState("idle"); // idle | sending | sent | failed
+  const [failureKind, setFailureKind] = React.useState(null);
+
+  const panelRef = React.useRef(null);
+  const firstFieldRef = React.useRef(null);
+  const failureRef = React.useRef(null);
+  const successRef = React.useRef(null);
+  const requestIdRef = React.useRef(null);
+  const abortRef = React.useRef(null);
+  const restoreFocusRef = React.useRef(null);
+
+  // Restore anything typed earlier in this tab, then layer the preset from the
+  // button that opened the dialog on top of it.
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const draft = readDemoDraft();
+    setValues((current) => {
+      const base = draft || (current.name || current.phone ? current : EMPTY_DEMO_FORM);
+      if (!preset || !preset.length) return base;
+      const merged = new Set([...base.services, ...preset.filter((s) => DEMO_SERVICES.includes(s))]);
+      return { ...base, services: Array.from(merged) };
+    });
+    setErrors({});
+    setStatus("idle");
+    setFailureKind(null);
+  }, [isOpen, preset]);
+
+  // Android's back gesture is the universal "dismiss" on a phone, and there is
+  // no Escape key there. Without an entry of our own to pop, Back would take
+  // the visitor off the site entirely and lose the request.
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    let closedByBack = false;
+    window.history.pushState({ ...window.history.state, dalatechDemoDialog: true }, "");
+
+    const onPopState = () => {
+      closedByBack = true;
+      onClose();
+    };
+    window.addEventListener("popstate", onPopState);
+
+    return () => {
+      window.removeEventListener("popstate", onPopState);
+      // Closed with the button or Escape instead: drop the entry we added so
+      // the next Back press does what the visitor expects.
+      if (!closedByBack && window.history.state && window.history.state.dalatechDemoDialog) {
+        window.history.back();
+      }
+    };
+  }, [isOpen, onClose]);
+
+  // Escape to close, focus trapped inside the panel, page behind frozen, and
+  // the floating chat button hidden so it cannot overlap the sheet.
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    restoreFocusRef.current = document.activeElement;
+    lockBodyScroll();
+    document.documentElement.classList.add("demo-dialog-open");
+
+    // The custom cursor renders far below this dialog, and its stylesheet
+    // hides the real one — leaving the desktop visitor with no cursor at all
+    // over the form. Hand the native cursor back while we are on top.
+    const hadCustomCursor = document.documentElement.classList.contains("has-custom-cursor");
+    if (hadCustomCursor) document.documentElement.classList.remove("has-custom-cursor");
+
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !panelRef.current) return;
+      const focusable = panelRef.current.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      unlockBodyScroll();
+      document.documentElement.classList.remove("demo-dialog-open");
+      if (hadCustomCursor) document.documentElement.classList.add("has-custom-cursor");
+      const previous = restoreFocusRef.current;
+      if (previous && typeof previous.focus === "function") previous.focus();
+    };
+  }, [isOpen, onClose]);
+
+  // On a phone, opening the keyboard immediately would hide the form, so only
+  // desktop gets the cursor placed for it.
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const target = isMobile ? panelRef.current : firstFieldRef.current;
+    const id = window.setTimeout(() => target && target.focus(), 60);
+    return () => window.clearTimeout(id);
+  }, [isOpen, isMobile]);
+
+  // A live region that appears together with its content is announced
+  // unreliably, so move focus to the confirmation heading instead.
+  React.useEffect(() => {
+    if (status !== "sent" || !successRef.current) return;
+    successRef.current.focus();
+  }, [status]);
+
+  // The submit button sits below the fold on a phone, so a failure that
+  // renders further up would otherwise go unread.
+  React.useEffect(() => {
+    if (status !== "failed" || !failureRef.current) return;
+    failureRef.current.scrollIntoView({
+      behavior: reduced ? "auto" : "smooth",
+      block: "center",
+    });
+  }, [status, failureKind, reduced]);
+
+  // A dialog torn down mid-flight must not leave a request hanging.
+  React.useEffect(
+    () => () => {
+      if (abortRef.current) abortRef.current.abort();
+    },
+    []
+  );
+
+  // Mirror every keystroke into sessionStorage: a backgrounded tab, a reload or
+  // a failed send must never cost the visitor what they typed.
+  React.useEffect(() => {
+    if (!isOpen || status === "sent") return;
+    writeDemoDraft(values);
+  }, [values, isOpen, status]);
+
+  const update = (field, value) => {
+    setValues((current) => ({ ...current, [field]: value }));
+    setErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const toggleService = (service) => {
+    setValues((current) => ({
+      ...current,
+      services: current.services.includes(service)
+        ? current.services.filter((s) => s !== service)
+        : [...current.services, service],
+    }));
+  };
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    if (status === "sending") return;
+
+    const found = validateDemoForm(values, t);
+    if (Object.keys(found).length) {
+      setErrors(found);
+      const firstInvalid = panelRef.current?.querySelector("[aria-invalid='true']");
+      if (firstInvalid) firstInvalid.focus();
+      return;
+    }
+
+    if (!requestIdRef.current) requestIdRef.current = newRequestId();
+
+    const payload = {
+      requestId: requestIdRef.current,
+      name: values.name.trim(),
+      phone: values.phone.trim(),
+      business: values.business.trim(),
+      services: values.services,
+      note: values.note.trim(),
+      email: values.email.trim(),
+      website: values.website,
+      page: location.pathname,
+      locale: i18n.language,
+    };
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const timeoutId = window.setTimeout(() => controller.abort(), DEMO_SUBMIT_TIMEOUT_MS);
+
+    setStatus("sending");
+    setFailureKind(null);
+
+    try {
+      let lastError = null;
+      // One retry: a dropped mobile connection is the common failure here, and
+      // a duplicate notification is far cheaper than a lost request. The
+      // request id is stable across attempts so duplicates are recognisable.
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          await postDemoRequest(payload, controller.signal);
+          lastError = null;
+          break;
+        } catch (error) {
+          lastError = error;
+          if (controller.signal.aborted) break;
+          if (error.status && error.status < 500) break;
+          if (attempt === 0) await delay(1500);
+        }
+      }
+      if (lastError) throw lastError;
+
+      requestIdRef.current = null;
+      clearDemoDraft();
+      setStatus("sent");
+    } catch (error) {
+      console.error("demo form: request failed:", error);
+      if (error.name === "AbortError") {
+        setFailureKind("timeout");
+      } else if (error.status === 400) {
+        setFailureKind("rejected");
+      } else {
+        setFailureKind("delivery");
+      }
+      setStatus("failed");
+    } finally {
+      window.clearTimeout(timeoutId);
+      abortRef.current = null;
+    }
+  };
+
+  const startOver = () => {
+    setValues(EMPTY_DEMO_FORM);
+    clearDemoDraft();
+    setErrors({});
+    setStatus("idle");
+    setFailureKind(null);
+  };
+
+  const sending = status === "sending";
+  const phoneLabel = values.phone.trim();
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div
+          className="fixed inset-0 flex items-end justify-center sm:items-center sm:p-4"
+          style={{ zIndex: 2147483647 }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="demo-request-title"
+        >
+          <motion.button
+            type="button"
+            aria-label={t("demoForm.close")}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: EASE_OUT }}
+            className="absolute inset-0 bg-ink-950/80 backdrop-blur-md"
+            onClick={onClose}
+          />
+
+          <motion.div
+            ref={panelRef}
+            tabIndex={-1}
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: isMobile ? 40 : 16, scale: isMobile ? 1 : 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={reduced ? { opacity: 0 } : { opacity: 0, y: isMobile ? 40 : 8, scale: isMobile ? 1 : 0.98 }}
+            transition={{ duration: 0.26, ease: EASE_OUT }}
+            className="demo-sheet relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-ink-900/95 shadow-2xl backdrop-blur-xl outline-none sm:rounded-2xl"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-white/[0.07] px-5 py-4 sm:px-7 sm:py-5">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-300/90">
+                  {t("demoForm.eyebrow")}
+                </p>
+                <h2
+                  id="demo-request-title"
+                  className="mt-1.5 font-display text-[21px] font-semibold tracking-tight text-fg sm:text-[23px]"
+                >
+                  {t("demoForm.title")}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="pressable -mr-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-fg-muted transition-colors hover:border-white/25 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:h-9 sm:w-9"
+                aria-label={t("demoForm.close")}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {status === "sent" ? (
+              <div
+                className="demo-sheet-body px-5 py-9 text-center sm:px-7"
+                style={{ paddingBottom: "calc(2.25rem + env(safe-area-inset-bottom))" }}
+                aria-live="polite"
+              >
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-sky-400/40 bg-sky-400/10 text-sky-300">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                </div>
+                <h3
+                  ref={successRef}
+                  tabIndex={-1}
+                  className="mt-5 font-display text-[20px] font-semibold tracking-tight text-fg outline-none"
+                >
+                  {t("demoForm.success.title")}
+                </h3>
+                <p className="mx-auto mt-2.5 max-w-[34ch] text-[14.5px] leading-[1.6] text-fg-muted">
+                  {t("demoForm.success.body", { phone: phoneLabel })}
+                </p>
+                <div className="mt-7">
+                  <MagneticButton onClick={onClose} variant="primary">
+                    {t("demoForm.success.close")}
+                  </MagneticButton>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={onSubmit} noValidate className="flex min-h-0 flex-1 flex-col">
+                <div className="demo-sheet-body space-y-5 px-5 py-5 sm:px-7">
+                  <p className="text-[14px] leading-[1.6] text-fg-muted">{t("demoForm.subtitle")}</p>
+
+                  <DemoField id="demo-name" label={t("demoForm.fields.name.label")} error={errors.name}>
+                    <input
+                      ref={firstFieldRef}
+                      id="demo-name"
+                      name="name"
+                      type="text"
+                      className={DEMO_INPUT_CLASS}
+                      placeholder={t("demoForm.fields.name.placeholder")}
+                      value={values.name}
+                      onChange={(e) => update("name", e.target.value)}
+                      autoComplete="name"
+                      enterKeyHint="next"
+                      spellCheck={false}
+                      autoCapitalize="words"
+                      maxLength={80}
+                      disabled={sending}
+                      aria-invalid={errors.name ? "true" : undefined}
+                      aria-describedby={errors.name ? "demo-name-error" : undefined}
+                    />
+                  </DemoField>
+
+                  <DemoField
+                    id="demo-phone"
+                    label={t("demoForm.fields.phone.label")}
+                    error={errors.phone}
+                    hint={t("demoForm.fields.phone.hint")}
+                  >
+                    <input
+                      id="demo-phone"
+                      name="phone"
+                      type="tel"
+                      inputMode="tel"
+                      className={DEMO_INPUT_CLASS}
+                      placeholder={t("demoForm.fields.phone.placeholder")}
+                      value={values.phone}
+                      onChange={(e) => update("phone", e.target.value)}
+                      autoComplete="tel"
+                      enterKeyHint="next"
+                      maxLength={32}
+                      disabled={sending}
+                      aria-invalid={errors.phone ? "true" : undefined}
+                      aria-describedby={errors.phone ? "demo-phone-error" : undefined}
+                    />
+                  </DemoField>
+
+                  <DemoField
+                    id="demo-business"
+                    label={t("demoForm.fields.business.label")}
+                    error={errors.business}
+                  >
+                    <input
+                      id="demo-business"
+                      name="business"
+                      type="text"
+                      className={DEMO_INPUT_CLASS}
+                      placeholder={t("demoForm.fields.business.placeholder")}
+                      value={values.business}
+                      onChange={(e) => update("business", e.target.value)}
+                      autoComplete="organization"
+                      enterKeyHint="next"
+                      spellCheck={false}
+                      maxLength={120}
+                      disabled={sending}
+                      aria-invalid={errors.business ? "true" : undefined}
+                      aria-describedby={errors.business ? "demo-business-error" : undefined}
+                    />
+                  </DemoField>
+
+                  <fieldset disabled={sending} className="border-0 p-0">
+                    <legend className="text-[13px] font-medium text-fg">
+                      {t("demoForm.fields.services.label")}
+                    </legend>
+                    <p className="mt-1 text-[12px] text-fg-dim">{t("demoForm.fields.services.hint")}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {DEMO_SERVICES.map((service) => {
+                        const active = values.services.includes(service);
+                        return (
+                          <button
+                            key={service}
+                            type="button"
+                            onClick={() => toggleService(service)}
+                            aria-pressed={active}
+                            className={[
+                              "pressable min-h-[44px] rounded-full border px-4 py-2.5 text-[13.5px] font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70",
+                              active
+                                ? "border-sky-400/60 bg-sky-400/12 text-sky-100"
+                                : "border-white/10 bg-white/[0.02] text-fg-muted hover:border-white/25 hover:text-fg",
+                            ].join(" ")}
+                          >
+                            {t(`demoForm.services.${service}`)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+
+                  <DemoField
+                    id="demo-note"
+                    label={t("demoForm.fields.note.label")}
+                    optional={t("demoForm.optional")}
+                  >
+                    <textarea
+                      id="demo-note"
+                      name="note"
+                      rows={3}
+                      className={`${DEMO_INPUT_CLASS} resize-y`}
+                      placeholder={t("demoForm.fields.note.placeholder")}
+                      value={values.note}
+                      onChange={(e) => update("note", e.target.value)}
+                      spellCheck={false}
+                      maxLength={1000}
+                      disabled={sending}
+                    />
+                  </DemoField>
+
+                  <DemoField
+                    id="demo-email"
+                    label={t("demoForm.fields.email.label")}
+                    optional={t("demoForm.optional")}
+                    error={errors.email}
+                  >
+                    <input
+                      id="demo-email"
+                      name="email"
+                      type="email"
+                      inputMode="email"
+                      className={DEMO_INPUT_CLASS}
+                      placeholder={t("demoForm.fields.email.placeholder")}
+                      value={values.email}
+                      onChange={(e) => update("email", e.target.value)}
+                      autoComplete="email"
+                      enterKeyHint="done"
+                      spellCheck={false}
+                      autoCapitalize="off"
+                      autoCorrect="off"
+                      maxLength={160}
+                      disabled={sending}
+                      aria-invalid={errors.email ? "true" : undefined}
+                      aria-describedby={errors.email ? "demo-email-error" : undefined}
+                    />
+                  </DemoField>
+
+                  {/* Honeypot — off-screen rather than display:none so bots still see it. */}
+                  <div aria-hidden className="demo-honeypot">
+                    <label htmlFor="demo-website">Website</label>
+                    <input
+                      id="demo-website"
+                      name="website"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={values.website}
+                      onChange={(e) => update("website", e.target.value)}
+                    />
+                  </div>
+
+                  {status === "failed" && (
+                    <div
+                      ref={failureRef}
+                      className="rounded-xl border border-rose-400/30 bg-rose-500/[0.08] p-4"
+                      role="alert"
+                      aria-live="assertive"
+                    >
+                      <p className="text-[14px] font-semibold text-rose-100">
+                        {t(`demoForm.failure.${failureKind === "rejected" ? "rejectedTitle" : "title"}`)}
+                      </p>
+                      <p className="mt-1.5 text-[13.5px] leading-[1.6] text-rose-100/80">
+                        {t(`demoForm.failure.${failureKind === "rejected" ? "rejectedBody" : "body"}`)}
+                      </p>
+                      {failureKind !== "rejected" && (
+                        <div className="mt-3.5 flex flex-wrap gap-2">
+                          <a
+                            href={DEMO_MESSENGER}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="pressable rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-fg transition-colors hover:border-white/30"
+                          >
+                            {t("demoForm.failure.messenger")}
+                          </a>
+                          <a
+                            href={demoMailtoHref(values, t)}
+                            className="pressable rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-fg transition-colors hover:border-white/30"
+                          >
+                            {t("demoForm.failure.email")}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  className="border-t border-white/[0.07] bg-ink-900/80 px-5 py-4 sm:px-7"
+                  style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+                >
+                  <button
+                    type="submit"
+                    disabled={sending}
+                    className="pressable flex w-full items-center justify-center gap-2.5 rounded-xl bg-fg px-5 py-3.5 text-[15px] font-semibold tracking-tight text-ink-950 transition-colors duration-200 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {sending && (
+                      <span
+                        aria-hidden
+                        className="h-4 w-4 animate-spin rounded-full border-2 border-ink-950/25 border-t-ink-950"
+                      />
+                    )}
+                    {sending
+                      ? t("demoForm.submitting")
+                      : status === "failed"
+                        ? t("demoForm.retry")
+                        : t("demoForm.submit")}
+                  </button>
+                  <p className="mt-3 text-center text-[11.5px] leading-[1.5] text-fg-dim">
+                    {t("demoForm.privacy")}
+                  </p>
+                  {status === "failed" && (
+                    <button
+                      type="button"
+                      onClick={startOver}
+                      className="mt-2 w-full text-center text-[12px] text-fg-dim underline-offset-4 transition-colors hover:text-fg-muted hover:underline"
+                    >
+                      {t("demoForm.startOver")}
+                    </button>
+                  )}
+                </div>
+              </form>
+            )}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/**
+ * Shown only if the dialog itself throws while rendering. A visitor who wanted
+ * to reach us must still be able to, so the fallback carries the direct
+ * channels rather than disappearing.
+ */
+function DemoRequestFallback() {
+  const { t } = useTranslation();
+  return (
+    <div
+      className="fixed inset-x-0 bottom-0 flex justify-center p-4"
+      style={{ zIndex: 2147483647 }}
+      role="alert"
+    >
+      <div className="w-full max-w-md rounded-2xl border border-rose-400/30 bg-ink-900/97 p-5 shadow-2xl backdrop-blur">
+        <p className="text-[14px] font-semibold text-fg">{t("demoForm.failure.title")}</p>
+        <p className="mt-1.5 text-[13px] leading-[1.6] text-fg-muted">
+          {t("demoForm.failure.crashBody")}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <a
+            href={DEMO_MESSENGER}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pressable rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-fg hover:border-white/30"
+          >
+            {t("demoForm.failure.messenger")}
+          </a>
+          <a
+            href={`mailto:${DEMO_EMAIL}`}
+            className="pressable rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-fg hover:border-white/30"
+          >
+            {t("demoForm.failure.email")}
+          </a>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="pressable rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-fg hover:border-white/30"
+          >
+            {t("demoForm.failure.reload")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DemoRequestProvider({ children }) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [preset, setPreset] = React.useState(null);
+
+  const open = React.useCallback((services) => {
+    setPreset(Array.isArray(services) && services.length ? services : null);
+    setIsOpen(true);
+  }, []);
+  const close = React.useCallback(() => setIsOpen(false), []);
+
+  const value = React.useMemo(() => ({ open, close, isOpen }), [open, close, isOpen]);
+
+  return (
+    <DemoRequestContext.Provider value={value}>
+      {children}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <ErrorBoundary fallback={<DemoRequestFallback />}>
+            <DemoRequestDialog isOpen={isOpen} onClose={close} preset={preset} />
+          </ErrorBoundary>,
+          document.body
+        )}
+    </DemoRequestContext.Provider>
+  );
+}
+
 function Contact() {
   const { t } = useTranslation();
-  const mailtoHref = `mailto:dalatech.ai@gmail.com?subject=${encodeURIComponent("Демо хүсэлт / Demo Request")}`;
+  const mailtoHref = `mailto:${DEMO_EMAIL}?subject=${encodeURIComponent("Демо хүсэлт / Demo Request")}`;
 
   return (
     <section id="contact" className="relative overflow-hidden py-20 sm:py-40">
@@ -2796,9 +3637,12 @@ function Contact() {
 
           <StaggerItem>
             <div className="mt-11 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-              <MagneticButton href="https://app.dalatech.online" variant="primary">
-                <span>{t("contact.demoCta")}</span>
+              <MagneticButton href="#demo" variant="primary">
+                <span>{t("contact.requestCta")}</span>
                 <span aria-hidden className="contact-arrow inline-block">→</span>
+              </MagneticButton>
+              <MagneticButton href="https://app.dalatech.online" variant="ghost">
+                {t("contact.demoCta")}
               </MagneticButton>
               <MagneticButton href={mailtoHref} variant="ghost">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -3033,7 +3877,8 @@ function PrivacyTermsModal({ isOpen, onClose }) {
                 <p>Бид таны хувийн мэдээллийн нууцлалыг хүндэтгэн, түүнийг хамгаалахыг эрхэмлэдэг.</p>
                 <ul className="list-disc space-y-2 pl-5">
                   <li>Цуглуулдаг мэдээлэл: Бид таны Facebook-ийн нийтийн профайлын мэдээлэл (нэр, профайл зураг) болон чатботод илгээсэн зурвасуудыг цуглуулдаг.</li>
-                  <li>Мэдээллийг хэрхэн ашигладаг: Бид таны зурвасуудыг зөвхөн Google Gemini API-аар дамжуулан AI хариулт үүсгэхэд ашигладаг. Таны зөвшөөрөлгүйгээр зар сурталчилгаа, маркетингийн зорилгоор таны мэдээллийг ашиглахгүй.</li>
+                  <li>Демо хүсэлтийн маягт: dalatech.online дээрх маягтаар илгээсэн нэр, утасны дугаар, бизнесийн нэр болон чиглэл, сонгосон үйлчилгээ, нэмэлт тайлбар, мөн таны сайн дураар үлдээсэн имэйл хаягийг хүлээн авдаг. Түүнчлэн хүсэлт илгээсэн хуудас, хэл, огноог автоматаар тэмдэглэдэг.</li>
+                  <li>Мэдээллийг хэрхэн ашигладаг: Бид таны зурвасуудыг зөвхөн Google Gemini API-аар дамжуулан AI хариулт үүсгэхэд ашигладаг. Демо хүсэлтийн мэдээллийг зөвхөн тантай эргэн холбогдож, хүсэлтэд тань хариулахад ашиглана. Таны зөвшөөрөлгүйгээр зар сурталчилгаа, маркетингийн зорилгоор таны мэдээллийг ашиглахгүй.</li>
                   <li>Мэдээлэл хуваалцах: Таны зурвасын өгөгдлийг хариулт үүсгэх зорилгоор Google-ийн AI үйлчилгээ боловсруулах боловч бусад гуравдагч этгээдэд дамжуулагдахгүй, худалдаалагдахгүй.</li>
                   <li>Мэдээлэл устгах: Хэрэв та манай системээс өөрийн мэдээллийг устгуулахыг хүсвэл dalatech.ai@gmail.com хаягаар холбогдох эсвэл чатад "DELETE" гэж хариу бичнэ үү.</li>
                 </ul>
@@ -3449,7 +4294,10 @@ function Shell() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Shell />
+      {/* Inside the router: the dialog records which page the request came from. */}
+      <DemoRequestProvider>
+        <Shell />
+      </DemoRequestProvider>
     </BrowserRouter>
   );
 }

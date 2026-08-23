@@ -355,7 +355,8 @@
     "title": "您的自動示範，正在等待。",
     "description": "用幾句話描述您的業務，數秒之內，專屬於您的 AI 助手便會依資料活起來。",
     "demoCta": "獲取自動演示",
-    "emailCta": "發送電子郵件"
+    "emailCta": "發送電子郵件",
+    "requestCta": "預約展示"
   },
   "bento": {
     "section": "產品能力",
@@ -448,6 +449,72 @@
       "label": "03",
       "title": "上線",
       "description": "我們上線、監控，並持續待命。第一週是我們的首要任務，不是事後補救。"
+    }
+  },
+  "demoForm": {
+    "eyebrow": "免費展示",
+    "title": "預約展示",
+    "subtitle": "填寫簡短表單。我們會致電給您，聊聊哪種方案最適合您的業務。",
+    "close": "關閉",
+    "optional": "選填",
+    "fields": {
+      "name": {
+        "label": "您的姓名",
+        "placeholder": "例如：王小明"
+      },
+      "phone": {
+        "label": "電話號碼",
+        "placeholder": "9911 2233",
+        "hint": "我們會撥打這個號碼。"
+      },
+      "business": {
+        "label": "公司名稱與業務類型",
+        "placeholder": "例如：Matrix 沙龍"
+      },
+      "services": {
+        "label": "您對什麼有興趣？",
+        "hint": "可以複選。"
+      },
+      "note": {
+        "label": "其他說明",
+        "placeholder": "您想自動化哪些工作？目前遇到什麼困難？"
+      },
+      "email": {
+        "label": "電子郵件",
+        "placeholder": "name@example.com"
+      }
+    },
+    "services": {
+      "website": "網站",
+      "chatbot": "AI 聊天機器人",
+      "voice": "AI 語音助理",
+      "unsure": "還不確定"
+    },
+    "errors": {
+      "name": "請輸入您的姓名。",
+      "phone": "請輸入 8 位數的電話號碼。",
+      "business": "請填寫公司名稱與業務類型。",
+      "email": "電子郵件格式不正確。"
+    },
+    "submit": "送出需求",
+    "submitting": "傳送中…",
+    "retry": "重新送出",
+    "startOver": "清除表單",
+    "privacy": "我們只會用這些資料與您聯繫。",
+    "success": {
+      "title": "已收到您的需求。",
+      "body": "我們會盡快撥打 {{phone}} 與您聯繫。",
+      "close": "謝謝"
+    },
+    "failure": {
+      "title": "傳送失敗。",
+      "body": "您填寫的內容都還在。請再試一次，或直接與我們聯繫。",
+      "rejectedTitle": "資料不完整。",
+      "rejectedBody": "請檢查欄位後再送出一次。",
+      "crashBody": "表單無法開啟。請直接與我們聯繫。",
+      "messenger": "Messenger",
+      "email": "寄送電子郵件",
+      "reload": "重新整理頁面"
     }
   }
 }

@@ -312,3 +312,43 @@ html.nav-menu-open #dt-chat-frame {
     transition: none !important;
   }
 }
+
+/* Demo request dialog — a bottom sheet on phones, a centred card from sm up. */
+.demo-sheet {
+  max-height: 92vh;
+}
+@supports (height: 100dvh) {
+  .demo-sheet {
+    /* dvh tracks the on-screen keyboard, so the sheet shrinks instead of
+       pushing the submit button out of reach. */
+    max-height: 92dvh;
+  }
+}
+@media (min-width: 640px) {
+  .demo-sheet {
+    max-height: 88vh;
+  }
+}
+
+.demo-sheet-body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* The floating chat button sits above everything; hide it while the dialog is
+   open so it cannot overlap the submit button. */
+html.demo-dialog-open #dt-chat-toggle,
+html.demo-dialog-open #dt-chat-frame {
+  visibility: hidden;
+}
+
+/* Honeypot: out of sight for people, still filled in by naive bots. */
+.demo-honeypot {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
