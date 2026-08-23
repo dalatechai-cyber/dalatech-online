@@ -95,14 +95,43 @@ function normalisePhone(raw) {
   return { display: raw, e164: digits ? `+${digits}` : "", digits };
 }
 
-/** Ulaanbaatar is UTC+8 year-round (Mongolia dropped DST in 2017). */
+const UB_TIME_ZONE = "Asia/Ulaanbaatar";
+
+/**
+ * Formats an instant as Ulaanbaatar wall-clock time, with the UTC offset it
+ * used printed alongside.
+ *
+ * The offset is not decoration. Ulaanbaatar is UTC+8 and US Eastern is UTC-4 —
+ * exactly twelve hours apart — so on a 12-hour clock the two read identically,
+ * minutes and all. Reading these notifications from abroad, a correct
+ * conversion is indistinguishable from no conversion at all unless the offset
+ * is stated. It cost us an afternoon once; it stays.
+ *
+ * Resolved through the IANA zone rather than a hard-coded +8: Mongolia has no
+ * DST today but observed it as recently as 2016, and this keeps working if it
+ * ever comes back.
+ */
 function ulaanbaatarTimestamp(date) {
-  const shifted = new Date(date.getTime() + 8 * 60 * 60 * 1000);
-  const pad = (n) => String(n).padStart(2, "0");
-  return (
-    `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}` +
-    ` ${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}`
-  );
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: UB_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZoneName: "longOffset",
+  }).formatToParts(date);
+
+  const part = (type) => {
+    const found = parts.find((p) => p.type === type);
+    return found ? found.value : "";
+  };
+  // "GMT+08:00" is what the platform calls it; "UTC+08:00" is what everyone
+  // else does. Fall back to the fixed offset if the runtime lacks full ICU.
+  const offset = (part("timeZoneName") || "GMT+08:00").replace("GMT", "UTC");
+
+  return `${part("year")}-${part("month")}-${part("day")} ${part("hour")}:${part("minute")} (Улаанбаатар, ${offset})`;
 }
 
 async function readJsonBody(req) {
@@ -254,7 +283,7 @@ function telegramMessage(lead, useHtml) {
   if (lead.note) lines.push("", `💬 ${b("Тайлбар:")}`, v(lead.note));
   lines.push(
     "",
-    `🕒 ${v(ulaanbaatarTimestamp(lead.receivedAt))} (Улаанбаатар)`,
+    `🕒 ${v(ulaanbaatarTimestamp(lead.receivedAt))}`,
     `🌐 ${v(lead.page || "/")} · ${v(lead.locale || "mn")}`,
     // Printed here too, not only in the email: a poor mobile connection can
     // make the browser resend a request whose response was lost, and this is
@@ -286,7 +315,7 @@ function emailText(lead) {
   if (lead.note) lines.push("", "Тайлбар:", lead.note);
   lines.push(
     "",
-    `Хүлээн авсан:   ${ulaanbaatarTimestamp(lead.receivedAt)} (Улаанбаатар)`,
+    `Хүлээн авсан:   ${ulaanbaatarTimestamp(lead.receivedAt)}`,
     `Хуудас:         ${lead.page || "/"}`,
     `Хэл:            ${lead.locale || "mn"}`,
     `Хүсэлтийн ID:   ${lead.requestId}`
@@ -340,7 +369,7 @@ function emailHtml(lead) {
     <table style="width:100%;border-collapse:collapse">${rows}</table>
     ${noteBlock}
     <p style="margin:24px 0 0;color:#5A6E94;font-size:12px;line-height:1.7">
-      ${e(ulaanbaatarTimestamp(lead.receivedAt))} (Улаанбаатар)<br>
+      ${e(ulaanbaatarTimestamp(lead.receivedAt))}<br>
       Хуудас: ${e(lead.page || "/")} · Хэл: ${e(lead.locale || "mn")}<br>
       Хүсэлтийн ID: ${e(lead.requestId)}
     </p>
@@ -512,6 +541,9 @@ export default async function handler(req, res) {
       locale: lead.locale,
       suspectedBot: lead.suspectedBot,
       receivedAt: lead.receivedAt.toISOString(),
+      // The rendered local string too, so a log check can verify what the
+      // notification actually said without re-deriving it.
+      receivedAtLocal: ulaanbaatarTimestamp(lead.receivedAt),
       userAgent: lead.userAgent,
       referer: lead.referer,
     })
