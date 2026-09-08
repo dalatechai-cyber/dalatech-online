@@ -140,6 +140,11 @@ LZ = SRC / "limezu"
 LZ_OFFICE = LZ / "Modern_Office_Revamped_v1.2" / "4_Modern_Office_singles" / "32x32" / "Modern_Office_Singles_32x32_{}.png"
 LZ_LIVING = LZ / "moderninteriors-win" / "1_Interiors" / "32x32" / "Theme_Sorter_Singles_32x32" / "2_Living_Room_Singles_32x32" / "Living_Room_Singles_32x32_{}.png"
 LZ_CONF = LZ / "moderninteriors-win" / "1_Interiors" / "32x32" / "Theme_Sorter_Singles_32x32" / "13_Conference_Hall_Singles_32x32" / "Conference_Hall_Singles_32x32_{}.png"
+LZ_THEMES = LZ / "moderninteriors-win" / "1_Interiors" / "32x32" / "Theme_Sorter_Singles_32x32"
+LZ_CONDO = LZ_THEMES / "26_Condominium_Singles_32x32" / "Condominium_Singles_32x32_{}.png"
+LZ_BASE = LZ_THEMES / "14_Basement_Singles_32x32" / "Basement_Singles_32x32_{}.png"
+LZ_BED = LZ_THEMES / "4_Bedroom_Singles_32x32" / "Bedroom_Singles_32x32_{}.png"
+LZ_KIT = LZ_THEMES / "12_Kitchen_Singles_32x32" / "Kitchen_Singles_32x32_{}.png"
 LZ_ROOM = LZ / "Modern_Office_Revamped_v1.2" / "1_Room_Builder_Office" / "Room_Builder_Office_32x32.png"
 LZ_GEN = LZ / "moderninteriors-win" / "2_Characters" / "Character_Generator"
 
@@ -169,6 +174,26 @@ def lz_furniture_rule(rgb):
         return from_hls(NAVY_HUE, 0.12 + l * 0.55, 0.28)
     # anything else: pull toward navy but keep some of its own hue
     return from_hls(NAVY_HUE, 0.12 + l * 0.55, min(0.45, s * 0.6))
+
+
+def lz_chair_rule(rgb):
+    """Chairs: a lighter navy-grey than the rest, so a seat reads against the wall."""
+    if rgb in LZ_OUTLINES:
+        return rgb
+    h, l, s = hls(rgb)
+    if s < 0.16 or (240 < h * 360 < 300 and s < 0.35):
+        return from_hls(NAVY_HUE, 0.26 + l * 0.6, 0.22)
+    return lz_furniture_rule(rgb)
+
+
+def lz_desk_rule(rgb):
+    """Desks: a cool grey-blue, lighter than the carpet so the top reads as a surface."""
+    if rgb in LZ_OUTLINES:
+        return rgb
+    h, l, s = hls(rgb)
+    if s < 0.16 or (240 < h * 360 < 300 and s < 0.35):
+        return from_hls(NAVY_HUE, 0.26 + l * 0.6, 0.20)
+    return lz_furniture_rule(rgb)
 
 
 def lz_floor_rule(rgb):
@@ -212,15 +237,17 @@ def lz_sprites():
     off_lamp = {"#e2f2f3": "#3A4478", "#cce6ec": "#3A4478", "#d4dee6": "#3A4478", "#bad2e0": "#343D6A",
                 "#a4bbd5": "#2A3358", "#91a5cf": "#2A3358", "#738ca8": "#1F274A"}
 
-    # desks: three one-tile pieces make a desk; the top face rises into the row above
-    add("DESK_L", lz_single(O(210)))
-    add("DESK_M", lz_single(O(211)))
-    add("DESK_R", lz_single(O(212)))
-    add("DESK_GREY_L", lz_single(O(213)))
-    add("DESK_GREY_M", lz_single(O(214)))
-    add("DESK_GREY_R", lz_single(O(215)))
+    Cd = lambda n: LZ_CONDO.with_name(LZ_CONDO.name.format(n))
+    Bs = lambda n: LZ_BASE.with_name(LZ_BASE.name.format(n))
+    Bd = lambda n: LZ_BED.with_name(LZ_BED.name.format(n))
+    Kt = lambda n: LZ_KIT.with_name(LZ_KIT.name.format(n))
+
+    # desks: one-tile pieces make a desk; the grey finish goes navy so gold stays the only warm thing
+    add("DESK_L", lz_single(O(213), rule=lz_desk_rule))
+    add("DESK_M", lz_single(O(214), rule=lz_desk_rule))
+    add("DESK_R", lz_single(O(215), rule=lz_desk_rule))
     # things on desks (screen rects measured from the blue glass in each sprite)
-    add("MONITOR", lz_single(O(132), screens=[{"x": 4, "y": 6, "w": 22, "h": 16}]))
+    add("MONITOR", lz_single(O(130), screens=[{"x": 4, "y": 6, "w": 24, "h": 12}]))
     add("MONITOR_2", lz_single(O(133), screens=[{"x": 4, "y": 6, "w": 24, "h": 12}]))
     add("DUAL_MONITOR", lz_single(O(227), screens=[{"x": 4, "y": 6, "w": 22, "h": 16}, {"x": 36, "y": 8, "w": 24, "h": 12}]))
     add("LAPTOP", lz_single(O(136), screens=[{"x": 4, "y": 4, "w": 16, "h": 10}]))
@@ -234,20 +261,50 @@ def lz_sprites():
     add("PAPER_PILE", lz_single(O(155)))
     add("FAX", lz_single(O(156)))
     add("PRINTER_SMALL", lz_single(O(149)))
-    # standing furniture
-    add("CHAIR", lz_single(O(101)))
-    add("CHAIR_2", lz_single(O(105)))
+    add("MUG", lz_single(Kt(182)))
+    add("MUG_2", lz_single(Kt(181)))
+    add("CUPS", lz_single(Kt(137)))
+    add("STICKY", lz_single(Bd(452)))
+    # seats
+    add("CHAIR", lz_single(O(101), rule=lz_chair_rule))
+    add("CHAIR_2", lz_single(O(105), rule=lz_chair_rule))
+    add("ARMCHAIR_BLUE", lz_single(Bs(205), fw=1, rule=lz_chair_rule))
+    add("ARMCHAIR_WHITE", lz_single(Bs(203), fw=1, rule=lz_chair_rule))
+    add("SOFA", lz_single(Cf(56), fw=2, rule=lz_chair_rule))
+    # storage
     add("CABINET", lz_single(O(180)))
     add("CABINET_2", lz_single(O(181)))
-    add("BOOKCASE", lz_single(O(194), fw=2))
+    add("DRAWERS", lz_single(O(167)))
+    add("DRAWERS_2", lz_single(O(168)))
+    add("BOOKSHELF", lz_single(Cd(29)))
+    add("BOOKSHELF_2", lz_single(Cd(28)))
+    add("BOOKSHELF_TALL", lz_single(Cd(51), fw=2))
+    add("CUPBOARD", lz_single(Bd(539), fw=2))
+    add("FILING", lz_single(Cd(76), fw=2))
+    add("FILING_2", lz_single(Cd(80), fw=2))
+    add("RACK", lz_single(Bs(27), fw=2))
+    add("RACK_WOOD", lz_single(Bs(39), fw=2))
+    add("RACK_WHITE", lz_single(Bs(45), fw=2))
+    add("RACK_LOW", lz_single(Bs(29), fw=2))
+    add("LOCKER", lz_single(Bs(4)))
+    add("CRATES", lz_single(Lv(99), fw=2))
+    add("CRATE", lz_single(Lv(97)))
+    add("BOX", lz_single(Cd(71)))
+    add("BOX_2", lz_single(Cd(73)))
+    # machines
     add("PRINTER", lz_single(O(178), fw=2))
+    add("COPIER", lz_single(O(177), fw=2))
     add("WATER_COOLER", lz_single(O(173)))
     add("VENDING", lz_single(O(175), fw=2))
-    add("AC_UNIT", lz_single(O(165), fw=2))
     add("COFFEE_MACHINE", lz_single(O(317)))
     add("COFFEE_COUNTER", lz_single(O(320), fw=2))
     add("BIN", lz_single(O(329)))
+    add("BIN_GREY", lz_single(O(333)))
+    add("EXTINGUISHER", lz_single(Cf(59)))
+    # tables
     add("TABLE_SMALL", lz_single(O(188), fw=2))
+    add("TABLE_LOW", lz_single(O(190), fw=2))
+    # plants
     add("PLANT_OFFICE", lz_single(O(98)))
     add("PLANT_OFFICE_2", lz_single(O(99)))
     add("PLANT_OFFICE_3", lz_single(O(100)))
@@ -257,15 +314,18 @@ def lz_sprites():
     add("PLANT_SMALL_2", lz_single(Lv(16)))
     add("PLANT_BUSH", lz_single(Lv(18), fw=2))
     add("FRUIT_BOWL", lz_single(Lv(49)))
-    add("SOFA", lz_single(Cf(56), fw=2))
-    add("ARMCHAIR", lz_single(Lv(73)))
-    add("EXTINGUISHER", lz_single(Cf(59)))
+    # flat things on the floor (drawn with the floor, no footprint)
+    add("RUG_CHECK", lz_single(Bd(385), fw=2, fh=2))
+    add("RUG_ROUND", lz_single(Bd(386), fw=2, fh=2))
+    add("RUG_MAT", lz_single(Cd(65), fw=2))
     # wall items (no footprint)
     add("WHITEBOARD", lz_single(O(171), fw=2))
     add("WHITEBOARD_BLANK", lz_single(O(170), fw=2))
     add("POSTER", lz_single(O(96)))
     add("POSTER_2", lz_single(O(163)))
     add("CERTIFICATE", lz_single(O(113)))
+    add("PICTURE", lz_single(Bd(481)))
+    add("STRING_LIGHTS", lz_single(Bd(463), fw=2))
     # floor: the office carpet 2x2 pattern from the room builder
     rb = Image.open(LZ_ROOM).convert("RGBA")
     floor = rb.crop((320, 160, 384, 224))
@@ -274,17 +334,23 @@ def lz_sprites():
 
 
 LZ_ROLES = {
-    "deskL": "DESK_L", "deskM": "DESK_M", "deskR": "DESK_R", "deskGreyL": "DESK_GREY_L", "deskGreyM": "DESK_GREY_M", "deskGreyR": "DESK_GREY_R",
+    "deskL": "DESK_L", "deskM": "DESK_M", "deskR": "DESK_R",
     "monitor": "MONITOR", "monitor2": "MONITOR_2", "dualMonitor": "DUAL_MONITOR", "laptop": "LAPTOP", "keyboard": "KEYBOARD",
     "phone": "PHONE", "phone2": "PHONE_2", "lamp": "LAMP", "lampOff": "LAMP_OFF",
     "papers": "PAPERS", "paperStack": "PAPER_STACK", "paperPile": "PAPER_PILE", "fax": "FAX", "printerSmall": "PRINTER_SMALL",
-    "chair": "CHAIR", "chair2": "CHAIR_2", "cabinet": "CABINET", "cabinet2": "CABINET_2", "bookcase": "BOOKCASE",
-    "printer": "PRINTER", "waterCooler": "WATER_COOLER", "vending": "VENDING", "acUnit": "AC_UNIT",
-    "coffeeMachine": "COFFEE_MACHINE", "coffeeCounter": "COFFEE_COUNTER", "bin": "BIN", "tableSmall": "TABLE_SMALL",
+    "mug": "MUG", "mug2": "MUG_2", "cups": "CUPS", "sticky": "STICKY",
+    "chair": "CHAIR", "chair2": "CHAIR_2", "armchairBlue": "ARMCHAIR_BLUE", "armchairWhite": "ARMCHAIR_WHITE", "sofa": "SOFA",
+    "cabinet": "CABINET", "cabinet2": "CABINET_2", "drawers": "DRAWERS", "drawers2": "DRAWERS_2",
+    "bookshelf": "BOOKSHELF", "bookshelf2": "BOOKSHELF_2", "bookshelfTall": "BOOKSHELF_TALL", "cupboard": "CUPBOARD", "filing": "FILING", "filing2": "FILING_2",
+    "rack": "RACK", "rackWood": "RACK_WOOD", "rackWhite": "RACK_WHITE", "rackLow": "RACK_LOW", "locker": "LOCKER",
+    "crates": "CRATES", "crate": "CRATE", "box": "BOX", "box2": "BOX_2",
+    "printer": "PRINTER", "copier": "COPIER", "waterCooler": "WATER_COOLER", "vending": "VENDING",
+    "coffeeMachine": "COFFEE_MACHINE", "coffeeCounter": "COFFEE_COUNTER", "bin": "BIN", "binGrey": "BIN_GREY", "extinguisher": "EXTINGUISHER",
+    "tableSmall": "TABLE_SMALL", "tableLow": "TABLE_LOW",
     "plantOffice": "PLANT_OFFICE", "plantOffice2": "PLANT_OFFICE_2", "plantOffice3": "PLANT_OFFICE_3",
-    "plantTall": "PLANT_TALL", "plantPalm": "PLANT_PALM", "plantSmall": "PLANT_SMALL", "plantSmall2": "PLANT_SMALL_2", "plantBush": "PLANT_BUSH",
-    "fruitBowl": "FRUIT_BOWL", "sofa": "SOFA", "armchair": "ARMCHAIR", "extinguisher": "EXTINGUISHER",
-    "whiteboard": "WHITEBOARD", "whiteboardBlank": "WHITEBOARD_BLANK", "poster": "POSTER", "poster2": "POSTER_2", "certificate": "CERTIFICATE",
+    "plantTall": "PLANT_TALL", "plantPalm": "PLANT_PALM", "plantSmall": "PLANT_SMALL", "plantSmall2": "PLANT_SMALL_2", "plantBush": "PLANT_BUSH", "fruitBowl": "FRUIT_BOWL",
+    "rugCheck": "RUG_CHECK", "rugRound": "RUG_ROUND", "rugMat": "RUG_MAT",
+    "whiteboard": "WHITEBOARD", "whiteboardBlank": "WHITEBOARD_BLANK", "poster": "POSTER", "poster2": "POSTER_2", "certificate": "CERTIFICATE", "picture": "PICTURE", "stringLights": "STRING_LIGHTS",
     "floor": "FLOOR",
 }
 

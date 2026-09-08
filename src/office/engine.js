@@ -151,7 +151,7 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     // sprites are bottom-aligned to their footprint, so tall ones rise into the rows above
     const y = (f.row + s.fh) * T - s.h + (f.offsetY || 0);
     const item = { ...f, s, x, y, sortY: (f.row + s.fh) * T };
-    if (f.wall) item.sortY = -1;
+    if (f.wall || f.flat) item.sortY = -1;
     if (f.onDesk) {
       // stands on a surface: drawn right after the surface beneath it
       const under = furniture.find((o) => !o.onDesk && !o.seat && !o.wall && f.col >= o.col && f.col < o.col + o.s.fw && f.row >= o.row && f.row < o.row + o.s.fh);
@@ -161,7 +161,7 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     if (f.seat) item.sortY = f.row * T + T - 1; // chair: behind the person on it
     furniture.push(item);
     if (f.screenOf) pcs[f.screenOf] = item;
-    if (f.wall || f.onDesk || f.seat) return;
+    if (f.wall || f.flat || f.onDesk || f.seat) return;
     for (let r = f.row; r < f.row + s.fh; r++) for (let c = f.col; c < f.col + s.fw; c++) if (walkable[r]) walkable[r][c] = false;
   });
   // seats are for their owner only; nobody paths through them
@@ -220,7 +220,7 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     ctx.fillStyle = C.wallShade; ctx.fillRect(0, wallH - 4 * K, W, K);
     // window panes
     L.WINDOW.forEach((win) => {
-      const x = win.col * T, w = win.cols * T, y = 4 * K, h = wallH - 14 * K;
+      const x = Math.round(win.col * T), w = Math.round(win.cols * T), y = 4 * K, h = wallH - 14 * K;
       ctx.fillStyle = C.frame; ctx.fillRect(x - K, y - K, w + 2 * K, h + 2 * K);
       drawSkyline(ctx, x, y, w, h, 0);
       ctx.fillStyle = C.frame; for (let mx = x + T * 2 - K; mx < x + w - 2 * K; mx += T * 2) ctx.fillRect(mx, y, K, h);
@@ -245,7 +245,8 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
       if (rg.kind === "runner") { for (let yy = y + 6 * K; yy < y + h - 4 * K; yy += 10 * K) ctx.fillRect(x + 3 * K, yy, w - 6 * K, K); }
       else ctx.fillRect(x + 5 * K, y + 5 * K, w - 10 * K, h - 10 * K);
     });
-    // wall items go on the wall layer once
+    // rugs lie on the floor; wall items go on the wall layer once
+    furniture.filter((f) => f.flat).forEach((f) => drawSprite(ctx, f.s, f.x, f.y));
     furniture.filter((f) => f.wall).forEach((f) => drawSprite(ctx, f.s, f.x, f.y));
 
     // lamp light: gold pools on the desk and floor around each lit lamp, dithered on the grid
@@ -415,10 +416,10 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     if (Math.floor(t / 2400) !== drawWorld.lastSky) {
       drawWorld.lastSky = Math.floor(t / 2400);
       const bctx = bg.getContext("2d");
-      L.WINDOW.forEach((win) => drawSkyline(bctx, win.col * T, 4 * K, win.cols * T, L.WALL_ROWS * T - 14 * K, t));
+      L.WINDOW.forEach((win) => drawSkyline(bctx, Math.round(win.col * T), 4 * K, Math.round(win.cols * T), L.WALL_ROWS * T - 14 * K, t));
     }
     people.forEach((p) => { p.work = workState(p.desk.work, t + PHASE_OFFSET[p.id]); });
-    const items = furniture.filter((f) => !f.wall).map((f) => ({ y: f.sortY, draw: () => {
+    const items = furniture.filter((f) => !f.wall && !f.flat).map((f) => ({ y: f.sortY, draw: () => {
       // soft contact shadow under free-standing furniture
       if (!f.onDesk && !f.seat) { wctx.fillStyle = C.shadow; wctx.fillRect(f.x + 2 * K, (f.row + f.s.fh) * T - 2 * K, f.s.w - 4 * K, 2 * K); }
       drawSprite(wctx, f.role === "pc" ? spriteOf("pc", Math.floor(t / 400)) : f.s, f.x, f.y);

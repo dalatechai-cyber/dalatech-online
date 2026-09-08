@@ -893,10 +893,15 @@
  "credit": "LimeZu Modern Interiors and Modern Office (commercial licence, credit required)",
  "name": "limezu",
  "roles": {
-  "acUnit": "AC_UNIT",
-  "armchair": "ARMCHAIR",
+  "armchairBlue": "ARMCHAIR_BLUE",
+  "armchairWhite": "ARMCHAIR_WHITE",
   "bin": "BIN",
-  "bookcase": "BOOKCASE",
+  "binGrey": "BIN_GREY",
+  "bookshelf": "BOOKSHELF",
+  "bookshelf2": "BOOKSHELF_2",
+  "bookshelfTall": "BOOKSHELF_TALL",
+  "box": "BOX",
+  "box2": "BOX_2",
   "cabinet": "CABINET",
   "cabinet2": "CABINET_2",
   "certificate": "CERTIFICATE",
@@ -904,28 +909,38 @@
   "chair2": "CHAIR_2",
   "coffeeCounter": "COFFEE_COUNTER",
   "coffeeMachine": "COFFEE_MACHINE",
-  "deskGreyL": "DESK_GREY_L",
-  "deskGreyM": "DESK_GREY_M",
-  "deskGreyR": "DESK_GREY_R",
+  "copier": "COPIER",
+  "crate": "CRATE",
+  "crates": "CRATES",
+  "cupboard": "CUPBOARD",
+  "cups": "CUPS",
   "deskL": "DESK_L",
   "deskM": "DESK_M",
   "deskR": "DESK_R",
+  "drawers": "DRAWERS",
+  "drawers2": "DRAWERS_2",
   "dualMonitor": "DUAL_MONITOR",
   "extinguisher": "EXTINGUISHER",
   "fax": "FAX",
+  "filing": "FILING",
+  "filing2": "FILING_2",
   "floor": "FLOOR",
   "fruitBowl": "FRUIT_BOWL",
   "keyboard": "KEYBOARD",
   "lamp": "LAMP",
   "lampOff": "LAMP_OFF",
   "laptop": "LAPTOP",
+  "locker": "LOCKER",
   "monitor": "MONITOR",
   "monitor2": "MONITOR_2",
+  "mug": "MUG",
+  "mug2": "MUG_2",
   "paperPile": "PAPER_PILE",
   "paperStack": "PAPER_STACK",
   "papers": "PAPERS",
   "phone": "PHONE",
   "phone2": "PHONE_2",
+  "picture": "PICTURE",
   "plantBush": "PLANT_BUSH",
   "plantOffice": "PLANT_OFFICE",
   "plantOffice2": "PLANT_OFFICE_2",
@@ -938,7 +953,17 @@
   "poster2": "POSTER_2",
   "printer": "PRINTER",
   "printerSmall": "PRINTER_SMALL",
+  "rack": "RACK",
+  "rackLow": "RACK_LOW",
+  "rackWhite": "RACK_WHITE",
+  "rackWood": "RACK_WOOD",
+  "rugCheck": "RUG_CHECK",
+  "rugMat": "RUG_MAT",
+  "rugRound": "RUG_ROUND",
   "sofa": "SOFA",
+  "sticky": "STICKY",
+  "stringLights": "STRING_LIGHTS",
+  "tableLow": "TABLE_LOW",
   "tableSmall": "TABLE_SMALL",
   "vending": "VENDING",
   "waterCooler": "WATER_COOLER",
@@ -972,25 +997,25 @@
   }
  },
  "sprites": {
-  "AC_UNIT": {
-   "fh": 1,
-   "fw": 2,
-   "h": 26,
-   "ox": 6,
-   "oy": 0,
-   "w": 52,
-   "x": 300,
-   "y": 1340
-  },
-  "ARMCHAIR": {
+  "ARMCHAIR_BLUE": {
    "fh": 1,
    "fw": 1,
-   "h": 34,
-   "ox": 4,
-   "oy": -8,
-   "w": 24,
-   "x": 32,
-   "y": 1340
+   "h": 48,
+   "ox": 12,
+   "oy": -10,
+   "w": 40,
+   "x": 670,
+   "y": 1280
+  },
+  "ARMCHAIR_WHITE": {
+   "fh": 1,
+   "fw": 1,
+   "h": 48,
+   "ox": 12,
+   "oy": -10,
+   "w": 40,
+   "x": 710,
+   "y": 1280
   },
   "BIN": {
    "fh": 1,
@@ -999,18 +1024,68 @@
    "ox": 4,
    "oy": -14,
    "w": 26,
-   "x": 750,
+   "x": 424,
+   "y": 1344
+  },
+  "BIN_GREY": {
+   "fh": 1,
+   "fw": 1,
+   "h": 42,
+   "ox": 4,
+   "oy": -14,
+   "w": 26,
+   "x": 450,
+   "y": 1344
+  },
+  "BOOKSHELF": {
+   "fh": 1,
+   "fw": 1,
+   "h": 54,
+   "ox": 0,
+   "oy": 0,
+   "w": 32,
+   "x": 402,
    "y": 1280
   },
-  "BOOKCASE": {
+  "BOOKSHELF_2": {
+   "fh": 1,
+   "fw": 1,
+   "h": 62,
+   "ox": 0,
+   "oy": 0,
+   "w": 32,
+   "x": 64,
+   "y": 1280
+  },
+  "BOOKSHELF_TALL": {
    "fh": 1,
    "fw": 2,
-   "h": 52,
-   "ox": 20,
-   "oy": -8,
-   "w": 44,
-   "x": 104,
-   "y": 1280
+   "h": 82,
+   "ox": 0,
+   "oy": -2,
+   "w": 64,
+   "x": 768,
+   "y": 960
+  },
+  "BOX": {
+   "fh": 1,
+   "fw": 1,
+   "h": 32,
+   "ox": 0,
+   "oy": -22,
+   "w": 30,
+   "x": 930,
+   "y": 1344
+  },
+  "BOX_2": {
+   "fh": 1,
+   "fw": 1,
+   "h": 20,
+   "ox": 0,
+   "oy": -22,
+   "w": 30,
+   "x": 466,
+   "y": 1390
   },
   "CABINET": {
    "fh": 1,
@@ -1019,8 +1094,8 @@
    "ox": 0,
    "oy": -22,
    "w": 32,
-   "x": 692,
-   "y": 1280
+   "x": 242,
+   "y": 1344
   },
   "CABINET_2": {
    "fh": 1,
@@ -1029,8 +1104,8 @@
    "ox": 0,
    "oy": -22,
    "w": 26,
-   "x": 724,
-   "y": 1280
+   "x": 274,
+   "y": 1344
   },
   "CERTIFICATE": {
    "fh": 1,
@@ -1039,8 +1114,8 @@
    "ox": 2,
    "oy": -12,
    "w": 28,
-   "x": 110,
-   "y": 1340
+   "x": 960,
+   "y": 1344
   },
   "CHAIR": {
    "fh": 1,
@@ -1049,7 +1124,7 @@
    "ox": 0,
    "oy": -4,
    "w": 32,
-   "x": 448,
+   "x": 896,
    "y": 1280
   },
   "CHAIR_2": {
@@ -1059,8 +1134,8 @@
    "ox": 0,
    "oy": -4,
    "w": 32,
-   "x": 660,
-   "y": 1280
+   "x": 210,
+   "y": 1344
   },
   "COFFEE_COUNTER": {
    "fh": 1,
@@ -1069,7 +1144,7 @@
    "ox": 8,
    "oy": -18,
    "w": 52,
-   "x": 814,
+   "x": 940,
    "y": 960
   },
   "COFFEE_MACHINE": {
@@ -1079,38 +1154,58 @@
    "ox": 12,
    "oy": -2,
    "w": 48,
-   "x": 148,
+   "x": 598,
    "y": 1280
   },
-  "DESK_GREY_L": {
+  "COPIER": {
+   "fh": 1,
+   "fw": 2,
+   "h": 40,
+   "ox": 6,
+   "oy": -4,
+   "w": 50,
+   "x": 526,
+   "y": 1344
+  },
+  "CRATE": {
    "fh": 1,
    "fw": 1,
+   "h": 24,
+   "ox": 2,
+   "oy": -6,
+   "w": 30,
+   "x": 308,
+   "y": 1390
+  },
+  "CRATES": {
+   "fh": 1,
+   "fw": 2,
    "h": 46,
    "ox": 4,
-   "oy": 0,
-   "w": 28,
-   "x": 302,
+   "oy": -10,
+   "w": 50,
+   "x": 928,
    "y": 1280
   },
-  "DESK_GREY_M": {
+  "CUPBOARD": {
    "fh": 1,
-   "fw": 1,
-   "h": 46,
-   "ox": 0,
-   "oy": 0,
-   "w": 32,
-   "x": 330,
-   "y": 1280
+   "fw": 2,
+   "h": 78,
+   "ox": 2,
+   "oy": -10,
+   "w": 62,
+   "x": 832,
+   "y": 960
   },
-  "DESK_GREY_R": {
+  "CUPS": {
    "fh": 1,
    "fw": 1,
-   "h": 46,
+   "h": 10,
    "ox": 0,
    "oy": 0,
-   "w": 22,
-   "x": 362,
-   "y": 1280
+   "w": 10,
+   "x": 552,
+   "y": 1390
   },
   "DESK_L": {
    "fh": 1,
@@ -1119,7 +1214,7 @@
    "ox": 4,
    "oy": 0,
    "w": 28,
-   "x": 220,
+   "x": 750,
    "y": 1280
   },
   "DESK_M": {
@@ -1129,7 +1224,7 @@
    "ox": 0,
    "oy": 0,
    "w": 32,
-   "x": 248,
+   "x": 778,
    "y": 1280
   },
   "DESK_R": {
@@ -1139,8 +1234,28 @@
    "ox": 0,
    "oy": 0,
    "w": 22,
-   "x": 280,
+   "x": 810,
    "y": 1280
+  },
+  "DRAWERS": {
+   "fh": 1,
+   "fw": 1,
+   "h": 30,
+   "ox": 4,
+   "oy": -20,
+   "w": 26,
+   "x": 0,
+   "y": 1390
+  },
+  "DRAWERS_2": {
+   "fh": 1,
+   "fw": 1,
+   "h": 44,
+   "ox": 4,
+   "oy": -20,
+   "w": 26,
+   "x": 152,
+   "y": 1344
   },
   "DUAL_MONITOR": {
    "fh": 1,
@@ -1163,7 +1278,7 @@
     }
    ],
    "w": 64,
-   "x": 384,
+   "x": 832,
    "y": 1280
   },
   "EXTINGUISHER": {
@@ -1173,8 +1288,8 @@
    "ox": 4,
    "oy": -20,
    "w": 24,
-   "x": 916,
-   "y": 1280
+   "x": 606,
+   "y": 1344
   },
   "FAX": {
    "fh": 1,
@@ -1183,8 +1298,28 @@
    "ox": 0,
    "oy": -4,
    "w": 32,
-   "x": 0,
-   "y": 1340
+   "x": 800,
+   "y": 1344
+  },
+  "FILING": {
+   "fh": 1,
+   "fw": 2,
+   "h": 42,
+   "ox": 2,
+   "oy": -6,
+   "w": 62,
+   "x": 300,
+   "y": 1344
+  },
+  "FILING_2": {
+   "fh": 1,
+   "fw": 2,
+   "h": 42,
+   "ox": 2,
+   "oy": -6,
+   "w": 62,
+   "x": 362,
+   "y": 1344
   },
   "FLOOR": {
    "fh": 2,
@@ -1192,8 +1327,8 @@
    "h": 64,
    "tileable": true,
    "w": 64,
-   "x": 866,
-   "y": 960
+   "x": 0,
+   "y": 1280
   },
   "FRUIT_BOWL": {
    "fh": 1,
@@ -1202,8 +1337,8 @@
    "ox": 2,
    "oy": -14,
    "w": 28,
-   "x": 888,
-   "y": 1280
+   "x": 662,
+   "y": 1344
   },
   "KEYBOARD": {
    "fh": 1,
@@ -1212,8 +1347,8 @@
    "ox": 0,
    "oy": -16,
    "w": 32,
-   "x": 480,
-   "y": 1340
+   "x": 520,
+   "y": 1390
   },
   "LAMP": {
    "fh": 1,
@@ -1222,8 +1357,8 @@
    "ox": 0,
    "oy": -28,
    "w": 30,
-   "x": 940,
-   "y": 1280
+   "x": 740,
+   "y": 1344
   },
   "LAMP_OFF": {
    "fh": 1,
@@ -1232,8 +1367,8 @@
    "ox": 0,
    "oy": -28,
    "w": 30,
-   "x": 970,
-   "y": 1280
+   "x": 770,
+   "y": 1344
   },
   "LAPTOP": {
    "fh": 1,
@@ -1250,26 +1385,36 @@
     }
    ],
    "w": 26,
-   "x": 84,
-   "y": 1340
+   "x": 860,
+   "y": 1344
+  },
+  "LOCKER": {
+   "fh": 1,
+   "fw": 1,
+   "h": 54,
+   "ox": 0,
+   "oy": 0,
+   "w": 32,
+   "x": 434,
+   "y": 1280
   },
   "MONITOR": {
    "fh": 1,
    "fw": 1,
-   "h": 30,
+   "h": 28,
    "ox": 0,
    "oy": 0,
    "screens": [
     {
-     "h": 16,
-     "w": 22,
+     "h": 12,
+     "w": 24,
      "x": 4,
      "y": 6
     }
    ],
-   "w": 30,
-   "x": 138,
-   "y": 1340
+   "w": 32,
+   "x": 112,
+   "y": 1390
   },
   "MONITOR_2": {
    "fh": 1,
@@ -1286,8 +1431,28 @@
     }
    ],
    "w": 32,
-   "x": 200,
-   "y": 1340
+   "x": 144,
+   "y": 1390
+  },
+  "MUG": {
+   "fh": 1,
+   "fw": 1,
+   "h": 20,
+   "ox": 0,
+   "oy": -6,
+   "w": 22,
+   "x": 422,
+   "y": 1390
+  },
+  "MUG_2": {
+   "fh": 1,
+   "fw": 1,
+   "h": 20,
+   "ox": 10,
+   "oy": -6,
+   "w": 22,
+   "x": 444,
+   "y": 1390
   },
   "PAPERS": {
    "fh": 1,
@@ -1296,8 +1461,8 @@
    "ox": 8,
    "oy": 0,
    "w": 24,
-   "x": 392,
-   "y": 1340
+   "x": 284,
+   "y": 1390
   },
   "PAPER_PILE": {
    "fh": 1,
@@ -1306,8 +1471,8 @@
    "ox": 0,
    "oy": 0,
    "w": 32,
-   "x": 628,
-   "y": 1280
+   "x": 178,
+   "y": 1344
   },
   "PAPER_STACK": {
    "fh": 1,
@@ -1316,8 +1481,8 @@
    "ox": 0,
    "oy": 0,
    "w": 32,
-   "x": 168,
-   "y": 1340
+   "x": 988,
+   "y": 1344
   },
   "PHONE": {
    "fh": 1,
@@ -1326,8 +1491,8 @@
    "ox": 8,
    "oy": 0,
    "w": 20,
-   "x": 416,
-   "y": 1340
+   "x": 382,
+   "y": 1390
   },
   "PHONE_2": {
    "fh": 1,
@@ -1336,8 +1501,18 @@
    "ox": 0,
    "oy": 0,
    "w": 20,
-   "x": 436,
-   "y": 1340
+   "x": 402,
+   "y": 1390
+  },
+  "PICTURE": {
+   "fh": 1,
+   "fw": 1,
+   "h": 30,
+   "ox": 0,
+   "oy": -18,
+   "w": 28,
+   "x": 84,
+   "y": 1390
   },
   "PLANT_BUSH": {
    "fh": 1,
@@ -1346,7 +1521,7 @@
    "ox": 10,
    "oy": -18,
    "w": 44,
-   "x": 28,
+   "x": 206,
    "y": 1280
   },
   "PLANT_OFFICE": {
@@ -1356,7 +1531,7 @@
    "ox": 0,
    "oy": -20,
    "w": 32,
-   "x": 72,
+   "x": 310,
    "y": 1280
   },
   "PLANT_OFFICE_2": {
@@ -1366,8 +1541,8 @@
    "ox": 0,
    "oy": -20,
    "w": 32,
-   "x": 856,
-   "y": 1280
+   "x": 630,
+   "y": 1344
   },
   "PLANT_OFFICE_3": {
    "fh": 1,
@@ -1376,7 +1551,7 @@
    "ox": 4,
    "oy": -20,
    "w": 24,
-   "x": 196,
+   "x": 646,
    "y": 1280
   },
   "PLANT_PALM": {
@@ -1386,8 +1561,8 @@
    "ox": 10,
    "oy": -2,
    "w": 46,
-   "x": 966,
-   "y": 960
+   "x": 132,
+   "y": 1280
   },
   "PLANT_SMALL": {
    "fh": 1,
@@ -1396,8 +1571,8 @@
    "ox": 4,
    "oy": -24,
    "w": 24,
-   "x": 276,
-   "y": 1340
+   "x": 220,
+   "y": 1390
   },
   "PLANT_SMALL_2": {
    "fh": 1,
@@ -1406,7 +1581,7 @@
    "ox": 2,
    "oy": -14,
    "w": 28,
-   "x": 480,
+   "x": 978,
    "y": 1280
   },
   "PLANT_TALL": {
@@ -1416,8 +1591,8 @@
    "ox": 14,
    "oy": -16,
    "w": 36,
-   "x": 930,
-   "y": 960
+   "x": 96,
+   "y": 1280
   },
   "POSTER": {
    "fh": 1,
@@ -1426,8 +1601,8 @@
    "ox": 2,
    "oy": -14,
    "w": 28,
-   "x": 56,
-   "y": 1340
+   "x": 832,
+   "y": 1344
   },
   "POSTER_2": {
    "fh": 1,
@@ -1436,8 +1611,8 @@
    "ox": 4,
    "oy": -24,
    "w": 24,
-   "x": 456,
-   "y": 1340
+   "x": 496,
+   "y": 1390
   },
   "PRINTER": {
    "fh": 1,
@@ -1446,8 +1621,8 @@
    "ox": 6,
    "oy": -4,
    "w": 50,
-   "x": 776,
-   "y": 1280
+   "x": 476,
+   "y": 1344
   },
   "PRINTER_SMALL": {
    "fh": 1,
@@ -1456,7 +1631,77 @@
    "ox": 0,
    "oy": -24,
    "w": 30,
-   "x": 826,
+   "x": 576,
+   "y": 1344
+  },
+  "RACK": {
+   "fh": 1,
+   "fw": 2,
+   "h": 52,
+   "ox": 2,
+   "oy": 0,
+   "w": 44,
+   "x": 466,
+   "y": 1280
+  },
+  "RACK_LOW": {
+   "fh": 1,
+   "fw": 2,
+   "h": 32,
+   "ox": 2,
+   "oy": 0,
+   "w": 44,
+   "x": 886,
+   "y": 1344
+  },
+  "RACK_WHITE": {
+   "fh": 1,
+   "fw": 2,
+   "h": 52,
+   "ox": 2,
+   "oy": 0,
+   "w": 44,
+   "x": 554,
+   "y": 1280
+  },
+  "RACK_WOOD": {
+   "fh": 1,
+   "fw": 2,
+   "h": 52,
+   "ox": 2,
+   "oy": 0,
+   "w": 44,
+   "x": 510,
+   "y": 1280
+  },
+  "RUG_CHECK": {
+   "fh": 2,
+   "fw": 2,
+   "h": 60,
+   "ox": 2,
+   "oy": -2,
+   "w": 60,
+   "x": 250,
+   "y": 1280
+  },
+  "RUG_MAT": {
+   "fh": 1,
+   "fw": 2,
+   "h": 30,
+   "ox": 2,
+   "oy": -2,
+   "w": 58,
+   "x": 26,
+   "y": 1390
+  },
+  "RUG_ROUND": {
+   "fh": 2,
+   "fw": 2,
+   "h": 56,
+   "ox": 2,
+   "oy": -4,
+   "w": 60,
+   "x": 342,
    "y": 1280
   },
   "SOFA": {
@@ -1466,8 +1711,38 @@
    "ox": 8,
    "oy": 0,
    "w": 40,
-   "x": 352,
-   "y": 1340
+   "x": 244,
+   "y": 1390
+  },
+  "STICKY": {
+   "fh": 1,
+   "fw": 1,
+   "h": 44,
+   "ox": 0,
+   "oy": -12,
+   "w": 32,
+   "x": 120,
+   "y": 1344
+  },
+  "STRING_LIGHTS": {
+   "fh": 1,
+   "fw": 2,
+   "h": 36,
+   "ox": 4,
+   "oy": -16,
+   "w": 50,
+   "x": 690,
+   "y": 1344
+  },
+  "TABLE_LOW": {
+   "fh": 1,
+   "fw": 2,
+   "h": 22,
+   "ox": 20,
+   "oy": -10,
+   "w": 44,
+   "x": 338,
+   "y": 1390
   },
   "TABLE_SMALL": {
    "fh": 1,
@@ -1476,8 +1751,8 @@
    "ox": 20,
    "oy": 0,
    "w": 44,
-   "x": 232,
-   "y": 1340
+   "x": 176,
+   "y": 1390
   },
   "VENDING": {
    "fh": 1,
@@ -1486,7 +1761,7 @@
    "ox": 10,
    "oy": -18,
    "w": 46,
-   "x": 768,
+   "x": 894,
    "y": 960
   },
   "WATER_COOLER": {
@@ -1496,7 +1771,7 @@
    "ox": 2,
    "oy": -20,
    "w": 28,
-   "x": 0,
+   "x": 178,
    "y": 1280
   },
   "WHITEBOARD": {
@@ -1506,8 +1781,8 @@
    "ox": 2,
    "oy": -4,
    "w": 60,
-   "x": 508,
-   "y": 1280
+   "x": 0,
+   "y": 1344
   },
   "WHITEBOARD_BLANK": {
    "fh": 1,
@@ -1516,8 +1791,8 @@
    "ox": 2,
    "oy": -4,
    "w": 60,
-   "x": 568,
-   "y": 1280
+   "x": 60,
+   "y": 1344
   }
  },
  "tile": 32
