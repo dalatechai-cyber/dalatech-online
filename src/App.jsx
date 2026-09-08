@@ -4275,7 +4275,7 @@ function OfficeStage({ activeId, onSelect }) {
   const stageRef = React.useRef(null);
   const [view, setView] = React.useState(null);
   const [status, setStatus] = React.useState("loading");
-  const T = 16;
+  const T = view ? view.T : 16; // art pixels per tile, reported by the scene
 
   const onView = React.useCallback((v) => {
     const el = stageRef.current;

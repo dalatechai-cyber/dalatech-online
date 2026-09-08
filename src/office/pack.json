@@ -472,6 +472,12 @@
  },
  "credit": "pixel-agents (MIT) and JIK-A-4 MetroCity (CC0)",
  "name": "pixel-agents",
+ "pcScreen": {
+  "h": 9,
+  "w": 12,
+  "x": 2,
+  "y": 2
+ },
  "roles": {
   "bin": "BIN",
   "bookshelf": "BOOKSHELF",

@@ -1,5 +1,6 @@
 node_modules
 dist
 .env
-
-
+# LimeZu packs are licensed, not redistributable: raw files stay out of git.
+# Only the derived atlas in public/office is committed.
+assets-src/office/limezu/

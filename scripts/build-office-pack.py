@@ -102,6 +102,8 @@ PACKS = {
         },
         # ids whose colours are left alone (screens, plants keep their own colour rules anyway)
         "keep": set(),
+        # rectangle inside the PC sprite where the engine draws screen contents
+        "pcScreen": {"x": 2, "y": 2, "w": 12, "h": 9},
     },
 }
 
@@ -216,6 +218,7 @@ def main(pack_name):
     manifest = {
         "name": pack_name, "credit": pack["credit"], "tile": pack["tile"], "atlas": "/office/pack.png",
         "sprites": sprites, "roles": pack["roles"], "characters": characters, "sheets": sheets,
+        "pcScreen": pack["pcScreen"],
     }
     MANIFEST_OUT.write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
     print("atlas", atlas.size, ATLAS_OUT.stat().st_size // 1024, "kB;", len(sprites), "sprites,", len(characters), "characters")

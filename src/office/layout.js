@@ -2,7 +2,7 @@
 // here; sprite ids are looked up through the pack manifest's `roles` table,
 // so swapping the art pack does not touch this file.
 //
-// Grid: 13 columns x 14 rows of 16px tiles (208 x 224 art pixels).
+// Grid: 13 columns x 14 rows of tiles; the tile size comes from the pack.
 // `offsetY` nudges a sprite down in art pixels; the monitors use it to rest on
 // the desk top so the person behind the desk keeps their face.
 // Rows 0-2 are the back wall with the window. Rows 3-12 are floor.
@@ -58,9 +58,6 @@ export const DESKS = [
   { id: "nova", seat: { col: 2, row: 7 }, zone: { col: 0, row: 6, cols: 5, rows: 4 }, lamp: { col: 3, row: 8, side: "right" }, live: false, work: "outreach" },
   { id: "eho", seat: { col: 9, row: 7 }, zone: { col: 7, row: 6, cols: 5, rows: 4 }, lamp: { col: 8, row: 8, side: "left" }, live: false, work: "call" },
 ];
-
-// Rectangle inside the PC sprite (art pixels) that is the screen.
-export const PC_SCREEN = { x: 2, y: 2, w: 12, h: 9 };
 
 // Where people go when they get up. `face` is the direction they turn to
 // once they arrive. `wait` is how long they stay, in ms.

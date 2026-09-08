@@ -122,6 +122,7 @@ const BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
 // ------------------------------------------------------------------ engine
 export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = false, seed = 7 }) {
   const T = manifest.tile;
+  const K = T / 16; // 1 at 16px tiles, 2 at 32px: scales the hand-drawn bits
   const W = L.COLS * T, H = L.ROWS * T;
   const world = document.createElement("canvas");
   world.width = W; world.height = H;
@@ -239,9 +240,9 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     const TINTS = [0, 0.12, 0.24, 0.38];
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
       let a = 0;
-      for (const lp of lamps) { const dx = x - lp.x, dy = (y - lp.y - 6) * 1.3; const dist = Math.sqrt(dx * dx + dy * dy); const v = Math.max(0, 1 - dist / 30); a = Math.max(a, v * v * 3.4); }
+      for (const lp of lamps) { const dx = x - lp.x, dy = (y - lp.y - 6 * K) * 1.3; const dist = Math.sqrt(dx * dx + dy * dy); const v = Math.max(0, 1 - dist / (30 * K)); a = Math.max(a, v * v * 3.4); }
       if (a <= 0) continue;
-      const th = (BAYER[y & 3][x & 3] + 0.5) / 16, tt = TINTS[Math.min(3, Math.floor(a + th))];
+      const th = (BAYER[(y / K | 0) & 3][(x / K | 0) & 3] + 0.5) / 16, tt = TINTS[Math.min(3, Math.floor(a + th))];
       if (!tt) continue;
       const k = (y * W + x) * 4;
       d[k] = GOLD_LIGHT[0] * tt; d[k + 1] = GOLD_LIGHT[1] * tt; d[k + 2] = GOLD_LIGHT[2] * tt; d[k + 3] = 255;
@@ -252,7 +253,7 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     const fctx = frost.getContext("2d");
     const p = L.PROGRESS_PANEL, px = p.col * T + 1, py = p.row * T, pw = p.cols * T - 2, ph = Math.round(p.rows * T);
     for (let y = 0; y < ph; y++) for (let x = 0; x < pw; x++) {
-      const al = ((x + y) & 1) ? 0.52 : 0.40;
+      const al = (((x / K | 0) + (y / K | 0)) & 1) ? 0.52 : 0.40;
       fctx.fillStyle = `rgba(${C.frost[0]},${C.frost[1]},${C.frost[2]},${al})`; fctx.fillRect(px + x, py + y, 1, 1);
     }
     fctx.fillStyle = C.frostEdge;
@@ -300,7 +301,7 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
 
   // ---- screens, drawn in 1px units inside each PC sprite
   function drawScreen(ctx, pc, desk, st, t) {
-    const r = L.PC_SCREEN, x0 = pc.x + r.x, y0 = pc.y + r.y;
+    const r = manifest.pcScreen, x0 = pc.x + r.x, y0 = pc.y + r.y;
     ctx.fillStyle = C.screenBg; ctx.fillRect(x0, y0, r.w, r.h);
     if (desk.work === "chart") {
       const bars = [3, 6, 4, 7, 5];
