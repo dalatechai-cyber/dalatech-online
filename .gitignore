@@ -5,3 +5,4 @@ dist
 # Only the derived atlas in public/office is committed.
 assets-src/office/limezu/
 scripts/__pycache__/
+assets-src/office/3d/kenney/
