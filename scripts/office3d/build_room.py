@@ -232,17 +232,17 @@ def build(quality="preview"):
     tex = textures.all_textures(os.path.join(OUT, "tex"))
 
     # floor and walls -----------------------------------------------------
-    # 8 m x 8.4 m room; back wall at y = 4.2, side walls to y = -0.6, nothing in front
+    # 6.4 m x 6.6 m room: back wall at y = 3.6, side walls to y = -0.6, nothing in front
     carpet = mat("carpet", NAVY_CARPET, 0.9)
     nt = carpet.node_tree; noise = nt.nodes.new("ShaderNodeTexNoise"); noise.inputs["Scale"].default_value = 90; noise.inputs["Detail"].default_value = 4
     ramp = nt.nodes.new("ShaderNodeValToRGB"); ramp.color_ramp.elements[0].color = (0.030, 0.042, 0.095, 1); ramp.color_ramp.elements[1].color = (0.052, 0.070, 0.140, 1)
     nt.links.new(noise.outputs["Fac"], ramp.inputs["Fac"]); nt.links.new(ramp.outputs["Color"], nt.nodes["Principled BSDF"].inputs["Base Color"])
     plane("floor", 10, 12, (0, 0, 0), material=carpet)
-    for i, x in enumerate((-3.2, -1.6, 0.0, 1.6, 3.2)):
-        kenney("wallWindow" if i in (1, 3) else "wall", x, 4.2, 0, scale=0.8)
-    for y in (3.4, 1.8, 0.2):
-        kenney("wall", -4.0, y, 90, scale=0.8)
-        kenney("wall", 4.0, y, 90, scale=0.8)
+    for i, x in enumerate((-2.4, -0.8, 0.8, 2.4)):
+        kenney("wallWindow" if i in (0, 3) else "wall", x, 3.6, 0, scale=0.8)
+    for y in (2.8, 1.2, -0.4):
+        kenney("wall", -3.2, y, 90, scale=0.8)
+        kenney("wall", 3.2, y, 90, scale=0.8)
     for o in bpy.data.objects:
         if o.type == 'MESH' and o.name.startswith(("wall", "wallWindow", "window")):
             for slot in o.material_slots:
@@ -255,32 +255,30 @@ def build(quality="preview"):
                 if key == "glass":
                     g = slot.material.copy(); slot.material = g
                     g.node_tree.nodes["Principled BSDF"].inputs["Alpha"].default_value = 0.12; g.blend_method = 'BLEND'
-    box("skirting", (8.0, 0.05, 0.10), (0, 4.16, 0.05), mat("skirt", NAVY_WALL_DARK, 0.6))
-    plane("city", 26, 9, (0, 8.0, 3.2), rot=(math.radians(90), 0, 0), material=tex_mat("city", tex["skyline"], emit_strength=1.6))
+    box("skirting", (6.4, 0.05, 0.10), (0, 3.56, 0.05), mat("skirt", NAVY_WALL_DARK, 0.6))
+    plane("city", 26, 9, (0, 7.5, 3.0), rot=(math.radians(90), 0, 0), material=tex_mat("city", tex["skyline"], emit_strength=1.6))
 
-    # rugs
-    kenney("rugRectangle", 0.3, -2.8, 0)
-    kenney("rugRound", -2.6, -1.6, 0)
+    # back wall: whiteboard over a bookcase, plants in the corners
+    kenney("bookcaseOpen", -0.4, 3.2, 0)
+    kenney("bookcaseClosedWide", 0.55, 3.2, 0)
+    kenney("books", -0.4, 3.2, 0, z=1.78)
+    plane("whiteboard", 1.5, 0.85, (0.0, 3.53, 1.55), rot=(math.radians(90), 0, 0), material=tex_mat("wb", tex["whiteboard"], rough=0.3))
+    kenney("pottedPlant", -2.9, 3.1, 0)
+    kenney("pottedPlant", 2.9, 3.1, 0)
+    kenney("coatRackStanding", 2.95, 2.0, 0)
+    kenney("cardboardBoxClosed", -2.9, 1.9, 20)
+    kenney("cardboardBoxOpen", -2.85, 1.9, -15, z=0.56)
 
-    # back wall furniture ---------------------------------------------------
-    kenney("bookcaseOpen", -0.45, 3.8, 0)
-    kenney("bookcaseClosedWide", 0.5, 3.8, 0)
-    kenney("books", -0.45, 3.8, 0, z=1.78)
-    plane("whiteboard", 1.5, 0.85, (0.0, 4.13, 1.55), rot=(math.radians(90), 0, 0), material=tex_mat("wb", tex["whiteboard"], rough=0.3))
-    kenney("pottedPlant", -3.6, 3.7, 0)
-    kenney("pottedPlant", 3.6, 3.7, 0)
-    kenney("coatRackStanding", 3.6, 2.5, 0)
-    kenney("bookcaseClosedWide", 3.65, 1.2, 90)
-    kenney("cardboardBoxClosed", -3.6, 2.4, 20)
-    kenney("cardboardBoxOpen", -3.55, 2.4, -15, z=0.56)
-
-    # workstations ----------------------------------------------------------
+    # workstations: a 2x2 block, rugs under each row -----------------------
     stations = {
-        "ara": dict(x=-2.0, y=2.7, live=True, screen="chat"),
-        "veda": dict(x=2.0, y=2.7, live=True, screen="chart"),
-        "nova": dict(x=-2.0, y=0.3, live=False, screen="off"),
-        "eho": dict(x=2.0, y=0.3, live=False, screen="off"),
+        "ara": dict(x=-1.7, y=2.1, live=True, screen="chat"),
+        "veda": dict(x=1.7, y=2.1, live=True, screen="chart"),
+        "nova": dict(x=-1.7, y=0.45, live=False, screen="off"),
+        "eho": dict(x=1.7, y=0.45, live=False, screen="off"),
     }
+    for x in (-1.7, 1.7):
+        kenney("rugRectangle", x, 2.35, 0)
+        kenney("rugRectangle", x, 0.7, 0)
     lamp_mat_on = mat("lampOn", (0.95, 0.85, 0.6), 0.5, emit=GOLD, strength=6)
     lamp_mat_off = mat("lampOff", (0.35, 0.38, 0.5), 0.6)
     for sid, st in stations.items():
@@ -299,78 +297,74 @@ def build(quality="preview"):
         kenney("plantSmall1", x - 0.60, y + 0.20, 0, z=top)
         kenney("books", x + 0.50, y - 0.18, 25, z=top)
         kenney("chairDesk", x + 0.12, y + 0.72, 180)
+        kenney("sideTableDrawers", x - 1.0 if x < 0 else x + 1.0, y + 0.1, 90)
         sm = tex_mat("screen_" + sid, tex[st["screen"]], emit_strength=(2.2 if st["live"] else 0.15))
         plane("screen_" + sid, 0.50, 0.30, (x - 0.28, y - 0.22 - 0.076, top + 0.26), rot=(math.radians(90), 0, 0), material=sm)
         if st["live"]:
             light('POINT', (x + 0.58, y + 0.15, top + 0.62), 70, GOLD, radius=0.06)
-        # a small drawer unit beside each desk and a bin
-        kenney("sideTableDrawers", x - 1.05, y + 0.1, 90)
-        kenney("trashcan", x + 0.95, y + 0.25, 0, scale=0.7)
-    kenney("laptop", 2.0 + 0.55, 2.7 - 0.18, -20, z=0.76)
-    box("phone", (0.16, 0.12, 0.05), (-2.0 - 0.55, 2.7 - 0.20, 0.76 + 0.025), mat("phone", METAL_DARK, 0.4))
+    kenney("laptop", 1.7 + 0.55, 2.1 - 0.18, -20, z=0.76)
+    box("phone", (0.16, 0.12, 0.05), (-1.7 - 0.55, 2.1 - 0.20, 0.76 + 0.025), mat("phone", METAL_DARK, 0.4))
 
-    frost = mat("frost", (0.72, 0.84, 1.0), 0.5, alpha=0.10)
+    # the two unbuilt stations: a low frosted partition across the front of each desk, nothing else
+    frost = mat("frost", (0.78, 0.87, 1.0), 0.6, alpha=0.38)
+    rail = mat("rail", METAL_LIGHT, 0.4)
     for sid in ("nova", "eho"):
         st = stations[sid]
-        box("frost_" + sid, (2.9, 2.1, 1.5), (st["x"], st["y"] + 0.3, 0.75), frost)
+        box("frost_" + sid, (2.2, 0.03, 0.95), (st["x"], st["y"] - 0.62, 0.55), frost)
+        box("rail_" + sid, (2.24, 0.05, 0.03), (st["x"], st["y"] - 0.62, 1.03), rail)
+        box("foot_" + sid + "_l", (0.04, 0.16, 0.08), (st["x"] - 1.08, st["y"] - 0.62, 0.04), rail)
+        box("foot_" + sid + "_r", (0.04, 0.16, 0.08), (st["x"] + 1.08, st["y"] - 0.62, 0.04), rail)
 
-    # middle: printer stand and plant between the rows
-    kenney("cabinetTelevision", 0.0, 1.6, 0)
-    kenney("radio", 0.0, 1.6, 0, z=0.62)
-    kenney("plantSmall2", 0.55, 1.6, 0, z=0.62)
+    # middle column between the desk pairs: printer stand, plant, boxes
+    kenney("cabinetTelevision", 0.0, 1.35, 0)
+    kenney("kitchenMicrowave", 0.0, 1.35, 0, z=0.62, scale=0.8)
+    kenney("plantSmall2", 0.55, 1.35, 0, z=0.62)
+    kenney("cardboardBoxClosed", 0.0, 0.35, 15)
+    kenney("pottedPlant", 0.0, 2.55, 0)
 
-    # lounge and kitchen ------------------------------------------------------
-    kenney("kitchenBar", -3.55, -1.0, 90)
-    kenney("kitchenCoffeeMachine", -3.55, -0.7, 90, z=0.86)
-    kenney("kitchenFridgeSmall", -3.6, -2.3, 90)
-    kenney("stoolBar", -2.9, -1.2, 0)
-    kenney("tableRound", -2.6, -1.7, 0, scale=0.85)
-    kenney("chair", -3.2, -1.7, 90)
-    kenney("chair", -2.0, -1.7, -90)
-    kenney("laptop", -2.6, -1.7, 30, z=0.62)
-    kenney("loungeSofa", 0.3, -3.4, 0)
-    kenney("loungeChair", -1.2, -2.4, 55)
-    kenney("loungeChair", 1.8, -2.4, -55)
-    kenney("tableCoffee", 0.3, -2.45, 0)
-    kenney("plantSmall3", 0.3, -2.45, 0, z=0.46)
-    kenney("lampRoundFloor", 2.5, -3.5, 0)
-    kenney("sideTable", 3.3, -3.6, 0)
-    kenney("speaker", 3.7, -3.6, 0)
-    kenney("bookcaseOpenLow", 3.65, -1.6, 90)
-    kenney("cardboardBoxClosed", 3.5, -0.3, 10)
-    kenney("cardboardBoxClosed", 3.5, -0.3, -5, z=0.56)
-    kenney("cardboardBoxOpen", 3.0, -0.4, 30)
-    kenney("pottedPlant", -1.7, -3.7, 0)
-    kenney("pottedPlant", 3.0, -0.9, 0)
-    kenney("trashcan", -3.0, -2.9, 0)
-    kenney("toaster", -3.55, -1.35, 90, z=0.86)
+    # lounge strip along the front ----------------------------------------
+    kenney("rugRectangle", 0.2, -2.5, 0)
+    kenney("loungeSofa", 0.2, -3.1, 0)
+    kenney("loungeChair", -1.5, -2.2, 55)
+    kenney("loungeChair", 1.9, -2.2, -55)
+    kenney("tableCoffee", 0.2, -2.2, 0)
+    kenney("plantSmall3", 0.2, -2.2, 0, z=0.46)
+    kenney("lampRoundFloor", 2.75, -3.0, 0)
+    kenney("bookcaseOpenLow", 2.95, -0.7, 90)
+    kenney("cardboardBoxClosed", 2.85, 0.35, 10, scale=0.9)
+    kenney("pottedPlant", -2.6, -2.7, 0)
+    kenney("kitchenFridgeSmall", -2.95, -1.2, 90)
+    kenney("cabinetTelevision", -2.9, -0.2, 90)
+    kenney("kitchenCoffeeMachine", -2.9, -0.2, 90, z=0.62)
+    kenney("trashcan", -2.9, 0.6, 0, scale=0.55)
 
     # people ------------------------------------------------------------------
     skin_a = (0.62, 0.42, 0.24); skin_b = (0.55, 0.36, 0.20); skin_c = (0.70, 0.50, 0.32)
-    person(os.path.join(QUA, "women/humanoid/Formal.fbx"), -2.0 + 0.12, 2.7 + 0.70, 0,
-           {"LimeGreen": (0.88, 0.90, 0.95), "Gold": (0.10, 0.13, 0.26), "Red": (0.08, 0.08, 0.10), "Brown": (0.05, 0.03, 0.02), "Skin": skin_a})
-    person(os.path.join(QUA, "women/humanoid/Suit.fbx"), 2.0 + 0.12, 2.7 + 0.70, 0,
-           {"Black": (0.07, 0.09, 0.18), "White": (0.85, 0.87, 0.92), "Hair_Blond": (0.18, 0.10, 0.05), "Hair_Brown": (0.12, 0.07, 0.03), "Skin": skin_c})
-    person(os.path.join(QUA, "men/humanoid/Casual.fbx"), -2.0 + 0.12, 0.3 + 0.70, 0,
+    # the women's files name materials by colour, not by part: on Formal, Gold is the hair and LimeGreen the top
+    person(os.path.join(QUA, "women/humanoid/Formal.fbx"), -1.7 + 0.12, 2.1 + 0.70, 0,
+           {"Gold": (0.12, 0.07, 0.04), "LimeGreen": (0.88, 0.90, 0.95), "Red": (0.10, 0.13, 0.26), "Brown": (0.05, 0.03, 0.02), "Skin": skin_a})
+    person(os.path.join(QUA, "women/humanoid/Suit.fbx"), 1.7 + 0.12, 2.1 + 0.70, 0,
+           {"Black": (0.07, 0.09, 0.18), "White": (0.85, 0.87, 0.92), "Hair_Blond": (0.09, 0.05, 0.03), "Hair_Brown": (0.09, 0.05, 0.03), "Skin": skin_c})
+    person(os.path.join(QUA, "men/humanoid/Casual.fbx"), -1.7 + 0.12, 0.45 + 0.70, 0,
            {"Purple": BRAND, "LightBlue": (0.10, 0.12, 0.20), "White": (0.8, 0.8, 0.85), "Skin": skin_b})
-    person(os.path.join(QUA, "men/humanoid/Suit.fbx"), 2.0 + 0.12, 0.3 + 0.70, 0,
+    person(os.path.join(QUA, "men/humanoid/Suit.fbx"), 1.7 + 0.12, 0.45 + 0.70, 0,
            {"Suit": (0.08, 0.10, 0.20), "Tie": (0.22, 0.74, 0.97), "White": (0.85, 0.87, 0.92), "Skin": skin_a})
 
     # lights ------------------------------------------------------------------
-    for x in (-1.6, 1.6):
-        light('AREA', (x, 4.4, 1.3), 220, (0.55, 0.70, 1.0), size=1.3, rot=(math.radians(90), 0, 0))
-    light('AREA', (0, -0.5, 6.0), 520, (0.82, 0.86, 1.0), size=9, rot=(0, 0, 0))
-    light('AREA', (0, -7, 4.5), 420, (0.88, 0.90, 1.0), size=5, rot=(math.radians(-40), 0, 0))
-    light('POINT', (2.5, -3.5, 1.35), 8, GOLD, radius=0.1)
+    for x in (-2.4, 2.4):
+        light('AREA', (x, 3.8, 1.3), 200, (0.55, 0.70, 1.0), size=1.3, rot=(math.radians(90), 0, 0))
+    light('AREA', (0, 0.5, 5.5), 420, (0.82, 0.86, 1.0), size=8, rot=(0, 0, 0))
+    light('AREA', (0, -6, 4.0), 380, (0.88, 0.90, 1.0), size=5, rot=(math.radians(-40), 0, 0))
+    light('POINT', (2.75, -3.0, 1.35), 8, GOLD, radius=0.1)
     sc.world = bpy.data.worlds.new("w"); sc.world.use_nodes = True
     bg = sc.world.node_tree.nodes["Background"]; bg.inputs[0].default_value = (0.02, 0.03, 0.08, 1); bg.inputs[1].default_value = 0.35
 
-    # camera ------------------------------------------------------------------
+    # camera: lower and closer, the four desks are the subject, the lounge is the foreground
     if quality == "station":
-        bpy.ops.object.camera_add(location=(0.2, -0.6, 3.4)); tloc = (-2.0, 2.75, 0.85)
+        bpy.ops.object.camera_add(location=(0.4, -1.2, 3.0)); tloc = (-1.7, 2.2, 0.85)
     else:
-        bpy.ops.object.camera_add(location=(0.0, -9.6, 8.4)); tloc = (0, 0.5, 0.45)
-    cam = bpy.context.object; sc.camera = cam; cam.data.lens = 46
+        bpy.ops.object.camera_add(location=(0.0, -7.0, 5.4)); tloc = (0, 1.15, 0.6)
+    cam = bpy.context.object; sc.camera = cam; cam.data.lens = 50
     tgt = bpy.data.objects.new("tgt", None); sc.collection.objects.link(tgt); tgt.location = tloc
     c = cam.constraints.new('TRACK_TO'); c.target = tgt; c.track_axis = 'TRACK_NEGATIVE_Z'; c.up_axis = 'UP_Y'
     cam.data.dof.use_dof = True; cam.data.dof.focus_object = tgt; cam.data.dof.aperture_fstop = 8
