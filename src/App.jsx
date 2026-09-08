@@ -4333,10 +4333,11 @@ function OfficeStage({ activeId, onSelect }) {
           {active && status === "ready" && (
             <React.Fragment key={active.id}>
               <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0, transition: { delay: 0.3, ...SPRING_REVEAL } }}
+                // the centring lives in the motion value: framer resets `transform` once y reaches 0
+                initial={{ opacity: 0, y: 6, x: "-50%" }}
+                animate={{ opacity: 1, y: 0, x: "-50%", transition: { delay: 0.3, ...SPRING_REVEAL } }}
                 exit={{ opacity: 0, transition: { duration: 0.15 } }}
-                className="pointer-events-none absolute w-[min(82%,340px)] -translate-x-1/2 border border-sky-400/40 bg-ink-950/90 px-3 py-2 shadow-glow backdrop-blur-sm"
+                className="pointer-events-none absolute w-[min(82%,340px)] border border-sky-400/40 bg-ink-950/90 px-3 py-2 shadow-glow backdrop-blur-sm"
                 style={officeBoxPoint(view, deskWorld(active, T).cx, deskWorld(active, T).bottom + 6)}
               >
                 <p className="font-display text-[18px] font-semibold leading-tight tracking-tight text-fg sm:text-[20px]">
