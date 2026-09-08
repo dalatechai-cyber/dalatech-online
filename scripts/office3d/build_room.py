@@ -319,17 +319,21 @@ def build(quality="preview"):
     kenney("cabinetTelevision", 0.0, 1.35, 0)
     kenney("kitchenMicrowave", 0.0, 1.35, 0, z=0.62, scale=0.8)
     kenney("plantSmall2", 0.55, 1.35, 0, z=0.62)
-    kenney("cardboardBoxClosed", 0.0, 0.35, 15)
+    kenney("cardboardBoxClosed", 0.62, 0.9, 15, scale=0.85)
     kenney("pottedPlant", 0.0, 2.55, 0)
 
     # lounge strip along the front ----------------------------------------
-    kenney("rugRectangle", 0.2, -2.5, 0)
+    kenney("rugRectangle", 0.2, -2.4, 0)
     kenney("loungeSofa", 0.2, -3.1, 0)
-    kenney("loungeChair", -1.5, -2.2, 55)
-    kenney("loungeChair", 1.9, -2.2, -55)
-    kenney("tableCoffee", 0.2, -2.2, 0)
-    kenney("plantSmall3", 0.2, -2.2, 0, z=0.46)
-    kenney("lampRoundFloor", 2.75, -3.0, 0)
+    kenney("loungeChair", -2.0, -2.3, 65)
+    kenney("loungeChair", 2.4, -2.3, -65)
+    kenney("tableCoffee", 0.2, -2.15, 0)
+    kenney("plantSmall3", 0.2, -2.15, 0, z=0.46)
+    kenney("lampRoundFloor", 2.9, -3.2, 0)
+    kenney("pottedPlant", -2.75, -1.2, 0)
+    kenney("sideTable", 0.2, -1.25, 0)
+    kenney("plantSmall2", 0.05, -1.25, 0, z=0.76)
+    kenney("books", 0.4, -1.25, 20, z=0.76)
     kenney("bookcaseOpenLow", 2.95, -0.7, 90)
     kenney("cardboardBoxClosed", 2.85, 0.35, 10, scale=0.9)
     kenney("pottedPlant", -2.6, -2.7, 0)
@@ -340,9 +344,9 @@ def build(quality="preview"):
 
     # people ------------------------------------------------------------------
     skin_a = (0.62, 0.42, 0.24); skin_b = (0.55, 0.36, 0.20); skin_c = (0.70, 0.50, 0.32)
-    # the women's files name materials by colour, not by part: on Formal, Gold is the hair and LimeGreen the top
+    # the women's files name materials by colour, not by part: on Formal, Red is the hair (and shoes), LimeGreen the dress, Gold the belt
     person(os.path.join(QUA, "women/humanoid/Formal.fbx"), -1.7 + 0.12, 2.1 + 0.70, 0,
-           {"Gold": (0.12, 0.07, 0.04), "LimeGreen": (0.88, 0.90, 0.95), "Red": (0.10, 0.13, 0.26), "Brown": (0.05, 0.03, 0.02), "Skin": skin_a})
+           {"Red": (0.12, 0.07, 0.04), "LimeGreen": (0.88, 0.90, 0.95), "Gold": (0.10, 0.13, 0.26), "Brown": (0.05, 0.03, 0.02), "Skin": skin_a})
     person(os.path.join(QUA, "women/humanoid/Suit.fbx"), 1.7 + 0.12, 2.1 + 0.70, 0,
            {"Black": (0.07, 0.09, 0.18), "White": (0.85, 0.87, 0.92), "Hair_Blond": (0.09, 0.05, 0.03), "Hair_Brown": (0.09, 0.05, 0.03), "Skin": skin_c})
     person(os.path.join(QUA, "men/humanoid/Casual.fbx"), -1.7 + 0.12, 0.45 + 0.70, 0,
@@ -355,7 +359,7 @@ def build(quality="preview"):
         light('AREA', (x, 3.8, 1.3), 200, (0.55, 0.70, 1.0), size=1.3, rot=(math.radians(90), 0, 0))
     light('AREA', (0, 0.5, 5.5), 420, (0.82, 0.86, 1.0), size=8, rot=(0, 0, 0))
     light('AREA', (0, -6, 4.0), 380, (0.88, 0.90, 1.0), size=5, rot=(math.radians(-40), 0, 0))
-    light('POINT', (2.75, -3.0, 1.35), 8, GOLD, radius=0.1)
+    light('POINT', (2.9, -3.2, 1.35), 8, GOLD, radius=0.1)
     sc.world = bpy.data.worlds.new("w"); sc.world.use_nodes = True
     bg = sc.world.node_tree.nodes["Background"]; bg.inputs[0].default_value = (0.02, 0.03, 0.08, 1); bg.inputs[1].default_value = 0.35
 
@@ -363,7 +367,7 @@ def build(quality="preview"):
     if quality == "station":
         bpy.ops.object.camera_add(location=(0.4, -1.2, 3.0)); tloc = (-1.7, 2.2, 0.85)
     else:
-        bpy.ops.object.camera_add(location=(0.0, -7.0, 5.4)); tloc = (0, 1.15, 0.6)
+        bpy.ops.object.camera_add(location=(0.0, -7.0, 5.3)); tloc = (0, 1.0, 0.6)
     cam = bpy.context.object; sc.camera = cam; cam.data.lens = 50
     tgt = bpy.data.objects.new("tgt", None); sc.collection.objects.link(tgt); tgt.location = tloc
     c = cam.constraints.new('TRACK_TO'); c.target = tgt; c.track_axis = 'TRACK_NEGATIVE_Z'; c.up_axis = 'UP_Y'
