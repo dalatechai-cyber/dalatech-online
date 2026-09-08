@@ -1,0 +1,731 @@
+{
+ "atlas": "/office/pack.png",
+ "characters": {
+  "ara": {
+   "anims": {
+    "idle": {
+     "down": {
+      "frames": [
+       1
+      ],
+      "row": 0,
+      "sheet": "sheet_ara"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       1
+      ],
+      "row": 2,
+      "sheet": "sheet_ara"
+     },
+     "up": {
+      "frames": [
+       1
+      ],
+      "row": 1,
+      "sheet": "sheet_ara"
+     }
+    },
+    "read": {
+     "down": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 0,
+      "sheet": "sheet_ara"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 2,
+      "sheet": "sheet_ara"
+     },
+     "up": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 1,
+      "sheet": "sheet_ara"
+     }
+    },
+    "type": {
+     "down": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 0,
+      "sheet": "sheet_ara"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 2,
+      "sheet": "sheet_ara"
+     },
+     "up": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 1,
+      "sheet": "sheet_ara"
+     }
+    },
+    "walk": {
+     "down": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 0,
+      "sheet": "sheet_ara"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 2,
+      "sheet": "sheet_ara"
+     },
+     "up": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 1,
+      "sheet": "sheet_ara"
+     }
+    }
+   },
+   "frameH": 32,
+   "frameW": 16
+  },
+  "eho": {
+   "anims": {
+    "idle": {
+     "down": {
+      "frames": [
+       1
+      ],
+      "row": 0,
+      "sheet": "sheet_eho"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       1
+      ],
+      "row": 2,
+      "sheet": "sheet_eho"
+     },
+     "up": {
+      "frames": [
+       1
+      ],
+      "row": 1,
+      "sheet": "sheet_eho"
+     }
+    },
+    "read": {
+     "down": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 0,
+      "sheet": "sheet_eho"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 2,
+      "sheet": "sheet_eho"
+     },
+     "up": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 1,
+      "sheet": "sheet_eho"
+     }
+    },
+    "type": {
+     "down": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 0,
+      "sheet": "sheet_eho"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 2,
+      "sheet": "sheet_eho"
+     },
+     "up": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 1,
+      "sheet": "sheet_eho"
+     }
+    },
+    "walk": {
+     "down": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 0,
+      "sheet": "sheet_eho"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 2,
+      "sheet": "sheet_eho"
+     },
+     "up": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 1,
+      "sheet": "sheet_eho"
+     }
+    }
+   },
+   "frameH": 32,
+   "frameW": 16
+  },
+  "nova": {
+   "anims": {
+    "idle": {
+     "down": {
+      "frames": [
+       1
+      ],
+      "row": 0,
+      "sheet": "sheet_nova"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       1
+      ],
+      "row": 2,
+      "sheet": "sheet_nova"
+     },
+     "up": {
+      "frames": [
+       1
+      ],
+      "row": 1,
+      "sheet": "sheet_nova"
+     }
+    },
+    "read": {
+     "down": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 0,
+      "sheet": "sheet_nova"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 2,
+      "sheet": "sheet_nova"
+     },
+     "up": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 1,
+      "sheet": "sheet_nova"
+     }
+    },
+    "type": {
+     "down": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 0,
+      "sheet": "sheet_nova"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 2,
+      "sheet": "sheet_nova"
+     },
+     "up": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 1,
+      "sheet": "sheet_nova"
+     }
+    },
+    "walk": {
+     "down": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 0,
+      "sheet": "sheet_nova"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 2,
+      "sheet": "sheet_nova"
+     },
+     "up": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 1,
+      "sheet": "sheet_nova"
+     }
+    }
+   },
+   "frameH": 32,
+   "frameW": 16
+  },
+  "veda": {
+   "anims": {
+    "idle": {
+     "down": {
+      "frames": [
+       1
+      ],
+      "row": 0,
+      "sheet": "sheet_veda"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       1
+      ],
+      "row": 2,
+      "sheet": "sheet_veda"
+     },
+     "up": {
+      "frames": [
+       1
+      ],
+      "row": 1,
+      "sheet": "sheet_veda"
+     }
+    },
+    "read": {
+     "down": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 0,
+      "sheet": "sheet_veda"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 2,
+      "sheet": "sheet_veda"
+     },
+     "up": {
+      "frames": [
+       5,
+       6
+      ],
+      "row": 1,
+      "sheet": "sheet_veda"
+     }
+    },
+    "type": {
+     "down": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 0,
+      "sheet": "sheet_veda"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 2,
+      "sheet": "sheet_veda"
+     },
+     "up": {
+      "frames": [
+       3,
+       4
+      ],
+      "row": 1,
+      "sheet": "sheet_veda"
+     }
+    },
+    "walk": {
+     "down": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 0,
+      "sheet": "sheet_veda"
+     },
+     "left": "flip:right",
+     "right": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 2,
+      "sheet": "sheet_veda"
+     },
+     "up": {
+      "frames": [
+       0,
+       1,
+       2,
+       1
+      ],
+      "row": 1,
+      "sheet": "sheet_veda"
+     }
+    }
+   },
+   "frameH": 32,
+   "frameW": 16
+  }
+ },
+ "credit": "pixel-agents (MIT) and JIK-A-4 MetroCity (CC0)",
+ "name": "pixel-agents",
+ "roles": {
+  "bin": "BIN",
+  "bookshelf": "BOOKSHELF",
+  "cactus": "CACTUS",
+  "chair": "CHAIR_BACK",
+  "chairFront": "CHAIR_FRONT",
+  "clock": "CLOCK",
+  "coffee": "COFFEE",
+  "coffeeTable": "COFFEE_TABLE",
+  "desk": "DESK",
+  "doubleBookshelf": "DOUBLE_BOOKSHELF",
+  "floor": "FLOOR_A",
+  "floorAlt": "FLOOR_B",
+  "largePainting": "LARGE_PAINTING",
+  "largePlant": "LARGE_PLANT",
+  "painting": "PAINTING",
+  "pc": [
+   "PC_1",
+   "PC_2",
+   "PC_3"
+  ],
+  "plant": "PLANT",
+  "pot": "POT",
+  "smallTable": "SMALL_TABLE",
+  "sofa": "SOFA",
+  "whiteboard": "WHITEBOARD"
+ },
+ "sheets": {
+  "sheet_ara": {
+   "h": 96,
+   "w": 112,
+   "x": 0,
+   "y": 0
+  },
+  "sheet_eho": {
+   "h": 96,
+   "w": 112,
+   "x": 112,
+   "y": 96
+  },
+  "sheet_nova": {
+   "h": 96,
+   "w": 112,
+   "x": 0,
+   "y": 96
+  },
+  "sheet_veda": {
+   "h": 96,
+   "w": 112,
+   "x": 112,
+   "y": 0
+  }
+ },
+ "sprites": {
+  "BIN": {
+   "fh": 1,
+   "fw": 1,
+   "h": 16,
+   "w": 16,
+   "x": 208,
+   "y": 224
+  },
+  "BOOKSHELF": {
+   "fh": 1,
+   "fw": 2,
+   "h": 16,
+   "w": 32,
+   "x": 160,
+   "y": 224
+  },
+  "CACTUS": {
+   "fh": 2,
+   "fw": 1,
+   "h": 32,
+   "w": 16,
+   "x": 112,
+   "y": 192
+  },
+  "CHAIR_BACK": {
+   "fh": 1,
+   "fw": 1,
+   "h": 16,
+   "w": 16,
+   "x": 80,
+   "y": 224
+  },
+  "CHAIR_FRONT": {
+   "fh": 1,
+   "fw": 1,
+   "h": 16,
+   "w": 16,
+   "x": 96,
+   "y": 224
+  },
+  "CHAIR_SIDE": {
+   "fh": 1,
+   "fw": 1,
+   "h": 16,
+   "w": 16,
+   "x": 112,
+   "y": 224
+  },
+  "CLOCK": {
+   "fh": 2,
+   "fw": 1,
+   "h": 32,
+   "w": 16,
+   "x": 192,
+   "y": 192
+  },
+  "COFFEE": {
+   "fh": 1,
+   "fw": 1,
+   "h": 16,
+   "w": 16,
+   "x": 192,
+   "y": 224
+  },
+  "COFFEE_TABLE": {
+   "fh": 2,
+   "fw": 2,
+   "h": 32,
+   "w": 32,
+   "x": 208,
+   "y": 192
+  },
+  "DESK": {
+   "fh": 2,
+   "fw": 3,
+   "h": 32,
+   "w": 48,
+   "x": 0,
+   "y": 192
+  },
+  "DOUBLE_BOOKSHELF": {
+   "fh": 2,
+   "fw": 2,
+   "h": 32,
+   "w": 32,
+   "x": 128,
+   "y": 192
+  },
+  "FLOOR_A": {
+   "fh": 1,
+   "fw": 1,
+   "h": 16,
+   "w": 16,
+   "x": 240,
+   "y": 224
+  },
+  "FLOOR_B": {
+   "fh": 1,
+   "fw": 1,
+   "h": 16,
+   "w": 16,
+   "x": 0,
+   "y": 256
+  },
+  "FLOOR_C": {
+   "fh": 1,
+   "fw": 1,
+   "h": 16,
+   "w": 16,
+   "x": 16,
+   "y": 256
+  },
+  "LARGE_PAINTING": {
+   "fh": 2,
+   "fw": 2,
+   "h": 32,
+   "w": 32,
+   "x": 48,
+   "y": 224
+  },
+  "LARGE_PLANT": {
+   "fh": 3,
+   "fw": 2,
+   "h": 48,
+   "w": 32,
+   "x": 224,
+   "y": 96
+  },
+  "PAINTING": {
+   "fh": 2,
+   "fw": 1,
+   "h": 32,
+   "w": 16,
+   "x": 32,
+   "y": 224
+  },
+  "PC_1": {
+   "fh": 1,
+   "fw": 1,
+   "h": 32,
+   "w": 16,
+   "x": 48,
+   "y": 192
+  },
+  "PC_2": {
+   "fh": 1,
+   "fw": 1,
+   "h": 32,
+   "w": 16,
+   "x": 64,
+   "y": 192
+  },
+  "PC_3": {
+   "fh": 1,
+   "fw": 1,
+   "h": 32,
+   "w": 16,
+   "x": 80,
+   "y": 192
+  },
+  "PLANT": {
+   "fh": 2,
+   "fw": 1,
+   "h": 32,
+   "w": 16,
+   "x": 96,
+   "y": 192
+  },
+  "POT": {
+   "fh": 1,
+   "fw": 1,
+   "h": 16,
+   "w": 16,
+   "x": 224,
+   "y": 224
+  },
+  "SMALL_TABLE": {
+   "fh": 2,
+   "fw": 2,
+   "h": 32,
+   "w": 32,
+   "x": 0,
+   "y": 224
+  },
+  "SOFA": {
+   "fh": 1,
+   "fw": 2,
+   "h": 16,
+   "w": 32,
+   "x": 128,
+   "y": 224
+  },
+  "WHITEBOARD": {
+   "fh": 2,
+   "fw": 2,
+   "h": 32,
+   "w": 32,
+   "x": 160,
+   "y": 192
+  }
+ },
+ "tile": 16
+}

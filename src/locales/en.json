@@ -11,7 +11,8 @@
     "contact": "Contact",
     "features": "Services",
     "howItWorks": "How it works",
-    "getDemo": "Get a free demo"
+    "getDemo": "Get a free demo",
+    "staff": "AI staff"
   },
   "hero": {
     "badge": "AI-powered websites for businesses",
@@ -429,7 +430,8 @@
     "legal": "Legal",
     "privacy": "Privacy & Terms",
     "rightsReserved": "All rights reserved.",
-    "builtIn": "Made in Ulaanbaatar"
+    "builtIn": "Made in Ulaanbaatar",
+    "artCredit": "Office pixel art:"
   },
   "process": {
     "section": "PROCESS",
@@ -488,7 +490,11 @@
       "website": "Website",
       "chatbot": "AI chatbot",
       "voice": "AI voice agent",
-      "unsure": "Not sure yet"
+      "unsure": "Not sure yet",
+      "ara": "Ara — receptionist",
+      "nova": "Nova — customer care",
+      "veda": "Veda — analyst",
+      "eho": "Eho — phone operator"
     },
     "errors": {
       "name": "Please enter your name.",
@@ -515,6 +521,50 @@
       "messenger": "Messenger",
       "email": "Email us",
       "reload": "Reload the page"
+    }
+  },
+  "office": {
+    "section": "AI STAFF",
+    "title": "Your business's AI team, in one office",
+    "description": "Four AI staff. Ara and Veda are at work. Nova and Eho are coming soon. Tap a desk to see the job and the price.",
+    "tapHint": "Tap a desk",
+    "back": "Back",
+    "hire": "Hire {{name}}",
+    "preorder": "Pre-register",
+    "setup": "setup",
+    "perMonth": "/month",
+    "plusPerMinute": "+ per-minute usage",
+    "addOnOnly": "Only available alongside another agent.",
+    "comingSoon": "Coming soon",
+    "unavailable": "The office could not be loaded.",
+    "imageAlt": "Dala AI office",
+    "agents": {
+      "ara": {
+        "name": "Ara",
+        "role": "Receptionist",
+        "job": "Answers Facebook, Instagram and website messages 24/7. Takes bookings and appointments."
+      },
+      "nova": {
+        "name": "Nova",
+        "role": "Customer care",
+        "job": "Follows up with customers, sends reminders and asks how it went."
+      },
+      "veda": {
+        "name": "Veda",
+        "role": "Analyst",
+        "job": "Prepares monthly sales and customer reports and says what to improve."
+      },
+      "eho": {
+        "name": "Eho",
+        "role": "Phone operator",
+        "job": "Answers the phone, handles questions and takes orders."
+      }
+    },
+    "bundles": {
+      "title": "Cheaper as a team",
+      "description": "The more staff you hire, the lower the monthly fee.",
+      "agents": "{{count}} agents",
+      "note": "Discount applies to the monthly fee. Veda only alongside another agent."
     }
   }
 }

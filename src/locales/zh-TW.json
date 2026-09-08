@@ -11,7 +11,8 @@
     "contact": "聯絡我們",
     "features": "服務",
     "howItWorks": "運作方式",
-    "getDemo": "免費試用示範"
+    "getDemo": "免費試用示範",
+    "staff": "AI 員工"
   },
   "hero": {
     "badge": "AI 驅動的企業網站",
@@ -429,7 +430,8 @@
     "legal": "法律",
     "privacy": "隱私權與服務條款",
     "rightsReserved": "保留一切權利。",
-    "builtIn": "誕生於烏蘭巴托"
+    "builtIn": "誕生於烏蘭巴托",
+    "artCredit": "辦公室像素美術："
   },
   "process": {
     "section": "工作流程",
@@ -488,7 +490,11 @@
       "website": "網站",
       "chatbot": "AI 聊天機器人",
       "voice": "AI 語音助理",
-      "unsure": "還不確定"
+      "unsure": "還不確定",
+      "ara": "Ara — 接待員",
+      "nova": "Nova — 客戶關懷",
+      "veda": "Veda — 分析師",
+      "eho": "Eho — 電話客服"
     },
     "errors": {
       "name": "請輸入您的姓名。",
@@ -515,6 +521,50 @@
       "messenger": "Messenger",
       "email": "寄送電子郵件",
       "reload": "重新整理頁面"
+    }
+  },
+  "office": {
+    "section": "AI 員工",
+    "title": "您的 AI 團隊，同在一間辦公室",
+    "description": "四位 AI 員工。Ara 與 Veda 已上線，Nova 與 Eho 即將推出。點一下辦公桌，查看工作內容與價格。",
+    "tapHint": "點一下辦公桌",
+    "back": "返回",
+    "hire": "聘用 {{name}}",
+    "preorder": "預先登記",
+    "setup": "建置費",
+    "perMonth": "/月",
+    "plusPerMinute": "+ 每分鐘用量費",
+    "addOnOnly": "僅可與其他員工一同選購。",
+    "comingSoon": "即將推出",
+    "unavailable": "辦公室載入失敗。",
+    "imageAlt": "Dala AI 辦公室",
+    "agents": {
+      "ara": {
+        "name": "Ara",
+        "role": "接待員",
+        "job": "24/7 回覆 Facebook、Instagram 與網站訊息，受理預約與訂單。"
+      },
+      "nova": {
+        "name": "Nova",
+        "role": "客戶關懷",
+        "job": "主動聯繫客戶、發送提醒並收集回饋。"
+      },
+      "veda": {
+        "name": "Veda",
+        "role": "分析師",
+        "job": "每月整理銷售與客戶報告，指出可改善之處。"
+      },
+      "eho": {
+        "name": "Eho",
+        "role": "電話客服",
+        "job": "接聽電話、回答問題並受理訂單。"
+      }
+    },
+    "bundles": {
+      "title": "團隊方案更划算",
+      "description": "聘用越多員工，月費越低。",
+      "agents": "{{count}} 位員工",
+      "note": "折扣適用於月費。Veda 僅可搭配其他員工選購。"
     }
   }
 }

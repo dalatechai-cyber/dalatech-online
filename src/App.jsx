@@ -9,6 +9,7 @@ import {
   NavLink as RouterNavLink,
   useLocation,
   useNavigate,
+  useSearchParams,
   Navigate,
 } from "react-router-dom";
 import {
@@ -21,8 +22,12 @@ import {
   useReducedMotion,
 } from "framer-motion";
 
+import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
+import { DESKS as OFFICE_DESKS, COLS as OFFICE_COLS, ROWS as OFFICE_ROWS } from "./office/layout";
+
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
+const OfficeScene = React.lazy(() => import("./OfficeScene"));
 
 const EASE_OUT = [0.16, 1, 0.3, 1];
 const SPRING_REVEAL = { type: "spring", stiffness: 110, damping: 22, mass: 0.6 };
@@ -436,6 +441,7 @@ const LANGUAGES = [
 
 const NAV_ITEMS = [
   { to: "/products", labelKey: "capabilities" },
+  { to: "/office", labelKey: "staff" },
   { to: "/process", labelKey: "process" },
   { to: "/technology", labelKey: "stack" },
   { to: "/location", labelKey: "location" },
@@ -2778,7 +2784,9 @@ function ContactOrbField() {
 /* ----------------------------------------------------------- demo request */
 
 /** Options offered as chips, in display order. Keys are shared with the API. */
-const DEMO_SERVICES = ["website", "chatbot", "voice", "unsure"];
+// The four AI staff from /office come first so a visitor arriving from a desk
+// sees their choice at the top of the chips.
+const DEMO_SERVICES = ["ara", "nova", "veda", "eho", "website", "chatbot", "voice", "unsure"];
 
 const DEMO_DRAFT_KEY = "dalatech:demo-draft";
 /** Pre-selected chips for CTAs whose context already implies a product. */
@@ -3735,6 +3743,7 @@ function Footer({ onOpenPrivacy }) {
 
   const services = [
     { label: t("nav.capabilities"), to: "/products" },
+    { label: t("nav.staff"), to: "/office" },
     { label: t("nav.pricing"), to: "/pricing" },
   ];
   const company = [
@@ -3814,6 +3823,13 @@ function Footer({ onOpenPrivacy }) {
             </p>
             <p className="text-[12.5px] text-fg-muted/80">{t("footer.builtIn")}</p>
           </div>
+          {/* art credits the /office page's licences ask for */}
+          <p className="mt-3 text-[11.5px] leading-[1.6] text-fg-dim">
+            {t("footer.artCredit")}{" "}
+            <a href="https://github.com/pixel-agents-hq/pixel-agents" target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-fg-muted">pixel-agents</a>
+            {" · "}
+            <a href="https://jik-a-4.itch.io/metrocity-free-topdown-character-pack" target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-fg-muted">JIK-A-4 MetroCity</a>
+          </p>
         </Container>
       </motion.div>
     </footer>
@@ -4205,6 +4221,249 @@ function FAQPage() {
 }
 
 // Pads non-landing pages so content sits below the fixed navbar.
+
+// ---------------------------------------------------------------------------
+// /office — the AI staff as one office floor. The picture is a generated
+// pixel-art image; OfficeScene animates it. This page owns the zoom, the
+// labels placed in the space, the roster and the bundle board.
+
+// World (art pixel) coordinates -> CSS position inside the stage, through the
+// camera the scene reports. Labels live in the stage layer so their type never
+// scales with the zoom.
+function officeStagePoint(view, wx, wy) {
+  if (!view) return { left: "50%", top: "50%", opacity: 0 };
+  const dpr = view.cw / view.cssW;
+  return { left: `${(view.ox + wx * view.scale) / dpr}px`, top: `${(view.oy + wy * view.scale) / dpr}px` };
+}
+function deskWorld(desk, T) {
+  const z = desk.zone;
+  return { cx: (z.col + z.cols / 2) * T, top: z.row * T, bottom: (z.row + z.rows) * T };
+}
+
+function OfficeTag({ view, x, y, dim, children, className = "" }) {
+  return (
+    <div
+      className={[
+        "pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap border px-2 py-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] transition-opacity duration-300 sm:text-[12px]",
+        dim ? "border-white/10 bg-ink-950/80 text-fg-dim" : "border-sky-400/50 bg-ink-950/85 text-sky-300",
+        className,
+      ].join(" ")}
+      style={officeStagePoint(view, x, y)}
+    >
+      {children}
+    </div>
+  );
+}
+
+function OfficePriceLine({ id }) {
+  const { t } = useTranslation();
+  const a = OFFICE_AGENTS[id];
+  return (
+    <span className="font-display text-[15px] font-semibold tracking-tight text-fg sm:text-[16px]">
+      {formatTugrik(a.setup)} <span className="text-[12px] font-normal text-fg-muted">{t("office.setup")}</span>
+      {" + "}
+      {formatTugrik(a.monthly)}<span className="text-[12px] font-normal text-fg-muted">{t("office.perMonth")}</span>
+      {a.perMinute && <span className="text-[12px] font-normal text-fg-muted"> {t("office.plusPerMinute")}</span>}
+    </span>
+  );
+}
+
+function OfficeStage({ activeId, onSelect }) {
+  const { t } = useTranslation();
+  const { open: openDemoRequest } = useDemoRequest();
+  const active = OFFICE_DESKS.find((d) => d.id === activeId) || null;
+  const stageRef = React.useRef(null);
+  const [view, setView] = React.useState(null);
+  const [status, setStatus] = React.useState("loading");
+  const T = 16;
+
+  const onView = React.useCallback((v) => {
+    const el = stageRef.current;
+    setView({ ...v, cssW: el ? el.getBoundingClientRect().width : v.cw });
+  }, []);
+
+  // Escape closes the desk; matches the dialogs elsewhere on the site.
+  React.useEffect(() => {
+    if (!active) return undefined;
+    const onKey = (e) => { if (e.key === "Escape") onSelect(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [active, onSelect]);
+
+  const hire = () => openDemoRequest([active.id]);
+
+  return (
+    <div className="relative">
+      <div
+        ref={stageRef}
+        className="relative mx-auto w-full max-w-[832px] overflow-hidden border border-white/[0.08] bg-ink-950 shadow-card"
+        style={{ aspectRatio: `${OFFICE_COLS} / ${OFFICE_ROWS}` }}
+      >
+        <ErrorBoundary fallback={<div className="flex h-full w-full items-center justify-center text-[13px] text-fg-muted">{t("office.unavailable")}</div>}>
+          <React.Suspense fallback={<div className="h-full w-full bg-ink-900" />}>
+            <OfficeScene activeDesk={activeId} onSelectDesk={onSelect} onView={onView} onStatus={setStatus} />
+          </React.Suspense>
+        </ErrorBoundary>
+        {status === "failed" && (
+          <div className="absolute inset-0 flex items-center justify-center bg-ink-950/80 text-[13px] text-fg-muted">{t("office.unavailable")}</div>
+        )}
+
+        {/* nameplates on each desk front, in stage space so the type never scales */}
+        {status === "ready" && OFFICE_DESKS.map((d) => {
+          const w = deskWorld(d, T);
+          return (
+            <OfficeTag key={d.id} view={view} x={w.cx} y={w.bottom - 7} dim={!d.live} className={active ? "opacity-0" : "opacity-100"}>
+              {t(`office.agents.${d.id}.name`)}
+            </OfficeTag>
+          );
+        })}
+
+        {/* what appears in the space once a desk is open */}
+        <AnimatePresence>
+          {active && status === "ready" && (
+            <React.Fragment key={active.id}>
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0, transition: { delay: 0.3, ...SPRING_REVEAL } }}
+                exit={{ opacity: 0, transition: { duration: 0.15 } }}
+                className="pointer-events-none absolute w-[min(82%,340px)] -translate-x-1/2 border border-sky-400/40 bg-ink-950/90 px-3 py-2 shadow-glow backdrop-blur-sm"
+                style={officeStagePoint(view, deskWorld(active, T).cx, deskWorld(active, T).bottom + 6)}
+              >
+                <p className="font-display text-[18px] font-semibold leading-tight tracking-tight text-fg sm:text-[20px]">
+                  {t(`office.agents.${active.id}.name`)}
+                  <span className="ml-2 text-[12px] font-medium uppercase tracking-[0.14em] text-sky-300">{t(`office.agents.${active.id}.role`)}</span>
+                </p>
+                <p className="mt-1 text-[12.5px] leading-[1.45] text-fg-muted sm:text-[13px]">{t(`office.agents.${active.id}.job`)}</p>
+                <p className="mt-2"><OfficePriceLine id={active.id} /></p>
+                {OFFICE_AGENTS[active.id].addOnOnly && <p className="mt-1 text-[11px] text-fg-dim">{t("office.addOnOnly")}</p>}
+                {!active.live && <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-dim">{t("office.comingSoon")}</p>}
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { delay: 0.35, duration: 0.3 } }}
+                exit={{ opacity: 0, transition: { duration: 0.15 } }}
+                className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-ink-950 via-ink-950/80 to-transparent px-3 pb-3 pt-8 sm:px-4 sm:pb-4"
+              >
+                <button
+                  type="button"
+                  onClick={() => onSelect(null)}
+                  data-cursor="hover"
+                  className="pressable inline-flex min-h-[44px] items-center gap-2 rounded-xl px-3 text-[13px] font-medium text-fg-muted ring-1 ring-inset ring-white/10 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+                >
+                  <span aria-hidden>←</span> {t("office.back")}
+                </button>
+                <MagneticButton onClick={hire} variant="primary" className="min-h-[44px]">
+                  {active.live ? t("office.hire", { name: t(`office.agents.${active.id}.name`) }) : t("office.preorder")}
+                </MagneticButton>
+              </motion.div>
+            </React.Fragment>
+          )}
+        </AnimatePresence>
+
+        {!active && status === "ready" && (
+          <p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink-950/80 px-3 py-1 text-[11px] font-medium tracking-[0.06em] text-fg-muted sm:bottom-3">
+            {t("office.tapHint")}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OfficeRoster({ activeId, onSelect }) {
+  const { t } = useTranslation();
+  return (
+    <ul className="mt-6 divide-y divide-white/[0.06] border-y border-white/[0.06]" role="list">
+      {OFFICE_DESKS.map((d) => {
+        const active = d.id === activeId;
+        return (
+          <li key={d.id}>
+            <button
+              type="button"
+              onClick={() => onSelect(active ? null : d.id)}
+              aria-pressed={active}
+              data-cursor="hover"
+              className={[
+                "flex w-full items-center gap-4 px-2 py-3.5 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:px-3",
+                active ? "bg-sky-400/[0.06]" : "hover:bg-white/[0.02]",
+              ].join(" ")}
+            >
+              <span className={["h-2 w-2 shrink-0 rounded-full", d.live ? "bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.8)]" : "bg-fg-dim/50"].join(" ")} aria-hidden />
+              <span className="min-w-0 flex-1">
+                <span className="flex flex-wrap items-baseline gap-x-2">
+                  <span className="font-display text-[16px] font-semibold tracking-tight text-fg">{t(`office.agents.${d.id}.name`)}</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-muted">{t(`office.agents.${d.id}.role`)}</span>
+                  {!d.live && <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-fg-dim">{t("office.comingSoon")}</span>}
+                </span>
+                <span className="mt-0.5 block text-[13px] text-fg-muted">{t(`office.agents.${d.id}.job`)}</span>
+              </span>
+              <span className="hidden shrink-0 text-right sm:block"><OfficePriceLine id={d.id} /></span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function OfficeBundles() {
+  const { t } = useTranslation();
+  return (
+    <Reveal className="mt-12">
+      <div className="border border-white/[0.08] bg-ink-800/45 p-6 sm:p-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("office.bundles.title")}</h3>
+          <p className="text-[13px] text-fg-muted">{t("office.bundles.description")}</p>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          {OFFICE_BUNDLES.map((b) => (
+            <div key={b.agents} className="border border-white/[0.08] bg-ink-900/60 px-4 py-4">
+              <p className="font-display text-[30px] font-semibold leading-none tracking-tightest text-fg">−{Math.round(b.discount * 100)}%</p>
+              <p className="mt-2 text-[13px] text-fg-muted">{t("office.bundles.agents", { count: b.agents })}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-[12px] text-fg-dim">{t("office.bundles.note")}</p>
+      </div>
+    </Reveal>
+  );
+}
+
+function OfficePage() {
+  const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  // The open desk lives in the URL, so the browser back button closes it and
+  // a shared link opens straight onto a desk.
+  const requested = searchParams.get("desk");
+  const activeId = OFFICE_DESKS.some((d) => d.id === requested) ? requested : null;
+  const select = React.useCallback(
+    (id) => {
+      const next = new URLSearchParams(searchParams);
+      if (id) next.set("desk", id); else next.delete("desk");
+      setSearchParams(next, { replace: !id });
+    },
+    [searchParams, setSearchParams]
+  );
+
+  return (
+    <PageShell>
+      <section id="office" className="relative py-10 md:py-16">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="mesh-blob animate-meshShift opacity-40" style={{ top: "10%", right: "-10%", width: "30rem", height: "30rem", background: "radial-gradient(circle at 50% 50%, rgba(245,158,11,0.10), transparent 70%)" }} />
+        </div>
+        <Container className="relative">
+          <SectionHeader eyebrow={t("office.section")} title={t("office.title")} description={t("office.description")} />
+          <div className="-mx-5 mt-10 sm:mx-0 md:mt-14">
+            <OfficeStage activeId={activeId} onSelect={select} />
+          </div>
+          <OfficeRoster activeId={activeId} onSelect={select} />
+          <OfficeBundles />
+        </Container>
+      </section>
+    </PageShell>
+  );
+}
+
 function PageShell({ children }) {
   return <div className="pt-24 md:pt-28">{children}</div>;
 }
@@ -4258,6 +4517,7 @@ function Shell() {
               <Routes location={location}>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/products" element={<ProductsPage />} />
+                <Route path="/office" element={<OfficePage />} />
                 <Route path="/process" element={<ProcessPage />} />
                 <Route path="/technology" element={<TechnologyPage />} />
                 <Route path="/location" element={<LocationPage />} />
