@@ -174,9 +174,14 @@ def person(fbx, x, y, rot, colours, seated=True):
         if o.type == 'MESH':
             for slot in o.material_slots:
                 m = slot.material
-                if m and m.name.split('.')[0] in colours:
-                    m = m.copy(); slot.material = m
-                    b = m.node_tree.nodes.get("Principled BSDF")
+                if not m:
+                    continue
+                m = m.copy(); slot.material = m
+                b = m.node_tree.nodes.get("Principled BSDF")
+                # some of the packs' FBX files carry alpha 0 on every material, which renders as nothing
+                b.inputs["Alpha"].default_value = 1.0
+                m.blend_method = 'OPAQUE'
+                if m.name.split('.')[0] in colours:
                     b.inputs["Base Color"].default_value = (*colours[m.name.split('.')[0]], 1)
                     b.inputs["Roughness"].default_value = 0.7
     arm.location = (x, y, 0.0)

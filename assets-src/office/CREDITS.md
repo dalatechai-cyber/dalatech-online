@@ -24,3 +24,13 @@ https://jik-a-4.itch.io/metrocity-free-topdown-character-pack
 `python3 scripts/build-office-pack.py pixel-agents` rebuilds the 16px
 atlas from it if the LimeZu files are ever unavailable. If it ships again,
 its credit goes back into the footer.
+
+## 3D room (`3d/`, not in git)
+Source for the Blender-built office (`scripts/office3d/`):
+
+- Kenney Furniture Kit and Mini Characters, CC0, from the GitHub mirror
+  https://github.com/shorepine/kenney (`3d/kenney/`, sparse checkout).
+- Quaternius Ultimate Modular Men, Ultimate Modular Women and Universal
+  Animation Library, CC0 (https://quaternius.com), `3d/quaternius/`.
+
+Both are public domain; credit is a courtesy, not a licence condition.
