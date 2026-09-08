@@ -232,8 +232,8 @@ def lz_sprites():
     Cf = lambda n: LZ_CONF.with_name(LZ_CONF.name.format(n))
 
     # lamp 142 is a light blue-grey desk lamp; the lit one goes gold, the unlit one navy
-    gold_lamp = {"#e2f2f3": GOLD["bulb"], "#cce6ec": GOLD["hi"], "#d4dee6": GOLD["hi"], "#bad2e0": GOLD["hi"],
-                 "#a4bbd5": GOLD["base"], "#91a5cf": GOLD["base"], "#738ca8": GOLD["lo"]}
+    gold_lamp = {"#e2f2f3": "#F59E0B", "#cce6ec": "#D98A0A", "#d4dee6": "#C27C0B", "#bad2e0": "#B06E0A",
+                 "#a4bbd5": "#8F5A0A", "#91a5cf": "#7A4C0A", "#738ca8": "#5C3808"}
     off_lamp = {"#e2f2f3": "#3A4478", "#cce6ec": "#3A4478", "#d4dee6": "#3A4478", "#bad2e0": "#343D6A",
                 "#a4bbd5": "#2A3358", "#91a5cf": "#2A3358", "#738ca8": "#1F274A"}
 
@@ -304,6 +304,7 @@ def lz_sprites():
     # tables
     add("TABLE_SMALL", lz_single(O(188), fw=2))
     add("TABLE_LOW", lz_single(O(190), fw=2))
+    add("TV", lz_single(Bs(161)))
     # plants
     add("PLANT_OFFICE", lz_single(O(98)))
     add("PLANT_OFFICE_2", lz_single(O(99)))
@@ -346,7 +347,7 @@ LZ_ROLES = {
     "crates": "CRATES", "crate": "CRATE", "box": "BOX", "box2": "BOX_2",
     "printer": "PRINTER", "copier": "COPIER", "waterCooler": "WATER_COOLER", "vending": "VENDING",
     "coffeeMachine": "COFFEE_MACHINE", "coffeeCounter": "COFFEE_COUNTER", "bin": "BIN", "binGrey": "BIN_GREY", "extinguisher": "EXTINGUISHER",
-    "tableSmall": "TABLE_SMALL", "tableLow": "TABLE_LOW",
+    "tableSmall": "TABLE_SMALL", "tableLow": "TABLE_LOW", "tv": "TV",
     "plantOffice": "PLANT_OFFICE", "plantOffice2": "PLANT_OFFICE_2", "plantOffice3": "PLANT_OFFICE_3",
     "plantTall": "PLANT_TALL", "plantPalm": "PLANT_PALM", "plantSmall": "PLANT_SMALL", "plantSmall2": "PLANT_SMALL_2", "plantBush": "PLANT_BUSH", "fruitBowl": "FRUIT_BOWL",
     "rugCheck": "RUG_CHECK", "rugRound": "RUG_ROUND", "rugMat": "RUG_MAT",
@@ -421,7 +422,7 @@ def lz_headset(frame):
 def lz_characters():
     people = {
         # Ара: reception. Long dark hair, light-blue jacket over a white top.
-        "ara": {"body": "Body_32x32_02", "eyes": "Eyes_32x32_01", "outfit": "Outfit_25_32x32_01", "hair": "Hairstyle_15_32x32_07",
+        "ara": {"body": "Body_32x32_02", "eyes": "Eyes_32x32_01", "outfit": "Outfit_25_32x32_01", "hair": "Hairstyle_21_32x32_07",
                 "outfitMap": {"#fbabc6": PAPER["hi"], "#dd71a3": PAPER["lo"]},
                 "hairMap": {"#647e99": HAIR_DARK["light"], "#566279": HAIR_DARK["base"], "#535662": HAIR_DARK["shade"]}},
         # Веда: analyst. Hair up, glasses, navy shirt with a pale collar.
@@ -429,10 +430,10 @@ def lz_characters():
                  "accessory": "Accessory_15_Glasses_32x32_01",
                  "outfitMap": {"#645d9a": BRAND["shade"], "#76689e": BRAND["base"], "#8d6ea7": BRAND["light"], "#8e99c8": BRAND["dark"]}},
         # Нова: customer care. Short brown hair, brand-blue top.
-        "nova": {"body": "Body_32x32_07", "eyes": "Eyes_32x32_01", "outfit": "Outfit_24_32x32_01", "hair": "Hairstyle_10_32x32_03",
+        "nova": {"body": "Body_32x32_07", "eyes": "Eyes_32x32_01", "outfit": "Outfit_24_32x32_01", "hair": "Hairstyle_12_32x32_03",
                  "outfitMap": {"#fbabc6": PAPER["hi"], "#eb8fb3": PAPER["lo"], "#0092e3": BRAND["base"], "#0970d4": BRAND["shade"], "#96d0f0": BRAND["light"]}},
         # Эхо: phone operator. Short crop, light hoodie, headset.
-        "eho": {"body": "Body_32x32_01", "eyes": "Eyes_32x32_05", "outfit": "Outfit_31_32x32_01", "hair": "Hairstyle_08_32x32_04", "headset": True},
+        "eho": {"body": "Body_32x32_01", "eyes": "Eyes_32x32_05", "outfit": "Outfit_31_32x32_01", "hair": "Hairstyle_06_32x32_04", "headset": True},
     }
     items, characters = [], {}
     for cid, spec in people.items():

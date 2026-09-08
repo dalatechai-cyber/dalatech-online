@@ -306,6 +306,8 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
       return;
     }
     if (desk.work === "chart") {
+      // faint gridlines so the screen is never blank between charts
+      for (let gy = 2; gy < rows - 2; gy += 2) blk(1, gy, cols - 2, 1, "#16203F");
       const bars = [3, 6, 4, 7, 5, 6, 4];
       const usable = Math.min(bars.length, Math.floor((cols - 2) / 2));
       for (let i = 0; i < usable; i++) {
@@ -349,12 +351,12 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     if (p.state === "walking") { anim = "walk"; index = p.walkFrame; }
     else if (p.state === "seated") {
       if (p.desk.work === "call" && p.work.talking && p.char.anims.phone) { anim = "phone"; index = 3 + Math.floor(t / 160) % 6; }
-      else if (p.work.reading && p.char.anims.read) { anim = "read"; index = Math.floor(t / 220) % 6; }
       else { anim = p.work.typing ? "type" : "sit"; index = Math.floor(t / (p.work.typing ? 220 : 480)); }
     }
     const f = frameRect(p, anim, p.face, index);
     const fw = p.char.frameW, fh = p.char.frameH;
-    const dx = Math.round(p.x), dy = Math.round(p.y) + T - fh; // feet on the tile
+    // feet on the tile; a seated person sits two pixels lower so the chin clears the monitor
+    const dx = Math.round(p.x), dy = Math.round(p.y) + T - fh + (p.state === "seated" ? 2 : 0);
     // contact shadow under a standing or walking person
     if (p.state !== "seated") { ctx.fillStyle = C.shadow; ctx.fillRect(dx + 5 * K, dy + fh - 2 * K, fw - 10 * K, 2 * K); }
     if (f.flip) { ctx.save(); ctx.translate(dx + fw, dy); ctx.scale(-1, 1); ctx.drawImage(atlas, f.sx, f.sy, fw, fh, 0, 0, fw, fh); ctx.restore(); }
@@ -537,7 +539,7 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     },
     destroy() { destroyed = true; cancelAnimationFrame(raf); io.disconnect(); },
     // read-only snapshot for tests
-    debug() { return { people: people.map((p) => ({ id: p.id, state: p.state, col: p.col, row: p.row, face: p.face })), walker: walker && walker.id, view: { ...view } }; },
+    debug() { return { people: people.map((p) => ({ id: p.id, state: p.state, col: p.col, row: p.row, face: p.face, work: p.work && { typing: p.work.typing, talking: p.work.talking, reading: p.work.reading } })), walker: walker && walker.id, view: { ...view } }; },
     size: { W, H, T },
   };
 }

@@ -4234,6 +4234,15 @@ function officeStagePoint(view, wx, wy) {
   const dpr = view.cw / view.cssW;
   return { left: `${(view.ox + wx * view.scale) / dpr}px`, top: `${(view.oy + wy * view.scale) / dpr}px` };
 }
+// like officeStagePoint, but keeps a box of the info card's width inside the stage
+function officeBoxPoint(view, wx, wy) {
+  if (!view) return { left: "50%", top: "50%", opacity: 0 };
+  const dpr = view.cw / view.cssW;
+  const boxW = Math.min(0.82 * view.cssW, 340);
+  const x = (view.ox + wx * view.scale) / dpr;
+  const left = Math.min(view.cssW - boxW / 2 - 8, Math.max(boxW / 2 + 8, x));
+  return { left: `${left}px`, top: `${(view.oy + wy * view.scale) / dpr}px` };
+}
 function deskWorld(desk, T) {
   const z = desk.zone;
   // the nameplate and the info box hang from `tag` (the desk front), not the zoom frame
@@ -4245,8 +4254,8 @@ function OfficeTag({ view, x, y, dim, children, className = "" }) {
   return (
     <div
       className={[
-        "pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap border px-2 py-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] transition-opacity duration-300 sm:text-[12px]",
-        dim ? "border-white/10 bg-ink-950/80 text-fg-dim" : "border-sky-400/50 bg-ink-950/85 text-sky-300",
+        "pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-sm px-1.5 py-px font-display text-[9px] font-semibold uppercase tracking-[0.16em] transition-opacity duration-300 sm:text-[10px]",
+        dim ? "bg-ink-950/55 text-fg-dim/80" : "bg-ink-950/60 text-sky-300/85",
         className,
       ].join(" ")}
       style={officeStagePoint(view, x, y)}
@@ -4328,7 +4337,7 @@ function OfficeStage({ activeId, onSelect }) {
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.3, ...SPRING_REVEAL } }}
                 exit={{ opacity: 0, transition: { duration: 0.15 } }}
                 className="pointer-events-none absolute w-[min(82%,340px)] -translate-x-1/2 border border-sky-400/40 bg-ink-950/90 px-3 py-2 shadow-glow backdrop-blur-sm"
-                style={officeStagePoint(view, deskWorld(active, T).cx, deskWorld(active, T).bottom + 6)}
+                style={officeBoxPoint(view, deskWorld(active, T).cx, deskWorld(active, T).bottom + 6)}
               >
                 <p className="font-display text-[18px] font-semibold leading-tight tracking-tight text-fg sm:text-[20px]">
                   {t(`office.agents.${active.id}.name`)}

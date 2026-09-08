@@ -34,7 +34,7 @@ export const FURNITURE = [
 
   // ---- row 3: what stands against the back wall, and the two live seats
   { role: "cabinet", col: 0, row: 3 },
-  { role: "drawers", col: 1, row: 3 },
+  { role: "plantSmall2", col: 1, row: 3, offsetX: 2 },
   { role: "chair", col: 2, row: 3, seat: "ara", offsetY: -6 },
   { role: "cupboard", col: 5, row: 3 },
   { role: "chair", col: 10, row: 3, seat: "veda", offsetY: -6 },
@@ -42,9 +42,9 @@ export const FURNITURE = [
 
   // ---- row 4: Ара's desk (cols 0-3), the shared printer, Веда's desk (cols 8-11)
   { role: "deskL", col: 0, row: 4 }, { role: "deskM", col: 1, row: 4 }, { role: "deskM", col: 2, row: 4 }, { role: "deskR", col: 3, row: 4 },
-  { role: "paperStack", col: 0, row: 4, onDesk: true, offsetY: -24, offsetX: 2 },
+  { role: "fruitBowl", col: 0, row: 4, onDesk: true, offsetY: -22, offsetX: 2 },
   { role: "plantSmall", col: 0, row: 4, onDesk: true, offsetY: 0 },
-  { role: "phone", col: 1, row: 4, onDesk: true, offsetY: -26 },
+  { role: "phone2", col: 1, row: 4, onDesk: true, offsetY: -26, offsetX: 6 },
   { role: "papers", col: 1, row: 4, onDesk: true, offsetY: 0 },
   { role: "monitor", col: 2, row: 4, onDesk: true, screenOf: "ara", offsetY: -22 },
   { role: "keyboard", col: 2, row: 4, onDesk: true, offsetY: -6 },
@@ -53,7 +53,8 @@ export const FURNITURE = [
   { role: "printer", col: 5, row: 4 },
   { role: "deskL", col: 8, row: 4 }, { role: "deskM", col: 9, row: 4 }, { role: "deskM", col: 10, row: 4 }, { role: "deskR", col: 11, row: 4 },
   { role: "lamp", col: 8, row: 4, onDesk: true, offsetY: -28, lampOf: "veda" },
-  { role: "fax", col: 8, row: 4, onDesk: true, offsetY: 0, offsetX: 2 },
+  { role: "papers", col: 8, row: 4, onDesk: true, offsetY: -2, offsetX: -6 },
+  { role: "cups", col: 8, row: 4, onDesk: true, offsetY: -22, offsetX: 4 },
   { role: "dualMonitor", col: 9, row: 4, onDesk: true, screenOf: "veda", offsetY: -12 },
   { role: "paperPile", col: 11, row: 4, onDesk: true, offsetY: -26, offsetX: -6 },
   { role: "papers", col: 11, row: 4, onDesk: true, offsetY: 0, offsetX: -8 },
@@ -97,8 +98,8 @@ export const FURNITURE = [
   { role: "rackWood", col: 0, row: 9 },
   { role: "rugRound", col: 5, row: 9, flat: true },
   { role: "rackLow", col: 2, row: 9 },
-  { role: "box", col: 8, row: 9 },
-  { role: "crate", col: 9, row: 9, offsetY: -4 },
+  { role: "tv", col: 7, row: 9 },
+  { role: "box", col: 9, row: 9 },
   { role: "chair2", col: 5, row: 9 },
   { role: "chair2", col: 6, row: 9 },
   { role: "filing", col: 10, row: 9 },
@@ -106,6 +107,8 @@ export const FURNITURE = [
   { role: "plantBush", col: 2, row: 10 },
   { role: "tableLow", col: 5, row: 10, offsetX: -10 },
   { role: "mug2", col: 5, row: 10, onDesk: true, offsetY: -2, offsetX: 4 },
+  { role: "plantOffice2", col: 7, row: 10 },
+  { role: "crate", col: 9, row: 10, offsetY: -4 },
   { role: "rackWhite", col: 10, row: 10 },
 
   // ---- rows 11-13: the lounge, the copier, and the machines along the bottom wall
@@ -135,10 +138,10 @@ export const FURNITURE = [
 // desk below), `zone` is the tap target and zoom frame, `tag` is where the
 // nameplate hangs (tile units), `light` is the lamp's bulb in art pixels.
 export const DESKS = [
-  { id: "ara", seat: { col: 2, row: 3 }, zone: { col: 0, row: 2, cols: 4.5, rows: 3.5 }, tag: { col: 2, row: 5 }, light: { x: 112, y: 106 }, live: true, work: "chat" },
-  { id: "veda", seat: { col: 10, row: 3 }, zone: { col: 7.5, row: 2, cols: 4.5, rows: 3.5 }, tag: { col: 10, row: 5 }, light: { x: 276, y: 106 }, live: true, work: "chart" },
-  { id: "nova", seat: { col: 2, row: 6 }, zone: { col: 0, row: 5, cols: 4.5, rows: 3.5 }, tag: { col: 2, row: 8 }, light: { x: 20, y: 202 }, live: false, work: "outreach" },
-  { id: "eho", seat: { col: 10, row: 6 }, zone: { col: 7.5, row: 5, cols: 4.5, rows: 3.5 }, tag: { col: 10, row: 8 }, light: { x: 364, y: 202 }, live: false, work: "call" },
+  { id: "ara", seat: { col: 2, row: 3 }, zone: { col: 0, row: 2, cols: 4.5, rows: 3.5 }, tag: { col: 2, row: 5.4 }, light: { x: 112, y: 106 }, live: true, work: "chat" },
+  { id: "veda", seat: { col: 10, row: 3 }, zone: { col: 7.5, row: 2, cols: 4.5, rows: 3.5 }, tag: { col: 10, row: 5.4 }, light: { x: 276, y: 106 }, live: true, work: "chart" },
+  { id: "nova", seat: { col: 2, row: 6 }, zone: { col: 0, row: 5, cols: 4.5, rows: 3.5 }, tag: { col: 2, row: 8.4 }, light: { x: 20, y: 202 }, live: false, work: "outreach" },
+  { id: "eho", seat: { col: 10, row: 6 }, zone: { col: 7.5, row: 5, cols: 4.5, rows: 3.5 }, tag: { col: 10, row: 8.4 }, light: { x: 364, y: 202 }, live: false, work: "call" },
 ];
 
 // Where people go when they get up. `face` is the direction they turn to
