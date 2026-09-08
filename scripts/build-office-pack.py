@@ -3,10 +3,10 @@
 
 Reads source art from assets-src/office/<pack>/, shifts colours toward the
 site palette, packs everything into one atlas and writes the manifest the
-engine reads. Run it again after changing PACKS or the recolour rules.
+engine reads. Run it again after changing a pack config or the colour rules.
 
-    python3 scripts/build-office-pack.py            # builds the default pack
-    python3 scripts/build-office-pack.py limezu     # builds another pack
+    python3 scripts/build-office-pack.py            # builds the default pack (limezu)
+    python3 scripts/build-office-pack.py pixel-agents
 
 Outputs
     public/office/pack.png       the atlas
@@ -16,16 +16,18 @@ Manifest shape (what the engine depends on; a new pack only has to fill it):
 
     tile          art pixels per floor tile
     atlas         URL of the atlas
-    sprites       { id: {x, y, w, h, fw, fh} }   fw/fh = footprint in tiles
+    sprites       { id: {x, y, w, h, fw, fh, screens?} }   fw/fh = footprint in tiles;
+                  screens = rectangles inside the sprite where screen content is drawn
     roles         { role: id | [ids] }           what the layout asks for
-    characters    { id: { frameW, frameH, anims: { walk|type|read|idle: {
-                    down|up|right|left: { sheet, row, frames:[cols] } | "flip:right" } } } }
+    characters    { id: { frameW, frameH, anims: { name: { dir: { sheet, row, frames:[cols] } | "flip:<dir>" } } } }
     sheets        { id: {x, y, w, h} }           character sheets in the atlas
 
-Requires Pillow. Not part of the site build.
+The LimeZu sources are licensed and not redistributable: assets-src/office/limezu
+is gitignored, only the derived atlas is committed. Requires Pillow.
 """
 import colorsys
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -39,121 +41,63 @@ MANIFEST_OUT = ROOT / "src" / "office" / "pack.json"
 # ---------------------------------------------------------------- palette
 BRAND = {"light": "#5E9BFF", "base": "#3B82F6", "shade": "#2456B8", "dark": "#1A3F8F", "deep": "#0F2A66"}
 HAIR_DARK = {"light": "#4A4370", "base": "#34305A", "shade": "#26224A", "dark": "#1E1B33"}
+GOLD = {"hi": "#FBBF24", "base": "#F59E0B", "lo": "#B45309", "bulb": "#FDE68A"}
+PAPER = {"hi": "#E6ECFF", "lo": "#B7C2E0"}
 NAVY_HUE = 222 / 360
 
-# ---------------------------------------------------------------- packs
-PACKS = {
-    "pixel-agents": {
-        "tile": 16,
-        "dir": "pixel-agents",
-        "credit": "pixel-agents (MIT) and JIK-A-4 MetroCity (CC0)",
-        # character sheets: 7 columns x 3 rows of 16x32, rows are down/up/right
-        "characters": {
-            "frameW": 16, "frameH": 32, "cols": 7,
-            "rows": {"down": 0, "up": 1, "right": 2},
-            "anims": {"walk": [0, 1, 2, 1], "type": [3, 4], "read": [5, 6], "idle": [1]},
-            "sheets": {
-                # who gets which sheet, and the exact colour swaps that make them ours
-                "ara":  {"file": "characters/char_1.png", "map": {
-                    "#252525": BRAND["base"], "#2b2b2b": BRAND["light"], "#1a1a1a": BRAND["shade"], "#101010": BRAND["dark"],
-                    "#f1c084": HAIR_DARK["light"], "#e39f5a": HAIR_DARK["base"], "#be7743": HAIR_DARK["shade"], "#7e4b29": HAIR_DARK["dark"]}},
-                "veda": {"file": "characters/char_4.png", "map": {
-                    "#eeeeee": BRAND["light"], "#d4d4d4": BRAND["base"], "#bdbdbd": BRAND["shade"], "#4c4c4c": BRAND["dark"]}},
-                "nova": {"file": "characters/char_0.png", "map": {
-                    "#114978": BRAND["base"], "#0f406a": BRAND["shade"], "#071c2e": BRAND["dark"]}},
-                "eho":  {"file": "characters/char_5.png", "map": {
-                    "#e16451": BRAND["light"], "#b24737": BRAND["base"], "#640026": BRAND["shade"]}},
-            },
-        },
-        # furniture: id -> (file, footprint w, footprint h). Sizes come from the PNG.
-        "sprites": {
-            "DESK":        ("furniture/DESK_FRONT.png", 3, 2),
-            "PC_1":        ("furniture/PC_FRONT_ON_1.png", 1, 1),  # 1-tile footprint, the monitor rises above it
-            "PC_2":        ("furniture/PC_FRONT_ON_2.png", 1, 1),  # 1-tile footprint, the monitor rises above it
-            "PC_3":        ("furniture/PC_FRONT_ON_3.png", 1, 1),  # 1-tile footprint, the monitor rises above it
-            "CHAIR_BACK":  ("furniture/CUSHIONED_CHAIR_BACK.png", 1, 1),
-            "CHAIR_FRONT": ("furniture/CUSHIONED_CHAIR_FRONT.png", 1, 1),
-            "CHAIR_SIDE":  ("furniture/CUSHIONED_CHAIR_SIDE.png", 1, 1),
-            "PLANT":       ("furniture/PLANT.png", 1, 2),
-            "LARGE_PLANT": ("furniture/LARGE_PLANT.png", 2, 3),
-            "CACTUS":      ("furniture/CACTUS.png", 1, 2),
-            "SOFA":        ("furniture/SOFA_FRONT.png", 2, 1),
-            "BOOKSHELF":   ("furniture/BOOKSHELF.png", 2, 1),
-            "DOUBLE_BOOKSHELF": ("furniture/DOUBLE_BOOKSHELF.png", 2, 2),
-            "WHITEBOARD":  ("furniture/WHITEBOARD.png", 2, 2),
-            "CLOCK":       ("furniture/CLOCK.png", 1, 2),
-            "COFFEE":      ("furniture/COFFEE.png", 1, 1),
-            "COFFEE_TABLE": ("furniture/COFFEE_TABLE.png", 2, 2),
-            "SMALL_TABLE": ("furniture/SMALL_TABLE_FRONT.png", 2, 2),
-            "BIN":         ("furniture/BIN.png", 1, 1),
-            "POT":         ("furniture/POT.png", 1, 1),
-            "PAINTING":    ("furniture/SMALL_PAINTING.png", 1, 2),
-            "LARGE_PAINTING": ("furniture/LARGE_PAINTING.png", 2, 2),
-            "FLOOR_A":     ("floors/floor_1.png", 1, 1),
-            "FLOOR_B":     ("floors/floor_3.png", 1, 1),
-            "FLOOR_C":     ("floors/floor_5.png", 1, 1),
-        },
-        "roles": {
-            "desk": "DESK", "pc": ["PC_1", "PC_2", "PC_3"], "chair": "CHAIR_BACK", "chairFront": "CHAIR_FRONT",
-            "plant": "PLANT", "largePlant": "LARGE_PLANT", "cactus": "CACTUS", "sofa": "SOFA",
-            "bookshelf": "BOOKSHELF", "doubleBookshelf": "DOUBLE_BOOKSHELF", "whiteboard": "WHITEBOARD", "clock": "CLOCK",
-            "coffee": "COFFEE", "coffeeTable": "COFFEE_TABLE", "smallTable": "SMALL_TABLE", "bin": "BIN", "pot": "POT",
-            "painting": "PAINTING", "largePainting": "LARGE_PAINTING", "floor": "FLOOR_A", "floorAlt": "FLOOR_B",
-        },
-        # ids whose colours are left alone (screens, plants keep their own colour rules anyway)
-        "keep": set(),
-        # rectangle inside the PC sprite where the engine draws screen contents
-        "pcScreen": {"x": 2, "y": 2, "w": 12, "h": 9},
-    },
-}
 
-
-# ---------------------------------------------------------------- colour rules
 def hex_rgb(h):
     h = h.lstrip("#")
     return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
 
-def navy_shift(rgb, floor=False, plant=False):
-    """Pull a furniture pixel toward the site's navy. Plant greens and
-    near-whites (paper, screens) are left alone. Floors are pushed darker."""
+def rgb_hex(rgb):
+    return "#%02x%02x%02x" % rgb[:3]
+
+
+def hls(rgb):
     r, g, b = (c / 255 for c in rgb)
-    h, l, s = colorsys.rgb_to_hls(r, g, b)
-    if plant and 0.17 < h < 0.47 and s > 0.25:
-        return rgb
-    if l > 0.86:
-        return rgb
-    if floor:
-        nl = 0.08 + l * 0.30
-        ns = 0.28
-    else:
-        nl = 0.10 + l * 0.55
-        ns = min(0.5, 0.26 + s * 0.3)
-    nr, ng, nb = colorsys.hls_to_rgb(NAVY_HUE, nl, ns)
-    return (round(nr * 255), round(ng * 255), round(nb * 255))
+    return colorsys.rgb_to_hls(r, g, b)
 
 
-def recolour_image(img, rule, cmap=None):
+def from_hls(h, l, s):
+    r, g, b = colorsys.hls_to_rgb(h, l, s)
+    return (round(r * 255), round(g * 255), round(b * 255))
+
+
+def map_colours(img, cmap):
+    """Exact colour swaps. Pixels not in the map are left alone."""
     img = img.convert("RGBA")
     px = img.load()
     w, h = img.size
+    table = {hex_rgb(k): hex_rgb(v) for k, v in cmap.items()}
     for y in range(h):
         for x in range(w):
             r, g, b, a = px[x, y]
-            if a == 0:
+            if a and (r, g, b) in table:
+                px[x, y] = table[(r, g, b)] + (a,)
+    return img
+
+
+def rule_colours(img, rule):
+    img = img.convert("RGBA")
+    px = img.load()
+    w, h = img.size
+    cache = {}
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if not a:
                 continue
-            key = "#%02x%02x%02x" % (r, g, b)
-            if cmap is not None:
-                if key in cmap:
-                    px[x, y] = hex_rgb(cmap[key]) + (a,)
-                continue
-            px[x, y] = rule((r, g, b)) + (a,)
+            k = (r, g, b)
+            if k not in cache:
+                cache[k] = rule(k)
+            px[x, y] = cache[k] + (a,)
     return img
 
 
 # ---------------------------------------------------------------- packing
-def shelf_pack(items, width=256):
-    """items: list of (id, image). Returns (atlas, {id: (x, y, w, h)})."""
+def shelf_pack(items, width=1024):
     items = sorted(items, key=lambda t: -t[1].size[1])
     x = y = 0
     shelf_h = 0
@@ -167,62 +111,367 @@ def shelf_pack(items, width=256):
         rects[iid] = (x, y, w, h)
         x += w
         shelf_h = max(shelf_h, h)
-    height = y + shelf_h
-    atlas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    atlas = Image.new("RGBA", (width, y + shelf_h), (0, 0, 0, 0))
     for iid, im in items:
         rx, ry, _, _ = rects[iid]
         atlas.paste(im, (rx, ry), im)
     return atlas, rects
 
 
-def main(pack_name):
-    pack = PACKS[pack_name]
-    base = SRC / pack["dir"]
-    items = []
-    sprites = {}
-    for sid, (rel, fw, fh) in pack["sprites"].items():
-        im = Image.open(base / rel)
-        floor = sid.startswith("FLOOR")
-        plant = "PLANT" in sid or "CACTUS" in sid
-        im = recolour_image(im, lambda rgb, f=floor, p=plant: navy_shift(rgb, f, p)) if sid not in pack["keep"] else im.convert("RGBA")
-        items.append((sid, im))
-        sprites[sid] = {"fw": fw, "fh": fh}
-
-    ch = pack["characters"]
-    characters = {}
-    sheet_ids = {}
-    for cid, spec in ch["sheets"].items():
-        im = Image.open(base / spec["file"])
-        im = recolour_image(im, None, spec["map"])
-        sheet_id = "sheet_" + cid
-        items.append((sheet_id, im))
-        sheet_ids[cid] = sheet_id
-        anims = {}
-        for aname, cols in ch["anims"].items():
-            anims[aname] = {}
-            for d, row in ch["rows"].items():
-                anims[aname][d] = {"sheet": sheet_id, "row": row, "frames": cols}
-            if "left" not in ch["rows"]:
-                anims[aname]["left"] = "flip:right"
-        characters[cid] = {"frameW": ch["frameW"], "frameH": ch["frameH"], "anims": anims}
-
-    atlas, rects = shelf_pack(items)
+def write_outputs(pack_name, credit, tile, items, sprites, characters, sheet_ids, roles, atlas_width):
+    atlas, rects = shelf_pack(items, atlas_width)
     for sid in sprites:
         x, y, w, h = rects[sid]
         sprites[sid].update({"x": x, "y": y, "w": w, "h": h})
-    sheets = {sid: dict(zip("xywh", rects[sid])) for sid in sheet_ids.values()}
-
+    sheets = {sid: dict(zip("xywh", rects[sid])) for sid in sheet_ids}
     ATLAS_OUT.parent.mkdir(parents=True, exist_ok=True)
     MANIFEST_OUT.parent.mkdir(parents=True, exist_ok=True)
     atlas.save(ATLAS_OUT, optimize=True)
     manifest = {
-        "name": pack_name, "credit": pack["credit"], "tile": pack["tile"], "atlas": "/office/pack.png",
-        "sprites": sprites, "roles": pack["roles"], "characters": characters, "sheets": sheets,
-        "pcScreen": pack["pcScreen"],
+        "name": pack_name, "credit": credit, "tile": tile, "atlas": "/office/pack.png",
+        "sprites": sprites, "roles": roles, "characters": characters, "sheets": sheets,
     }
     MANIFEST_OUT.write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
     print("atlas", atlas.size, ATLAS_OUT.stat().st_size // 1024, "kB;", len(sprites), "sprites,", len(characters), "characters")
 
 
+# ================================================================ LimeZu Modern Interiors + Modern Office
+LZ = SRC / "limezu"
+LZ_OFFICE = LZ / "Modern_Office_Revamped_v1.2" / "4_Modern_Office_singles" / "32x32" / "Modern_Office_Singles_32x32_{}.png"
+LZ_LIVING = LZ / "moderninteriors-win" / "1_Interiors" / "32x32" / "Theme_Sorter_Singles_32x32" / "2_Living_Room_Singles_32x32" / "Living_Room_Singles_32x32_{}.png"
+LZ_CONF = LZ / "moderninteriors-win" / "1_Interiors" / "32x32" / "Theme_Sorter_Singles_32x32" / "13_Conference_Hall_Singles_32x32" / "Conference_Hall_Singles_32x32_{}.png"
+LZ_ROOM = LZ / "Modern_Office_Revamped_v1.2" / "1_Room_Builder_Office" / "Room_Builder_Office_32x32.png"
+LZ_GEN = LZ / "moderninteriors-win" / "2_Characters" / "Character_Generator"
+
+# LimeZu's outline greys. They are already near-navy and give every object
+# its edge, so the colour rules leave them alone.
+LZ_OUTLINES = {hex_rgb(c) for c in ("#3a3a50", "#46465e", "#565972", "#6c6e85", "#000000")}
+
+
+def lz_furniture_rule(rgb):
+    """Night office: wood stays warm but muted, greys and whites go navy,
+    screens, plants, paper and outlines keep their colour."""
+    if rgb in LZ_OUTLINES:
+        return rgb
+    h, l, s = hls(rgb)
+    hue = h * 360
+    if s < 0.16:
+        if l > 0.9:
+            return rgb  # paper, highlights
+        return from_hls(NAVY_HUE, 0.12 + l * 0.55, 0.26)
+    if 15 <= hue <= 48:  # wood
+        return from_hls(h, l * 0.78, s * 0.55)
+    if 80 <= hue <= 170:  # plants
+        return rgb
+    if 190 <= hue <= 250:  # screens, phone blue
+        return rgb
+    if 240 < hue < 300 and s < 0.35:  # lavender-greys (chairs, cabinets)
+        return from_hls(NAVY_HUE, 0.12 + l * 0.55, 0.28)
+    # anything else: pull toward navy but keep some of its own hue
+    return from_hls(NAVY_HUE, 0.12 + l * 0.55, min(0.45, s * 0.6))
+
+
+def lz_floor_rule(rgb):
+    h, l, s = hls(rgb)
+    return from_hls(NAVY_HUE, 0.07 + l * 0.22, 0.30)
+
+
+def crop_alpha(img):
+    bb = img.getbbox()
+    return img.crop(bb) if bb else img
+
+
+def lz_single(path, fw=None, fh=1, rule=lz_furniture_rule, cmap=None, screens=None, keep=False):
+    im = Image.open(path).convert("RGBA")
+    # LimeZu singles sit in a 64x96 canvas, bottom-left anchored to the tile
+    # grid. Keep the artist's offset so pieces line up when placed by tile.
+    bb = im.getbbox() or (0, 0, im.size[0], im.size[1])
+    ox, oy = bb[0], bb[3] - im.size[1]
+    im = crop_alpha(im)
+    if cmap:
+        im = map_colours(im, cmap)
+    if not keep and rule:
+        im = rule_colours(im, rule)
+    entry = {"fw": fw or max(1, -(-im.size[0] // 32)), "fh": fh, "ox": ox, "oy": oy}
+    if screens:
+        entry["screens"] = screens
+    return im, entry
+
+
+# Office furniture: role id -> (source, footprint w, footprint h, options)
+def lz_sprites():
+    S = {}
+    add = lambda sid, im_entry: S.__setitem__(sid, im_entry)
+    O = lambda n: LZ_OFFICE.with_name(LZ_OFFICE.name.format(n))
+    Lv = lambda n: LZ_LIVING.with_name(LZ_LIVING.name.format(n))
+    Cf = lambda n: LZ_CONF.with_name(LZ_CONF.name.format(n))
+
+    # lamp 142 is a light blue-grey desk lamp; the lit one goes gold, the unlit one navy
+    gold_lamp = {"#e2f2f3": GOLD["bulb"], "#cce6ec": GOLD["hi"], "#d4dee6": GOLD["hi"], "#bad2e0": GOLD["hi"],
+                 "#a4bbd5": GOLD["base"], "#91a5cf": GOLD["base"], "#738ca8": GOLD["lo"]}
+    off_lamp = {"#e2f2f3": "#3A4478", "#cce6ec": "#3A4478", "#d4dee6": "#3A4478", "#bad2e0": "#343D6A",
+                "#a4bbd5": "#2A3358", "#91a5cf": "#2A3358", "#738ca8": "#1F274A"}
+
+    # desks: three one-tile pieces make a desk; the top face rises into the row above
+    add("DESK_L", lz_single(O(210)))
+    add("DESK_M", lz_single(O(211)))
+    add("DESK_R", lz_single(O(212)))
+    add("DESK_GREY_L", lz_single(O(213)))
+    add("DESK_GREY_M", lz_single(O(214)))
+    add("DESK_GREY_R", lz_single(O(215)))
+    # things on desks (screen rects measured from the blue glass in each sprite)
+    add("MONITOR", lz_single(O(132), screens=[{"x": 4, "y": 6, "w": 22, "h": 16}]))
+    add("MONITOR_2", lz_single(O(133), screens=[{"x": 4, "y": 6, "w": 24, "h": 12}]))
+    add("DUAL_MONITOR", lz_single(O(227), screens=[{"x": 4, "y": 6, "w": 22, "h": 16}, {"x": 36, "y": 8, "w": 24, "h": 12}]))
+    add("LAPTOP", lz_single(O(136), screens=[{"x": 4, "y": 4, "w": 16, "h": 10}]))
+    add("KEYBOARD", lz_single(O(128)))
+    add("PHONE", lz_single(O(119)))
+    add("PHONE_2", lz_single(O(242)))
+    add("LAMP", lz_single(O(142), cmap=gold_lamp))
+    add("LAMP_OFF", lz_single(O(142), cmap=off_lamp))
+    add("PAPERS", lz_single(O(153)))
+    add("PAPER_STACK", lz_single(O(154)))
+    add("PAPER_PILE", lz_single(O(155)))
+    add("FAX", lz_single(O(156)))
+    add("PRINTER_SMALL", lz_single(O(149)))
+    # standing furniture
+    add("CHAIR", lz_single(O(101)))
+    add("CHAIR_2", lz_single(O(105)))
+    add("CABINET", lz_single(O(180)))
+    add("CABINET_2", lz_single(O(181)))
+    add("BOOKCASE", lz_single(O(194), fw=2))
+    add("PRINTER", lz_single(O(178), fw=2))
+    add("WATER_COOLER", lz_single(O(173)))
+    add("VENDING", lz_single(O(175), fw=2))
+    add("AC_UNIT", lz_single(O(165), fw=2))
+    add("COFFEE_MACHINE", lz_single(O(317)))
+    add("COFFEE_COUNTER", lz_single(O(320), fw=2))
+    add("BIN", lz_single(O(329)))
+    add("TABLE_SMALL", lz_single(O(188), fw=2))
+    add("PLANT_OFFICE", lz_single(O(98)))
+    add("PLANT_OFFICE_2", lz_single(O(99)))
+    add("PLANT_OFFICE_3", lz_single(O(100)))
+    add("PLANT_TALL", lz_single(Lv(13), fw=1))
+    add("PLANT_PALM", lz_single(Lv(14), fw=2))
+    add("PLANT_SMALL", lz_single(Lv(15)))
+    add("PLANT_SMALL_2", lz_single(Lv(16)))
+    add("PLANT_BUSH", lz_single(Lv(18), fw=2))
+    add("FRUIT_BOWL", lz_single(Lv(49)))
+    add("SOFA", lz_single(Cf(56), fw=2))
+    add("ARMCHAIR", lz_single(Lv(73)))
+    add("EXTINGUISHER", lz_single(Cf(59)))
+    # wall items (no footprint)
+    add("WHITEBOARD", lz_single(O(171), fw=2))
+    add("WHITEBOARD_BLANK", lz_single(O(170), fw=2))
+    add("POSTER", lz_single(O(96)))
+    add("POSTER_2", lz_single(O(163)))
+    add("CERTIFICATE", lz_single(O(113)))
+    # floor: the office carpet 2x2 pattern from the room builder
+    rb = Image.open(LZ_ROOM).convert("RGBA")
+    floor = rb.crop((320, 160, 384, 224))
+    S["FLOOR"] = (rule_colours(floor, lz_floor_rule), {"fw": 2, "fh": 2, "tileable": True})
+    return S
+
+
+LZ_ROLES = {
+    "deskL": "DESK_L", "deskM": "DESK_M", "deskR": "DESK_R", "deskGreyL": "DESK_GREY_L", "deskGreyM": "DESK_GREY_M", "deskGreyR": "DESK_GREY_R",
+    "monitor": "MONITOR", "monitor2": "MONITOR_2", "dualMonitor": "DUAL_MONITOR", "laptop": "LAPTOP", "keyboard": "KEYBOARD",
+    "phone": "PHONE", "phone2": "PHONE_2", "lamp": "LAMP", "lampOff": "LAMP_OFF",
+    "papers": "PAPERS", "paperStack": "PAPER_STACK", "paperPile": "PAPER_PILE", "fax": "FAX", "printerSmall": "PRINTER_SMALL",
+    "chair": "CHAIR", "chair2": "CHAIR_2", "cabinet": "CABINET", "cabinet2": "CABINET_2", "bookcase": "BOOKCASE",
+    "printer": "PRINTER", "waterCooler": "WATER_COOLER", "vending": "VENDING", "acUnit": "AC_UNIT",
+    "coffeeMachine": "COFFEE_MACHINE", "coffeeCounter": "COFFEE_COUNTER", "bin": "BIN", "tableSmall": "TABLE_SMALL",
+    "plantOffice": "PLANT_OFFICE", "plantOffice2": "PLANT_OFFICE_2", "plantOffice3": "PLANT_OFFICE_3",
+    "plantTall": "PLANT_TALL", "plantPalm": "PLANT_PALM", "plantSmall": "PLANT_SMALL", "plantSmall2": "PLANT_SMALL_2", "plantBush": "PLANT_BUSH",
+    "fruitBowl": "FRUIT_BOWL", "sofa": "SOFA", "armchair": "ARMCHAIR", "extinguisher": "EXTINGUISHER",
+    "whiteboard": "WHITEBOARD", "whiteboardBlank": "WHITEBOARD_BLANK", "poster": "POSTER", "poster2": "POSTER_2", "certificate": "CERTIFICATE",
+    "floor": "FLOOR",
+}
+
+# ---- characters composed from the generator layers.
+# LimeZu 32x32 sheets: 56 columns of 32x64 frames. Row = animation, columns run
+# right, up, left, down for the four-direction rows.
+LZ_FW, LZ_FH = 32, 64
+LZ_ROWS = {"idle": 1, "walk": 2, "sit": 4, "phone": 6, "read": 7}
+LZ_DIRS = ["right", "up", "left", "down"]
+
+
+def lz_layer(kind, name):
+    return LZ_GEN / kind / "32x32" / f"{name}.png"
+
+
+def lz_compose(spec):
+    """Body + eyes + outfit + hair (+ accessory), the order LimeZu documents."""
+    layers = [
+        Image.open(lz_layer("Bodies", spec["body"])).convert("RGBA"),
+        Image.open(lz_layer("Eyes", spec["eyes"])).convert("RGBA"),
+        map_colours(Image.open(lz_layer("Outfits", spec["outfit"])), spec.get("outfitMap", {})),
+        map_colours(Image.open(lz_layer("Hairstyles", spec["hair"])), spec.get("hairMap", {})),
+    ]
+    if spec.get("accessory"):
+        layers.append(Image.open(lz_layer("Accessories", spec["accessory"])).convert("RGBA"))
+    w = min(l.size[0] for l in layers)
+    h = min(l.size[1] for l in layers)
+    out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    for l in layers:
+        out.alpha_composite(l.crop((0, 0, w, h)))
+    return out
+
+
+def lz_frame(sheet, row, col):
+    return sheet.crop((col * LZ_FW, row * LZ_FH, (col + 1) * LZ_FW, (row + 1) * LZ_FH))
+
+
+def lz_headset(frame):
+    """Эхо's headset: a band over the hair and two cups, drawn from the frame's
+    own silhouette so it follows the head in every frame."""
+    frame = frame.copy()
+    px = frame.load()
+    w, h = frame.size
+    # find the top of the head and its width at the ear line
+    top = None
+    for y in range(h):
+        if any(px[x, y][3] for x in range(w)):
+            top = y
+            break
+    if top is None:
+        return frame
+    ear_y = top + 9
+    row = [x for x in range(w) if px[x, ear_y][3]]
+    if not row:
+        return frame
+    x0, x1 = min(row), max(row)
+    band = hex_rgb("#B7C2E0") + (255,)
+    dark = hex_rgb("#5A6E94") + (255,)
+    for x in range(x0 + 1, x1):
+        if px[x, top][3]:
+            px[x, top - 1] = band
+    for dy in range(0, 4):
+        px[x0, ear_y - 1 + dy] = dark if dy in (0, 3) else band
+        px[x1, ear_y - 1 + dy] = dark if dy in (0, 3) else band
+    return frame
+
+
+def lz_characters():
+    people = {
+        # Ара: reception. Long dark hair, light-blue jacket over a white top.
+        "ara": {"body": "Body_32x32_02", "eyes": "Eyes_32x32_01", "outfit": "Outfit_25_32x32_01", "hair": "Hairstyle_15_32x32_07",
+                "outfitMap": {"#fbabc6": PAPER["hi"], "#dd71a3": PAPER["lo"]},
+                "hairMap": {"#647e99": HAIR_DARK["light"], "#566279": HAIR_DARK["base"], "#535662": HAIR_DARK["shade"]}},
+        # Веда: analyst. Hair up, glasses, navy shirt with a pale collar.
+        "veda": {"body": "Body_32x32_04", "eyes": "Eyes_32x32_04", "outfit": "Outfit_21_32x32_01", "hair": "Hairstyle_18_32x32_04",
+                 "accessory": "Accessory_15_Glasses_32x32_01",
+                 "outfitMap": {"#645d9a": BRAND["shade"], "#76689e": BRAND["base"], "#8d6ea7": BRAND["light"], "#8e99c8": BRAND["dark"]}},
+        # Нова: customer care. Short brown hair, brand-blue top.
+        "nova": {"body": "Body_32x32_07", "eyes": "Eyes_32x32_01", "outfit": "Outfit_24_32x32_01", "hair": "Hairstyle_10_32x32_03",
+                 "outfitMap": {"#fbabc6": PAPER["hi"], "#eb8fb3": PAPER["lo"], "#0092e3": BRAND["base"], "#0970d4": BRAND["shade"], "#96d0f0": BRAND["light"]}},
+        # Эхо: phone operator. Short crop, light hoodie, headset.
+        "eho": {"body": "Body_32x32_01", "eyes": "Eyes_32x32_05", "outfit": "Outfit_31_32x32_01", "hair": "Hairstyle_08_32x32_04", "headset": True},
+    }
+    items, characters = [], {}
+    for cid, spec in people.items():
+        sheet = lz_compose(spec)
+        book_overlay = None
+        # book frames sit in row 7 after the 12 reading frames; composite them on
+        rows_out = []
+        anims = {}
+        row_i = 0
+        for aname, src_row in LZ_ROWS.items():
+            if aname in ("idle", "walk"):
+                frames = [lz_frame(sheet, src_row, c) for c in range(24)]
+                anims[aname] = {d: {"sheet": f"sheet_{cid}", "row": row_i, "frames": list(range(k * 6, k * 6 + 6))} for k, d in enumerate(LZ_DIRS)}
+            elif aname == "sit":
+                frames = [lz_frame(sheet, src_row, c) for c in range(12)]
+                anims[aname] = {d: {"sheet": f"sheet_{cid}", "row": row_i, "frames": list(range(k * 3, k * 3 + 3))} for k, d in enumerate(LZ_DIRS)}
+            elif aname == "phone":
+                frames = [lz_frame(sheet, src_row, c) for c in range(12)]
+                anims[aname] = {"down": {"sheet": f"sheet_{cid}", "row": row_i, "frames": list(range(12))}}
+            else:  # read: 12 character frames + 12 book overlays
+                frames = []
+                for c in range(12):
+                    fr = lz_frame(sheet, src_row, c)
+                    fr.alpha_composite(lz_frame(sheet, src_row, 13 + c))  # col 12 is the sheet's "loop" label
+                    frames.append(fr)
+                anims[aname] = {"down": {"sheet": f"sheet_{cid}", "row": row_i, "frames": list(range(12))}}
+            if spec.get("headset"):
+                frames = [lz_headset(f) for f in frames]
+            rows_out.append(frames)
+            row_i += 1
+        cols = max(len(r) for r in rows_out)
+        out = Image.new("RGBA", (cols * LZ_FW, len(rows_out) * LZ_FH), (0, 0, 0, 0))
+        for r, frames in enumerate(rows_out):
+            for c, fr in enumerate(frames):
+                out.paste(fr, (c * LZ_FW, r * LZ_FH), fr)
+        items.append((f"sheet_{cid}", out))
+        # the engine uses "type" while seated at the keyboard; LimeZu has no typing pose, so it is the seated pose
+        anims["type"] = anims["sit"]
+        characters[cid] = {"frameW": LZ_FW, "frameH": LZ_FH, "anims": anims}
+    return items, characters
+
+
+def build_limezu():
+    sprites_src = lz_sprites()
+    items = [(sid, im) for sid, (im, _) in sprites_src.items()]
+    sprites = {sid: entry for sid, (_, entry) in sprites_src.items()}
+    char_items, characters = lz_characters()
+    items += char_items
+    write_outputs("limezu", "LimeZu Modern Interiors and Modern Office (commercial licence, credit required)", 32,
+                  items, sprites, characters, [i for i, _ in char_items], LZ_ROLES, 1024)
+
+
+# ================================================================ pixel-agents (16px, MIT) — kept as the fallback pack
+PA = SRC / "pixel-agents"
+
+
+def navy_shift(rgb, floor=False, plant=False):
+    h, l, s = hls(rgb)
+    if plant and 0.17 < h < 0.47 and s > 0.25:
+        return rgb
+    if l > 0.86:
+        return rgb
+    if floor:
+        return from_hls(NAVY_HUE, 0.08 + l * 0.30, 0.28)
+    return from_hls(NAVY_HUE, 0.10 + l * 0.55, min(0.5, 0.26 + s * 0.3))
+
+
+PA_SPRITES = {
+    "DESK": ("furniture/DESK_FRONT.png", 3, 2), "PC_1": ("furniture/PC_FRONT_ON_1.png", 1, 1), "PC_2": ("furniture/PC_FRONT_ON_2.png", 1, 1),
+    "PC_3": ("furniture/PC_FRONT_ON_3.png", 1, 1), "CHAIR_BACK": ("furniture/CUSHIONED_CHAIR_BACK.png", 1, 1), "PLANT": ("furniture/PLANT.png", 1, 2),
+    "LARGE_PLANT": ("furniture/LARGE_PLANT.png", 2, 3), "CACTUS": ("furniture/CACTUS.png", 1, 2), "SOFA": ("furniture/SOFA_FRONT.png", 2, 1),
+    "DOUBLE_BOOKSHELF": ("furniture/DOUBLE_BOOKSHELF.png", 2, 2), "CLOCK": ("furniture/CLOCK.png", 1, 2), "COFFEE": ("furniture/COFFEE.png", 1, 1),
+    "COFFEE_TABLE": ("furniture/COFFEE_TABLE.png", 2, 2), "SMALL_TABLE": ("furniture/SMALL_TABLE_FRONT.png", 2, 2), "BIN": ("furniture/BIN.png", 1, 1),
+}
+PA_ROLES = {"desk": "DESK", "pc": ["PC_1", "PC_2", "PC_3"], "chair": "CHAIR_BACK", "plant": "PLANT", "largePlant": "LARGE_PLANT", "cactus": "CACTUS",
+            "sofa": "SOFA", "doubleBookshelf": "DOUBLE_BOOKSHELF", "clock": "CLOCK", "coffee": "COFFEE", "coffeeTable": "COFFEE_TABLE", "smallTable": "SMALL_TABLE", "bin": "BIN"}
+PA_CHARS = {
+    "ara": ("characters/char_1.png", {"#252525": BRAND["base"], "#2b2b2b": BRAND["light"], "#1a1a1a": BRAND["shade"], "#101010": BRAND["dark"],
+                                       "#f1c084": HAIR_DARK["light"], "#e39f5a": HAIR_DARK["base"], "#be7743": HAIR_DARK["shade"], "#7e4b29": HAIR_DARK["dark"]}),
+    "veda": ("characters/char_4.png", {"#eeeeee": BRAND["light"], "#d4d4d4": BRAND["base"], "#bdbdbd": BRAND["shade"], "#4c4c4c": BRAND["dark"]}),
+    "nova": ("characters/char_0.png", {"#114978": BRAND["base"], "#0f406a": BRAND["shade"], "#071c2e": BRAND["dark"]}),
+    "eho": ("characters/char_5.png", {"#e16451": BRAND["light"], "#b24737": BRAND["base"], "#640026": BRAND["shade"]}),
+}
+
+
+def build_pixel_agents():
+    items, sprites = [], {}
+    for sid, (rel, fw, fh) in PA_SPRITES.items():
+        plant = "PLANT" in sid or "CACTUS" in sid
+        im = rule_colours(Image.open(PA / rel), lambda rgb, p=plant: navy_shift(rgb, False, p))
+        items.append((sid, im))
+        sprites[sid] = {"fw": fw, "fh": fh}
+    sprites["PC_1"]["screens"] = sprites["PC_2"]["screens"] = sprites["PC_3"]["screens"] = [{"x": 2, "y": 2, "w": 12, "h": 9}]
+    characters = {}
+    for cid, (rel, cmap) in PA_CHARS.items():
+        items.append((f"sheet_{cid}", map_colours(Image.open(PA / rel), cmap)))
+        rows = {"down": 0, "up": 1, "right": 2}
+        anims = {}
+        for aname, cols in {"walk": [0, 1, 2, 1], "type": [3, 4], "read": [5, 6], "idle": [1], "sit": [3, 4]}.items():
+            anims[aname] = {d: {"sheet": f"sheet_{cid}", "row": r, "frames": cols} for d, r in rows.items()}
+            anims[aname]["left"] = "flip:right"
+        characters[cid] = {"frameW": 16, "frameH": 32, "anims": anims}
+    write_outputs("pixel-agents", "pixel-agents (MIT) and JIK-A-4 MetroCity (CC0)", 16, items, sprites, characters, [f"sheet_{c}" for c in PA_CHARS], PA_ROLES, 256)
+
+
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "pixel-agents")
+    which = sys.argv[1] if len(sys.argv) > 1 else "limezu"
+    {"limezu": build_limezu, "pixel-agents": build_pixel_agents}[which]()

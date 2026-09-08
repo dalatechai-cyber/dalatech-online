@@ -3826,9 +3826,8 @@ function Footer({ onOpenPrivacy }) {
           {/* art credits the /office page's licences ask for */}
           <p className="mt-3 text-[11.5px] leading-[1.6] text-fg-dim">
             {t("footer.artCredit")}{" "}
-            <a href="https://github.com/pixel-agents-hq/pixel-agents" target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-fg-muted">pixel-agents</a>
-            {" · "}
-            <a href="https://jik-a-4.itch.io/metrocity-free-topdown-character-pack" target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-fg-muted">JIK-A-4 MetroCity</a>
+            <a href="https://limezu.itch.io/" target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-fg-muted">LimeZu</a>
+            {" — Modern Interiors · Modern Office"}
           </p>
         </Container>
       </motion.div>
@@ -4237,7 +4236,9 @@ function officeStagePoint(view, wx, wy) {
 }
 function deskWorld(desk, T) {
   const z = desk.zone;
-  return { cx: (z.col + z.cols / 2) * T, top: z.row * T, bottom: (z.row + z.rows) * T };
+  // the nameplate and the info box hang from `tag` (the desk front), not the zoom frame
+  const tag = desk.tag || { col: z.col + z.cols / 2, row: z.row + z.rows };
+  return { cx: tag.col * T, top: z.row * T, bottom: tag.row * T };
 }
 
 function OfficeTag({ view, x, y, dim, children, className = "" }) {

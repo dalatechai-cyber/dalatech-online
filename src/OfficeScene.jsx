@@ -15,8 +15,10 @@ export default function OfficeScene({ activeDesk, onSelectDesk, onView, onStatus
   const engineRef = React.useRef(null);
   const onViewRef = React.useRef(onView);
   const onStatusRef = React.useRef(onStatus);
+  const activeRef = React.useRef(activeDesk);
   onViewRef.current = onView;
   onStatusRef.current = onStatus;
+  activeRef.current = activeDesk;
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
@@ -60,6 +62,8 @@ export default function OfficeScene({ activeDesk, onSelectDesk, onView, onStatus
       size();
       ro = new ResizeObserver(size);
       ro.observe(parent);
+      // a deep link (?desk=) arrives before the atlas has loaded
+      if (activeRef.current) engine.setFocus(activeRef.current);
       engine.start();
       if (onStatusRef.current) onStatusRef.current("ready");
     };
