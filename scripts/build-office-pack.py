@@ -145,6 +145,7 @@ LZ_CONDO = LZ_THEMES / "26_Condominium_Singles_32x32" / "Condominium_Singles_32x
 LZ_BASE = LZ_THEMES / "14_Basement_Singles_32x32" / "Basement_Singles_32x32_{}.png"
 LZ_BED = LZ_THEMES / "4_Bedroom_Singles_32x32" / "Bedroom_Singles_32x32_{}.png"
 LZ_KIT = LZ_THEMES / "12_Kitchen_Singles_32x32" / "Kitchen_Singles_32x32_{}.png"
+LZ_GENERIC_ROOM = LZ / "moderninteriors-win" / "1_Interiors" / "32x32" / "Room_Builder_32x32.png"
 LZ_ROOM = LZ / "Modern_Office_Revamped_v1.2" / "1_Room_Builder_Office" / "Room_Builder_Office_32x32.png"
 LZ_GEN = LZ / "moderninteriors-win" / "2_Characters" / "Character_Generator"
 
@@ -194,6 +195,24 @@ def lz_desk_rule(rgb):
     if s < 0.16 or (240 < h * 360 < 300 and s < 0.35):
         return from_hls(NAVY_HUE, 0.26 + l * 0.6, 0.20)
     return lz_furniture_rule(rgb)
+
+
+def lz_wall_rule(rgb):
+    """Walls: the lavender set goes navy, a shade lighter than the carpet; the cap stays pale."""
+    if rgb in LZ_OUTLINES:
+        return rgb
+    h, l, s = hls(rgb)
+    if l > 0.85:
+        return from_hls(NAVY_HUE, 0.36, 0.16)  # the cap: a muted coving, not a pale band
+    return from_hls(NAVY_HUE, 0.10 + l * 0.32, 0.30)
+
+
+def lz_frame_rule(rgb):
+    """Window frames: the wood goes to a dark slate so the city, not the frame, is what you see."""
+    if rgb in LZ_OUTLINES:
+        return rgb
+    h, l, s = hls(rgb)
+    return from_hls(NAVY_HUE, 0.14 + l * 0.30, 0.20)
 
 
 def lz_floor_rule(rgb):
@@ -327,6 +346,23 @@ def lz_sprites():
     add("CERTIFICATE", lz_single(O(113)))
     add("PICTURE", lz_single(Bd(481)))
     add("STRING_LIGHTS", lz_single(Bd(463), fw=2))
+    # walls and a hollow window frame from the generic room builder
+    gb = Image.open(LZ_GENERIC_ROOM).convert("RGBA")
+    tile = lambda c, r, w=1, h=1: gb.crop((c * 32, r * 32, (c + w) * 32, (r + h) * 32))
+    wall_top = tile(22, 15); wall_bottom = tile(22, 16)
+    face = wall_bottom.crop((0, 0, 32, 16)); wall_mid = Image.new("RGBA", (32, 32)); wall_mid.paste(face, (0, 0)); wall_mid.paste(face, (0, 16))
+    for sid, im in (("WALL_TOP", wall_top), ("WALL_MID", wall_mid), ("WALL_BOTTOM", wall_bottom)):
+        S[sid] = (rule_colours(im, lz_wall_rule), {"fw": 1, "fh": 1, "ox": 0, "oy": 0})
+    frame = crop_alpha(tile(22, 1, 3, 3))  # left post, middle bars, right post
+    fa = frame.getchannel("A"); fw_, fh_ = frame.size
+    # the transparent interior is where the city gets drawn: scan out from the centre
+    cx, cy = fw_ // 2, fh_ // 2
+    ix = next(x for x in range(cx, -1, -1) if fa.getpixel((x, cy)) != 0) + 1
+    ex = next(x for x in range(cx, fw_) if fa.getpixel((x, cy)) != 0)
+    iy = next(y for y in range(cy, -1, -1) if fa.getpixel((cx, y)) != 0) + 1
+    ey = next(y for y in range(cy, fh_) if fa.getpixel((cx, y)) != 0)
+    iw, ih = ex - ix, ey - iy
+    S["WINDOW_FRAME"] = (rule_colours(frame, lz_frame_rule), {"fw": 2, "fh": 3, "ox": 0, "oy": 0, "inner": {"x": ix, "y": iy, "w": iw, "h": ih}})
     # floor: the office carpet 2x2 pattern from the room builder
     rb = Image.open(LZ_ROOM).convert("RGBA")
     floor = rb.crop((320, 160, 384, 224))
@@ -352,6 +388,7 @@ LZ_ROLES = {
     "plantTall": "PLANT_TALL", "plantPalm": "PLANT_PALM", "plantSmall": "PLANT_SMALL", "plantSmall2": "PLANT_SMALL_2", "plantBush": "PLANT_BUSH", "fruitBowl": "FRUIT_BOWL",
     "rugCheck": "RUG_CHECK", "rugRound": "RUG_ROUND", "rugMat": "RUG_MAT",
     "whiteboard": "WHITEBOARD", "whiteboardBlank": "WHITEBOARD_BLANK", "poster": "POSTER", "poster2": "POSTER_2", "certificate": "CERTIFICATE", "picture": "PICTURE", "stringLights": "STRING_LIGHTS",
+    "wallTop": "WALL_TOP", "wallMid": "WALL_MID", "wallBottom": "WALL_BOTTOM", "windowFrame": "WINDOW_FRAME",
     "floor": "FLOOR",
 }
 

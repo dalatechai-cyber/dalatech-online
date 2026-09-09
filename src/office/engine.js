@@ -8,8 +8,7 @@
  *
  * Rendering: a world canvas at 1 art pixel per canvas pixel is redrawn eight
  * times a second (floor + walls prerendered, then furniture and people sorted
- * by their feet, then lamp light with a screen blend, then the frosted panel,
- * then screen contents). It is blitted to the visible canvas at an integer
+ * by their feet, then lamp light with a screen blend, then screen contents). It is blitted to the visible canvas at an integer
  * scale through a camera that can ease onto one desk. Nothing runs while the
  * canvas is off screen, and reduced-motion gets one still frame.
  */
@@ -22,14 +21,15 @@ const GOLD_LIGHT = [255, 200, 96];
 // Screens, bubbles and signs use the same vocabulary as the rest of the site.
 const C = {
   wall: "#141D38", wallTop: "#1B2545", wallBase: "#0B1222", wallShade: "#0F172A", wallLine: "#1A2447",
-  frame: "#2A3358", frameHi: "#3A4478", sky: "#060C1C", skyLo: "#0C1430", horizon: "#101A3A",
-  mountain: "#0A1228", bldg: "#080E20", bldgHi: "#0C1430", winLit: "#7B8CB0", winDim: "#2A3452", star: "#BFD3FF", moon: "#DDE6FF",
+  // the city at night: the sky glows towards the horizon so silhouettes read dark against it
+  frame: "#2A3358", frameHi: "#3A4478", sky: "#0B1330", skyLo: "#152046", horizon: "#1E2C5C",
+  mountain: "#0D1636", bldg: "#050914", bldgHi: "#090F22", winLit: "#8FA0C4", winDim: "#2E3A5E", star: "#BFD3FF", moon: "#DDE6FF",
   floorA: "#171F3B", floorB: "#141C36", rug: "#1B2548", rugEdge: "#26325E", rugIn: "#1F2A52",
   screenBg: "#0A1226", bubbleIn: "#38BDF8", bubbleInTx: "#0A1226", bubbleOut: "#E6ECFF", bubbleOutTx: "#2A3558", dot: "#B7C2E0",
   chart: ["#38BDF8", "#5E9BFF", "#8B9FC4"], axis: "#8B9FC4", wave: "#38BDF8", waveAlt: "#5E9BFF",
   lampStem: "#3A3F55", lampBase: "#2A3358", lampShade: "#F59E0B", lampShadeLo: "#B45309", lampShadeHi: "#FBBF24", bulb: "#FDE68A",
   lampOff: "#2A3358", lampOffLo: "#1F274A",
-  frost: [17, 26, 51], frostEdge: "#38BDF8", talk: "#E6ECFF", talkTx: "#2A3558", shadow: "rgba(5,10,24,0.35)",
+  frost: [196, 210, 240], frostRail: "#8B9FC4", statue: "#020408", talk: "#E6ECFF", talkTx: "#2A3558", shadow: "rgba(5,10,24,0.35)",
 };
 
 // ------------------------------------------------------------------ work loops
@@ -179,30 +179,100 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
   // ---- static layers
   const bg = document.createElement("canvas"); bg.width = W; bg.height = H;
   const light = document.createElement("canvas"); light.width = W; light.height = H;
-  const frost = document.createElement("canvas"); frost.width = W; frost.height = H;
   let skylineSeed = null;
 
-  function drawSkyline(ctx, x, y, w, h, t) {
+  // ---- windows: the pack's hollow frame, `panes` copies side by side, with one
+  // continuous view of the city painted through all of them
+  const wallH = L.WALL_ROWS * T;
+  const windows = L.WINDOW.map((win) => {
+    const s = hasRole("windowFrame") ? spriteOf("windowFrame") : null;
+    const n = win.panes || 1;
+    const x0 = win.col * T + (win.dx || 0), y0 = (win.row || 0) * T + (win.dy || 0);
+    const panes = [];
+    for (let i = 0; i < n; i++) {
+      if (s) { const fx = x0 + i * s.w; panes.push({ fx, fy: y0, inner: { x: fx + s.inner.x, y: y0 + s.inner.y, w: s.inner.w, h: s.inner.h } }); }
+      else { const pw = Math.round((win.cols || 3.5) * T); panes.push({ fx: x0, fy: y0, w: pw, h: wallH - y0 - 14 * K, inner: { x: x0 + K, y: y0 + K, w: pw - 2 * K, h: wallH - y0 - 16 * K } }); }
+    }
+    const first = panes[0].inner, last = panes[n - 1].inner;
+    return { ...win, s, panes, glass: { x: first.x, y: first.y, w: last.x + last.w - first.x, h: first.h } };
+  });
+
+  // Ulaanbaatar at night, seen through one window. Units are K art pixels;
+  // `uy` counts up from the sill. Bogd Khan Uul behind, the city on the
+  // horizon, and one landmark in front: the Blue Sky tower's sail in one
+  // pane, Sükhbaatar on his horse over the square in the other.
+  function drawSkyline(ctx, g, t, landmark) {
+    const { x, y, w, h } = g;
+    const uw = Math.floor(w / K), uh = Math.floor(h / K);
+    const px = (ux, uy, cw, ch, c) => { ctx.fillStyle = c; ctx.fillRect(x + ux * K, y + h - (uy + ch) * K, cw * K, ch * K); };
     ctx.fillStyle = C.sky; ctx.fillRect(x, y, w, h);
-    ctx.fillStyle = C.skyLo; ctx.fillRect(x, y + h - 6 * K, w, 6 * K);
-    ctx.fillStyle = C.horizon; ctx.fillRect(x, y + h - 3 * K, w, 3 * K);
-    ctx.fillStyle = C.star;
-    skylineSeed.stars.forEach(([sx, sy]) => { if (sx * K < w && sy * K < h - 10 * K) ctx.fillRect(x + sx * K, y + sy * K, 1, 1); });
-    // a moon in the first pane
-    if (x < W / 2) { const mx = x + w - 14 * K, my = y + 6 * K; ctx.fillStyle = C.moon; ctx.fillRect(mx, my, 4 * K, 4 * K); ctx.fillStyle = C.sky; ctx.fillRect(mx + 2 * K, my - K, 3 * K, 3 * K); }
-    // Bogd Khan Uul behind the city
-    ctx.fillStyle = C.mountain;
-    for (let i = 0; i < w; i += K) { const m = (4 + Math.round(2.4 * Math.sin((x + i) / (13 * K)) + 1.8 * Math.sin((x + i) / (6 * K) + 1))) * K; ctx.fillRect(x + i, y + h - m - 5 * K, K, m + 5 * K); }
-    // buildings, with a few lit windows that switch over time
+    px(0, 0, uw, 15, C.skyLo); px(0, 0, uw, 9, C.horizon);
+    skylineSeed.stars.forEach(([sx, sy]) => { if (sx < uw && sy < uh - 14) px(sx, uh - 1 - sy, 1, 1, C.star); });
+    if (landmark === "tower") { px(5, uh - 7, 4, 4, C.moon); px(7, uh - 6, 4, 4, C.sky); }
+    // the mountain ridge south of the city
+    for (let i = 0; i < uw; i++) { const m = 7 + Math.round(2 * Math.sin(i / 4.5) + 1.4 * Math.sin(i / 2.2 + 1)); px(i, 0, 1, m + 2, C.mountain); }
+    // blocks along the horizon, a few windows lit, some switching over time
     skylineSeed.bldgs.forEach((b, i) => {
-      const bx = b.x * K, bw = b.w * K, bh = b.h * K;
-      if (bx >= w) return;
-      ctx.fillStyle = i % 3 === 0 ? C.bldgHi : C.bldg; ctx.fillRect(x + bx, y + h - bh, Math.min(bw, w - bx), bh);
-      b.lit.forEach(([lx, ly], k) => { if (lx * K >= Math.min(bw, w - bx)) return; const on = ((i * 7 + k * 13 + Math.floor(t / 2400)) % 5) !== 0; ctx.fillStyle = on ? C.winLit : C.winDim; ctx.fillRect(x + bx + lx * K, y + h - bh + ly * K, K, K); });
+      if (b.x >= uw) return;
+      const bw = Math.min(b.w, uw - b.x), bh = Math.min(b.h, 10);
+      px(b.x, 0, bw, bh, i % 3 === 0 ? C.bldgHi : C.bldg);
+      b.lit.forEach(([lx, ly], k) => { if (lx >= bw || ly >= bh) return; const on = ((i * 7 + k * 13 + Math.floor(t / 2400)) % 5) !== 0; px(b.x + lx, ly, 1, 1, on ? C.winLit : C.winDim); });
     });
-    // the tall curved tower, right of centre in the second pane
-    if (x > W / 2) { const tx = x + Math.floor(w * 0.55), th = 14 * K; ctx.fillStyle = C.bldgHi; ctx.fillRect(tx, y + h - th, 4 * K, th); ctx.fillRect(tx + 4 * K, y + h - th + 3 * K, K, th - 3 * K); ctx.fillStyle = C.winLit; for (let k = 0; k < 5; k++) ctx.fillRect(tx + K + (k % 2) * K, y + h - th + (2 + k * 2) * K, K, K); }
+    // the landmarks sit in the pane that is not hidden behind the frame's post
+    if (landmark === "tower") {
+      // Blue Sky: a straight spine on the left and a sail curving down to the right
+      const tx = uw - 14, th = 21, tw = 11;
+      for (let i = 0; i < tw; i++) { const hi = th - Math.round((i / (tw - 1)) * (i / (tw - 1)) * 15); px(tx + i, 0, 1, hi, C.bldg); }
+      px(tx, 0, 1, th, C.bldgHi);
+      for (let k = 0; k < 9; k++) { const ux = tx + 1 + ((k * 5) % 8), uy = 2 + k * 2; const hi = th - Math.round(((ux - tx) / (tw - 1)) * ((ux - tx) / (tw - 1)) * 15); if (uy < hi - 1) px(ux, uy, 1, 1, (k % 3) ? C.winLit : C.winDim); }
+      // a low block in front, so the tower stands in a street and not on a line
+      px(tx - 5, 0, 5, 4, C.bldg); px(tx - 4, 1, 1, 1, C.winLit); px(tx - 2, 2, 1, 1, C.winLit);
+    } else {
+      // the Government Palace's long colonnade behind the square, then the statue
+      px(-6, 0, 40, 6, C.bldg); px(2, 0, 14, 7, C.bldg);
+      for (let i = -4; i <= 30; i += 3) px(i, 1, 1, 4, i % 2 ? C.winDim : C.winLit);
+      const S = [
+        "....#...........", ".....#..##......", "......#.##......", ".......####.....", ".##....####.....",
+        "####..#####.....", ".####.######....", "..###########.#.", "...###########.#", "....##########..",
+        "....##.....##...", "....##.....##...", "....##.....##...", "..############..", "....########....",
+        "....########....", "....########....", "....########....", "..############..", "################",
+      ];
+      const top = S.length;
+      S.forEach((row, r) => { for (let c = 0; c < row.length; c++) if (row[c] === "#") px(c, top - 1 - r, 1, 1, C.statue); });
+    }
+    // reflection of the room in the glass: a faint gold band low in the pane
+    ctx.fillStyle = "rgba(245,158,11,0.05)"; ctx.fillRect(x, y + h - 10 * K, w, 10 * K);
   }
+  function paintWindows(ctx, t) {
+    windows.forEach((win) => {
+      ctx.save(); ctx.beginPath();
+      win.panes.forEach((p) => ctx.rect(p.inner.x, p.inner.y, p.inner.w, p.inner.h));
+      ctx.clip(); drawSkyline(ctx, win.glass, t, win.landmark); ctx.restore();
+      win.panes.forEach((p) => {
+        if (win.s) { drawSprite(ctx, win.s, p.fx, p.fy); return; }
+        ctx.fillStyle = C.frame; ctx.fillRect(p.fx, p.fy, p.w, K); ctx.fillRect(p.fx, p.fy + p.h - K, p.w, K); ctx.fillRect(p.fx, p.fy, K, p.h); ctx.fillRect(p.fx + p.w - K, p.fy, K, p.h);
+        ctx.fillStyle = C.frameHi; ctx.fillRect(p.fx, p.fy + p.h, p.w, K);
+      });
+    });
+  }
+
+  // ---- low frosted partitions across the unbuilt desks: glass with a top
+  // rail and end posts, drawn in the y-sort so people walking in front pass it
+  const partitions = L.DESKS.filter((d) => d.partition).map((d) => {
+    const q = d.partition, pw = q.cols * T - 4 * K, ph = 11 * K;
+    const cv = document.createElement("canvas"); cv.width = pw; cv.height = ph;
+    const c = cv.getContext("2d");
+    for (let yy = K; yy < ph - K; yy += K) for (let xx = 0; xx < pw; xx += K) {
+      const al = (((xx / K) + (yy / K)) & 1) ? 0.30 : 0.20;
+      c.fillStyle = `rgba(${C.frost[0]},${C.frost[1]},${C.frost[2]},${al})`; c.fillRect(xx, yy, K, K);
+    }
+    c.fillStyle = "rgba(230,236,255,0.16)"; c.fillRect(2 * K, 2 * K, pw - 4 * K, K); // a pale sheen under the rail
+    c.fillStyle = C.frostRail; c.fillRect(0, 0, pw, K); c.fillStyle = C.frame; c.fillRect(0, ph - K, pw, K);
+    c.fillRect(0, 0, 2 * K, ph); c.fillRect(pw - 2 * K, 0, 2 * K, ph);
+    c.fillStyle = C.frostRail; c.fillRect(0, 0, K, ph); c.fillRect(pw - 2 * K, 0, K, ph);
+    const x = q.col * T + 2 * K, y = Math.round(q.row * T) - 7 * K;
+    return { cv, x, y, w: pw, h: ph, sortY: q.row * T + 6 * K, deskId: d.id };
+  });
 
   function buildStatic() {
     const stars = []; for (let i = 0; i < 26; i++) stars.push([Math.floor(random() * 70), Math.floor(random() * 18)]);
@@ -211,21 +281,19 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     skylineSeed = { stars, bldgs };
 
     const ctx = bg.getContext("2d");
-    const wallH = L.WALL_ROWS * T;
-    // wall: a flat navy face with a faint panel line and a skirting board
-    ctx.fillStyle = C.wall; ctx.fillRect(0, 0, W, wallH);
-    ctx.fillStyle = C.wallTop; ctx.fillRect(0, 0, W, K);
-    ctx.fillStyle = C.wallLine; for (let x = 0; x < W; x += 4 * T) ctx.fillRect(x, K, 1, wallH - 4 * K);
-    ctx.fillStyle = C.wallBase; ctx.fillRect(0, wallH - 3 * K, W, 3 * K);
-    ctx.fillStyle = C.wallShade; ctx.fillRect(0, wallH - 4 * K, W, K);
-    // window panes
-    L.WINDOW.forEach((win) => {
-      const x = Math.round(win.col * T), w = Math.round(win.cols * T), y = 4 * K, h = wallH - 14 * K;
-      ctx.fillStyle = C.frame; ctx.fillRect(x - K, y - K, w + 2 * K, h + 2 * K);
-      drawSkyline(ctx, x, y, w, h, 0);
-      ctx.fillStyle = C.frame; for (let mx = x + T * 2 - K; mx < x + w - 2 * K; mx += T * 2) ctx.fillRect(mx, y, K, h);
-      ctx.fillStyle = C.frameHi; ctx.fillRect(x - K, y + h + K, w + 2 * K, K);
-    });
+    if (hasRole("wallTop")) {
+      // the pack's standing wall: cap row, plain rows, baseboard row
+      const top = spriteOf("wallTop"), mid = spriteOf("wallMid"), bot = spriteOf("wallBottom");
+      for (let r = 0; r < L.WALL_ROWS; r++) for (let c = 0; c < L.COLS; c++) drawSprite(ctx, r === 0 ? top : r === L.WALL_ROWS - 1 ? bot : mid, c * T, r * T);
+    } else {
+      // wall: a flat navy face with a faint panel line and a skirting board
+      ctx.fillStyle = C.wall; ctx.fillRect(0, 0, W, wallH);
+      ctx.fillStyle = C.wallTop; ctx.fillRect(0, 0, W, K);
+      ctx.fillStyle = C.wallLine; for (let x = 0; x < W; x += 4 * T) ctx.fillRect(x, K, 1, wallH - 4 * K);
+      ctx.fillStyle = C.wallBase; ctx.fillRect(0, wallH - 3 * K, W, 3 * K);
+      ctx.fillStyle = C.wallShade; ctx.fillRect(0, wallH - 4 * K, W, K);
+    }
+    paintWindows(ctx, 0);
     // floor: the pack's carpet tile if it has one, otherwise a quiet checker
     if (hasRole("floor")) {
       const fs = spriteOf("floor");
@@ -268,17 +336,6 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     }
     lctx.putImageData(img, 0, 0);
 
-    // frosted panel over the front row
-    const fctx = frost.getContext("2d");
-    const p = L.PROGRESS_PANEL, px = p.col * T + K, py = Math.round(p.row * T), pw = p.cols * T - 2 * K, ph = Math.round(p.rows * T);
-    for (let y = 0; y < ph; y += K) for (let x = 0; x < pw; x += K) {
-      const al = (((x / K) + (y / K)) & 1) ? 0.52 : 0.40;
-      fctx.fillStyle = `rgba(${C.frost[0]},${C.frost[1]},${C.frost[2]},${al})`; fctx.fillRect(px + x, py + y, K, K);
-    }
-    // a thin dashed edge, so the panel reads as a boundary and not a box
-    fctx.fillStyle = "rgba(56,189,248,0.7)";
-    for (let x = px; x < px + pw; x += 6 * K) { fctx.fillRect(x, py, 3 * K, 1); fctx.fillRect(x, py + ph - 1, 3 * K, 1); }
-    for (let y = py; y < py + ph; y += 6 * K) { fctx.fillRect(px, y, 1, 3 * K); fctx.fillRect(px + pw - 1, y, 1, 3 * K); }
   }
 
   function lampPos(desk) { return desk.light; }
@@ -417,8 +474,7 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     // window lights change over time; redraw panes only every few seconds
     if (Math.floor(t / 2400) !== drawWorld.lastSky) {
       drawWorld.lastSky = Math.floor(t / 2400);
-      const bctx = bg.getContext("2d");
-      L.WINDOW.forEach((win) => drawSkyline(bctx, Math.round(win.col * T), 4 * K, Math.round(win.cols * T), L.WALL_ROWS * T - 14 * K, t));
+      paintWindows(bg.getContext("2d"), t);
     }
     people.forEach((p) => { p.work = workState(p.desk.work, t + PHASE_OFFSET[p.id]); });
     const items = furniture.filter((f) => !f.wall && !f.flat).map((f) => ({ y: f.sortY, draw: () => {
@@ -427,14 +483,11 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
       drawSprite(wctx, f.role === "pc" ? spriteOf("pc", Math.floor(t / 400)) : f.s, f.x, f.y);
     } }));
     people.forEach((p) => items.push({ y: p.y + T, draw: () => drawPerson(wctx, p, t) }));
+    partitions.forEach((q) => items.push({ y: q.sortY, draw: () => wctx.drawImage(q.cv, q.x, q.y) }));
     if (!hasRole("lamp")) L.DESKS.forEach((d) => items.push({ y: d.light.y + 12, draw: () => drawLamp(wctx, d, d.live) }));
     items.sort((a, b) => a.y - b.y).forEach((it) => it.draw());
     wctx.globalCompositeOperation = "screen"; wctx.drawImage(light, 0, 0); wctx.globalCompositeOperation = "source-over";
-    wctx.drawImage(frost, 0, 0);
-    // scan line on the frost, so it reads as a live panel
-    const p = L.PROGRESS_PANEL, sy = Math.round(p.row * T) + K + Math.floor((t / 60) % ((Math.round(p.rows * T) - 2 * K) / K)) * K;
-    wctx.fillStyle = "rgba(56,189,248,0.14)"; wctx.fillRect(p.col * T + 2 * K, sy, p.cols * T - 4 * K, K);
-    // screens are emissive: after the light, after the frost
+    // screens are emissive: after the light
     L.DESKS.forEach((d) => {
       const pc = pcs[d.id]; if (!pc) return;
       const screens = pc.s.screens || [];
@@ -454,7 +507,8 @@ export function createOffice({ canvas, manifest, atlas, onView, reducedMotion = 
     view.base = Math.max(1, baseCss) * view.dpr;
   }
   function targetFor(focus) {
-    if (!focus) return { scale: view.base, cx: W / 2, cy: H / 2 };
+    // the stage is a little shorter than the world: keep the wall, crop the lounge
+    if (!focus) return { scale: view.base, cx: W / 2, cy: Math.min(H / 2, view.ch / view.base / 2) };
     const z = focus.zone;
     const zw = z.cols * T, zh = z.rows * T;
     const s = Math.round(view.base * 1.5);

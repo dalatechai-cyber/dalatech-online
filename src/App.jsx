@@ -23,7 +23,7 @@ import {
 } from "framer-motion";
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
-import { DESKS as OFFICE_DESKS, COLS as OFFICE_COLS, ROWS as OFFICE_ROWS } from "./office/layout";
+import { DESKS as OFFICE_DESKS, COLS as OFFICE_COLS, VIEW_ROWS as OFFICE_ROWS } from "./office/layout";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
