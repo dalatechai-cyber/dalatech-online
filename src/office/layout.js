@@ -10,11 +10,3 @@ export const DESKS = [
   { id: "nova", live: false, kind: "outreach", variant: "type", x: -3.05, z: 2.3, dir: 0.42 },
   { id: "eho", live: false, kind: "call", variant: "phone", x: 3.05, z: 2.3, dir: -0.42 },
 ];
-
-// Which errand each person runs, in turn. Spots are defined by the room.
-export const ERRANDS = {
-  ara: ["coffee", "sofa", "window"],
-  veda: ["window", "coffee", "bookcase"],
-  nova: ["bookcase", "coffee"],
-  eho: ["coffee", "window"],
-};

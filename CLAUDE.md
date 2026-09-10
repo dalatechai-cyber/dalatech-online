@@ -32,7 +32,7 @@ gate — run it before committing and treat a build failure as blocking.
     src/OfficeScene.jsx   mounts the /office room, lazy-loaded
     src/office/           the /office engine: engine.js (loop, camera, taps),
                           room.js (walls, furniture, lights, screens),
-                          people.js (rigged staff), layout.js, agents.js (prices)
+                          people.js (rigged staff, desk activities), layout.js, agents.js (prices)
     src/Setup.jsx         Facebook SDK page-connect flow, lazy-loaded at /setup
     src/i18n.js           i18next init
     src/locales/          en.json, mn.json, zh-TW.json
