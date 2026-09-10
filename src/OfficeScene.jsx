@@ -1,109 +1,132 @@
 import React from "react";
 import { createOffice } from "./office/engine";
-import manifest from "./office/pack.json";
 
 /**
- * Mounts the office engine on a canvas that fills its parent. Loads the atlas,
- * sizes the canvas to the parent (device pixels, so the art stays crisp),
- * forwards taps on desks, and reports the camera to the page so labels can be
- * placed in world coordinates.
+ * Mounts the office engine on a canvas that fills its parent, sizes it to the
+ * parent in device pixels, pauses it when off screen, forwards taps and
+ * pointer movement, and reports the establishing scroll progress.
  *
- * Lazy-loaded: the engine, the manifest and the atlas only arrive on /office.
+ * Lazy-loaded: three.js and the models only arrive on /office.
  */
-export default function OfficeScene({ activeDesk, onSelectDesk, onView, onStatus }) {
+export default function OfficeScene({ activeDesk, onSelectDesk, onStatus, onHover, labelRefs }) {
   const canvasRef = React.useRef(null);
   const engineRef = React.useRef(null);
-  const onViewRef = React.useRef(onView);
   const onStatusRef = React.useRef(onStatus);
+  const onHoverRef = React.useRef(onHover);
   const activeRef = React.useRef(activeDesk);
-  onViewRef.current = onView;
   onStatusRef.current = onStatus;
+  onHoverRef.current = onHover;
   activeRef.current = activeDesk;
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
-    let cancelled = false;
-    let engine = null;
-    let ro = null;
     const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const hover = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    // phone-class: a coarse pointer or few cores gets the lighter shadow setup
+    const lite = !hover || (navigator.hardwareConcurrency || 8) <= 4;
+    let engine;
+    try {
+      engine = createOffice({
+        canvas, reducedMotion: reduced, lite,
+        onStatus: (s, err) => { if (onStatusRef.current) onStatusRef.current(s, err); },
+        onHover: (id) => { if (onHoverRef.current) onHoverRef.current(id); },
+      });
+    } catch (err) {
+      // no WebGL, or a lost context on start
+      console.error("Office engine failed to start:", err);
+      if (onStatusRef.current) onStatusRef.current("failed", err);
+      return undefined;
+    }
+    engineRef.current = engine;
+    canvas.__office = engine; // for tests
 
-    const img = new Image();
-    img.decoding = "async";
-    let lastView = null;
-    const onLoad = () => {
-      if (cancelled) return;
-      try {
-        engine = createOffice({
-          canvas,
-          manifest,
-          atlas: img,
-          reducedMotion: reduced,
-          onView: (v) => {
-            // only wake React when the camera actually moved
-            if (lastView && lastView.ox === v.ox && lastView.oy === v.oy && lastView.scale === v.scale && lastView.cw === v.cw) return;
-            lastView = v;
-            if (onViewRef.current) onViewRef.current(v);
-          },
-        });
-      } catch (err) {
-        console.error("Office engine failed to start:", err);
-        if (onStatusRef.current) onStatusRef.current("failed");
-        return;
-      }
-      engineRef.current = engine;
-      canvas.__office = engine; // for tests
-      const parent = canvas.parentElement;
-      const size = () => {
+    const parent = canvas.parentElement;
+    const size = () => {
+      const r = parent.getBoundingClientRect();
+      const dpr = Math.min(lite ? 1.5 : 2, window.devicePixelRatio || 1);
+      engine.setViewport(r.width * dpr, r.height * dpr, dpr);
+    };
+    size();
+    const ro = new ResizeObserver(size);
+    ro.observe(parent);
+
+    // the establishing move: the camera settles as the stage scrolls into place
+    let scrollRaf = 0;
+    const onScroll = () => {
+      if (scrollRaf) return;
+      scrollRaf = requestAnimationFrame(() => {
+        scrollRaf = 0;
         const r = parent.getBoundingClientRect();
-        const dpr = Math.min(3, window.devicePixelRatio || 1);
-        engine.setViewport(r.width * dpr, r.height * dpr, dpr);
-      };
-      size();
-      ro = new ResizeObserver(size);
-      ro.observe(parent);
-      // a deep link (?desk=) arrives before the atlas has loaded
-      if (activeRef.current) engine.setFocus(activeRef.current);
-      engine.start();
-      if (onStatusRef.current) onStatusRef.current("ready");
+        const vh = window.innerHeight || 1;
+        engine.setScroll((vh - r.top) / (vh * 0.55 + r.height * 0.5));
+      });
     };
-    const onError = () => {
-      if (cancelled) return;
-      console.error("Office atlas failed to load:", img.src);
-      if (onStatusRef.current) onStatusRef.current("failed");
-    };
-    img.addEventListener("load", onLoad);
-    img.addEventListener("error", onError);
-    img.src = manifest.atlas;
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // no frames while off screen or in a background tab
+    let visible = true, shown = true;
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible && shown) engine.resume(); else engine.pause(); }, { threshold: 0.02 });
+    io.observe(parent);
+    const onVis = () => { shown = !document.hidden; if (visible && shown) engine.resume(); else engine.pause(); };
+    document.addEventListener("visibilitychange", onVis);
+
+    // a lost GL context (the GPU was reclaimed, usually on a phone) leaves a frozen frame: say so instead
+    const onLost = (e) => { e.preventDefault(); console.error("Office: WebGL context lost"); engine.pause(); if (onStatusRef.current) onStatusRef.current("failed"); };
+    canvas.addEventListener("webglcontextlost", onLost);
+
+    if (activeRef.current) engine.setFocus(activeRef.current);
+    if (labelRefs) for (const id in labelRefs.current) engine.attachLabel(id, labelRefs.current[id]);
+    engine.start();
 
     return () => {
-      cancelled = true;
-      img.removeEventListener("load", onLoad);
-      img.removeEventListener("error", onError);
-      if (ro) ro.disconnect();
-      if (engine) engine.destroy();
+      canvas.removeEventListener("webglcontextlost", onLost);
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVis);
+      cancelAnimationFrame(scrollRaf);
+      ro.disconnect(); io.disconnect();
+      engine.destroy();
       engineRef.current = null;
     };
-  }, []);
+  }, [labelRefs]);
 
   React.useEffect(() => {
     if (engineRef.current) engineRef.current.setFocus(activeDesk);
   }, [activeDesk]);
 
+  const local = (e) => {
+    const r = canvasRef.current.getBoundingClientRect();
+    return [e.clientX - r.left, e.clientY - r.top, r];
+  };
   const onClick = (e) => {
     const engine = engineRef.current;
     if (!engine) return;
-    const r = canvasRef.current.getBoundingClientRect();
-    const dpr = canvasRef.current.width / r.width;
-    const id = engine.hitTest((e.clientX - r.left) * dpr, (e.clientY - r.top) * dpr);
+    const [x, y] = local(e);
+    const id = engine.hitTest(x, y);
     onSelectDesk(id && id !== activeDesk ? id : null);
+  };
+  const onPointerMove = (e) => {
+    const engine = engineRef.current;
+    if (!engine || e.pointerType !== "mouse") return;
+    const [x, y, r] = local(e);
+    engine.setPointer((x / r.width) * 2 - 1, -((y / r.height) * 2 - 1));
+    engine.setHover(engine.hitTest(x, y));
+  };
+  const onPointerLeave = () => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    engine.setPointer(null);
+    engine.setHover(null);
   };
 
   return (
     <canvas
       ref={canvasRef}
       onClick={onClick}
-      className="block h-full w-full [image-rendering:pixelated]"
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+      className="block h-full w-full"
       style={{ touchAction: "manipulation" }}
       aria-hidden
     />

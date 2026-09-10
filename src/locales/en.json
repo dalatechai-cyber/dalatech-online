@@ -537,6 +537,8 @@
     "addOnOnly": "Only available alongside another agent.",
     "comingSoon": "Coming soon",
     "unavailable": "The office could not be loaded.",
+    "loading": "Loading the office…",
+    "close": "Close",
     "imageAlt": "Dala AI office",
     "agents": {
       "ara": {

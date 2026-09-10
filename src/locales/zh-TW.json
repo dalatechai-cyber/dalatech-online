@@ -537,6 +537,8 @@
     "addOnOnly": "僅可與其他員工一同選購。",
     "comingSoon": "即將推出",
     "unavailable": "辦公室載入失敗。",
+    "loading": "正在載入辦公室…",
+    "close": "關閉",
     "imageAlt": "Dala AI 辦公室",
     "agents": {
       "ara": {

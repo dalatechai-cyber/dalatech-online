@@ -29,11 +29,18 @@ gate — run it before committing and treat a build failure as blocking.
     src/main.jsx          entry; mounts <App> in StrictMode
     src/App.jsx           ~3.4k lines: every component, page and the router
     src/Globe.jsx         three.js globe, lazy-loaded
+    src/OfficeScene.jsx   mounts the /office room, lazy-loaded
+    src/office/           the /office engine: engine.js (loop, camera, taps),
+                          room.js (walls, furniture, lights, screens),
+                          people.js (rigged staff), layout.js, agents.js (prices)
     src/Setup.jsx         Facebook SDK page-connect flow, lazy-loaded at /setup
     src/i18n.js           i18next init
     src/locales/          en.json, mn.json, zh-TW.json
     public/               static assets, plus standalone pages (below)
     scripts/              one-off maintenance scripts, not part of the build
+                          (scripts/office3d/build-models.mjs rebuilds
+                          public/office/models from the CC0 packs in
+                          assets-src/office/3d, which are not committed)
 
 `src/App.jsx` holds the whole UI. Page components (`LandingPage`,
 `ProductsPage`, …) live near the bottom and compose the section components
