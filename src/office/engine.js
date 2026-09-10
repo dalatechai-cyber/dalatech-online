@@ -27,7 +27,7 @@ export function createOffice({ canvas, reducedMotion = false, lite = false, onSt
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.3;
+  renderer.toneMappingExposure = 1.1;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = lite ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
 
@@ -201,17 +201,27 @@ export function createOffice({ canvas, reducedMotion = false, lite = false, onSt
   // ---------------------------------------------------------------- labels and taps
   const v = new THREE.Vector3();
   function placeLabels() {
+    const cssW = width / dpr;
+    const placed = [];
     for (const id in labels) {
       const el = labels[id]; const st = stations[id]; if (!el || !st) continue;
       v.copy(st.labelAnchor).project(camera);
-      const behind = v.z > 1;
-      const cssW = width / dpr;
       // keep the whole pill inside the stage
-      const half = el.offsetWidth / 2 + 6;
+      const half = el.offsetWidth / 2 + 6, h = el.offsetHeight;
       const px = Math.min(cssW - half, Math.max(half, (v.x * 0.5 + 0.5) * cssW)), py = (-v.y * 0.5 + 0.5) * (height / dpr);
-      el.style.transform = `translate(-50%, -100%) translate(${px.toFixed(1)}px, ${py.toFixed(1)}px)`;
-      el.style.visibility = behind ? "hidden" : "visible";
-      el.style.zIndex = String(Math.round(1000 - v.z * 500)); // nearer desks over farther ones
+      placed.push({ el, x: px, y: py, half, h, depth: v.z, behind: v.z > 1 });
+    }
+    // nearer desks keep their spot; a farther label that would overlap one moves up out of its way
+    placed.sort((a, b) => a.depth - b.depth);
+    for (let i = 0; i < placed.length; i++) {
+      const a = placed[i];
+      for (let j = 0; j < i; j++) {
+        const b = placed[j];
+        if (Math.abs(a.x - b.x) < a.half + b.half - 6 && a.y > b.y - b.h - 4 && a.y - a.h < b.y + 4) a.y = b.y - b.h - 6;
+      }
+      a.el.style.transform = `translate(-50%, -100%) translate(${a.x.toFixed(1)}px, ${a.y.toFixed(1)}px)`;
+      a.el.style.visibility = a.behind ? "hidden" : "visible";
+      a.el.style.zIndex = String(1000 - i);
     }
   }
   function hitTest(cssX, cssY) {
