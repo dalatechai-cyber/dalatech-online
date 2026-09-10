@@ -23,7 +23,7 @@ import {
 } from "framer-motion";
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
-import { DESKS as OFFICE_DESKS, COLS as OFFICE_COLS, VIEW_ROWS as OFFICE_ROWS } from "./office/layout";
+import { DESKS as OFFICE_DESKS } from "./office/layout";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -4222,48 +4222,9 @@ function FAQPage() {
 // Pads non-landing pages so content sits below the fixed navbar.
 
 // ---------------------------------------------------------------------------
-// /office — the AI staff as one office floor. The picture is a generated
-// pixel-art image; OfficeScene animates it. This page owns the zoom, the
-// labels placed in the space, the roster and the bundle board.
-
-// World (art pixel) coordinates -> CSS position inside the stage, through the
-// camera the scene reports. Labels live in the stage layer so their type never
-// scales with the zoom.
-function officeStagePoint(view, wx, wy) {
-  if (!view) return { left: "50%", top: "50%", opacity: 0 };
-  const dpr = view.cw / view.cssW;
-  return { left: `${(view.ox + wx * view.scale) / dpr}px`, top: `${(view.oy + wy * view.scale) / dpr}px` };
-}
-// like officeStagePoint, but keeps a box of the info card's width inside the stage
-function officeBoxPoint(view, wx, wy) {
-  if (!view) return { left: "50%", top: "50%", opacity: 0 };
-  const dpr = view.cw / view.cssW;
-  const boxW = Math.min(0.82 * view.cssW, 340);
-  const x = (view.ox + wx * view.scale) / dpr;
-  const left = Math.min(view.cssW - boxW / 2 - 8, Math.max(boxW / 2 + 8, x));
-  return { left: `${left}px`, top: `${(view.oy + wy * view.scale) / dpr}px` };
-}
-function deskWorld(desk, T) {
-  const z = desk.zone;
-  // the nameplate and the info box hang from `tag` (the desk front), not the zoom frame
-  const tag = desk.tag || { col: z.col + z.cols / 2, row: z.row + z.rows };
-  return { cx: tag.col * T, top: z.row * T, bottom: tag.row * T };
-}
-
-function OfficeTag({ view, x, y, dim, children, className = "" }) {
-  return (
-    <div
-      className={[
-        "pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-sm px-1.5 py-px font-display text-[9px] font-semibold uppercase tracking-[0.16em] transition-opacity duration-300 sm:text-[10px]",
-        dim ? "bg-ink-950/55 text-fg-dim/80" : "bg-ink-950/60 text-sky-300/85",
-        className,
-      ].join(" ")}
-      style={officeStagePoint(view, x, y)}
-    >
-      {children}
-    </div>
-  );
-}
+// /office — the AI staff at work in a small three.js room. OfficeScene runs
+// the engine; this page owns the nameplates over the desks, the glass card
+// that opens on a tap, the roster and the bundle board.
 
 function OfficePriceLine({ id }) {
   const { t } = useTranslation();
@@ -4278,19 +4239,59 @@ function OfficePriceLine({ id }) {
   );
 }
 
+// The card that opens beside a desk: Liquid Glass over the live scene. On wide
+// screens it hovers to the right of the person; on phones it rises as a sheet.
+function OfficeCard({ desk, onClose, onHire }) {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const name = t(`office.agents.${desk.id}.name`);
+  return (
+    <motion.div
+      role="dialog"
+      aria-label={name}
+      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1, transition: { delay: 0.25, type: "spring", stiffness: 260, damping: 26, mass: 0.8 } }}
+      exit={{ opacity: 0, y: reduced ? 0 : 10, scale: reduced ? 1 : 0.985, transition: { duration: 0.18 } }}
+      className="glass-panel absolute inset-x-3 bottom-3 rounded-[22px] p-4 sm:inset-x-auto sm:bottom-auto sm:right-5 sm:top-1/2 sm:w-[min(360px,42%)] sm:-translate-y-1/2 sm:rounded-[26px] sm:p-5"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-display text-[22px] font-semibold leading-none tracking-tight text-fg sm:text-[26px]">{name}</p>
+          <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-300">{t(`office.agents.${desk.id}.role`)}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t("office.close")}
+          data-cursor="hover"
+          className="pressable -mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-fg-muted ring-1 ring-inset ring-white/[0.12] hover:bg-white/[0.14] hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+        </button>
+      </div>
+      <p className="mt-3 text-[13.5px] leading-[1.5] text-fg/85 sm:text-[14px]">{t(`office.agents.${desk.id}.job`)}</p>
+      <div className="mt-4 border-t border-white/[0.1] pt-3">
+        <OfficePriceLine id={desk.id} />
+        {OFFICE_AGENTS[desk.id].addOnOnly && <p className="mt-1 text-[11.5px] text-fg-muted">{t("office.addOnOnly")}</p>}
+        {!desk.live && <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-300/90">{t("office.comingSoon")}</p>}
+      </div>
+      <div className="mt-4">
+        <MagneticButton onClick={onHire} variant="primary" className="w-full min-h-[44px] justify-center">
+          {desk.live ? t("office.hire", { name }) : t("office.preorder")}
+        </MagneticButton>
+      </div>
+    </motion.div>
+  );
+}
+
 function OfficeStage({ activeId, onSelect }) {
   const { t } = useTranslation();
   const { open: openDemoRequest } = useDemoRequest();
   const active = OFFICE_DESKS.find((d) => d.id === activeId) || null;
-  const stageRef = React.useRef(null);
-  const [view, setView] = React.useState(null);
   const [status, setStatus] = React.useState("loading");
-  const T = view ? view.T : 16; // art pixels per tile, reported by the scene
-
-  const onView = React.useCallback((v) => {
-    const el = stageRef.current;
-    setView({ ...v, cssW: el ? el.getBoundingClientRect().width : v.cw });
-  }, []);
+  const [hover, setHover] = React.useState(null);
+  // the engine moves the nameplates itself each frame; React only owns their content
+  const labelRefs = React.useRef({});
 
   // Escape closes the desk; matches the dialogs elsewhere on the site.
   React.useEffect(() => {
@@ -4301,82 +4302,70 @@ function OfficeStage({ activeId, onSelect }) {
   }, [active, onSelect]);
 
   const hire = () => openDemoRequest([active.id]);
+  const onStatus = React.useCallback((s, err) => { setStatus(s); if (s === "failed" && err) console.error(err); }, []);
 
   return (
-    <div className="relative">
-      <div
-        ref={stageRef}
-        className="relative mx-auto w-full max-w-[832px] overflow-hidden border border-white/[0.08] bg-ink-950 shadow-card"
-        style={{ aspectRatio: `${OFFICE_COLS} / ${OFFICE_ROWS}` }}
-      >
-        <ErrorBoundary fallback={<div className="flex h-full w-full items-center justify-center text-[13px] text-fg-muted">{t("office.unavailable")}</div>}>
-          <React.Suspense fallback={<div className="h-full w-full bg-ink-900" />}>
-            <OfficeScene activeDesk={activeId} onSelectDesk={onSelect} onView={onView} onStatus={setStatus} />
-          </React.Suspense>
-        </ErrorBoundary>
-        {status === "failed" && (
-          <div className="absolute inset-0 flex items-center justify-center bg-ink-950/80 text-[13px] text-fg-muted">{t("office.unavailable")}</div>
+    <div
+      className={[
+        "relative mx-auto w-full max-w-[1040px] overflow-hidden bg-ink-950 sm:rounded-[28px] sm:border sm:border-white/[0.08] sm:shadow-card",
+        "aspect-[4/5] sm:aspect-[16/10]",
+        hover && !active ? "cursor-pointer" : "",
+      ].join(" ")}
+    >
+      <ErrorBoundary fallback={<div className="flex h-full w-full items-center justify-center text-[13px] text-fg-muted">{t("office.unavailable")}</div>}>
+        <React.Suspense fallback={<div className="h-full w-full bg-ink-900" />}>
+          <OfficeScene activeDesk={activeId} onSelectDesk={onSelect} onStatus={onStatus} onHover={setHover} labelRefs={labelRefs} />
+        </React.Suspense>
+      </ErrorBoundary>
+
+      {/* while the models arrive */}
+      <AnimatePresence>
+        {status === "loading" && (
+          <motion.div key="loading" exit={{ opacity: 0, transition: { duration: 0.6 } }} className="absolute inset-0 flex items-center justify-center bg-ink-950">
+            <div className="flex items-center gap-3 text-[13px] text-fg-muted">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-sky-400" aria-hidden />
+              {t("office.loading")}
+            </div>
+          </motion.div>
         )}
+      </AnimatePresence>
+      {status === "failed" && (
+        <div className="absolute inset-0 flex items-center justify-center bg-ink-950/80 text-[13px] text-fg-muted">{t("office.unavailable")}</div>
+      )}
 
-        {/* nameplates on each desk front, in stage space so the type never scales */}
-        {status === "ready" && OFFICE_DESKS.map((d) => {
-          const w = deskWorld(d, T);
-          return (
-            <OfficeTag key={d.id} view={view} x={w.cx} y={w.bottom - 7} dim={!d.live} className={active ? "opacity-0" : "opacity-100"}>
-              {t(`office.agents.${d.id}.name`)}
-            </OfficeTag>
-          );
-        })}
+      {/* nameplates over each desk, moved by the engine, hidden while a desk is open */}
+      {OFFICE_DESKS.map((d) => (
+        <button
+          key={d.id}
+          type="button"
+          ref={(el) => { labelRefs.current[d.id] = el; }}
+          onClick={() => onSelect(d.id)}
+          tabIndex={-1}
+          aria-hidden
+          data-cursor="hover"
+          style={{ visibility: "hidden" }}
+          className={[
+            "absolute left-0 top-0 flex items-center gap-2 whitespace-nowrap rounded-full py-1 pl-2 pr-2.5 text-[11px] font-semibold tracking-[0.02em] transition-[opacity,background-color] duration-300 sm:text-[12px]",
+            "glass-pill",
+            status === "ready" && !active ? "opacity-100" : "pointer-events-none opacity-0",
+            hover === d.id ? "bg-white/[0.18]" : "",
+          ].join(" ")}
+        >
+          <span className={["h-1.5 w-1.5 rounded-full", d.live ? "bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.9)]" : "bg-fg-dim/70"].join(" ")} aria-hidden />
+          <span className="text-fg">{t(`office.agents.${d.id}.name`)}</span>
+          <span className="hidden text-fg-muted sm:inline">{t(`office.agents.${d.id}.role`)}</span>
+        </button>
+      ))}
 
-        {/* what appears in the space once a desk is open */}
-        <AnimatePresence>
-          {active && status === "ready" && (
-            <React.Fragment key={active.id}>
-              <motion.div
-                // the centring lives in the motion value: framer resets `transform` once y reaches 0
-                initial={{ opacity: 0, y: 6, x: "-50%" }}
-                animate={{ opacity: 1, y: 0, x: "-50%", transition: { delay: 0.3, ...SPRING_REVEAL } }}
-                exit={{ opacity: 0, transition: { duration: 0.15 } }}
-                className="pointer-events-none absolute w-[min(82%,340px)] border border-sky-400/40 bg-ink-950/90 px-3 py-2 shadow-glow backdrop-blur-sm"
-                style={officeBoxPoint(view, deskWorld(active, T).cx, deskWorld(active, T).bottom + 6)}
-              >
-                <p className="font-display text-[18px] font-semibold leading-tight tracking-tight text-fg sm:text-[20px]">
-                  {t(`office.agents.${active.id}.name`)}
-                  <span className="ml-2 text-[12px] font-medium uppercase tracking-[0.14em] text-sky-300">{t(`office.agents.${active.id}.role`)}</span>
-                </p>
-                <p className="mt-1 text-[12.5px] leading-[1.45] text-fg-muted sm:text-[13px]">{t(`office.agents.${active.id}.job`)}</p>
-                <p className="mt-2"><OfficePriceLine id={active.id} /></p>
-                {OFFICE_AGENTS[active.id].addOnOnly && <p className="mt-1 text-[11px] text-fg-dim">{t("office.addOnOnly")}</p>}
-                {!active.live && <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-dim">{t("office.comingSoon")}</p>}
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { delay: 0.35, duration: 0.3 } }}
-                exit={{ opacity: 0, transition: { duration: 0.15 } }}
-                className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-ink-950 via-ink-950/80 to-transparent px-3 pb-3 pt-8 sm:px-4 sm:pb-4"
-              >
-                <button
-                  type="button"
-                  onClick={() => onSelect(null)}
-                  data-cursor="hover"
-                  className="pressable inline-flex min-h-[44px] items-center gap-2 rounded-xl px-3 text-[13px] font-medium text-fg-muted ring-1 ring-inset ring-white/10 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
-                >
-                  <span aria-hidden>←</span> {t("office.back")}
-                </button>
-                <MagneticButton onClick={hire} variant="primary" className="min-h-[44px]">
-                  {active.live ? t("office.hire", { name: t(`office.agents.${active.id}.name`) }) : t("office.preorder")}
-                </MagneticButton>
-              </motion.div>
-            </React.Fragment>
-          )}
-        </AnimatePresence>
+      <AnimatePresence>
+        {active && status === "ready" && <OfficeCard key={active.id} desk={active} onClose={() => onSelect(null)} onHire={hire} />}
+      </AnimatePresence>
 
-        {!active && status === "ready" && (
-          <p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink-950/80 px-3 py-1 text-[11px] font-medium tracking-[0.06em] text-fg-muted sm:bottom-3">
-            {t("office.tapHint")}
-          </p>
-        )}
-      </div>
+      {!active && status === "ready" && (
+        <p className="glass-pill pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-medium tracking-[0.04em] text-fg-muted sm:bottom-4">
+          {t("office.tapHint")}
+        </p>
+      )}
     </div>
   );
 }
