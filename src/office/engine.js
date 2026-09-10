@@ -1,5 +1,5 @@
 // The /office engine: a small three.js room with the four AI staff at work.
-// Owns loading, the scene, the camera rig, taps, the errand scheduler and the
+// Owns loading, the scene, the camera rig, taps and the
 // frame loop. The page owns the labels and the glass card; it drives this
 // through the returned handle.
 import * as THREE from "three";
@@ -7,11 +7,9 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { ROOM, CHAIR_SCALE, createFurniture, buildRoom, buildLights, createScreenFeed, laptop, panelFace } from "./room";
 import { Person } from "./people";
-import { DESKS, ERRANDS } from "./layout";
+import { DESKS } from "./layout";
 
 const MODELS = "/office/models/";
-const FIRST_ERRAND_AT = 2.5; // seconds after the room appears
-const ERRAND_EVERY = 9; // seconds between departures
 
 function loadGltf(url) {
   const loader = new GLTFLoader();
@@ -21,7 +19,7 @@ function loadGltf(url) {
 
 /**
  * createOffice({ canvas, reducedMotion, lite, onStatus, onHover })
- *  - reducedMotion: no dolly, no errands, no parallax; the room still lives on its screens
+ *  - reducedMotion: no dolly, no parallax; the room still lives on its screens and in the hands
  *  - lite: phone-class GPU — fewer shadows, capped pixel ratio
  * Returns { start, destroy, setViewport, setFocus, hitTest, setPointer, attachLabel }.
  */
@@ -43,7 +41,7 @@ export function createOffice({ canvas, reducedMotion = false, lite = false, onSt
   let people = [], stations = {}, feeds = [], room = null, hitMeshes = [];
   let focus = null, hoverId = null;
   let running = false, destroyed = false, ready = false, raf = 0;
-  let last = 0, t = 0, nextErrand = FIRST_ERRAND_AT, errandTurn = 0;
+  let t = 0;
   const pointer = { x: 0, y: 0, active: false };
   const labels = {};
   const clock = { last: performance.now() };
@@ -71,12 +69,10 @@ export function createOffice({ canvas, reducedMotion = false, lite = false, onSt
     const d = st.desk;
     const aspect = width / height, portrait = aspect < 1.05;
     fovGoal = portrait ? 50 : 34;
-    // frame the person where they are now: at the desk, or out on an errand
-    const person = st.person;
-    const where = person.obj.position;
+    const where = st.person.seat;
     const f = new THREE.Vector3(Math.sin(d.dir), 0, Math.cos(d.dir));
     const back = d.z < 3; // the back row sits behind the front desks: come in higher, closer, and from the wall side
-    goalLook.set(where.x, person.state === "seated" ? 1.0 : 1.3, where.z);
+    goalLook.set(where.x, 1.0, where.z);
     goalPos.set(where.x, 0, where.z).addScaledVector(f, back ? 1.9 : 2.5);
     goalPos.y = back ? 1.9 : 1.45;
     if (back) goalPos.x += (d.x < 0 ? -1 : 1) * 0.6;
@@ -91,8 +87,10 @@ export function createOffice({ canvas, reducedMotion = false, lite = false, onSt
       goalLook.addScaledVector(right, halfH * aspect * 0.34);
     }
   }
+  let debugCam = null; // tests only: a fixed camera instead of the rig
   function updateCamera(dt) {
     if (focus && stations[focus]) focusGoal(focus); else overviewGoal();
+    if (debugCam) { goalPos.copy(debugCam.pos); goalLook.copy(debugCam.look); fovGoal = debugCam.fov || 40; }
     const k = reducedMotion ? 1 : 1 - Math.exp(-dt * 3.2);
     camPos.lerp(goalPos, k); camLook.lerp(goalLook, k);
     camera.fov += (fovGoal - camera.fov) * k;
@@ -123,92 +121,81 @@ export function createOffice({ canvas, reducedMotion = false, lite = false, onSt
     buildLights(scene, lampPositions, lite);
   }
 
-  // A workstation: desk, chair, laptop, side monitor, lamp, plant, the person, and a hit box for taps.
-  // The person sits behind the desk facing the room; the monitor stands on the outer side of the desk,
-  // turned so its screen is seen from the seat and from the camera.
+  // A workstation. Everything hangs off the desk: the chair tucks in behind it, the laptop sits in
+  // front of the seat, the monitor stands on the outer end of the desktop turned to face the seat,
+  // the lamp and plant stand on the desktop, the person sits on the chair's cushion. `a` is along
+  // the person's facing, `b` along their right, both from the desk's centre.
   function workstation(desk, gltf, place) {
     const { x, z, dir, kind, live } = desk;
     const f = new THREE.Vector3(Math.sin(dir), 0, Math.cos(dir));
     const r = new THREE.Vector3(f.z, 0, -f.x); // the person's right
-    const outer = x < 0 ? -1 : 1; // which side of the desk is away from the aisle
+    const outer = x < 0 ? -1 : 1; // r points toward the aisle on both sides, so the wall side is -r on the left, +r on the right
     const at = (a, b) => [x + f.x * a + r.x * b, z + f.z * a + r.z * b];
     const deskObj = place(scene, "desk", ...at(0, 0), dir);
-    const deskH = deskObj.userData.size.y;
-    const [sx, sz] = at(-0.62, 0);
+    const deskH = deskObj.userData.size.y, deskD = deskObj.userData.size.z, deskW = deskObj.userData.size.x;
+
+    // chair: its front edge just under the desk's back edge
+    const chairProbe = place(scene, "chairDesk", 0, -50, 0, { scale: CHAIR_SCALE });
+    const chairD = chairProbe.userData.size.z; scene.remove(chairProbe);
+    const seatBack = deskD / 2 + chairD / 2 - 0.1;
+    const [sx, sz] = at(-seatBack, 0);
     const chair = place(scene, "chairDesk", sx, sz, dir, { scale: CHAIR_SCALE });
     const seatHeight = chair.userData.size.y * 0.435; // where the cushion is on this chair
+    const seat = new THREE.Vector3(sx, seatHeight, sz);
 
     const feed = createScreenFeed(kind, live);
     const lapFeed = createScreenFeed(kind === "chart" ? "outreach" : "chat", live);
     feeds.push(feed, lapFeed);
+    // laptop: on the desktop, in front of the seat, facing the person
     const lap = laptop(lapFeed, live, lite);
-    const [lpx, lpz] = at(-0.05, 0.02);
+    const [lpx, lpz] = at(-deskD / 2 + 0.2, 0.02);
     lap.position.set(lpx, deskH, lpz); lap.rotation.y = dir; scene.add(lap);
-    // the monitor: on the outer end of the desk, facing a point between the seat and the camera
-    const [mx, mz] = at(0.1, outer * 0.62); // r points toward the aisle on both sides, so outer is -r on the left, +r on the right
+    const laptopScreen = new THREE.Vector3(lpx, deskH + 0.14, lpz);
+
+    // monitor: on the outer end of the desktop, fully on it, turned to face the seat
+    const [mx, mz] = at(0.06, outer * (deskW / 2 - 0.33));
     const m = place(scene, "computerScreen", mx, mz, 0, { y: deskH });
-    const aim = new THREE.Vector3(sx, 0, sz).lerp(new THREE.Vector3(0.5, 0, 9.5), 0.45);
-    m.rotation.y = Math.atan2(aim.x - mx, aim.z - mz);
+    m.rotation.y = Math.atan2(sx - mx, sz - mz);
     const sz2 = m.userData.size;
     const inner = m.children[0];
     const pane = new THREE.Mesh(new THREE.PlaneGeometry(sz2.x * 0.86, sz2.y * 0.62), new THREE.MeshStandardMaterial({ map: feed.texture, emissive: 0xffffff, emissiveMap: feed.texture, emissiveIntensity: live ? 0.95 : 0.3, roughness: 0.4 }));
     pane.position.set(0, deskH + sz2.y * 0.58, panelFace(inner, deskH + sz2.y * 0.3) + 0.004);
     inner.add(pane);
     if (live) { const gl = new THREE.PointLight(0x38bdf8, 1.0, 1.8, 2); gl.position.set(0, deskH + sz2.y * 0.6, 0.3); inner.add(gl); }
+    const monitorScreen = new THREE.Vector3(mx, deskH + sz2.y * 0.6, mz);
 
-    place(scene, "computerMouse", ...at(-0.18, 0.3), dir, { y: deskH });
-    const lampB = -outer * 0.58; // the lamp on the aisle side
-    const [lx, lz] = at(0.14, lampB);
+    place(scene, "computerMouse", ...at(-deskD / 2 + 0.22, 0.3), dir, { y: deskH });
+    // lamp and plant on the aisle end of the desktop, the radio by the monitor for the call desk
+    const lampB = -outer * (deskW / 2 - 0.16);
+    const [lx, lz] = at(0.12, lampB);
     const lamp = place(scene, "lampSquareTable", lx, lz, dir, { y: deskH });
     lamp.traverse((o) => {
       if (!o.isMesh || !(o.material.name || "").startsWith("lamp")) return;
       o.material = o.material.clone();
       if (live) { o.material.emissive.setHex(0xffc878); o.material.emissiveIntensity = 1.4; } else o.material.color.setHex(0x3a3f55);
     });
-    place(scene, ["plantSmall1", "plantSmall2", "plantSmall3"][Math.abs(Math.round(x)) % 3], ...at(0.22, lampB * 0.55), dir, { y: deskH });
-    if (kind === "call") place(scene, "radio", ...at(0.16, -lampB * 0.35), dir + 0.4, { y: deskH, scale: 0.6 });
+    place(scene, ["plantSmall1", "plantSmall2", "plantSmall3"][Math.abs(Math.round(x)) % 3], ...at(0.2, lampB * 0.6), dir, { y: deskH });
+    if (kind === "call") place(scene, "radio", ...at(0.16, outer * 0.12), dir + 0.4, { y: deskH, scale: 0.6 });
+    let deskPhone = null;
+    if (kind === "outreach") {
+      deskPhone = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.008, 0.145), new THREE.MeshStandardMaterial({ color: 0x141a2e, roughness: 0.35, metalness: 0.5 }));
+      const [px, pz] = at(-deskD / 2 + 0.24, -0.3);
+      deskPhone.position.set(px, deskH + 0.004, pz); deskPhone.rotation.y = dir + 0.3; scene.add(deskPhone);
+    }
     if (!live) {
       // an unbuilt desk sits behind a low frosted screen along its front edge, its lamp off
-      const p = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.34, 0.03), new THREE.MeshPhysicalMaterial({ color: 0xc4d2f0, transparent: true, opacity: 0.32, roughness: 0.6 }));
-      p.position.set(x, deskH + 0.17, z); p.rotation.y = dir; p.translateZ(0.45); scene.add(p);
+      const p = new THREE.Mesh(new THREE.BoxGeometry(deskW, 0.34, 0.03), new THREE.MeshPhysicalMaterial({ color: 0xc4d2f0, transparent: true, opacity: 0.32, roughness: 0.6 }));
+      p.position.set(x, deskH + 0.17, z); p.rotation.y = dir; p.translateZ(deskD / 2 + 0.02); scene.add(p);
     }
-    const person = new Person(desk.id, gltf, desk, chair, { seatHeight });
+    const person = new Person(desk.id, gltf, desk, chair, { seatHeight, seatBack, targets: { laptop: laptopScreen, monitor: monitorScreen } });
     if (kind === "call") person.addHeadset();
+    if (deskPhone) person.addPhone(deskPhone);
     scene.add(person.obj);
     // the tap target: the desk, the chair and the seat, as one invisible box
-    const hit = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.7, 1.9), new THREE.MeshBasicMaterial({ visible: false }));
-    hit.position.set(x - f.x * 0.3, 0.85, z - f.z * 0.3); hit.rotation.y = dir; hit.userData.id = desk.id;
-    scene.add(hit); hitMeshes.push(hit, person.hit);
-    return { desk, person, chair, lamp: [lx, deskH + lamp.userData.size.y * 0.9, lz], labelAnchor: new THREE.Vector3(sx, seatHeight + 1.05, sz) };
-  }
-
-  // ---------------------------------------------------------------- errands
-  // Someone gets up every few seconds: along the aisle in the middle of the room to a spot and back.
-  function route(person, spot) {
-    const [tx, tz] = spot;
-    const s = person.stand;
-    const pts = [];
-    const aisleX = 0;
-    if (Math.abs(s.x - aisleX) > 0.3) pts.push([aisleX, s.z]);
-    if (Math.abs(tz - s.z) > 0.3) pts.push([aisleX, tz]);
-    pts.push([tx, tz]);
-    return pts;
-  }
-  function scheduleErrands() {
-    if (reducedMotion || t < nextErrand) return;
-    nextErrand = t + ERRAND_EVERY;
-    const out = people.filter((p) => p.busy()).length;
-    if (out >= 2) return;
-    for (let i = 0; i < people.length; i++) {
-      const person = people[(errandTurn + i) % people.length];
-      if (person.busy() || person.id === focus) continue;
-      errandTurn = (errandTurn + i + 1) % people.length;
-      const list = ERRANDS[person.id];
-      const name = list[(person.errandCount = (person.errandCount || 0) + 1) % list.length];
-      const [sx, sz, facing] = room.spots[name];
-      person.errand(route(person, [sx, sz]), facing, name === "coffee" || name === "bookcase" ? "interact" : "idle", 4 + Math.random() * 3);
-      return;
-    }
+    const hit = new THREE.Mesh(new THREE.BoxGeometry(deskW + 0.3, 1.7, deskD + chairD + 0.3), new THREE.MeshBasicMaterial({ visible: false }));
+    hit.position.set(x - f.x * (chairD / 2), 0.85, z - f.z * (chairD / 2)); hit.rotation.y = dir; hit.userData.id = desk.id;
+    scene.add(hit); hitMeshes.push(hit);
+    return { desk, person, chair, seat, lamp: [lx, deskH + lamp.userData.size.y * 0.9, lz], labelAnchor: new THREE.Vector3(sx, seatHeight + 1.05, sz) };
   }
 
   // ---------------------------------------------------------------- labels and taps
@@ -242,7 +229,6 @@ export function createOffice({ canvas, reducedMotion = false, lite = false, onSt
     // rAF timestamps can precede the resume time by a frame: never step backwards
     const dt = Math.min(0.05, Math.max(0, (now - clock.last) / 1000)); clock.last = now;
     t += dt;
-    scheduleErrands();
     for (const p of people) p.update(dt, t, camera.position);
     for (const f of feeds) f.tick(t);
     room.update(Date.now());
@@ -287,8 +273,10 @@ export function createOffice({ canvas, reducedMotion = false, lite = false, onSt
     hitTest,
     setHover(id) { if (id === hoverId) return; hoverId = id; if (onHover) onHover(id); },
     attachLabel(id, el) { if (el) labels[id] = el; else delete labels[id]; },
+    // for tests: park the camera somewhere, or release it with null
+    setDebugCamera(pos, look, fov) { debugCam = pos ? { pos: new THREE.Vector3(...pos), look: new THREE.Vector3(...look), fov } : null; },
     // for tests: where everyone is
-    debug() { return { t, running, ready, people: people.map((p) => ({ id: p.id, state: p.state, pos: p.obj.position.toArray().map((n) => +n.toFixed(2)), scale: +p.obj.scale.x.toFixed(3), inScene: p.obj.parent === scene, visible: p.obj.visible })) }; },
+    debug() { return { t, running, ready, people: people.map((p) => ({ id: p.id, activity: p.act.pose + "/" + p.act.look, pos: p.obj.position.toArray().map((n) => +n.toFixed(2)) })) }; },
     destroy() {
       destroyed = true; handle.pause();
       scene.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => { if (m.map) m.map.dispose(); m.dispose(); }); });

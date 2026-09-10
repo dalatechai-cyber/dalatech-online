@@ -340,27 +340,28 @@ export function buildRoom(scene, place, lite) {
   const hourHand = hand(0.11, 0.018), minuteHand = hand(0.17, 0.012);
   scene.add(clock);
 
-  // furniture around the walls
-  place(scene, "bookcaseOpen", -3.9, 1.0, Math.PI / 2);
-  place(scene, "books", -3.9, 1.0, Math.PI / 2, { y: 0.62 });
-  place(scene, "books", -3.9, 0.7, Math.PI / 2 + 0.3, { y: 1.05 });
-  place(scene, "cabinetTelevision", -1.3, 0.35, 0);
-  place(scene, "pottedPlant", -0.3, 0.42, 0);
-  place(scene, "pottedPlant", 3.95, 5.4, 0);
-  place(scene, "coatRackStanding", 3.9, 0.5, 0);
-  const st = place(scene, "sideTable", 1.4, 0.4, 0);
-  place(scene, "kitchenCoffeeMachine", 1.4, 0.4, 0, { y: st.userData.size.y });
-  place(scene, "kitchenFridgeSmall", 2.3, 0.4, 0);
+  // furniture around the walls: the bookcase and TV cabinet against the back wall on the left, the
+  // kitchenette (coffee, fridge) in the back-right corner below and beside the right window, coats
+  // and boxes at the front-right, the lounge at the front-left
+  const bc = place(scene, "bookcaseOpen", -3.45, 0.3, 0);
+  place(scene, "books", -3.55, 0.3, 0.2, { y: bc.userData.size.y }); // a stack on top
+  place(scene, "cabinetTelevision", -1.6, 0.35, 0);
+  place(scene, "pottedPlant", -0.55, 0.42, 0);
+  const st = place(scene, "sideTable", 2.15, 0.4, 0);
+  place(scene, "kitchenCoffeeMachine", 2.15, 0.4, 0, { y: st.userData.size.y });
+  const fr = place(scene, "kitchenFridgeSmall", 0, -50, 0);
+  const frD = fr.userData.size.z; scene.remove(fr);
+  place(scene, "kitchenFridgeSmall", W / 2 - frD / 2 - 0.02, 1.0, -Math.PI / 2); // against the right wall, door to the room
+  place(scene, "coatRackStanding", W / 2 - 0.35, 6.6, 0);
+  place(scene, "cardboardBoxClosed", W / 2 - 0.5, 5.7, 0.3);
+  place(scene, "pottedPlant", W / 2 - 0.4, 4.6, 0);
   place(scene, "loungeSofa", -2.9, 6.3, Math.PI / 2 + 0.15);
   place(scene, "tableCoffee", -1.9, 6.3, 0.15);
   place(scene, "rugRectangle", -2.4, 6.2, 0.15);
   place(scene, "lampRoundFloor", -3.9, 6.6, 0);
-  place(scene, "cardboardBoxClosed", 3.7, 6.5, 0.3);
-  place(scene, "trashcan", -3.7, 5.0, 0);
+  place(scene, "trashcan", -3.8, 4.9, 0);
 
   return {
-    // spots the people walk to: [x, z, facing]
-    spots: { coffee: [1.4, 1.15, Math.PI], window: [2.15, 0.75, Math.PI], bookcase: [-3.15, 1.0, -Math.PI / 2], sofa: [-1.6, 5.5, Math.PI / 2 + 0.3] },
     update(now) {
       const d = new Date(now);
       minuteHand.rotation.z = -(d.getMinutes() + d.getSeconds() / 60) / 60 * Math.PI * 2;
