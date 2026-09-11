@@ -48,9 +48,10 @@ defined above them. Keep new sections in the same file unless something
 genuinely stands alone, like `Globe.jsx`.
 
 ## Routing — read before adding a route
-Routes are client-side: `/`, `/products`, `/process`, `/technology`,
-`/location`, `/portfolio`, `/pricing`, `/faq`, `/setup`, and a `*` fallback
-that redirects to `/`.
+Routes are client-side: `/`, `/office`, `/process`, `/technology`,
+`/location`, `/portfolio`, `/pricing`, `/faq`, `/setup`, `/products` (a
+redirect to `/office`, kept for old links), and a `*` fallback that
+redirects to `/`.
 
 `vercel.json` rewrites everything to `/index.html` so direct hits and
 refreshes reach the app. **Do not remove it** — without it every route

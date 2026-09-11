@@ -1,7 +1,6 @@
 {
   "nav": {
     "brand": "DalaTech",
-    "capabilities": "Products",
     "process": "Process",
     "stack": "Stack",
     "location": "Location",
@@ -12,7 +11,8 @@
     "features": "Services",
     "howItWorks": "How it works",
     "getDemo": "Get a free demo",
-    "staff": "AI staff"
+    "staff": "AI staff",
+    "website": "Website"
   },
   "hero": {
     "badge": "AI staff for Mongolian businesses",
@@ -27,51 +27,6 @@
       "24/7, no days off",
       "Start within 3 to 5 days"
     ]
-  },
-  "features": {
-    "section": "SERVICES",
-    "title": "Everything you need to automate customer communication",
-    "description": "We build modern websites with integrated AI that handle common questions, product inquiries, and basic support, so your team can focus on what matters.",
-    "chatbot": {
-      "title": "Website + AI Chatbot",
-      "badge": "Most popular",
-      "subtitle": "Instant answers on your site, 24/7.",
-      "bullets": [
-        "Handles product and service questions automatically",
-        "Trained on your business info and FAQs",
-        "Captures leads and customer intent"
-      ]
-    },
-    "voiceAgent": {
-      "title": "Website + AI Voice Agent",
-      "badge": "Calls",
-      "subtitle": "Reduce phone workload with automated call handling.",
-      "bullets": [
-        "Answers common questions and routes requests",
-        "Works best for simple flows (hours, availability, basic info)",
-        "Optional call summaries for your team"
-      ]
-    },
-    "fullIntegration": {
-      "title": "Full AI Integration",
-      "badge": "Complete",
-      "subtitle": "Website + chatbot + voice agent in one system.",
-      "bullets": [
-        "Unified customer experience across web + calls",
-        "More automation, less repetitive work",
-        "Ongoing improvement and monthly support"
-      ]
-    },
-    "stats": {
-      "fasterResponses": "Faster responses",
-      "fasterResponsesValue": "24/7",
-      "lessRepetitiveWork": "Less repetitive work",
-      "lessRepetitiveWorkValue": "Automated",
-      "betterExperience": "Better experience",
-      "betterExperienceValue": "Instant",
-      "setupTime": "Setup time",
-      "setupTimeValue": "Fast"
-    }
   },
   "howItWorks": {
     "section": "HOW IT WORKS",
@@ -145,18 +100,18 @@
   },
   "liveDemo": {
     "section": "LIVE DEMO",
-    "title": "Watch a real conversation, in real time.",
-    "description": "This is exactly how a DalaTech chatbot behaves on a real client site. No clicks, no signup, the conversation runs on its own.",
-    "ctaLabel": "Build one for your business",
+    "title": "This is exactly how Ara answers.",
+    "description": "This is how Ara behaves with your customers, on a real client site. No clicks, no signup, the conversation runs on its own.",
+    "ctaLabel": "Put Ara to work for your business",
     "widget": {
       "businessName": "Matrix Eco Salon",
       "statusOnline": "Online",
       "statusReply": "Avg. reply 1.2s",
-      "agentName": "DalaTech AI",
-      "agentRole": "Customer assistant",
+      "agentName": "Ara",
+      "agentRole": "Receptionist",
       "inputPlaceholder": "Type a message…",
-      "typing": "AI is typing",
-      "footnote": "Powered by DalaTech AI"
+      "typing": "Ara is typing",
+      "footnote": "Ara by DalaTech"
     },
     "messages": {
       "user1": "Hi, are you open tomorrow?",
@@ -283,59 +238,6 @@
     "emailCta": "Email us",
     "requestCta": "Request a demo"
   },
-  "bento": {
-    "section": "CAPABILITIES",
-    "title": "Three products. Built to feel alive.",
-    "description": "Hover any card. These are not screenshots, every motion you see is the product itself.",
-    "chatbot": {
-      "label": "Live demo",
-      "title": "AI Chatbot",
-      "description": "A real conversation, trained on your business and answering customers in real time.",
-      "you": "You",
-      "ai": "AI Assistant",
-      "messages": {
-        "user1": "Do you have the new model in stock?",
-        "ai1": "Yes, three units left at the warehouse.",
-        "user2": "Can I reserve one until tomorrow?",
-        "ai2": "Done. Reserved until 6pm tomorrow under your number.",
-        "user3": "Can you send me the spec sheet?",
-        "ai3": "Sent to the email on file. Anything else?",
-        "user4": "What's the warranty?",
-        "ai4": "Two years, parts and labour included."
-      }
-    },
-    "automation": {
-      "label": "Running",
-      "title": "Business Automation",
-      "description": "Repetitive work, executed automatically while you focus on the work that matters.",
-      "tasks": {
-        "t1": "New lead detected",
-        "t2": "Customer info enriched",
-        "t3": "Welcome email sent",
-        "t4": "CRM record created",
-        "t5": "Slack channel notified",
-        "t6": "Calendar invite scheduled",
-        "t7": "Pipeline stage updated"
-      }
-    },
-    "web": {
-      "label": "Crafted",
-      "title": "Custom Web Development",
-      "description": "Modern, fast, made to convert. Engineered like a product, not a brochure.",
-      "url": "yourbrand.com"
-    }
-  },
-  "marquee": {
-    "label": "What we build",
-    "items": [
-      "Web Development",
-      "AI Chatbot",
-      "Business Automation",
-      "Ulaanbaatar, Mongolia",
-      "24/7 Support",
-      "Custom Solutions"
-    ]
-  },
   "techStack": {
     "section": "TOOLKIT",
     "title": "What we build with",
@@ -412,8 +314,6 @@
     },
     "services": {
       "website": "Website",
-      "chatbot": "AI chatbot",
-      "voice": "AI voice agent",
       "unsure": "Not sure yet",
       "ara": "Ara — receptionist",
       "nova": "Nova — customer care",
