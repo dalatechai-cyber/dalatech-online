@@ -29,7 +29,8 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["Outfit", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        // Manrope carries Cyrillic; Outfit did not, so every Mongolian heading fell back to Inter.
+        display: ["Manrope", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       letterSpacing: {
         tightest: "-0.04em",

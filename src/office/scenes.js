@@ -88,14 +88,26 @@ export function drawHero(ctx, img, { W, H, t, progress }) {
   const content = HERO_MIN_W;
   const ox = Math.floor((W - content) / 2);
   const deskY = 72;
-  const wins = STAFF.map((id, i) => ({ x: ox + 4 + i * 60 + 3, y: 3, w: 44, h: 22 }));
-  wins.forEach((w, i) => {
-    sky(ctx, w.x, w.y, w.w, w.h, hour, 3 + i);
-    windowFrame(ctx, w.x, w.y, w.w, w.h);
-  });
-  if (ox >= 34) {
+  // On a phone the room is only as wide as the desks and each desk gets a
+  // window. On a wider stage the back wall is one run of glass, with a
+  // mullion on each desk boundary so the panes still line up with the team.
+  const wide = ox >= 34;
+  const panes = STAFF.map((id, i) => ({ x: ox + 4 + i * 60 + 3, y: 3, w: 44, h: 22 }));
+  let holes = panes;
+  if (wide) {
+    const glass = { x: 8, y: 3, w: W - 16, h: 24 };
+    const posts = [];
+    for (let i = 0; i <= STAFF.length; i++) posts.push(ox + 4 + i * 60 - 6);
+    sky(ctx, glass.x, glass.y, glass.w, glass.h, hour, 3);
+    windowFrame(ctx, glass.x, glass.y, glass.w, glass.h, posts);
+    holes = [glass];
     sprite(ctx, img, "PLANT", ox - 30, floorY - 14);
     sprite(ctx, img, "PLANT_3", W - ox + 4, floorY - 10);
+  } else {
+    panes.forEach((w, i) => {
+      sky(ctx, w.x, w.y, w.w, w.h, hour, 3 + i);
+      windowFrame(ctx, w.x, w.y, w.w, w.h);
+    });
   }
   const lights = [];
   STAFF.forEach((id, i) => {
@@ -117,8 +129,8 @@ export function drawHero(ctx, img, { W, H, t, progress }) {
   const lamps = [{ x: ox - 8, y: deskY - 2 }, { x: ox + content - 22, y: deskY - 2 }];
   for (const l of lamps) sprite(ctx, img, lampOn ? "LAMP" : "LAMP_OFF", l.x, l.y);
 
-  grade(ctx, W, H, hour, wins);
-  for (const w of wins) sunPatch(ctx, w, floorY, H, hour);
+  grade(ctx, W, H, hour, holes);
+  for (const w of panes) sunPatch(ctx, w, floorY, H, hour);
   for (const draw of lights) draw();
   if (lampOn) for (const l of lamps) lampGlow(ctx, l.x + 14, l.y + 10, night);
 }
