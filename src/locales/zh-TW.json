@@ -15,14 +15,18 @@
     "staff": "AI 員工"
   },
   "hero": {
-    "badge": "AI 驅動的企業網站",
-    "title": "專業網站，內建 AI 聊天機器人與語音助理。",
-    "description": "自動回覆重複性的客戶問題，24/7 即時回應，無需增加人力即可減輕工作負擔。專為中小企業與成長中的團隊打造。",
+    "badge": "為蒙古企業打造的 AI 員工",
+    "title": "日夜工作的 AI 員工。",
+    "description": "Ara 回覆每一則訊息，Veda 每月準備報告，Eho 接聽電話，Nova 與您的客戶保持聯繫。在 Facebook、Instagram 與網站上，以蒙古語，數秒內回應。需要網站的話，我們也能建置。",
     "buttons": {
       "getDemo": "免費試用示範",
-      "seeWork": "瀏覽我們的作品"
+      "seeWork": "認識員工"
     },
-    "tech": "採用現代技術打造"
+    "facts": [
+      "以蒙古語回覆",
+      "24/7，全年無休",
+      "3–5 天內上線"
+    ]
   },
   "features": {
     "section": "服務",
@@ -108,13 +112,13 @@
   "portfolio": {
     "section": "作品集",
     "title": "精選專案",
-    "description": "一個整合 AI 聊天機器人的企業網站實際案例。",
+    "description": "一個由 Ara 負責回覆的企業網站實際案例。",
     "visitWebsite": "造訪網站",
     "getDemo": "免費試用示範",
     "japantok": {
       "pills": {
         "website": "網站",
-        "chatbot": "AI 聊天機器人",
+        "chatbot": "Ara",
         "productQA": "QPay",
         "availability": "線上預約"
       },
