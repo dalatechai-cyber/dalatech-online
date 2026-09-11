@@ -525,21 +525,156 @@
   },
   "office": {
     "section": "AI STAFF",
-    "title": "Your business's AI team, in one office",
-    "description": "Four AI staff. Ara and Veda are at work. Nova and Eho are coming soon. Tap a desk to see the job and the price.",
-    "tapHint": "Tap a desk",
-    "back": "Back",
-    "hire": "Hire {{name}}",
-    "preorder": "Pre-register",
-    "setup": "setup",
-    "perMonth": "/month",
-    "plusPerMinute": "+ per-minute usage",
-    "addOnOnly": "Only available alongside another agent.",
-    "comingSoon": "Coming soon",
-    "unavailable": "The office could not be loaded.",
-    "loading": "Loading the office…",
-    "close": "Close",
-    "imageAlt": "Dala AI office",
+    "hero": {
+      "title": "Staff who never sleep.",
+      "lead": "Four AI staff. They answer your customers day and night, take the calls and prepare the monthly report.",
+      "hire": "Hire",
+      "see": "See them work",
+      "sceneAlt": "Four AI staff at their desks under one window. As you scroll, the sky outside runs through a full day.",
+      "status": {
+        "night": "Ara is answering the night's messages",
+        "dawn": "Veda is adding up yesterday's numbers",
+        "morning": "Eho is on the phone",
+        "afternoon": "Nova is checking in with customers",
+        "evening": "Ara is taking bookings",
+        "late": "All four still at work"
+      }
+    },
+    "status": {
+      "live": "Working now",
+      "soon": "Coming soon"
+    },
+    "price": {
+      "perMonth": "/month",
+      "setup": "{{price}} setup",
+      "plusPerMinute": "+ per call minute",
+      "addOnOnly": "Only alongside another hire."
+    },
+    "chapters": {
+      "ara": {
+        "eyebrow": "Ara · Receptionist",
+        "title": "Every message answered.",
+        "body": "Replies to Facebook, Instagram and website messages within seconds. Takes bookings and sets appointments. A customer writing at two in the morning still gets an answer.",
+        "cta": "Hire Ara",
+        "sceneAlt": "Ara at her desk at night, answering messages.",
+        "chat": [
+          {
+            "from": "customer",
+            "text": "Hi, can I book for tomorrow?",
+            "time": "02:14"
+          },
+          {
+            "from": "staff",
+            "text": "Hello. Tomorrow we have 11:00 and 15:30 free. Which suits you?",
+            "time": "02:14"
+          },
+          {
+            "from": "customer",
+            "text": "15:30",
+            "time": "02:15"
+          },
+          {
+            "from": "staff",
+            "text": "Done, you are booked for 15:30. See you tomorrow.",
+            "time": "02:15"
+          }
+        ]
+      },
+      "veda": {
+        "eyebrow": "Veda · Analyst",
+        "title": "A report every month.",
+        "body": "On the first morning of the month your sales, customer and return report is ready. Not just the numbers: what to do next.",
+        "cta": "Add Veda",
+        "sceneAlt": "Veda in the morning behind two screens, preparing the monthly report.",
+        "report": {
+          "tag": "Sample",
+          "title": "September · Report",
+          "weeks": [
+            "Week 1",
+            "Week 2",
+            "Week 3",
+            "Week 4"
+          ],
+          "values": [
+            0.5,
+            0.62,
+            0.48,
+            0.9
+          ],
+          "insight": "Saturday orders run 1.4× the other days. Adding one person on Saturdays is recommended."
+        }
+      },
+      "eho": {
+        "eyebrow": "Eho · Phone operator",
+        "title": "Every call answered.",
+        "body": "When the phone rings, Eho talks like a person, answers questions and takes orders. While you are busy, and after hours.",
+        "cta": "Pre-register",
+        "sceneAlt": "Eho with a headset, answering an incoming call.",
+        "call": {
+          "incoming": "Incoming call",
+          "answered": "Eho answered",
+          "after": "after 2 seconds",
+          "line": "Hello, Dala Store. How can I help?"
+        }
+      },
+      "nova": {
+        "eyebrow": "Nova · Customer care",
+        "title": "No customer forgotten.",
+        "body": "Asks how it went after a visit. Sends appointment and payment reminders. Brings back customers who have not been in for a while.",
+        "cta": "Pre-register",
+        "sceneAlt": "Nova in the afternoon, writing to customers.",
+        "chat": [
+          {
+            "from": "staff",
+            "text": "Hello Bold. How was yesterday's visit?",
+            "time": "15:30"
+          },
+          {
+            "from": "customer",
+            "text": "Good, thank you",
+            "time": "15:41"
+          },
+          {
+            "from": "staff",
+            "text": "Thank you. I will remind you of your next appointment on 12 October.",
+            "time": "15:41"
+          }
+        ]
+      }
+    },
+    "team": {
+      "eyebrow": "BUILD YOUR TEAM",
+      "title": "More hires, lower price.",
+      "description": "Two staff −10%, three −15%, four −20%. The discount applies to the monthly fee.",
+      "pick": "Choose your staff",
+      "monthly": "Monthly",
+      "setup": "Setup, one time",
+      "discount": "{{percent}}% off",
+      "perMinuteNote": "Eho: call minutes are billed on top.",
+      "vedaAlone": "Veda only works alongside another hire. Pick one more.",
+      "empty": "Pick at least one.",
+      "soonNote": "Nova and Eho are coming soon. Pre-register and we will tell you the day they start.",
+      "cta": "Hire this team",
+      "ctaPreorder": "Pre-register"
+    },
+    "steps": {
+      "title": "Three steps.",
+      "items": [
+        {
+          "title": "A call, 30 minutes",
+          "body": "We talk through what you do and what messages come in."
+        },
+        {
+          "title": "Setup, 3–5 days",
+          "body": "We train them on your pages and your information."
+        },
+        {
+          "title": "They start",
+          "body": "Answering from day one. You only pay the monthly fee."
+        }
+      ]
+    },
+    "unavailable": "The picture could not be loaded.",
     "agents": {
       "ara": {
         "name": "Ara",
@@ -561,12 +696,6 @@
         "role": "Phone operator",
         "job": "Answers the phone, handles questions and takes orders."
       }
-    },
-    "bundles": {
-      "title": "Cheaper as a team",
-      "description": "The more staff you hire, the lower the monthly fee.",
-      "agents": "{{count}} agents",
-      "note": "Discount applies to the monthly fee. Veda only alongside another agent."
     }
   }
 }

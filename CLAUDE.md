@@ -12,6 +12,7 @@ in this repo and no build step that would typecheck it.
 - Styling: Tailwind CSS 3 (`tailwind.config.js`), plus `src/index.css`
 - Animation: `framer-motion`
 - 3D: `three` (the globe on the location section)
+- Pixel art: a plain 2D canvas on `/office` (`src/office/pixel.js`)
 - i18n: `i18next` + `react-i18next`
 - Deploy: Vercel, framework preset `vite`, output `dist/`
 
@@ -29,18 +30,17 @@ gate — run it before committing and treat a build failure as blocking.
     src/main.jsx          entry; mounts <App> in StrictMode
     src/App.jsx           ~3.4k lines: every component, page and the router
     src/Globe.jsx         three.js globe, lazy-loaded
-    src/OfficeScene.jsx   mounts the /office room, lazy-loaded
-    src/office/           the /office engine: engine.js (loop, camera, taps),
-                          room.js (walls, furniture, lights, screens),
-                          people.js (rigged staff, desk activities), layout.js, agents.js (prices)
+    src/office/           the /office page's pixel art: pixel.js (atlas, stage,
+                          sprite helpers), scenes.js (the hero row and the four
+                          chapters), agents.js (prices), staff.json (atlas manifest)
     src/Setup.jsx         Facebook SDK page-connect flow, lazy-loaded at /setup
     src/i18n.js           i18next init
     src/locales/          en.json, mn.json, zh-TW.json
     public/               static assets, plus standalone pages (below)
     scripts/              one-off maintenance scripts, not part of the build
-                          (scripts/office3d/build-models.mjs rebuilds
-                          public/office/models from the CC0 packs in
-                          assets-src/office/3d, which are not committed)
+                          (scripts/build-staff-pack.py rebuilds public/office/staff.png
+                          and src/office/staff.json from the licensed LimeZu packs in
+                          assets-src/office/limezu, which are not committed)
 
 `src/App.jsx` holds the whole UI. Page components (`LandingPage`,
 `ProductsPage`, …) live near the bottom and compose the section components
