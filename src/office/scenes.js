@@ -3,7 +3,7 @@
 // stage can redraw it at any size, time and scroll progress.
 import {
   sprite, stripFrame, charFrame, sky, windowFrame, room, screenActivity, screenChart,
-  lampGlow, nightTint, ringing, mapRange, nightAmount, SPRITES,
+  lampGlow, grade, sunPatch, screenLight, ringing, mapRange, nightAmount, SPRITES,
 } from "./pixel";
 
 // Order on the hero row and the hour each chapter is set at.
@@ -11,8 +11,11 @@ export const STAFF = ["ara", "veda", "eho", "nova"];
 // Art pixels the four hero desks need side by side (60 per station, 4 margin each side).
 export const HERO_MIN_W = 8 + 4 * 60;
 export const CHAPTER_HOUR = { ara: 2.25, veda: 8.5, eho: 12.1, nova: 15.5 };
+// The pinned hero runs from before dawn to late night, so every bit of
+// scroll moves the light: 05:30 at the top, 23:00 at the bottom.
+export const HERO_HOURS = [5.5, 23];
+export const heroHour = (progress) => mapRange(progress, 0, 1, HERO_HOURS[0], HERO_HOURS[1]);
 
-// What each person does and what sits on their desk.
 // Four weeks of the sample report, the same bars the page shows in HTML.
 const REPORT = [0.5, 0.62, 0.48, 0.9];
 
@@ -34,8 +37,11 @@ function frameIndex(kit, t, seed) {
 // A person seated behind a desk. `pieces` are desk sprites laid left to
 // right; props are placed relative to the desk's top-left corner. Drawn in
 // the order the eye expects: chair, person, desk, things on the desk.
+// Anything that gives off light (screens, the emote over their head) is
+// pushed to `lights` and drawn by the scene after the room is graded, so
+// it stays bright at night.
 function station(ctx, img, o) {
-  const { id, x, y, t, pieces, props, seed = 0, chartGrow = 0 } = o;
+  const { id, x, y, t, pieces, props, lights, seed = 0, chartGrow = 0, night = 0 } = o;
   const kit = KIT[id];
   const deskW = pieces.reduce((w, p) => w + SPRITES[p].w, 0);
   const cx = x + (o.personX ?? Math.floor((deskW - 32) / 2));
@@ -52,39 +58,46 @@ function station(ctx, img, o) {
     const [pid, dx, dy] = p;
     sprite(ctx, img, pid, x + dx, y + dy);
     if (SPRITES[pid].screens) {
-      screenActivity(ctx, pid, x + dx, y + dy, t, seed + 5);
-      // the report on Веда's first screen grows bar by bar
-      if (id === "veda") screenChart(ctx, pid, 0, x + dx, y + dy, REPORT, chartGrow);
+      lights.push(() => {
+        screenLight(ctx, pid, x + dx, y + dy, night);
+        screenActivity(ctx, pid, x + dx, y + dy, t, seed + 5);
+        // the report on Веда's first screen grows bar by bar
+        if (id === "veda") screenChart(ctx, pid, 0, x + dx, y + dy, REPORT, chartGrow);
+      });
     }
-    if (pid === "DESK_PHONE" && id === "eho" && (t + seed) % 5 < 1.6) ringing(ctx, x + dx + 20, y + dy + 6, t);
+    if (pid === "DESK_PHONE" && id === "eho" && (t + seed) % 5 < 1.6) lights.push(() => ringing(ctx, x + dx + 20, y + dy + 6, t));
   }
   // what floats over their head: Ара's typing dots, Нова's heart
   const cycle = (t + seed * 1.7) % (id === "ara" ? 4 : 6);
   // frames 0-3 grow the bubble; the strips' last frame is LimeZu's sample, not used
-  if (id === "ara" && cycle < 1.6) stripFrame(ctx, img, "BUBBLE", Math.min(3, Math.floor(cycle * 8)), cx + 18, cy - 4);
-  if (id === "nova" && cycle < 1.8) stripFrame(ctx, img, "HEART", Math.min(3, Math.floor(cycle * 7)), cx + 18, cy - 4);
+  if (id === "ara" && cycle < 1.6) lights.push(() => stripFrame(ctx, img, "BUBBLE", Math.min(3, Math.floor(cycle * 8)), cx + 18, cy - 4));
+  if (id === "nova" && cycle < 1.8) lights.push(() => stripFrame(ctx, img, "HEART", Math.min(3, Math.floor(cycle * 7)), cx + 18, cy - 4));
   return { cx, cy, deskW };
 }
 
 // ---------------------------------------------------------------- hero
-// Four desks under one long window. `progress` is the scroll through the
-// pinned hero and drives the hour of the day; the people never stop.
+// Four desks along one wall, a window over each. `progress` is the scroll
+// through the pinned hero and drives the hour of the day; the people never
+// stop, the light does everything else.
 export function drawHero(ctx, img, { W, H, t, progress }) {
-  const hour = mapRange(progress, 0, 1, 0, 24);
+  const hour = heroHour(progress);
   const night = nightAmount(hour);
-  room(ctx, img, W, H, 64);
-  const win = { x: 8, y: 6, w: W - 16, h: 30 };
-  sky(ctx, win.x, win.y, win.w, win.h, hour, 3);
-  windowFrame(ctx, win.x, win.y, win.w, win.h);
+  const floorY = 44;
+  room(ctx, img, W, H, floorY);
 
   const content = HERO_MIN_W;
   const ox = Math.floor((W - content) / 2);
   const deskY = 72;
+  const wins = STAFF.map((id, i) => ({ x: ox + 4 + i * 60 + 3, y: 3, w: 44, h: 22 }));
+  wins.forEach((w, i) => {
+    sky(ctx, w.x, w.y, w.w, w.h, hour, 3 + i);
+    windowFrame(ctx, w.x, w.y, w.w, w.h);
+  });
   if (ox >= 34) {
-    sprite(ctx, img, "PLANT", ox - 30, 46);
-    sprite(ctx, img, "PLANT_3", W - ox + 4, 50);
+    sprite(ctx, img, "PLANT", ox - 30, floorY - 14);
+    sprite(ctx, img, "PLANT_3", W - ox + 4, floorY - 10);
   }
-  const lampOn = night > 0.35;
+  const lights = [];
   STAFF.forEach((id, i) => {
     const x = ox + 4 + i * 60;
     const props = {
@@ -94,19 +107,20 @@ export function drawHero(ctx, img, { W, H, t, progress }) {
       nova: [["LAPTOP", 22, 2], ["MUG", 4, 12]],
     }[id];
     station(ctx, img, {
-      id, x, y: deskY, t, hour, seed: i, props,
+      id, x, y: deskY, t, seed: i, props, lights, night,
       pieces: ["DESK_L", "DESK_R"],
       chartGrow: mapRange(hour, 6.5, 9.5, 0, 1),
     });
   });
-  // lamps at both ends of the row, lit when it is dark
-  const lampL = { x: ox - 8, y: deskY - 2 };
-  const lampR = { x: ox + content - 22, y: deskY - 2 };
-  nightTint(ctx, W, H, night, win);
-  for (const l of [lampL, lampR]) {
-    if (lampOn) lampGlow(ctx, l.x + 14, l.y + 10, night);
-    sprite(ctx, img, lampOn ? "LAMP" : "LAMP_OFF", l.x, l.y);
-  }
+  // lamps at both ends of the row, lit once the light goes
+  const lampOn = night > 0.35;
+  const lamps = [{ x: ox - 8, y: deskY - 2 }, { x: ox + content - 22, y: deskY - 2 }];
+  for (const l of lamps) sprite(ctx, img, lampOn ? "LAMP" : "LAMP_OFF", l.x, l.y);
+
+  grade(ctx, W, H, hour, wins);
+  for (const w of wins) sunPatch(ctx, w, floorY, H, hour);
+  for (const draw of lights) draw();
+  if (lampOn) for (const l of lamps) lampGlow(ctx, l.x + 14, l.y + 10, night);
 }
 
 // ---------------------------------------------------------------- chapters
@@ -132,7 +146,8 @@ export function drawChapter(id) {
     }[id];
     const x = 6;
     const grow = mapRange(progress, 0.2, 0.62, 0, 1);
-    const st = station(ctx, img, { id, x, y: deskY, t, hour, seed: 2, chartGrow: grow, ...layout });
+    const lights = [];
+    const st = station(ctx, img, { id, x, y: deskY, t, seed: 2, chartGrow: grow, lights, night, ...layout });
     // the rest of the room, kept quiet
     const right = x + st.deskW;
     if (id === "veda") {
@@ -145,11 +160,12 @@ export function drawChapter(id) {
       sprite(ctx, img, "PLANT", right + 8, deskY - 16);
     }
     const lampOn = night > 0.35;
-    nightTint(ctx, W, H, night, win);
     // Ара's lamp on the cabinet beside her, the only warm light at night
-    if (id === "ara") {
-      if (lampOn) lampGlow(ctx, right + 22, deskY - 20, night);
-      sprite(ctx, img, lampOn ? "LAMP" : "LAMP_OFF", right + 7, deskY - 36);
-    }
+    if (id === "ara") sprite(ctx, img, lampOn ? "LAMP" : "LAMP_OFF", right + 7, deskY - 36);
+
+    grade(ctx, W, H, hour, [win]);
+    sunPatch(ctx, win, floorY, H, hour);
+    for (const draw of lights) draw();
+    if (id === "ara" && lampOn) lampGlow(ctx, right + 22, deskY - 20, night);
   };
 }
