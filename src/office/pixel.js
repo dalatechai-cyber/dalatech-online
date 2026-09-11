@@ -94,8 +94,8 @@ function skyColours(hour) {
 export function nightAmount(hour) {
   if (hour < 5.5) return 1;
   if (hour < 7.5) return 1 - (hour - 5.5) / 2;
-  if (hour < 18) return 0;
-  if (hour < 20.5) return (hour - 18) / 2.5;
+  if (hour < 17.5) return 0;
+  if (hour < 20.5) return (hour - 17.5) / 3;
   return 1;
 }
 
@@ -170,11 +170,13 @@ export function windowFrame(ctx, x, y, w, h) {
   rect(ctx, x - 4, y + h + 5, w + 8, 1, "#1A2148");
 }
 
-// Wall tiles across the top two rows, carpet below.
-export function room(ctx, img, W, H, floorY = 64) {
+// The wall down to `floorY`, a skirting board on the floor line, carpet below.
+export function room(ctx, img, W, H, floorY = 44) {
+  const skirtY = floorY - SPRITES.SKIRT.h;
   for (let x = 0; x < W; x += TILE) {
     sprite(ctx, img, "WALL_TOP", x, 0);
-    for (let y = 32; y < floorY; y += 32) sprite(ctx, img, "WALL_MID", x, y);
+    for (let y = TILE; y < skirtY; y += TILE) sprite(ctx, img, "WALL_MID", x, y);
+    sprite(ctx, img, "SKIRT", x, skirtY);
   }
   for (let y = floorY; y < H; y += 64) {
     for (let x = 0; x < W; x += 64) sprite(ctx, img, "FLOOR", x, y);
@@ -224,16 +226,91 @@ export function lampGlow(ctx, x, y, amount) {
   ctx.globalAlpha = 1;
 }
 
-// Dim the room at night, leaving the window alone.
-export function nightTint(ctx, W, H, amount, hole) {
-  if (amount <= 0) return;
+// The light in the room over the day: [hour, multiply colour]. White is
+// plain daylight, the night colour is what the lamps and screens punch through.
+const LIGHT = [
+  [0, [98, 106, 176]],
+  [5, [98, 106, 176]],
+  [6, [178, 134, 144]],
+  [7, [244, 202, 170]],
+  [9, [252, 246, 236]],
+  [12, [255, 255, 255]],
+  [16, [255, 247, 228]],
+  [18, [255, 202, 142]],
+  [19, [216, 142, 126]],
+  [20, [138, 114, 170]],
+  [21, [98, 106, 176]],
+  [24, [98, 106, 176]],
+];
+
+function lightColour(hour) {
+  for (let i = 1; i < LIGHT.length; i++) {
+    if (hour <= LIGHT[i][0]) {
+      const t = clamp01((hour - LIGHT[i - 1][0]) / (LIGHT[i][0] - LIGHT[i - 1][0]));
+      return mix(LIGHT[i - 1][1], LIGHT[i][1], t);
+    }
+  }
+  return LIGHT[0][1];
+}
+
+// Where the sun is: 0 at sunrise (6:00), 1 at sunset (19:00); null at night.
+export function sunArc(hour) {
+  if (hour < 6 || hour > 19) return null;
+  return (hour - 6) / 13;
+}
+
+// Grade the whole room for the hour, leaving the window openings alone.
+export function grade(ctx, W, H, hour, holes = []) {
+  const c = lightColour(hour);
+  if (c[0] >= 254 && c[1] >= 254 && c[2] >= 254) return;
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, 0, W, H);
-  if (hole) ctx.rect(hole.x, hole.y, hole.w, hole.h);
+  for (const h of holes) ctx.rect(h.x, h.y, h.w, h.h);
   ctx.clip("evenodd");
-  ctx.globalAlpha = 0.42 * amount;
-  rect(ctx, 0, 0, W, H, "#050A18");
+  ctx.globalCompositeOperation = "multiply";
+  rect(ctx, 0, 0, W, H, rgb(c));
+  ctx.restore();
+}
+
+// Sunlight through a window onto the floor in front of it: a soft patch
+// that drifts away from the sun, long and warm when the sun is low, short
+// and pale at noon. It starts at the floor line; the wall itself stays lit
+// only by the grade.
+export function sunPatch(ctx, win, floorY, H, hour) {
+  const arc = sunArc(hour);
+  if (arc === null) return;
+  const elevation = Math.sin(arc * Math.PI);
+  const warm = 1 - elevation;
+  const colour = rgb(mix([255, 250, 228], [255, 184, 120], warm * warm));
+  const lean = (0.5 - arc) * 1.1; // pixels of drift per row
+  ctx.save();
+  ctx.globalCompositeOperation = "screen";
+  ctx.globalAlpha = 0.05 + 0.11 * elevation;
+  for (let y = floorY; y < H; y++) {
+    const d = y - floorY;
+    const drift = Math.round(d * lean);
+    const spread = Math.floor(d / 5);
+    rect(ctx, win.x + 4 + drift - spread, y, win.w - 8 + spread * 2, 1, colour);
+  }
+  ctx.restore();
+}
+
+// The blue cast of a screen on whoever sits at it, and the glass itself
+// relit after the grade so screens stay bright at night.
+export function screenLight(ctx, id, x, y, night) {
+  const s = SPRITES[id];
+  if (!s.screens || night <= 0) return;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (const sc of s.screens) {
+    const cx = x + sc.x + sc.w / 2;
+    const cy = y + sc.y + sc.h / 2;
+    for (let r = 18; r > 6; r -= 4) {
+      ctx.globalAlpha = 0.045 * night;
+      rect(ctx, cx - r, cy - r - 6, r * 2, r * 2, "#3B82F6");
+    }
+  }
   ctx.restore();
 }
 

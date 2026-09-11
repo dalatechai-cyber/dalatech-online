@@ -142,17 +142,20 @@ def surface_rule(rgb):
 
 
 def wall_rule(rgb):
+    """Daylight wall: a muted periwinkle-grey the scene grades darker at night.
+    The white band on the top tile is the ceiling edge; it stays pale."""
     if rgb in OUTLINES:
         return rgb
     h, l, s = hls(rgb)
     if l > 0.85:
-        return from_hls(NAVY_HUE, 0.36, 0.16)
-    return from_hls(NAVY_HUE, 0.10 + l * 0.32, 0.30)
+        return from_hls(NAVY_HUE, 0.64, 0.12)
+    return from_hls(NAVY_HUE, 0.26 + l * 0.46, 0.22)
 
 
 def floor_rule(rgb):
+    """Daylight carpet, a step darker than the wall so the floor line reads."""
     h, l, s = hls(rgb)
-    return from_hls(NAVY_HUE, 0.07 + l * 0.22, 0.30)
+    return from_hls(NAVY_HUE, 0.15 + l * 0.40, 0.22)
 
 
 def crop_alpha(img):
@@ -248,7 +251,9 @@ def props():
     wall_mid = Image.new("RGBA", (32, 32))
     wall_mid.paste(face, (0, 0))
     wall_mid.paste(face, (0, 16))
-    for sid, im in (("WALL_TOP", wall_top), ("WALL_MID", wall_mid), ("WALL_BOTTOM", wall_bottom)):
+    # the bottom tile's last 12 rows: a strip of face over the skirting board
+    skirt = wall_bottom.crop((0, 20, 32, 32))
+    for sid, im in (("WALL_TOP", wall_top), ("WALL_MID", wall_mid), ("WALL_BOTTOM", wall_bottom), ("SKIRT", skirt)):
         S[sid] = (rule_colours(im, wall_rule), {})
     rb = Image.open(ROOM_OFFICE).convert("RGBA")
     S["FLOOR"] = (rule_colours(rb.crop((320, 160, 384, 224)), floor_rule), {})
