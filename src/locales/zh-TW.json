@@ -525,21 +525,156 @@
   },
   "office": {
     "section": "AI 員工",
-    "title": "您的 AI 團隊，同在一間辦公室",
-    "description": "四位 AI 員工。Ara 與 Veda 已上線，Nova 與 Eho 即將推出。點一下辦公桌，查看工作內容與價格。",
-    "tapHint": "點一下辦公桌",
-    "back": "返回",
-    "hire": "聘用 {{name}}",
-    "preorder": "預先登記",
-    "setup": "建置費",
-    "perMonth": "/月",
-    "plusPerMinute": "+ 每分鐘用量費",
-    "addOnOnly": "僅可與其他員工一同選購。",
-    "comingSoon": "即將推出",
-    "unavailable": "辦公室載入失敗。",
-    "loading": "正在載入辦公室…",
-    "close": "關閉",
-    "imageAlt": "Dala AI 辦公室",
+    "hero": {
+      "title": "不眠不休的員工。",
+      "lead": "四位 AI 員工。日夜回覆您的客戶、接聽電話，每月準備報告。",
+      "hire": "雇用",
+      "see": "看他們工作",
+      "sceneAlt": "四位 AI 員工在同一扇窗下的辦公桌工作。捲動時，窗外從黑夜轉為白天再入夜。",
+      "status": {
+        "night": "Ara 正在回覆深夜訊息",
+        "dawn": "Veda 正在整理昨天的數字",
+        "morning": "Eho 正在接聽電話",
+        "afternoon": "Nova 正在聯繫客戶",
+        "evening": "Ara 正在登記預約",
+        "late": "四位仍在工作"
+      }
+    },
+    "status": {
+      "live": "服務中",
+      "soon": "即將推出"
+    },
+    "price": {
+      "perMonth": "/月",
+      "setup": "安裝費 {{price}}",
+      "plusPerMinute": "+ 通話每分鐘計費",
+      "addOnOnly": "僅可與其他員工一同雇用。"
+    },
+    "chapters": {
+      "ara": {
+        "eyebrow": "Ara · 接待員",
+        "title": "每則訊息都有回覆。",
+        "body": "幾秒內回覆 Facebook、Instagram 與網站訊息，受理預約與訂單。凌晨兩點傳訊的客戶也不會落空。",
+        "cta": "雇用 Ara",
+        "sceneAlt": "Ara 深夜在辦公桌前回覆訊息。",
+        "chat": [
+          {
+            "from": "customer",
+            "text": "你好，明天可以預約嗎？",
+            "time": "02:14"
+          },
+          {
+            "from": "staff",
+            "text": "您好。明天 11:00 與 15:30 有空檔，哪個合適？",
+            "time": "02:14"
+          },
+          {
+            "from": "customer",
+            "text": "15:30",
+            "time": "02:15"
+          },
+          {
+            "from": "staff",
+            "text": "好的，已為您預約 15:30。明天見。",
+            "time": "02:15"
+          }
+        ]
+      },
+      "veda": {
+        "eyebrow": "Veda · 分析師",
+        "title": "每月一份報告。",
+        "body": "每月第一天早上，銷售、客戶與回購報告已經備妥。不只列出數字，還告訴您下一步該做什麼。",
+        "cta": "加入 Veda",
+        "sceneAlt": "Veda 早晨在兩個螢幕後準備月報。",
+        "report": {
+          "tag": "範例",
+          "title": "9 月 · 報告",
+          "weeks": [
+            "第 1 週",
+            "第 2 週",
+            "第 3 週",
+            "第 4 週"
+          ],
+          "values": [
+            0.5,
+            0.62,
+            0.48,
+            0.9
+          ],
+          "insight": "週六的訂單量是其他日子的 1.4 倍。建議週六增加一位人手。"
+        }
+      },
+      "eho": {
+        "eyebrow": "Eho · 電話客服",
+        "title": "每通電話都有人接。",
+        "body": "電話響起時，Eho 像真人一樣對話，回答問題並受理訂單。您忙碌時、下班後都一樣。",
+        "cta": "預先登記",
+        "sceneAlt": "Eho 戴著耳機接聽來電。",
+        "call": {
+          "incoming": "來電",
+          "answered": "Eho 已接聽",
+          "after": "2 秒後",
+          "line": "您好，這裡是 Dala 商店。需要什麼協助？"
+        }
+      },
+      "nova": {
+        "eyebrow": "Nova · 客戶關懷",
+        "title": "不遺漏任何客戶。",
+        "body": "服務後詢問滿意度。發送預約與付款提醒。把許久未來的客戶找回來。",
+        "cta": "預先登記",
+        "sceneAlt": "Nova 下午正在寫訊息給客戶。",
+        "chat": [
+          {
+            "from": "staff",
+            "text": "您好，Bold。昨天的服務還滿意嗎？",
+            "time": "15:30"
+          },
+          {
+            "from": "customer",
+            "text": "很好，謝謝",
+            "time": "15:41"
+          },
+          {
+            "from": "staff",
+            "text": "謝謝您。下次預約在 10 月 12 日，到時提醒您。",
+            "time": "15:41"
+          }
+        ]
+      }
+    },
+    "team": {
+      "eyebrow": "組建團隊",
+      "title": "雇得越多，越划算。",
+      "description": "兩位 −10%，三位 −15%，四位 −20%。折扣適用於月費。",
+      "pick": "選擇員工",
+      "monthly": "月費",
+      "setup": "安裝費，一次性",
+      "discount": "已折 {{percent}}%",
+      "perMinuteNote": "Eho：通話分鐘另計。",
+      "vedaAlone": "Veda 僅可與其他員工一同雇用，請再選一位。",
+      "empty": "請至少選擇一位。",
+      "soonNote": "Nova 與 Eho 即將推出。預先登記後，上線當天通知您。",
+      "cta": "雇用這個團隊",
+      "ctaPreorder": "預先登記"
+    },
+    "steps": {
+      "title": "三個步驟。",
+      "items": [
+        {
+          "title": "通話，30 分鐘",
+          "body": "了解您的業務與常見訊息。"
+        },
+        {
+          "title": "安裝，3–5 天",
+          "body": "依您的頁面與資料完成訓練。"
+        },
+        {
+          "title": "上工",
+          "body": "第一天起就開始回覆。您只需支付月費。"
+        }
+      ]
+    },
+    "unavailable": "無法載入圖片。",
     "agents": {
       "ara": {
         "name": "Ara",
@@ -561,12 +696,6 @@
         "role": "電話客服",
         "job": "接聽電話、回答問題並受理訂單。"
       }
-    },
-    "bundles": {
-      "title": "團隊方案更划算",
-      "description": "聘用越多員工，月費越低。",
-      "agents": "{{count}} 位員工",
-      "note": "折扣適用於月費。Veda 僅可搭配其他員工選購。"
     }
   }
 }

@@ -1,7 +1,7 @@
 # Office page art credits
 
-Source art for the /office page is turned into `public/office/pack.png` +
-`src/office/pack.json` by `scripts/build-office-pack.py`. The site ships
+Source art for the /office page is turned into `public/office/staff.png` +
+`src/office/staff.json` by `scripts/build-staff-pack.py`. The site ships
 only the built atlas.
 
 ## LimeZu — Modern Interiors + Modern Office Revamped (`limezu/`, not in git)
@@ -21,12 +21,12 @@ https://github.com/pixel-agents-hq/pixel-agents — MIT License (see
 `pixel-agents/LICENSE`). Their characters are based on JIK-A-4's
 "MetroCity – Free Top Down Character Pack" (CC0):
 https://jik-a-4.itch.io/metrocity-free-topdown-character-pack
-`python3 scripts/build-office-pack.py pixel-agents` rebuilds the 16px
-atlas from it if the LimeZu files are ever unavailable. If it ships again,
-its credit goes back into the footer.
+Not wired into the current build script; kept as a fallback source if the
+LimeZu files are ever unavailable. If it ships again, its credit goes back
+into the footer.
 
-## 3D room (`3d/`, not in git)
-Source for the Blender-built office (`scripts/office3d/`):
+## 3D packs (`3d/`, not in git, no longer used)
+Source for the earlier three.js office, kept on disk only:
 
 - Kenney Furniture Kit and Mini Characters, CC0, from the GitHub mirror
   https://github.com/shorepine/kenney (`3d/kenney/`, sparse checkout).
