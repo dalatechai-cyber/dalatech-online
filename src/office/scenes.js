@@ -89,7 +89,7 @@ export function drawHero(ctx, img, { W, H, t, progress }) {
     const x = ox + 4 + i * 60;
     const props = {
       ara: [["DESK_PHONE", 0, 6], ["LAPTOP", 24, 0]],
-      veda: [["PAPER_STACK", 26, 4], ["PAPERS", 2, 10], ["MUG", 40, 18]],
+      veda: [["MONITOR", 20, 2], ["PAPER_STACK", -2, 6], ["PAPERS", 4, 22]],
       eho: [["MONITOR_KB", 20, 2], ["DESK_PHONE", -2, 8]],
       nova: [["LAPTOP", 22, 2], ["MUG", 4, 12]],
     }[id];

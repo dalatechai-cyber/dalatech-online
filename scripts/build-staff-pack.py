@@ -279,7 +279,8 @@ def compose(spec):
     layers = [
         Image.open(layer("Bodies", spec["body"])).convert("RGBA"),
         Image.open(layer("Eyes", spec["eyes"])).convert("RGBA"),
-        map_colours(Image.open(layer("Outfits", spec["outfit"])), spec.get("outfitMap")),
+        tint_layer(Image.open(layer("Outfits", spec["outfit"])), spec["outfitTint"]) if spec.get("outfitTint")
+        else map_colours(Image.open(layer("Outfits", spec["outfit"])), spec.get("outfitMap")),
         tint_layer(Image.open(layer("Hairstyles", spec["hair"])), spec["hairTint"]) if spec.get("hairTint")
         else map_colours(Image.open(layer("Hairstyles", spec["hair"])), spec.get("hairMap")),
     ]
@@ -327,7 +328,9 @@ def headset(fr):
 PEOPLE = {
     # Ара: reception. Long auburn hair, white blouse, at the laptop.
     "ara": {"body": "Body_32x32_02", "eyes": "Eyes_32x32_01", "outfit": "Outfit_08_32x32_01", "hair": "Hairstyle_12_32x32_04",
-            "hairTint": ("#7A2E1E", "#A8442A", "#C9603C")},
+            "hairTint": ("#7A2E1E", "#A8442A", "#C9603C"),
+            # the blouse: pale blue-grey rather than white, which blew out against the dark room
+            "outfitTint": ("#8FA0C8", "#B7C2E0", "#D5DDF0")},
     # Веда: analyst. Black hair up, glasses, brand-blue cardigan, reading the report.
     "veda": {"body": "Body_32x32_01", "eyes": "Eyes_32x32_04", "outfit": "Outfit_21_32x32_01", "hair": "Hairstyle_18_32x32_04",
              "accessory": "Accessory_15_Glasses_32x32_01",
