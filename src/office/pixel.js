@@ -157,15 +157,16 @@ export function sky(ctx, x, y, w, h, hour, seed = 1) {
   ctx.restore();
 }
 
-// A window frame around an opening: two-pixel posts, a mullion and a sill.
-export function windowFrame(ctx, x, y, w, h) {
+// A window frame around an opening: two-pixel posts, a sill, and mullions
+// at `posts` (x positions inside the opening; the middle by default).
+export function windowFrame(ctx, x, y, w, h, posts = [x + ((w / 2) | 0) - 1]) {
   const f = "#2B3566";
   const hi = "#3D4A85";
   rect(ctx, x - 2, y - 2, w + 4, 2, f);
   rect(ctx, x - 2, y + h, w + 4, 2, f);
   rect(ctx, x - 2, y, 2, h, f);
   rect(ctx, x + w, y, 2, h, f);
-  rect(ctx, x + ((w / 2) | 0) - 1, y, 2, h, f);
+  for (const px of posts) rect(ctx, px, y, 2, h, f);
   rect(ctx, x - 4, y + h + 2, w + 8, 3, hi);
   rect(ctx, x - 4, y + h + 5, w + 8, 1, "#1A2148");
 }

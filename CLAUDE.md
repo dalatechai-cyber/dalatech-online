@@ -82,7 +82,8 @@ Palette lives in `tailwind.config.js` — use the tokens, not raw hex:
 - `brand-500 #2563EB`, `brand-400 #3B82F6` — secondary accent
 - `fg #F0F4FF`, `fg-muted #8B9FC4`, `fg-dim #5A6E94` — text
 
-Type: `Outfit` for display, `Inter` for body.
+Type: `Manrope` for display, `Inter` for body. Both cover Cyrillic; a display
+face without Cyrillic (Outfit was one) silently renders every heading in Inter.
 
 ## Standards
 - Mobile-first responsive. Most visitors arrive from Facebook on a phone,

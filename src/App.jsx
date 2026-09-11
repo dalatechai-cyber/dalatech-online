@@ -4370,7 +4370,7 @@ function StaffHero({ onHire, onSee }) {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={SPRING_HEADLINE}
-              className="mt-4 text-[40px] font-semibold leading-[1.04] tracking-tightest text-fg sm:text-[52px] md:text-[64px]"
+              className="mt-4 font-display text-[40px] font-semibold leading-[1.04] tracking-tightest text-fg sm:text-[52px] md:text-[64px]"
             >
               {t("office.hero.title")}
             </motion.h1>
@@ -4411,7 +4411,7 @@ function StaffHero({ onHire, onSee }) {
             className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
           />
           <div className="mt-4 flex items-center justify-center gap-3 px-5 text-[13px] text-fg-muted sm:px-0" aria-live="off">
-            <span className="text-[15px] font-semibold tabular-nums tracking-tight text-fg">{clock.time}</span>
+            <span className="font-display text-[15px] font-semibold tabular-nums tracking-tight text-fg">{clock.time}</span>
             <span className="h-3 w-px bg-white/15" aria-hidden />
             <span>{t(`office.hero.status.${clock.key}`)}</span>
           </div>
@@ -4426,7 +4426,7 @@ function StaffPrice({ id, align = "left" }) {
   const a = OFFICE_AGENTS[id];
   return (
     <div className={align === "center" ? "text-center" : ""}>
-      <p className="text-[22px] font-semibold tracking-tight text-fg">
+      <p className="font-display text-[22px] font-semibold tracking-tight text-fg">
         {formatTugrik(a.monthly)}
         <span className="text-[14px] font-normal text-fg-muted">{t("office.price.perMonth")}</span>
         {a.perMinute && <span className="text-[13px] font-normal text-fg-muted"> {t("office.price.plusPerMinute")}</span>}
@@ -4556,7 +4556,7 @@ function StaffChapter({ id, index, onHire }) {
               <SectionLabel>{t(`${base}.eyebrow`)}</SectionLabel>
               <StaffStatus live={live} />
             </div>
-            <h2 className="mt-4 text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[40px] md:text-[46px]">{t(`${base}.title`)}</h2>
+            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[40px] md:text-[46px]">{t(`${base}.title`)}</h2>
           </Reveal>
           <div className={["md:col-span-7 md:row-span-2 md:row-start-1 md:self-center", flip ? "md:col-start-1" : "md:col-start-6"].join(" ")}>
             <div className="relative -mx-5 sm:mx-0">
@@ -4644,7 +4644,7 @@ function StaffTeam({ onHire }) {
               <span className="h-px w-6 bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
               {t("office.team.eyebrow")}
             </span>
-            <h2 className="mt-4 text-[34px] font-semibold leading-[1.08] tracking-tightest sm:text-[42px] md:text-[48px]">{t("office.team.title")}</h2>
+            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest sm:text-[42px] md:text-[48px]">{t("office.team.title")}</h2>
             <p className="mx-auto mt-4 max-w-[560px] text-[17px] leading-[1.47] text-[#4B5878]">{t("office.team.description")}</p>
           </Reveal>
 
@@ -4669,7 +4669,7 @@ function StaffTeam({ onHire }) {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
-                      <span className="text-[17px] font-semibold tracking-tight">{t(`office.agents.${id}.name`)}</span>
+                      <span className="font-display text-[17px] font-semibold tracking-tight">{t(`office.agents.${id}.name`)}</span>
                       <span className={["h-4 w-4 shrink-0 rounded-full border transition-colors", on ? "border-brand-500 bg-brand-500" : "border-black/20 bg-white"].join(" ")} aria-hidden>
                         {on && <svg viewBox="0 0 16 16" className="h-full w-full text-white"><path d="M4 8.3l2.6 2.6L12 5.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                       </span>
@@ -4687,7 +4687,7 @@ function StaffTeam({ onHire }) {
               <div className="flex items-baseline justify-between gap-4 sm:block">
                 <dt className="text-[13px] text-[#5A6E94]">{t("office.team.monthly")}</dt>
                 <dd className="text-right sm:mt-1 sm:text-left">
-                  <span className="text-[30px] font-semibold leading-none tracking-tight tabular-nums">{formatTugrik(chosen.length ? monthly : 0)}</span>
+                  <span className="font-display text-[30px] font-semibold leading-none tracking-tight tabular-nums">{formatTugrik(chosen.length ? monthly : 0)}</span>
                   <span className="text-[14px] text-[#5A6E94]">{t("office.price.perMonth")}</span>
                   {discount > 0 && (
                     <span className="ml-2 inline-flex items-center gap-1.5 align-middle text-[13px] tabular-nums text-[#5A6E94]">
@@ -4699,7 +4699,7 @@ function StaffTeam({ onHire }) {
               </div>
               <div className="flex items-baseline justify-between gap-4 sm:block">
                 <dt className="text-[13px] text-[#5A6E94]">{t("office.team.setup")}</dt>
-                <dd className="text-right text-[22px] font-semibold tracking-tight tabular-nums sm:mt-1 sm:text-left">{formatTugrik(setup)}</dd>
+                <dd className="text-right font-display text-[22px] font-semibold tracking-tight tabular-nums sm:mt-1 sm:text-left">{formatTugrik(setup)}</dd>
               </div>
             </dl>
             <div className="mt-4 min-h-[20px] text-[12.5px] leading-[1.5] text-[#5A6E94]" aria-live="polite">
@@ -4731,14 +4731,14 @@ function StaffSteps() {
     <section className="py-16 md:py-24">
       <Container>
         <Reveal className="text-center">
-          <h2 className="text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[36px]">{t("office.steps.title")}</h2>
+          <h2 className="font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[36px]">{t("office.steps.title")}</h2>
         </Reveal>
         <StaggerGroup className="mx-auto mt-10 grid max-w-[900px] gap-6 sm:grid-cols-3">
           {items.map((s, i) => (
             <StaggerItem key={i}>
               <div className="border-t border-white/[0.1] pt-5">
-                <p className="text-[13px] font-semibold tabular-nums text-sky-400">0{i + 1}</p>
-                <p className="mt-2 text-[18px] font-semibold tracking-tight text-fg">{s.title}</p>
+                <p className="font-display text-[13px] font-semibold tabular-nums text-sky-400">0{i + 1}</p>
+                <p className="mt-2 font-display text-[18px] font-semibold tracking-tight text-fg">{s.title}</p>
                 <p className="mt-1.5 text-[15px] leading-[1.5] text-fg-muted">{s.body}</p>
               </div>
             </StaggerItem>
