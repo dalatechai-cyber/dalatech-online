@@ -187,9 +187,7 @@
   "pricing": {
     "section": "PRICE QUOTE",
     "title": "Simple pricing, clear value",
-    "description": "A one-time fee for website and AI setup, plus a monthly AI usage fee. No hidden costs.",
-    "oneTimeSetup": "One-time setup",
-    "promoBadge": "Valid for 7 days",
+    "description": "Each AI staff member has a flat monthly fee and a one-time setup. The website is a one-time build. No hidden costs.",
     "cards": {
       "website": {
         "title": "Smart Website",
@@ -205,125 +203,47 @@
         ],
         "cta": "Get started"
       },
-      "chatbot": {
-        "title": "AI Chatbot Setup",
-        "badge": "50% OFF",
-        "price": "195,000₮",
-        "subLine": "Facebook Messenger • Trained on your business info • 24/7 replies",
-        "description": "Automate customer questions with a chatbot trained on your business.",
+      "bundle": {
+        "title": "Website + Ara",
+        "badge": "Save 100,000₮",
+        "price": "800,000₮",
+        "subLine": "Separately 900,000₮ (website 750,000₮ + Ara setup 150,000₮). Together 800,000₮ · then Ara 250,000₮/month",
+        "description": "Launch your new website with its receptionist already answering.",
         "bullets": [
-          "Facebook Messenger connection",
-          "Trained on your business info",
-          "24/7 auto replies"
+          "Smart website included",
+          "Ara answers on the site and on Messenger",
+          "100,000₮ off the setup"
         ],
-        "cta": "Request a demo"
-      },
-      "voice": {
-        "title": "AI Receptionist",
-        "badge": "One-time",
-        "price": "590,000₮",
-        "subLine": "24/7 phone answering • Appointment booking • Voice AI trained on your info",
-        "description": "A voice agent that answers calls and handles routine workflows.",
-        "bullets": [
-          "Answers phone calls 24/7",
-          "Appointment booking & scheduling",
-          "Voice AI trained on your business info"
-        ],
-        "cta": "Talk to us"
-      },
-      "combo": {
-        "title": "COMBO OFFER",
-        "badge": "Best value",
-        "price": "945,000₮",
-        "subLine": "Website + AI Chatbot package",
-        "description": "Launch your website and chatbot together for the best value.",
-        "bullets": [
-          "Smart Website included",
-          "AI Chatbot Setup included",
-          "Best overall value"
-        ],
-        "cta": "Choose combo"
-      }
-    },
-    "monthly": {
-      "title": "Monthly packages",
-      "description": "Monthly plans cover server/API costs and ongoing support.",
-      "chatbot": {
-        "title": "AI Chatbot, monthly plans",
-        "description": "Basic for stable info; Growth for frequently changing promotions and prices.",
-        "table": {
-          "headers": {
-            "feature": "Feature",
-            "basic": "Basic — 90,000₮ / mo",
-            "growth": "Growth — 150,000₮ / mo"
-          },
-          "rows": {
-            "server": {
-              "feature": "Server & API costs",
-              "basic": "✅ Included",
-              "growth": "✅ Included"
-            },
-            "dataUpdates": {
-              "feature": "Data updates",
-              "basic": "1× / month",
-              "growth": "Unlimited"
-            },
-            "support": {
-              "feature": "Technical support",
-              "basic": "Chat & Email",
-              "growth": "Priority phone support"
-            },
-            "monitoring": {
-              "feature": "System monitoring",
-              "basic": "Normal monitoring",
-              "growth": "Weekly detailed monitoring"
-            }
-          }
-        },
-        "tip": "Tip: start with Basic and upgrade anytime.",
-        "cta": "Ask about chatbot plans"
-      },
-      "receptionist": {
-        "title": "AI Receptionist, monthly plans",
-        "description": "Standard for essentials; Premium for fine-tuning and analytics.",
-        "standard": {
-          "title": "Standard",
-          "price": "120,000₮ / mo",
-          "features": [
-            "Server & API costs included",
-            "24/7 system monitoring",
-            "Data update: 1× / month",
-            "Basic technical support"
-          ]
-        },
-        "premium": {
-          "title": "Premium",
-          "price": "250,000₮ / mo",
-          "features": [
-            "Everything in Standard",
-            "AI fine-tuning & prompt optimization",
-            "Detailed monthly analytics report",
-            "Priority support (fast response)"
-          ]
-        },
-        "cta": "Ask about receptionist plans"
+        "cta": "Start together",
+        "was": "900,000₮"
       }
     },
     "paymentTerms": {
       "title": "Payment terms",
       "terms": [
-        "50% upfront when the contract is signed",
-        "50% after completion and handover",
-        "Delivery: within 7 to 10 working days from start"
+        "Website: 50% on signing, 50% on handover; 7 to 10 working days",
+        "AI staff: setup once, monthly fee at the start of each month",
+        "AI staff start within 3 to 5 days"
       ],
       "note": "Want a tailored quote? Tell us your business type and what you want to automate.",
       "cta": "Get a free demo"
+    },
+    "staff": {
+      "title": "AI staff",
+      "description": "Monthly fee, one-time setup. Two staff −10%, three −15%, four −20%; the discount applies to the monthly fee.",
+      "teamLink": "Build your team and see the total",
+      "hire": "Hire",
+      "preorder": "Pre-register"
+    },
+    "website": {
+      "title": "Website",
+      "description": "One-time build. No monthly fee."
     }
   },
   "faq": {
     "section": "FAQ",
     "title": "Common questions",
-    "description": "Answers to the most common questions about our websites and AI solutions.",
+    "description": "Answers to the most common questions about our AI staff and websites.",
     "q1": {
       "question": "What type of businesses is this for?",
       "answer": "Small and medium businesses, stores, service centers, auto parts shops, clinics, and organizations that frequently receive customer inquiries."
@@ -333,20 +253,20 @@
       "answer": "No. We handle all configuration and installation. You only need simple admin access to edit your content."
     },
     "q3": {
-      "question": "Why is there a monthly AI fee?",
-      "answer": "The AI system has ongoing costs for servers, usage, and monitoring, so a monthly fee is required."
+      "question": "What does the monthly fee cover?",
+      "answer": "Servers, model usage, monitoring, knowledge updates and support are all included. The only extra is Eho's call minutes."
     },
     "q4": {
-      "question": "Can the AI replace staff?",
-      "answer": "AI only answers repetitive, simple questions. It does not completely replace human involvement."
+      "question": "Will an AI staff member replace my staff?",
+      "answer": "They take the daily load: repeat questions, bookings, reminders, reports. Anything delicate or unusual is handed to you. They do not replace people; they take the volume."
     },
     "q5": {
-      "question": "Can the AI replace my staff?",
-      "answer": "The AI is designed to handle repetitive and basic questions. It reduces workload but does not replace human staff for complex or sensitive cases."
+      "question": "What does Ara know, and what does she not?",
+      "answer": "Ara answers only from what you give her: prices, hours, services, terms. She never guesses; anything she does not know goes to you."
     },
     "q6": {
-      "question": "How long does setup take?",
-      "answer": "Website delivery usually takes 7 to 10 days. AI setup and training are completed alongside the website build."
+      "question": "How fast do they start?",
+      "answer": "AI staff within 3 to 5 days. A website within 7 to 10 working days."
     },
     "stillHaveQuestions": "Still have questions?",
     "contactPrompt": "We're happy to explain everything in a short call or demo.",
@@ -424,7 +344,7 @@
     "tagline": "Serving Mongolian businesses with technology built to a global standard."
   },
   "footer": {
-    "tagline": "AI-powered websites, chatbots, and voice agents, engineered in Mongolia and built to a global standard.",
+    "tagline": "AI staff and websites, built in Mongolia to a global standard.",
     "services": "Services",
     "company": "Company",
     "legal": "Legal",

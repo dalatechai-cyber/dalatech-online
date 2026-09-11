@@ -1982,7 +1982,7 @@ function Portfolio() {
             </div>
             <div className="flex flex-wrap gap-3">
               <MagneticButton href="https://matrixecosalon.org" variant="ghost">{t("portfolio.visitWebsite")}</MagneticButton>
-              <MagneticButton href="#demo" variant="primary" demoServices={WEB_CHATBOT_DEMO_SERVICES}>{t("portfolio.getDemo")}</MagneticButton>
+              <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_ARA_DEMO_SERVICES}>{t("portfolio.getDemo")}</MagneticButton>
             </div>
           </div>
         </Reveal>
@@ -2047,7 +2047,7 @@ function Portfolio() {
               </div>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <MagneticButton href="#demo" variant="primary" demoServices={WEB_CHATBOT_DEMO_SERVICES}>{t("portfolio.japantok.buttons.requestDemo")}</MagneticButton>
+                <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_ARA_DEMO_SERVICES}>{t("portfolio.japantok.buttons.requestDemo")}</MagneticButton>
                 <MagneticButton href="https://matrixecosalon.org" variant="ghost">{t("portfolio.japantok.buttons.viewLive")}</MagneticButton>
               </div>
             </div>
@@ -2415,203 +2415,95 @@ function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, prima
   );
 }
 
+// One card per AI staff member on the pricing page: the same facts as the
+// office page, in the pricing page's own frame.
+function StaffPriceCard({ id }) {
+  const { t } = useTranslation();
+  const a = OFFICE_AGENTS[id];
+  const live = STAFF_LIVE[id];
+  return (
+    <StaggerItem className="h-full">
+      <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
+        <div className="flex items-center gap-3">
+          <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
+            <StaffAvatar id={id} size={3} className="-mt-[90px]" />
+          </span>
+          <div className="min-w-0">
+            <p className="font-display text-[18px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</p>
+            <p className="text-[12.5px] text-fg-muted">{t(`office.agents.${id}.role`)}</p>
+          </div>
+        </div>
+        <p className="mt-4 text-[13.5px] leading-[1.5] text-fg-muted">{t(`office.agents.${id}.job`)}</p>
+        <div className="mt-6">
+          <StaffPrice id={id} />
+        </div>
+        <div className="mt-4">
+          <StaffStatus live={live} />
+        </div>
+        <div className="mt-auto pt-6">
+          <MagneticButton href="#demo" variant={live ? "primary" : "ghost"} className="w-full" demoServices={[id]}>
+            {live ? t("pricing.staff.hire") : t("pricing.staff.preorder")}
+          </MagneticButton>
+        </div>
+      </div>
+    </StaggerItem>
+  );
+}
+
 function Pricing() {
   const { t } = useTranslation();
+  const terms = t("pricing.paymentTerms.terms", { returnObjects: true });
   return (
     <section id="pricing" className="relative py-16 md:py-28">
       <Container>
         <SectionHeader eyebrow={t("pricing.section")} title={t("pricing.title")} description={t("pricing.description")} />
 
         <Reveal className="mt-14">
-          <div className="flex items-center justify-between gap-4">
-            <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("pricing.oneTimeSetup")}</h3>
-            <Pill>{t("pricing.promoBadge")}</Pill>
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+            <div>
+              <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("pricing.staff.title")}</h3>
+              <p className="mt-1.5 max-w-[620px] text-[14.5px] leading-[1.55] text-fg-muted">{t("pricing.staff.description")}</p>
+            </div>
+            <Link to="/office" state={{ scrollTo: "team" }} data-cursor="hover" className="pressable inline-flex min-h-[44px] items-center gap-1 text-[15px] text-sky-400 hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md">
+              {t("pricing.staff.teamLink")} <span aria-hidden>›</span>
+            </Link>
           </div>
         </Reveal>
+        <StaggerGroup className="mt-7 grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {STAFF_ORDER.map((id) => <StaffPriceCard key={id} id={id} />)}
+        </StaggerGroup>
 
-        <StaggerGroup className="mt-7 grid gap-5 lg:grid-cols-4">
+        <Reveal className="mt-16">
+          <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("pricing.website.title")}</h3>
+          <p className="mt-1.5 text-[14.5px] text-fg-muted">{t("pricing.website.description")}</p>
+        </Reveal>
+        <StaggerGroup className="mt-7 grid gap-5 lg:grid-cols-2">
           <PriceCard
             title={t("pricing.cards.website.title")}
             badge={t("pricing.cards.website.badge")}
             priceLine={t("pricing.cards.website.price")}
             subLine={t("pricing.cards.website.subLine")}
             desc={t("pricing.cards.website.description")}
-            bullets={[
-              t("pricing.cards.website.bullets.0"),
-              t("pricing.cards.website.bullets.1"),
-              t("pricing.cards.website.bullets.2"),
-              t("pricing.cards.website.bullets.3"),
-            ]}
+            bullets={t("pricing.cards.website.bullets", { returnObjects: true })}
             cta={t("pricing.cards.website.cta")}
             demoServices={WEBSITE_DEMO_SERVICES}
           />
           <PriceCard
-            title={t("pricing.cards.chatbot.title")}
-            badge={t("pricing.cards.chatbot.badge")}
+            title={t("pricing.cards.bundle.title")}
+            badge={t("pricing.cards.bundle.badge")}
             priceLine={
               <span>
-                <span className="text-fg-muted/70 line-through">390,000₮</span>{" "}
-                <span className="text-fg">195,000₮</span>
+                <span className="text-fg-muted/70 line-through">{t("pricing.cards.bundle.was")}</span>{" "}
+                <span className="text-fg">{t("pricing.cards.bundle.price")}</span>
               </span>
             }
-            subLine={t("pricing.cards.chatbot.subLine")}
-            desc={t("pricing.cards.chatbot.description")}
-            bullets={[
-              t("pricing.cards.chatbot.bullets.0"),
-              t("pricing.cards.chatbot.bullets.1"),
-              t("pricing.cards.chatbot.bullets.2"),
-            ]}
-            cta={t("pricing.cards.chatbot.cta")}
-            demoServices={CHATBOT_DEMO_SERVICES}
+            subLine={t("pricing.cards.bundle.subLine")}
+            desc={t("pricing.cards.bundle.description")}
+            bullets={t("pricing.cards.bundle.bullets", { returnObjects: true })}
+            cta={t("pricing.cards.bundle.cta")}
+            demoServices={WEBSITE_ARA_DEMO_SERVICES}
             primary
           />
-          <PriceCard
-            title={t("pricing.cards.voice.title")}
-            badge={t("pricing.cards.voice.badge")}
-            priceLine={t("pricing.cards.voice.price")}
-            subLine={t("pricing.cards.voice.subLine")}
-            desc={t("pricing.cards.voice.description")}
-            bullets={[
-              t("pricing.cards.voice.bullets.0"),
-              t("pricing.cards.voice.bullets.1"),
-              t("pricing.cards.voice.bullets.2"),
-            ]}
-            cta={t("pricing.cards.voice.cta")}
-            demoServices={VOICE_DEMO_SERVICES}
-          />
-          <PriceCard
-            title={t("pricing.cards.combo.title")}
-            badge={t("pricing.cards.combo.badge")}
-            priceLine={t("pricing.cards.combo.price")}
-            subLine={t("pricing.cards.combo.subLine")}
-            desc={t("pricing.cards.combo.description")}
-            bullets={[
-              t("pricing.cards.combo.bullets.0"),
-              t("pricing.cards.combo.bullets.1"),
-              t("pricing.cards.combo.bullets.2"),
-            ]}
-            cta={t("pricing.cards.combo.cta")}
-            demoServices={WEB_CHATBOT_DEMO_SERVICES}
-          />
-        </StaggerGroup>
-
-        <Reveal className="mt-16">
-          <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("pricing.monthly.title")}</h3>
-          <p className="mt-2 text-[14.5px] text-fg-muted">{t("pricing.monthly.description")}</p>
-        </Reveal>
-
-        <StaggerGroup className="mt-7 grid gap-5 lg:grid-cols-2">
-          <StaggerItem>
-            <div className="rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
-              <div>
-                <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{t("pricing.monthly.chatbot.title")}</p>
-                <p className="mt-1.5 text-[13.5px] leading-[1.55] text-fg-muted">{t("pricing.monthly.chatbot.description")}</p>
-              </div>
-              {/* Mobile: stacked per-tier blocks. A 3-column comparison table
-                  cannot read at 390px (forces ~460px width and scrolls inside
-                  the card), so below sm we split into one block per tier with
-                  feature/value rows that fit edge-to-edge. */}
-              <div className="mt-5 grid gap-4 sm:hidden">
-                {[
-                  { id: "basic", primary: false },
-                  { id: "growth", primary: true },
-                ].map(({ id, primary }) => (
-                  <div
-                    key={id}
-                    className={[
-                      "rounded-xl p-5",
-                      primary
-                        ? "border border-sky-400/40 bg-gradient-to-b from-sky-400/[0.06] to-transparent shadow-[0_0_0_1px_rgba(56,189,248,0.12),0_18px_40px_-24px_rgba(56,189,248,0.35)]"
-                        : "border border-white/[0.08] bg-white/[0.02]",
-                    ].join(" ")}
-                  >
-                    <p className="font-display text-[15px] font-semibold tracking-tight text-fg">
-                      {t(`pricing.monthly.chatbot.table.headers.${id}`)}
-                    </p>
-                    <dl className="mt-3 divide-y divide-white/[0.06]">
-                      {["server", "dataUpdates", "support", "monitoring"].map((row) => (
-                        <div key={row} className="flex items-baseline justify-between gap-4 py-2.5">
-                          <dt className="text-[12.5px] leading-snug text-fg-muted">
-                            {t(`pricing.monthly.chatbot.table.rows.${row}.feature`)}
-                          </dt>
-                          <dd className="text-right text-[13px] font-medium leading-snug text-fg">
-                            {t(`pricing.monthly.chatbot.table.rows.${row}.${id}`)}
-                          </dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </div>
-                ))}
-              </div>
-
-              {/* sm+: original comparison table */}
-              <div className="mt-5 hidden overflow-x-auto rounded-xl border border-white/[0.08] sm:block">
-                <table className="w-full min-w-[460px] text-left text-[13px]">
-                  <thead className="bg-white/[0.025]">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold text-fg-muted">{t("pricing.monthly.chatbot.table.headers.feature")}</th>
-                      <th className="px-4 py-3 font-semibold text-fg-muted">{t("pricing.monthly.chatbot.table.headers.basic")}</th>
-                      <th className="px-4 py-3 font-semibold text-fg-muted">{t("pricing.monthly.chatbot.table.headers.growth")}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/[0.05]">
-                    {["server", "dataUpdates", "support", "monitoring"].map((row) => (
-                      <tr key={row} className="transition-colors hover:bg-white/[0.015]">
-                        <td className="px-4 py-3 text-fg/90">{t(`pricing.monthly.chatbot.table.rows.${row}.feature`)}</td>
-                        <td className="px-4 py-3 text-fg/85">{t(`pricing.monthly.chatbot.table.rows.${row}.basic`)}</td>
-                        <td className="px-4 py-3 text-fg/85">{t(`pricing.monthly.chatbot.table.rows.${row}.growth`)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-[12px] text-fg-muted">{t("pricing.monthly.chatbot.tip")}</p>
-                <MagneticButton href="#demo" variant="primary" demoServices={CHATBOT_DEMO_SERVICES}>{t("pricing.monthly.chatbot.cta")}</MagneticButton>
-              </div>
-            </div>
-          </StaggerItem>
-
-          <StaggerItem>
-            <div className="rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
-              <div>
-                <p className="font-display text-[17px] font-semibold tracking-tight text-fg">{t("pricing.monthly.receptionist.title")}</p>
-                <p className="mt-1.5 text-[13.5px] leading-[1.55] text-fg-muted">{t("pricing.monthly.receptionist.description")}</p>
-              </div>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                {["standard", "premium"].map((tier) => {
-                  const isPremium = tier === "premium";
-                  return (
-                    <div
-                      key={tier}
-                      className={[
-                        "relative overflow-hidden rounded-xl p-5 transition-colors",
-                        isPremium
-                          ? "border border-sky-400/45 bg-gradient-to-b from-sky-400/[0.06] to-transparent shadow-[0_0_0_1px_rgba(56,189,248,0.12),0_24px_50px_-24px_rgba(56,189,248,0.4)]"
-                          : "border border-white/[0.08] bg-white/[0.02]",
-                      ].join(" ")}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="font-display text-[15px] font-semibold tracking-tight text-fg">{t(`pricing.monthly.receptionist.${tier}.title`)}</p>
-                        <span className="font-display text-[15px] font-semibold text-fg">{t(`pricing.monthly.receptionist.${tier}.price`)}</span>
-                      </div>
-                      <ul className="mt-4 space-y-2.5 text-[13px] leading-[1.5] text-fg/90">
-                        {[0, 1, 2, 3].map((i) => (
-                          <li key={i} className="flex items-start gap-2.5">
-                            <CheckIcon />
-                            <span>{t(`pricing.monthly.receptionist.${tier}.features.${i}`)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="mt-5 flex justify-end">
-                <MagneticButton href="#demo" variant="primary" demoServices={VOICE_DEMO_SERVICES}>{t("pricing.monthly.receptionist.cta")}</MagneticButton>
-              </div>
-            </div>
-          </StaggerItem>
         </StaggerGroup>
 
         <Reveal className="mt-14">
@@ -2620,10 +2512,10 @@ function Pricing() {
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">{t("pricing.paymentTerms.title")}</p>
                 <ul className="mt-5 grid gap-2.5 text-[14px] leading-[1.55] text-fg/90 sm:grid-cols-3 sm:gap-x-6">
-                  {[0, 1, 2].map((i) => (
+                  {terms.map((term, i) => (
                     <li key={i} className="flex items-start gap-2.5">
                       <CheckIcon />
-                      <span>{t(`pricing.paymentTerms.terms.${i}`)}</span>
+                      <span>{term}</span>
                     </li>
                   ))}
                 </ul>
@@ -2792,9 +2684,7 @@ const DEMO_SERVICES = ["ara", "nova", "veda", "eho", "website", "chatbot", "voic
 
 const DEMO_DRAFT_KEY = "dalatech:demo-draft";
 /** Pre-selected chips for CTAs whose context already implies a product. */
-const WEB_CHATBOT_DEMO_SERVICES = ["website", "chatbot"];
-const CHATBOT_DEMO_SERVICES = ["chatbot"];
-const VOICE_DEMO_SERVICES = ["voice"];
+const WEBSITE_ARA_DEMO_SERVICES = ["website", "ara"];
 const WEBSITE_DEMO_SERVICES = ["website"];
 
 const DEMO_ENDPOINT = "/api/demo-request";
@@ -3006,13 +2896,11 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
     setValues((current) => {
       const base = draft || (current.name || current.phone ? current : EMPTY_DEMO_FORM);
       if (!preset || !preset.length) return base;
-      // A button that names staff states the whole team: it replaces any
-      // staff picked on an earlier visit to the form instead of piling on,
-      // so the chips always match what the visitor just chose.
+      // The button that opened the form states the selection: its preset
+      // replaces whatever was picked on an earlier visit, so the chips always
+      // match what the visitor just chose. Typed fields are kept.
       const wanted = preset.filter((s) => DEMO_SERVICES.includes(s));
-      const namesStaff = wanted.some((s) => STAFF_ORDER.includes(s));
-      const kept = base.services.filter((s) => !(namesStaff && STAFF_ORDER.includes(s)));
-      return { ...base, services: Array.from(new Set([...kept, ...wanted])) };
+      return { ...base, services: wanted.length ? wanted : base.services };
     });
     setErrors({});
     setStatus("idle");
@@ -4784,17 +4672,25 @@ function RouteScrollManager() {
   React.useEffect(() => {
     const target = location.state && location.state.scrollTo;
     if (target) {
-      requestAnimationFrame(() => {
+      // Pages with canvases and reveals settle their layout over the first
+      // frames, so the target moves after the first scroll: scroll again
+      // twice while that happens instead of landing short of it.
+      const go = (behavior) => {
         const el = document.getElementById(target);
-        if (!el) {
-          window.scrollTo({ top: 0, behavior: "auto" });
-          return;
-        }
-        const headerH = window.scrollY > 60 ? 56 : 80;
+        if (!el) return false;
+        const headerH = 56;
         const y = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
-        window.scrollTo({ top: y, behavior: "smooth" });
+        if (Math.abs(y - window.scrollY) > 2) window.scrollTo({ top: y, behavior });
+        return true;
+      };
+      const raf = requestAnimationFrame(() => {
+        if (!go("smooth")) window.scrollTo({ top: 0, behavior: "auto" });
       });
-      return;
+      const timers = [400, 1000].map((ms) => setTimeout(() => go("auto"), ms));
+      return () => {
+        cancelAnimationFrame(raf);
+        timers.forEach(clearTimeout);
+      };
     }
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [location.pathname, location.state]);
