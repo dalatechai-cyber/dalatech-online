@@ -10,7 +10,7 @@ export const CHAIR_SCALE = 1.35; // its chairs are small even so; this puts the 
 
 // the site's ink/sky/brand palette, in the room
 export const P = {
-  wall: 0x2b3a6c, wallDeep: 0x1f2b56, ceiling: 0x2a3660, floor: 0x161e3a,
+  wall: 0x1c2750, wallDeep: 0x162043, ceiling: 0x182142, floor: 0x121a36,
   oak: 0x8a5a34, oakDark: 0x5c3b22, top: 0x8f9bb8, metalDark: 0x1c2438, metalMid: 0x2d3858, metalLight: 0xb7c2e0,
   seat: 0x2f4d8c, seatPale: 0xaab4cc, plant: 0x2f9c66, pot: 0xc7ccd8, lampShade: 0xffe2b0, glass: 0xaac4ff,
   brand: 0x2563eb, sky: 0x38bdf8, paper: 0xe6ecff,
@@ -167,7 +167,7 @@ function skylineTexture() {
 
 function carpetTexture() {
   const t = canvasTexture(512, 512, (c, w, h) => {
-    c.fillStyle = "#1a2346"; c.fillRect(0, 0, w, h);
+    c.fillStyle = "#141c3a"; c.fillRect(0, 0, w, h);
     const rnd = prng(3);
     for (let i = 0; i < 14000; i++) { c.fillStyle = rnd() < 0.5 ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.05)"; c.fillRect(rnd() * w, rnd() * h, 2, 2); }
     c.strokeStyle = "rgba(255,255,255,0.04)"; c.lineWidth = 2;
@@ -282,7 +282,7 @@ export function buildRoom(scene, place, lite) {
   ceil.rotation.x = Math.PI / 2; ceil.position.set(0, H, DD / 2); scene.add(ceil);
   const panelMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff4e0, emissiveIntensity: 1.8 });
   // the ceiling only ever sees bounce light, so it carries a little of its own
-  ceil.material.emissive = new THREE.Color(P.ceiling); ceil.material.emissiveIntensity = lite ? 0.7 : 0.45;
+  ceil.material.emissive = new THREE.Color(P.ceiling); ceil.material.emissiveIntensity = lite ? 0.5 : 0.3;
   const panels = [[-2.15, 2.0], [2.15, 2.0], [-2.15, 4.6], [2.15, 4.6]];
   panels.forEach(([x, z]) => { const panel = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.7), panelMat); panel.rotation.x = Math.PI / 2; panel.position.set(x, H - 0.01, z); scene.add(panel); });
 
@@ -373,8 +373,9 @@ export function buildRoom(scene, place, lite) {
 // ---------------------------------------------------------------- lights
 // `lite` drops the shadowed spots for phones; the moon still casts the one shadow that sells the depth.
 export function buildLights(scene, lamps, lite) {
-  scene.add(new THREE.HemisphereLight(0x6f86cc, 0x1a2140, 2.3));
-  const amb = new THREE.AmbientLight(0x3a4c8a, 0.6); scene.add(amb);
+  // night: a low, cool ambient so the warm lamp pools and the screens carry the room
+  scene.add(new THREE.HemisphereLight(0x4a5f9e, 0x0e1430, 1.1));
+  const amb = new THREE.AmbientLight(0x2a3a6e, 0.35); scene.add(amb);
   [[-2.15, 2.0], [2.15, 2.0], [-2.15, 4.6], [2.15, 4.6]].forEach(([x, z], i) => {
     const s = new THREE.SpotLight(0xfff1dc, 26, 10, Math.PI / 2.2, 0.8, 1.1);
     s.position.set(x, 2.95, z); s.target.position.set(x, 0, z + 0.3);
@@ -384,7 +385,7 @@ export function buildLights(scene, lamps, lite) {
     if (!lite) { const spill = new THREE.PointLight(0xfff1dc, 5, 5, 2); spill.position.set(x, 2.8, z); scene.add(spill); }
   });
   // a soft fill from the visitor's side, so faces turned to the room are lit
-  const fill = new THREE.DirectionalLight(0xe4ecff, 0.9);
+  const fill = new THREE.DirectionalLight(0xd6e0ff, 0.55);
   fill.position.set(1, 4, 12); fill.target.position.set(0, 1, 3); scene.add(fill); scene.add(fill.target);
   const moon = new THREE.DirectionalLight(0x9fb6ff, 1.2);
   moon.position.set(-3, 5, -6); moon.target.position.set(0.5, 0.6, 3.2);
