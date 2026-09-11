@@ -3,18 +3,19 @@
 // stage can redraw it at any size, time and scroll progress.
 import {
   sprite, stripFrame, charFrame, sky, windowFrame, room, screenActivity, screenChart,
-  lampGlow, grade, sunPatch, screenLight, ringing, mapRange, nightAmount, SPRITES,
+  lampGlow, grade, sunPatch, screenLight, ringing, mapRange, nightAmount, rect, SPRITES,
 } from "./pixel";
 
 // Order on the hero row and the hour each chapter is set at.
 export const STAFF = ["ara", "veda", "eho", "nova"];
 // Art pixels the four hero desks need side by side (60 per station, 4 margin each side).
 export const HERO_MIN_W = 8 + 4 * 60;
-export const CHAPTER_HOUR = { ara: 2.25, veda: 8.5, eho: 12.1, nova: 15.5 };
-// The pinned hero runs from before dawn to late night, so every bit of
-// scroll moves the light: 05:30 at the top, 23:00 at the bottom.
-export const HERO_HOURS = [5.5, 23];
-export const heroHour = (progress) => mapRange(progress, 0, 1, HERO_HOURS[0], HERO_HOURS[1]);
+// Ара deep in the night, Веда at first light, Эхо in the golden hour, Нова
+// in the blue hour: four moods that all sit inside the dark page.
+export const CHAPTER_HOUR = { ara: 2.25, veda: 6.75, eho: 18.4, nova: 19.6 };
+// The hero is set in the evening: lamps lit, screens glowing, the four
+// still at work. The people animate; the hour does not move.
+export const HERO_HOUR = 21;
 
 // Four weeks of the sample report, the same bars the page shows in HTML.
 const REPORT = [0.5, 0.62, 0.48, 0.9];
@@ -70,32 +71,40 @@ function station(ctx, img, o) {
   // what floats over their head: Ара's typing dots, Нова's heart
   const cycle = (t + seed * 1.7) % (id === "ara" ? 4 : 6);
   // frames 0-3 grow the bubble; the strips' last frame is LimeZu's sample, not used
-  if (id === "ara" && cycle < 1.6) lights.push(() => stripFrame(ctx, img, "BUBBLE", Math.min(3, Math.floor(cycle * 8)), cx + 18, cy - 4));
+  if (id === "ara" && cycle < 1.6) {
+    lights.push(() => {
+      const frame = Math.min(3, Math.floor(cycle * 8));
+      stripFrame(ctx, img, "BUBBLE", frame, cx + 18, cy - 4);
+      // LimeZu leaves the grown bubble empty for you to fill: three typing dots, one lifted at a time
+      if (frame === 3) {
+        const lifted = Math.floor(t * 6) % 3;
+        for (let d = 0; d < 3; d++) rect(ctx, cx + 18 + 10 + d * 5, cy - 4 + 18 - (d === lifted ? 1 : 0), 2, 2, "#3A3A50");
+      }
+    });
+  }
   if (id === "nova" && cycle < 1.8) lights.push(() => stripFrame(ctx, img, "HEART", Math.min(3, Math.floor(cycle * 7)), cx + 18, cy - 4));
   return { cx, cy, deskW };
 }
 
 // ---------------------------------------------------------------- hero
-// Four desks along one wall, a window over each. `progress` is the scroll
-// through the pinned hero and drives the hour of the day; the people never
-// stop, the light does everything else.
-export function drawHero(ctx, img, { W, H, t, progress }) {
-  const hour = heroHour(progress);
+// Four desks along one wall of glass.
+export function drawHero(ctx, img, { W, H, t }) {
+  const hour = HERO_HOUR;
   const night = nightAmount(hour);
-  const floorY = 44;
+  const floorY = 52;
   room(ctx, img, W, H, floorY);
 
   const content = HERO_MIN_W;
   const ox = Math.floor((W - content) / 2);
-  const deskY = 72;
+  const deskY = 80;
   // On a phone the room is only as wide as the desks and each desk gets a
   // window. On a wider stage the back wall is one run of glass, with a
   // mullion on each desk boundary so the panes still line up with the team.
   const wide = ox >= 34;
-  const panes = STAFF.map((id, i) => ({ x: ox + 4 + i * 60 + 3, y: 3, w: 44, h: 22 }));
+  const panes = STAFF.map((id, i) => ({ x: ox + 4 + i * 60 - 1, y: 3, w: 52, h: 30 }));
   let holes = panes;
   if (wide) {
-    const glass = { x: 8, y: 3, w: W - 16, h: 24 };
+    const glass = { x: 8, y: 3, w: W - 16, h: 30 };
     const posts = [];
     for (let i = 0; i <= STAFF.length; i++) posts.push(ox + 4 + i * 60 - 6);
     sky(ctx, glass.x, glass.y, glass.w, glass.h, hour, 3);
@@ -146,7 +155,9 @@ export function drawChapter(id) {
     // stage is taller so the messages fit beside the person
     const floorY = H - 56;
     room(ctx, img, W, H, floorY);
-    const win = { x: 10, y: 8, w: 62, h: 30 };
+    // a window that reads as one: about two fifths of the stage, as tall as
+    // the wall allows, on the left so the messages keep the right half
+    const win = { x: 8, y: 6, w: Math.max(70, Math.min(100, Math.floor(W * 0.42))), h: Math.min(56, floorY - 24) };
     sky(ctx, win.x, win.y, win.w, win.h, hour, STAFF.indexOf(id) + 11);
     windowFrame(ctx, win.x, win.y, win.w, win.h);
     const deskY = floorY + 6;

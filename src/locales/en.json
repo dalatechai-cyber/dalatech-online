@@ -526,19 +526,12 @@
   "office": {
     "section": "AI STAFF",
     "hero": {
-      "title": "Staff who never sleep.",
-      "lead": "Four AI staff. They answer your customers day and night, take the calls and prepare the monthly report.",
+      "title": "Four AI staff, working for your business.",
+      "lead": "Ara answers the messages. Veda prepares the monthly report. Eho answers the phone. Nova keeps in touch with customers. No hiring, no days off, one flat monthly fee.",
       "hire": "Hire",
       "see": "See them work",
-      "sceneAlt": "Four AI staff at their desks under one window. As you scroll, the sky outside runs through a full day.",
-      "status": {
-        "night": "Ara is answering the night's messages",
-        "dawn": "Veda is adding up yesterday's numbers",
-        "morning": "Eho is on the phone",
-        "afternoon": "Nova is checking in with customers",
-        "evening": "Ara is taking bookings",
-        "late": "All four still at work"
-      }
+      "sceneAlt": "Four AI staff at their desks in an evening office, under one long window.",
+      "more": "Details"
     },
     "status": {
       "live": "Working now",
@@ -627,17 +620,17 @@
           {
             "from": "staff",
             "text": "Hello Bold. How was yesterday's visit?",
-            "time": "15:30"
+            "time": "19:30"
           },
           {
             "from": "customer",
             "text": "Good, thank you",
-            "time": "15:41"
+            "time": "19:41"
           },
           {
             "from": "staff",
             "text": "Thank you. I will remind you of your next appointment on 12 October.",
-            "time": "15:41"
+            "time": "19:41"
           }
         ]
       }

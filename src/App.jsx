@@ -18,7 +18,6 @@ import {
   useTransform,
   useSpring,
   useMotionValue,
-  useMotionValueEvent,
   useReducedMotion,
 } from "framer-motion";
 
@@ -4331,14 +4330,6 @@ const CHAPTER_SCALE = (w) => (w < 640 ? 2 : 3);
 // phones get a taller room so the messages fit beside the person
 const CHAPTER_HEIGHT = (w) => (w < 640 ? 176 : 128);
 
-function heroClock(p) {
-  const h = Math.min(23.999, Math.max(0, staffHeroHour(p)));
-  const hh = Math.floor(h);
-  const mm = Math.floor((h - hh) * 60);
-  const key = hh < 6 ? "night" : hh < 9 ? "dawn" : hh < 12 ? "morning" : hh < 16 ? "afternoon" : hh < 20 ? "evening" : "late";
-  return { time: `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`, key };
-}
-
 function StaffStatus({ live }) {
   const { t } = useTranslation();
   return (
@@ -4349,74 +4340,90 @@ function StaffStatus({ live }) {
   );
 }
 
-function StaffHero({ onHire, onSee }) {
+function StaffHero({ onHire, onSee, onPick }) {
   const { t } = useTranslation();
-  const ref = React.useRef(null);
-  const progress = useDampedProgress(ref, ["start start", "end end"]);
-  const [clock, setClock] = React.useState(() => heroClock(0));
-  useMotionValueEvent(progress, "change", (v) => {
-    const next = heroClock(v);
-    setClock((c) => (c.time === next.time ? c : next));
-  });
-
   return (
-    // overflow stays visible: the global section clip would otherwise unpin the sticky scene
-    <section ref={ref} className="relative" style={{ height: "200vh", overflow: "visible" }}>
-      <div className="sticky top-0 flex min-h-[100svh] flex-col justify-center pb-8 pt-[96px] md:pt-[112px]">
-        <Container>
-          <div className="mx-auto max-w-[680px] text-center">
-            <SectionLabel>{t("office.section")}</SectionLabel>
-            <motion.h1
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={SPRING_HEADLINE}
-              className="mt-4 font-display text-[40px] font-semibold leading-[1.04] tracking-tightest text-fg sm:text-[52px] md:text-[64px]"
-            >
-              {t("office.hero.title")}
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_REVEAL, delay: 0.08 }}
-              className="mx-auto mt-4 max-w-[520px] text-[17px] leading-[1.47] text-fg-muted"
-            >
-              {t("office.hero.lead")}
-            </motion.p>
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_REVEAL, delay: 0.16 }}
-              className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
-            >
-              <MagneticButton onClick={onHire} variant="primary" className="min-h-[44px]">{t("office.hero.hire")}</MagneticButton>
-              <button type="button" onClick={onSee} data-cursor="hover" className="pressable inline-flex min-h-[44px] items-center gap-1 text-[17px] text-sky-400 hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md px-1">
-                {t("office.hero.see")} <span aria-hidden>›</span>
+    <section className="pb-6 pt-[96px] md:pb-10 md:pt-[128px]">
+      <Container>
+        <div className="mx-auto max-w-[760px] text-center">
+          <SectionLabel>{t("office.section")}</SectionLabel>
+          <motion.h1
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={SPRING_HEADLINE}
+            className="mt-4 font-display text-[38px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[50px] md:text-[60px]"
+          >
+            {t("office.hero.title")}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...SPRING_REVEAL, delay: 0.08 }}
+            className="mx-auto mt-5 max-w-[600px] text-[17px] leading-[1.5] text-fg-muted"
+          >
+            {t("office.hero.lead")}
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...SPRING_REVEAL, delay: 0.16 }}
+            className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
+          >
+            <MagneticButton onClick={onHire} variant="primary" className="min-h-[44px]">{t("office.hero.hire")}</MagneticButton>
+            <button type="button" onClick={onSee} data-cursor="hover" className="pressable inline-flex min-h-[44px] items-center gap-1 text-[17px] text-sky-400 hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md px-1">
+              {t("office.hero.see")} <span aria-hidden>›</span>
+            </button>
+          </motion.div>
+        </div>
+      </Container>
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING_REVEAL, delay: 0.22 }}
+        className="mx-auto mt-10 w-full max-w-[1040px] px-0 sm:px-7 md:mt-12"
+      >
+        <PixelStage
+          draw={drawStaffHero}
+          logicalH={128}
+          scale={HERO_SCALE}
+          minW={STAFF_HERO_MIN_W}
+          label={t("office.hero.sceneAlt")}
+          className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
+        />
+      </motion.div>
+      {/* who the four are, before any scrolling: name, job, price, whether they are live */}
+      <Container>
+        <StaggerGroup className="mx-auto mt-6 grid max-w-[1040px] auto-rows-fr grid-cols-2 gap-3 md:mt-8 md:grid-cols-4">
+          {STAFF_ORDER.map((id) => (
+            <StaggerItem key={id} className="h-full">
+              <button
+                type="button"
+                onClick={() => onPick(id)}
+                data-cursor="hover"
+                className="pressable group flex h-full w-full flex-col rounded-[18px] border border-white/[0.08] bg-white/[0.03] p-3.5 text-left transition-colors hover:border-white/[0.2] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:p-4"
+              >
+                <span className="flex items-center gap-3">
+                  {/* the face, not the hair: the head sits on rows 20-53 of the frame; at 3x, 90px down puts the eyes in the box */}
+                  <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
+                    <StaffAvatar id={id} size={3} className="-mt-[90px]" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-display text-[17px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</span>
+                    <span className="block text-[12px] leading-[1.3] text-fg-muted">{t(`office.agents.${id}.role`)}</span>
+                  </span>
+                </span>
+                <span className="mt-3 block flex-1 text-[13px] leading-[1.45] text-fg-muted">{t(`office.agents.${id}.job`)}</span>
+                <span className="mt-3 flex flex-col gap-1.5 border-t border-white/[0.08] pt-3 sm:flex-row sm:items-end sm:justify-between sm:gap-2">
+                  <span className="whitespace-nowrap font-display text-[15px] font-semibold tabular-nums tracking-tight text-fg">
+                    {formatTugrik(OFFICE_AGENTS[id].monthly)}<span className="text-[12px] font-normal text-fg-muted">{t("office.price.perMonth")}</span>
+                  </span>
+                  <StaffStatus live={STAFF_LIVE[id]} />
+                </span>
               </button>
-            </motion.div>
-          </div>
-        </Container>
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING_REVEAL, delay: 0.22 }}
-          className="mx-auto mt-8 w-full max-w-[1040px] px-0 sm:px-7 md:mt-10"
-        >
-          <PixelStage
-            draw={drawStaffHero}
-            logicalH={120}
-            scale={HERO_SCALE}
-            minW={STAFF_HERO_MIN_W}
-            progress={progress}
-            label={t("office.hero.sceneAlt")}
-            className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
-          />
-          <div className="mt-4 flex items-center justify-center gap-3 px-5 text-[13px] text-fg-muted sm:px-0" aria-live="off">
-            <span className="font-display text-[15px] font-semibold tabular-nums tracking-tight text-fg">{clock.time}</span>
-            <span className="h-3 w-px bg-white/15" aria-hidden />
-            <span>{t(`office.hero.status.${clock.key}`)}</span>
-          </div>
-        </motion.div>
-      </div>
+            </StaggerItem>
+          ))}
+        </StaggerGroup>
+      </Container>
     </section>
   );
 }
@@ -4457,7 +4464,7 @@ function StaffChat({ lines, progress, at }) {
             >
               {m.text}
             </li>
-            {stamp && <span className="mb-1 shrink-0 text-[10.5px] tabular-nums text-fg-dim">{stamp}</span>}
+            {stamp && <span className="mb-1 shrink-0 text-[11px] tabular-nums text-fg-muted">{stamp}</span>}
           </Rise>
         );
       })}
@@ -4508,7 +4515,7 @@ function StaffCall({ call, progress, at }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
         </span>
         <span className="min-w-0 flex-1 text-[13px] font-semibold text-fg">{call.incoming}</span>
-        <span className="shrink-0 text-[11px] tabular-nums text-fg-dim">12:05</span>
+        <span className="shrink-0 text-[11px] tabular-nums text-fg-muted">18:05</span>
       </Rise>
       <Rise progress={progress} at={at + 0.09} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
         <span className="flex h-9 w-9 shrink-0 items-end justify-center gap-[3px] rounded-full bg-sky-400/15 pb-[11px]" aria-hidden>
@@ -4636,16 +4643,13 @@ function StaffTeam({ onHire }) {
   const blocked = chosen.length === 0 || vedaAlone;
 
   return (
-    <section id="team" className="bg-[#F5F5F7] py-16 text-ink-950 md:py-24">
+    <section id="team" className="py-16 md:py-24">
       <Container>
         <div className="mx-auto max-w-[980px]">
           <Reveal className="text-center">
-            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5A6E94]">
-              <span className="h-px w-6 bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
-              {t("office.team.eyebrow")}
-            </span>
-            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest sm:text-[42px] md:text-[48px]">{t("office.team.title")}</h2>
-            <p className="mx-auto mt-4 max-w-[560px] text-[17px] leading-[1.47] text-[#4B5878]">{t("office.team.description")}</p>
+            <SectionLabel>{t("office.team.eyebrow")}</SectionLabel>
+            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">{t("office.team.title")}</h2>
+            <p className="mx-auto mt-4 max-w-[560px] text-[17px] leading-[1.47] text-fg-muted">{t("office.team.description")}</p>
           </Reveal>
 
           <div className="mt-10 grid gap-3 sm:grid-cols-2 md:grid-cols-4" role="group" aria-label={t("office.team.pick")}>
@@ -4660,49 +4664,49 @@ function StaffTeam({ onHire }) {
                   aria-pressed={on}
                   data-cursor="hover"
                   className={[
-                    "pressable flex min-h-[44px] items-center gap-3 rounded-[18px] border bg-white p-3 text-left transition-[border-color,box-shadow,transform] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/70 md:flex-col md:items-start md:gap-2 md:p-4",
-                    on ? "border-brand-500 shadow-[0_0_0_1px_#2563EB,0_10px_30px_-18px_rgba(37,99,235,0.6)]" : "border-black/[0.08] hover:border-black/[0.2]",
+                    "pressable flex min-h-[44px] items-center gap-3 rounded-[18px] border bg-white/[0.03] p-3 text-left transition-[border-color,box-shadow,transform] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 md:flex-col md:items-start md:gap-2 md:p-4",
+                    on ? "border-sky-400/80 shadow-[0_0_0_1px_rgba(56,189,248,0.6),0_16px_40px_-24px_rgba(56,189,248,0.5)]" : "border-white/[0.08] hover:border-white/[0.22]",
                   ].join(" ")}
                 >
-                  <span className="flex h-[64px] w-[64px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-[#EEF1F8]">
+                  <span className="flex h-[64px] w-[64px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
                     <StaffAvatar id={id} size={2} className="-mt-7" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
-                      <span className="font-display text-[17px] font-semibold tracking-tight">{t(`office.agents.${id}.name`)}</span>
-                      <span className={["h-4 w-4 shrink-0 rounded-full border transition-colors", on ? "border-brand-500 bg-brand-500" : "border-black/20 bg-white"].join(" ")} aria-hidden>
-                        {on && <svg viewBox="0 0 16 16" className="h-full w-full text-white"><path d="M4 8.3l2.6 2.6L12 5.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                      <span className="font-display text-[17px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</span>
+                      <span className={["h-4 w-4 shrink-0 rounded-full border transition-colors", on ? "border-sky-400 bg-sky-400" : "border-white/25 bg-transparent"].join(" ")} aria-hidden>
+                        {on && <svg viewBox="0 0 16 16" className="h-full w-full text-ink-950"><path d="M4 8.3l2.6 2.6L12 5.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                       </span>
                     </span>
-                    <span className="block text-[12px] text-[#5A6E94]">{t(`office.agents.${id}.role`)}{!STAFF_LIVE[id] && <> · {t("office.status.soon")}</>}</span>
-                    <span className="mt-1 block text-[13px] font-medium tabular-nums">{formatTugrik(a.monthly)}<span className="font-normal text-[#5A6E94]">{t("office.price.perMonth")}</span></span>
+                    <span className="block text-[12px] text-fg-muted">{t(`office.agents.${id}.role`)}{!STAFF_LIVE[id] && <> · {t("office.status.soon")}</>}</span>
+                    <span className="mt-1 block text-[13px] font-medium tabular-nums text-fg">{formatTugrik(a.monthly)}<span className="font-normal text-fg-muted">{t("office.price.perMonth")}</span></span>
                   </span>
                 </button>
               );
             })}
           </div>
 
-          <div className="mt-6 rounded-[22px] border border-black/[0.08] bg-white p-5 sm:p-6">
+          <div className="mt-6 rounded-[22px] border border-white/[0.08] bg-white/[0.03] p-5 sm:p-6">
             <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
               <div className="flex items-baseline justify-between gap-4 sm:block">
-                <dt className="text-[13px] text-[#5A6E94]">{t("office.team.monthly")}</dt>
+                <dt className="text-[13px] text-fg-muted">{t("office.team.monthly")}</dt>
                 <dd className="text-right sm:mt-1 sm:text-left">
-                  <span className="font-display text-[30px] font-semibold leading-none tracking-tight tabular-nums">{formatTugrik(chosen.length ? monthly : 0)}</span>
-                  <span className="text-[14px] text-[#5A6E94]">{t("office.price.perMonth")}</span>
+                  <span className="font-display text-[30px] font-semibold leading-none tracking-tight tabular-nums text-fg">{formatTugrik(chosen.length ? monthly : 0)}</span>
+                  <span className="text-[14px] text-fg-muted">{t("office.price.perMonth")}</span>
                   {discount > 0 && (
-                    <span className="ml-2 inline-flex items-center gap-1.5 align-middle text-[13px] tabular-nums text-[#5A6E94]">
+                    <span className="ml-2 inline-flex items-center gap-1.5 align-middle text-[13px] tabular-nums text-fg-muted">
                       <s>{formatTugrik(monthlyFull)}</s>
-                      <span className="rounded-full bg-brand-500/10 px-2 py-0.5 text-[11px] font-semibold text-brand-500">{t("office.team.discount", { percent: Math.round(discount * 100) })}</span>
+                      <span className="rounded-full bg-sky-400/15 px-2 py-0.5 text-[11px] font-semibold text-sky-300">{t("office.team.discount", { percent: Math.round(discount * 100) })}</span>
                     </span>
                   )}
                 </dd>
               </div>
               <div className="flex items-baseline justify-between gap-4 sm:block">
-                <dt className="text-[13px] text-[#5A6E94]">{t("office.team.setup")}</dt>
-                <dd className="text-right font-display text-[22px] font-semibold tracking-tight tabular-nums sm:mt-1 sm:text-left">{formatTugrik(setup)}</dd>
+                <dt className="text-[13px] text-fg-muted">{t("office.team.setup")}</dt>
+                <dd className="text-right font-display text-[22px] font-semibold tracking-tight tabular-nums text-fg sm:mt-1 sm:text-left">{formatTugrik(setup)}</dd>
               </div>
             </dl>
-            <div className="mt-4 min-h-[20px] text-[12.5px] leading-[1.5] text-[#5A6E94]" aria-live="polite">
+            <div className="mt-4 min-h-[20px] text-[12.5px] leading-[1.5] text-fg-muted" aria-live="polite">
               {chosen.length === 0 && <p>{t("office.team.empty")}</p>}
               {vedaAlone && <p>{t("office.team.vedaAlone")}</p>}
               {!blocked && picked.has("eho") && <p>{t("office.team.perMinuteNote")}</p>}
@@ -4713,7 +4717,7 @@ function StaffTeam({ onHire }) {
               disabled={blocked}
               onClick={() => onHire(chosen)}
               data-cursor="hover"
-              className="pressable mt-4 inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-ink-950 px-5 py-3 text-[15px] font-semibold tracking-tight text-white transition-colors hover:bg-ink-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/70 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+              className="pressable mt-4 inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-fg px-5 py-3 text-[15px] font-semibold tracking-tight text-ink-950 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
             >
               {anyLive ? t("office.team.cta") : t("office.team.ctaPreorder")}
             </button>
@@ -4760,7 +4764,7 @@ function OfficePage() {
   };
   return (
     <div id="office">
-      <StaffHero onHire={() => scrollTo("team")} onSee={() => scrollTo("staff-ara")} />
+      <StaffHero onHire={() => scrollTo("team")} onSee={() => scrollTo("staff-ara")} onPick={(id) => scrollTo(`staff-${id}`)} />
       {STAFF_ORDER.map((id, i) => (
         <StaffChapter key={id} id={id} index={i} onHire={hire} />
       ))}
