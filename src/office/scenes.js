@@ -3,7 +3,7 @@
 // stage can redraw it at any size, time and scroll progress.
 import {
   sprite, stripFrame, charFrame, sky, windowFrame, room, screenActivity, screenChart,
-  lampGlow, grade, sunPatch, screenLight, ringing, mapRange, nightAmount, SPRITES,
+  lampGlow, grade, sunPatch, screenLight, ringing, mapRange, nightAmount, rect, SPRITES,
 } from "./pixel";
 
 // Order on the hero row and the hour each chapter is set at.
@@ -71,7 +71,17 @@ function station(ctx, img, o) {
   // what floats over their head: Ара's typing dots, Нова's heart
   const cycle = (t + seed * 1.7) % (id === "ara" ? 4 : 6);
   // frames 0-3 grow the bubble; the strips' last frame is LimeZu's sample, not used
-  if (id === "ara" && cycle < 1.6) lights.push(() => stripFrame(ctx, img, "BUBBLE", Math.min(3, Math.floor(cycle * 8)), cx + 18, cy - 4));
+  if (id === "ara" && cycle < 1.6) {
+    lights.push(() => {
+      const frame = Math.min(3, Math.floor(cycle * 8));
+      stripFrame(ctx, img, "BUBBLE", frame, cx + 18, cy - 4);
+      // LimeZu leaves the grown bubble empty for you to fill: three typing dots, one lifted at a time
+      if (frame === 3) {
+        const lifted = Math.floor(t * 6) % 3;
+        for (let d = 0; d < 3; d++) rect(ctx, cx + 18 + 10 + d * 5, cy - 4 + 18 - (d === lifted ? 1 : 0), 2, 2, "#3A3A50");
+      }
+    });
+  }
   if (id === "nova" && cycle < 1.8) lights.push(() => stripFrame(ctx, img, "HEART", Math.min(3, Math.floor(cycle * 7)), cx + 18, cy - 4));
   return { cx, cy, deskW };
 }

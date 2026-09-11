@@ -4464,7 +4464,7 @@ function StaffChat({ lines, progress, at }) {
             >
               {m.text}
             </li>
-            {stamp && <span className="mb-1 shrink-0 text-[10.5px] tabular-nums text-fg-dim">{stamp}</span>}
+            {stamp && <span className="mb-1 shrink-0 text-[11px] tabular-nums text-fg-muted">{stamp}</span>}
           </Rise>
         );
       })}
@@ -4515,7 +4515,7 @@ function StaffCall({ call, progress, at }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
         </span>
         <span className="min-w-0 flex-1 text-[13px] font-semibold text-fg">{call.incoming}</span>
-        <span className="shrink-0 text-[11px] tabular-nums text-fg-dim">18:05</span>
+        <span className="shrink-0 text-[11px] tabular-nums text-fg-muted">18:05</span>
       </Rise>
       <Rise progress={progress} at={at + 0.09} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
         <span className="flex h-9 w-9 shrink-0 items-end justify-center gap-[3px] rounded-full bg-sky-400/15 pb-[11px]" aria-hidden>
