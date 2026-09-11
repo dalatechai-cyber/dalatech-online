@@ -10,7 +10,9 @@ import {
 export const STAFF = ["ara", "veda", "eho", "nova"];
 // Art pixels the four hero desks need side by side (60 per station, 4 margin each side).
 export const HERO_MIN_W = 8 + 4 * 60;
-export const CHAPTER_HOUR = { ara: 2.25, veda: 8.5, eho: 12.1, nova: 15.5 };
+// Ара deep in the night, Веда at first light, Эхо in the golden hour, Нова
+// in the blue hour: four moods that all sit inside the dark page.
+export const CHAPTER_HOUR = { ara: 2.25, veda: 6.75, eho: 18.4, nova: 19.6 };
 // The hero is set in the evening: lamps lit, screens glowing, the four
 // still at work. The people animate; the hour does not move.
 export const HERO_HOUR = 21;

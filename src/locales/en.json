@@ -620,17 +620,17 @@
           {
             "from": "staff",
             "text": "Hello Bold. How was yesterday's visit?",
-            "time": "15:30"
+            "time": "19:30"
           },
           {
             "from": "customer",
             "text": "Good, thank you",
-            "time": "15:41"
+            "time": "19:41"
           },
           {
             "from": "staff",
             "text": "Thank you. I will remind you of your next appointment on 12 October.",
-            "time": "15:41"
+            "time": "19:41"
           }
         ]
       }

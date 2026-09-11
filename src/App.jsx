@@ -4393,9 +4393,9 @@ function StaffHero({ onHire, onSee, onPick }) {
       </motion.div>
       {/* who the four are, before any scrolling: name, job, price, whether they are live */}
       <Container>
-        <StaggerGroup className="mx-auto mt-6 grid max-w-[1040px] grid-cols-2 gap-3 md:mt-8 md:grid-cols-4">
+        <StaggerGroup className="mx-auto mt-6 grid max-w-[1040px] auto-rows-fr grid-cols-2 gap-3 md:mt-8 md:grid-cols-4">
           {STAFF_ORDER.map((id) => (
-            <StaggerItem key={id}>
+            <StaggerItem key={id} className="h-full">
               <button
                 type="button"
                 onClick={() => onPick(id)}
@@ -4403,8 +4403,9 @@ function StaffHero({ onHire, onSee, onPick }) {
                 className="pressable group flex h-full w-full flex-col rounded-[18px] border border-white/[0.08] bg-white/[0.03] p-3.5 text-left transition-colors hover:border-white/[0.2] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:p-4"
               >
                 <span className="flex items-center gap-3">
-                  <span className="flex h-[52px] w-[52px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-                    <StaffAvatar id={id} size={2} className="-mt-6" />
+                  {/* the face, not the hair: the head sits on rows 20-53 of the frame; at 3x, 90px down puts the eyes in the box */}
+                  <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
+                    <StaffAvatar id={id} size={3} className="-mt-[90px]" />
                   </span>
                   <span className="min-w-0">
                     <span className="block font-display text-[17px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</span>
@@ -4514,7 +4515,7 @@ function StaffCall({ call, progress, at }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
         </span>
         <span className="min-w-0 flex-1 text-[13px] font-semibold text-fg">{call.incoming}</span>
-        <span className="shrink-0 text-[11px] tabular-nums text-fg-dim">12:05</span>
+        <span className="shrink-0 text-[11px] tabular-nums text-fg-dim">18:05</span>
       </Rise>
       <Rise progress={progress} at={at + 0.09} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
         <span className="flex h-9 w-9 shrink-0 items-end justify-center gap-[3px] rounded-full bg-sky-400/15 pb-[11px]" aria-hidden>
