@@ -9,7 +9,6 @@ import {
   NavLink as RouterNavLink,
   useLocation,
   useNavigate,
-  useSearchParams,
   Navigate,
 } from "react-router-dom";
 import {
@@ -19,15 +18,16 @@ import {
   useTransform,
   useSpring,
   useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
 } from "framer-motion";
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
-import { DESKS as OFFICE_DESKS } from "./office/layout";
+import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
+import { drawHero as drawStaffHero, drawChapter as drawStaffChapter, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
-const OfficeScene = React.lazy(() => import("./OfficeScene"));
 
 const EASE_OUT = [0.16, 1, 0.3, 1];
 const SPRING_REVEAL = { type: "spring", stiffness: 110, damping: 22, mass: 0.6 };
@@ -4222,245 +4222,543 @@ function FAQPage() {
 // Pads non-landing pages so content sits below the fixed navbar.
 
 // ---------------------------------------------------------------------------
-// /office — the AI staff at work in a small three.js room. OfficeScene runs
-// the engine; this page owns the nameplates over the desks, the glass card
-// that opens on a tap, the roster and the bundle board.
+// /office — four AI staff, drawn in pixel art. One pinned hero where the day
+// runs with the scroll, a chapter per person with their real messages floating
+// over the scene, a team builder on paper, three steps. The canvas engine
+// lives in src/office/pixel.js, the scenes in src/office/scenes.js.
 
-function OfficePriceLine({ id }) {
-  const { t } = useTranslation();
-  const a = OFFICE_AGENTS[id];
-  return (
-    <span className="font-display text-[15px] font-semibold tracking-tight text-fg sm:text-[16px]">
-      {formatTugrik(a.setup)} <span className="text-[12px] font-normal text-fg-muted">{t("office.setup")}</span>
-      {" + "}
-      {formatTugrik(a.monthly)}<span className="text-[12px] font-normal text-fg-muted">{t("office.perMonth")}</span>
-      {a.perMinute && <span className="text-[12px] font-normal text-fg-muted"> {t("office.plusPerMinute")}</span>}
-    </span>
-  );
+const STAFF_LIVE = { ara: true, veda: true, eho: false, nova: false };
+
+function useStaffAtlas() {
+  const [img, setImg] = React.useState(null);
+  const [error, setError] = React.useState(null);
+  React.useEffect(() => {
+    let alive = true;
+    loadStaffAtlas().then(
+      (i) => { if (alive) setImg(i); },
+      (e) => { if (alive) { console.error(e); setError(e); } }
+    );
+    return () => { alive = false; };
+  }, []);
+  return { img, error };
 }
 
-// The card that opens beside a desk: Liquid Glass over the live scene. On wide
-// screens it hovers to the right of the person; on phones it rises as a sheet.
-function OfficeCard({ desk, onClose, onHire }) {
+/**
+ * A canvas that draws one scene from scenes.js. `progress` is a MotionValue
+ * (0..1) the scene may read; `scale` is CSS pixels per art pixel for a given
+ * width; `minW` keeps the scene's content inside the canvas on narrow screens.
+ */
+function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, className = "" }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
-  const name = t(`office.agents.${desk.id}.name`);
-  return (
-    <motion.div
-      role="dialog"
-      aria-label={name}
-      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1, transition: { delay: 0.25, type: "spring", stiffness: 260, damping: 26, mass: 0.8 } }}
-      exit={{ opacity: 0, y: reduced ? 0 : 10, scale: reduced ? 1 : 0.985, transition: { duration: 0.18 } }}
-      className="glass-panel absolute inset-x-3 bottom-3 rounded-[22px] p-4 sm:inset-x-auto sm:bottom-auto sm:right-5 sm:top-1/2 sm:w-[min(360px,42%)] sm:-translate-y-1/2 sm:rounded-[26px] sm:p-5"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-display text-[22px] font-semibold leading-none tracking-tight text-fg sm:text-[26px]">{name}</p>
-          <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-300">{t(`office.agents.${desk.id}.role`)}</p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={t("office.close")}
-          data-cursor="hover"
-          className="pressable -mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-fg-muted ring-1 ring-inset ring-white/[0.12] hover:bg-white/[0.14] hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
-        </button>
-      </div>
-      <p className="mt-3 text-[13.5px] leading-[1.5] text-fg/85 sm:text-[14px]">{t(`office.agents.${desk.id}.job`)}</p>
-      <div className="mt-4 border-t border-white/[0.1] pt-3">
-        <OfficePriceLine id={desk.id} />
-        {OFFICE_AGENTS[desk.id].addOnOnly && <p className="mt-1 text-[11.5px] text-fg-muted">{t("office.addOnOnly")}</p>}
-        {!desk.live && <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-300/90">{t("office.comingSoon")}</p>}
-      </div>
-      <div className="mt-4">
-        <MagneticButton onClick={onHire} variant="primary" className="w-full min-h-[44px] justify-center">
-          {desk.live ? t("office.hire", { name }) : t("office.preorder")}
-        </MagneticButton>
-      </div>
-    </motion.div>
-  );
-}
+  const { img, error } = useStaffAtlas();
+  const hostRef = React.useRef(null);
+  const canvasRef = React.useRef(null);
+  // reserve the height the canvas will take, so the page does not jump when the atlas arrives
+  const [hostW, setHostW] = React.useState(0);
+  React.useLayoutEffect(() => {
+    const el = hostRef.current;
+    if (!el) return undefined;
+    const ro = new ResizeObserver(() => setHostW(el.clientWidth));
+    ro.observe(el);
+    setHostW(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
 
-function OfficeStage({ activeId, onSelect }) {
-  const { t } = useTranslation();
-  const { open: openDemoRequest } = useDemoRequest();
-  const active = OFFICE_DESKS.find((d) => d.id === activeId) || null;
-  const [status, setStatus] = React.useState("loading");
-  const [hover, setHover] = React.useState(null);
-  // the engine moves the nameplates itself each frame; React only owns their content
-  const labelRefs = React.useRef({});
-
-  // Escape closes the desk; matches the dialogs elsewhere on the site.
   React.useEffect(() => {
-    if (!active) return undefined;
-    const onKey = (e) => { if (e.key === "Escape") onSelect(null); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [active, onSelect]);
+    if (!img || !canvasRef.current) return undefined;
+    let stage;
+    try {
+      stage = createPixelStage(canvasRef.current, { img, draw, logicalH, scale, minW, reduced: !!reduced });
+    } catch (e) {
+      console.error(e);
+      return undefined;
+    }
+    let unsubscribe = null;
+    if (progress) {
+      stage.setProgress(progress.get());
+      unsubscribe = progress.on("change", (v) => stage.setProgress(v));
+    }
+    return () => {
+      if (unsubscribe) unsubscribe();
+      stage.destroy();
+    };
+  }, [img, draw, logicalH, scale, minW, progress, reduced]);
 
-  const hire = () => openDemoRequest([active.id]);
-  const onStatus = React.useCallback((s, err) => { setStatus(s); if (s === "failed" && err) console.error(err); }, []);
-
+  const h = typeof logicalH === "function" ? logicalH(hostW) : logicalH;
   return (
-    <div
-      className={[
-        "relative mx-auto w-full max-w-[1040px] overflow-hidden bg-ink-950 sm:rounded-[28px] sm:border sm:border-white/[0.08] sm:shadow-card",
-        "aspect-[4/5] sm:aspect-[16/10]",
-        hover && !active ? "cursor-pointer" : "",
-      ].join(" ")}
-    >
-      <ErrorBoundary fallback={<div className="flex h-full w-full items-center justify-center text-[13px] text-fg-muted">{t("office.unavailable")}</div>}>
-        <React.Suspense fallback={<div className="h-full w-full bg-ink-900" />}>
-          <OfficeScene activeDesk={activeId} onSelectDesk={onSelect} onStatus={onStatus} onHover={setHover} labelRefs={labelRefs} />
-        </React.Suspense>
-      </ErrorBoundary>
-
-      {/* while the models arrive */}
-      <AnimatePresence>
-        {status === "loading" && (
-          <motion.div key="loading" exit={{ opacity: 0, transition: { duration: 0.6 } }} className="absolute inset-0 flex items-center justify-center bg-ink-950">
-            <div className="flex items-center gap-3 text-[13px] text-fg-muted">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-sky-400" aria-hidden />
-              {t("office.loading")}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {status === "failed" && (
-        <div className="absolute inset-0 flex items-center justify-center bg-ink-950/80 text-[13px] text-fg-muted">{t("office.unavailable")}</div>
-      )}
-
-      {/* nameplates over each desk, moved by the engine, hidden while a desk is open */}
-      {OFFICE_DESKS.map((d) => (
-        <button
-          key={d.id}
-          type="button"
-          ref={(el) => { labelRefs.current[d.id] = el; }}
-          onClick={() => onSelect(d.id)}
-          tabIndex={-1}
-          aria-hidden
-          data-cursor="hover"
-          style={{ visibility: "hidden" }}
-          className={[
-            "absolute left-0 top-0 flex items-center gap-2 whitespace-nowrap rounded-full py-1 pl-2 pr-2.5 text-[11px] font-semibold tracking-[0.02em] transition-[opacity,background-color] duration-300 sm:text-[12px]",
-            "glass-pill",
-            status === "ready" && !active ? "opacity-100" : "pointer-events-none opacity-0",
-            hover === d.id ? "bg-white/[0.18]" : "",
-          ].join(" ")}
-        >
-          <span className={["h-1.5 w-1.5 rounded-full", d.live ? "bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.9)]" : "bg-fg-dim/70"].join(" ")} aria-hidden />
-          <span className="text-fg">{t(`office.agents.${d.id}.name`)}</span>
-          <span className="hidden text-fg-muted sm:inline">{t(`office.agents.${d.id}.role`)}</span>
-        </button>
-      ))}
-
-      <AnimatePresence>
-        {active && status === "ready" && <OfficeCard key={active.id} desk={active} onClose={() => onSelect(null)} onHire={hire} />}
-      </AnimatePresence>
-
-      {!active && status === "ready" && (
-        <p className="glass-pill pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-medium tracking-[0.04em] text-fg-muted sm:bottom-4">
-          {t("office.tapHint")}
-        </p>
+    <div ref={hostRef} className={["relative flex items-center justify-center overflow-hidden bg-ink-900", className].join(" ")} style={{ minHeight: hostW ? h * scale(hostW) : undefined }}>
+      {error ? (
+        <p className="px-6 py-10 text-center text-[13px] text-fg-muted">{t("office.unavailable")}</p>
+      ) : (
+        <canvas ref={canvasRef} role="img" aria-label={label} className="block" style={{ imageRendering: "pixelated" }} />
       )}
     </div>
   );
 }
 
-function OfficeRoster({ activeId, onSelect }) {
-  const { t } = useTranslation();
+// Scroll progress through an element, smoothed so the motion trails the
+// finger a little; reduced motion reads the raw value so nothing lags.
+function useDampedProgress(ref, offset) {
+  const reduced = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset });
+  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.6, restDelta: 0.0005 });
+  return reduced ? scrollYProgress : smooth;
+}
+
+// One line that rises into place as the scroll passes `at`.
+function Rise({ progress, at, span = 0.08, className = "", children }) {
+  const reduced = useReducedMotion();
+  const opacity = useTransform(progress, [at, at + span], [0, 1]);
+  const y = useTransform(progress, [at, at + span], [reduced ? 0 : 14, 0]);
   return (
-    <ul className="mt-6 divide-y divide-white/[0.06] border-y border-white/[0.06]" role="list">
-      {OFFICE_DESKS.map((d) => {
-        const active = d.id === activeId;
-        return (
-          <li key={d.id}>
-            <button
-              type="button"
-              onClick={() => onSelect(active ? null : d.id)}
-              aria-pressed={active}
-              data-cursor="hover"
-              className={[
-                "flex w-full items-center gap-4 px-2 py-3.5 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:px-3",
-                active ? "bg-sky-400/[0.06]" : "hover:bg-white/[0.02]",
-              ].join(" ")}
-            >
-              <span className={["h-2 w-2 shrink-0 rounded-full", d.live ? "bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.8)]" : "bg-fg-dim/50"].join(" ")} aria-hidden />
-              <span className="min-w-0 flex-1">
-                <span className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="font-display text-[16px] font-semibold tracking-tight text-fg">{t(`office.agents.${d.id}.name`)}</span>
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-muted">{t(`office.agents.${d.id}.role`)}</span>
-                  {!d.live && <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-fg-dim">{t("office.comingSoon")}</span>}
-                </span>
-                <span className="mt-0.5 block text-[13px] text-fg-muted">{t(`office.agents.${d.id}.job`)}</span>
-              </span>
-              <span className="hidden shrink-0 text-right sm:block"><OfficePriceLine id={d.id} /></span>
-            </button>
-          </li>
-        );
-      })}
-    </ul>
+    <motion.div style={{ opacity, y }} className={className}>
+      {children}
+    </motion.div>
   );
 }
 
-function OfficeBundles() {
+const HERO_SCALE = (w) => (w < 640 ? 1.5 : w < 900 ? 2 : 3);
+const CHAPTER_SCALE = (w) => (w < 640 ? 2 : 3);
+// phones get a taller room so the messages fit beside the person
+const CHAPTER_HEIGHT = (w) => (w < 640 ? 176 : 128);
+
+function heroClock(p) {
+  const h = Math.min(23.999, Math.max(0, p * 24));
+  const hh = Math.floor(h);
+  const mm = Math.floor((h - hh) * 60);
+  const key = hh < 6 ? "night" : hh < 9 ? "dawn" : hh < 12 ? "morning" : hh < 16 ? "afternoon" : hh < 20 ? "evening" : "late";
+  return { time: `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`, key };
+}
+
+function StaffStatus({ live }) {
   const { t } = useTranslation();
   return (
-    <Reveal className="mt-12">
-      <div className="border border-white/[0.08] bg-ink-800/45 p-6 sm:p-7">
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("office.bundles.title")}</h3>
-          <p className="text-[13px] text-fg-muted">{t("office.bundles.description")}</p>
-        </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          {OFFICE_BUNDLES.map((b) => (
-            <div key={b.agents} className="border border-white/[0.08] bg-ink-900/60 px-4 py-4">
-              <p className="font-display text-[30px] font-semibold leading-none tracking-tightest text-fg">−{Math.round(b.discount * 100)}%</p>
-              <p className="mt-2 text-[13px] text-fg-muted">{t("office.bundles.agents", { count: b.agents })}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-4 text-[12px] text-fg-dim">{t("office.bundles.note")}</p>
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-fg-muted">
+      <span className={["h-1.5 w-1.5 rounded-full", live ? "bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.9)]" : "bg-fg-dim/70"].join(" ")} aria-hidden />
+      {live ? t("office.status.live") : t("office.status.soon")}
+    </span>
+  );
+}
+
+function StaffHero({ onHire, onSee }) {
+  const { t } = useTranslation();
+  const ref = React.useRef(null);
+  const progress = useDampedProgress(ref, ["start start", "end end"]);
+  const [clock, setClock] = React.useState(() => heroClock(0));
+  useMotionValueEvent(progress, "change", (v) => {
+    const next = heroClock(v);
+    setClock((c) => (c.time === next.time ? c : next));
+  });
+
+  return (
+    // overflow stays visible: the global section clip would otherwise unpin the sticky scene
+    <section ref={ref} className="relative" style={{ height: "240vh", overflow: "visible" }}>
+      <div className="sticky top-0 flex min-h-[100svh] flex-col justify-center pb-8 pt-[96px] md:pt-[112px]">
+        <Container>
+          <div className="mx-auto max-w-[680px] text-center">
+            <SectionLabel>{t("office.section")}</SectionLabel>
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={SPRING_HEADLINE}
+              className="mt-4 font-display text-[40px] font-semibold leading-[1.04] tracking-tightest text-fg sm:text-[52px] md:text-[64px]"
+            >
+              {t("office.hero.title")}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.08 }}
+              className="mx-auto mt-4 max-w-[520px] text-[17px] leading-[1.47] text-fg-muted"
+            >
+              {t("office.hero.lead")}
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.16 }}
+              className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
+            >
+              <MagneticButton onClick={onHire} variant="primary" className="min-h-[44px]">{t("office.hero.hire")}</MagneticButton>
+              <button type="button" onClick={onSee} data-cursor="hover" className="pressable inline-flex min-h-[44px] items-center gap-1 text-[17px] text-sky-400 hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md px-1">
+                {t("office.hero.see")} <span aria-hidden>›</span>
+              </button>
+            </motion.div>
+          </div>
+        </Container>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING_REVEAL, delay: 0.22 }}
+          className="mx-auto mt-8 w-full max-w-[1040px] px-0 sm:px-7 md:mt-10"
+        >
+          <PixelStage
+            draw={drawStaffHero}
+            logicalH={120}
+            scale={HERO_SCALE}
+            minW={STAFF_HERO_MIN_W}
+            progress={progress}
+            label={t("office.hero.sceneAlt")}
+            className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
+          />
+          <div className="mt-4 flex items-center justify-center gap-3 px-5 text-[13px] text-fg-muted sm:px-0" aria-live="off">
+            <span className="font-display text-[15px] font-semibold tabular-nums tracking-tight text-fg">{clock.time}</span>
+            <span className="h-3 w-px bg-white/15" aria-hidden />
+            <span>{t(`office.hero.status.${clock.key}`)}</span>
+          </div>
+        </motion.div>
       </div>
-    </Reveal>
+    </section>
+  );
+}
+
+function StaffPrice({ id, align = "left" }) {
+  const { t } = useTranslation();
+  const a = OFFICE_AGENTS[id];
+  return (
+    <div className={align === "center" ? "text-center" : ""}>
+      <p className="font-display text-[22px] font-semibold tracking-tight text-fg">
+        {formatTugrik(a.monthly)}
+        <span className="text-[14px] font-normal text-fg-muted">{t("office.price.perMonth")}</span>
+        {a.perMinute && <span className="text-[13px] font-normal text-fg-muted"> {t("office.price.plusPerMinute")}</span>}
+      </p>
+      <p className="mt-1 text-[13px] text-fg-muted">
+        {t("office.price.setup", { price: formatTugrik(a.setup) })}
+        {a.addOnOnly && <> · {t("office.price.addOnOnly")}</>}
+      </p>
+    </div>
+  );
+}
+
+// A chat as the customer sees it in Messenger.
+function StaffChat({ lines, progress, at }) {
+  return (
+    <ol className="flex flex-col gap-2" role="list">
+      {lines.map((m, i) => {
+        const mine = m.from === "staff";
+        return (
+          <Rise key={i} progress={progress} at={at + i * 0.07} className={["flex max-w-[92%] flex-col", mine ? "self-end items-end" : "self-start items-start"].join(" ")}>
+            <li
+              className={[
+                "rounded-[16px] px-3 py-2 text-[13px] leading-[1.42] shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[14px]",
+                mine ? "rounded-br-[5px] bg-brand-500 text-white" : "rounded-bl-[5px] bg-[#1C2547] text-fg",
+              ].join(" ")}
+            >
+              {m.text}
+            </li>
+            <span className="mt-0.5 px-1 text-[10.5px] tabular-nums text-fg-dim">{m.time}</span>
+          </Rise>
+        );
+      })}
+    </ol>
+  );
+}
+
+// Веда's report: the same four bars the scene draws on her screen.
+function StaffReport({ report, progress, at }) {
+  const grow = useTransform(progress, [at, at + 0.22], [0, 1]);
+  return (
+    <Rise progress={progress} at={at} className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+      <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-fg-dim">{report.tag}</p>
+      <p className="mt-1 text-[13px] font-semibold text-fg">{report.title}</p>
+      <div className="mt-3 flex h-[72px] items-end gap-2" aria-hidden>
+        {report.values.map((v, i) => (
+          <ReportBar key={i} value={v} index={i} count={report.values.length} grow={grow} last={i === report.values.length - 1} />
+        ))}
+      </div>
+      <div className="mt-1 grid grid-cols-4 gap-2 text-[10px] text-fg-dim">
+        {report.weeks.map((w) => <span key={w} className="truncate text-center">{w}</span>)}
+      </div>
+      <p className="mt-3 text-[12.5px] leading-[1.45] text-fg/85">{report.insight}</p>
+    </Rise>
+  );
+}
+
+function ReportBar({ value, index, count, grow, last }) {
+  // each bar grows in turn, left to right, as the chapter scrolls in
+  const scaleY = useTransform(grow, (g) => Math.min(1, Math.max(0, g * count - index)));
+  return (
+    <div className="flex flex-1 items-end" style={{ height: "100%" }}>
+      <motion.div
+        style={{ height: `${value * 100}%`, scaleY, transformOrigin: "bottom" }}
+        className={["w-full rounded-t-[3px]", last ? "bg-sky-400" : "bg-brand-500/70"].join(" ")}
+      />
+    </div>
+  );
+}
+
+// Эхо's call: incoming, answered, the first line.
+function StaffCall({ call, progress, at }) {
+  const reduced = useReducedMotion();
+  return (
+    <div className="flex flex-col gap-2">
+      <Rise progress={progress} at={at} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-400/15 text-sky-400" aria-hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-semibold text-fg">{call.incoming}</span>
+          <span className="block text-[12px] tabular-nums text-fg-muted">12:05</span>
+        </span>
+      </Rise>
+      <Rise progress={progress} at={at + 0.09} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+        <span className="flex h-9 w-9 shrink-0 items-end justify-center gap-[3px] rounded-full bg-sky-400/15 pb-[11px]" aria-hidden>
+          {[0, 1, 2, 3].map((i) => (
+            <span
+              key={i}
+              className={["w-[3px] rounded-full bg-sky-400", reduced ? "" : "animate-[staffWave_1.1s_ease-in-out_infinite]"].join(" ")}
+              style={{ height: 6 + (i % 2) * 6, animationDelay: `${i * 0.14}s` }}
+            />
+          ))}
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-semibold text-fg">{call.answered}</span>
+          <span className="block text-[12px] text-fg-muted">{call.after}</span>
+        </span>
+      </Rise>
+      <Rise progress={progress} at={at + 0.18} className="self-end">
+        <p className="max-w-[92%] rounded-[16px] rounded-br-[5px] bg-brand-500 px-3 py-2 text-[13px] leading-[1.42] text-white shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[14px]">{call.line}</p>
+      </Rise>
+    </div>
+  );
+}
+
+function StaffChapter({ id, index, onHire }) {
+  const { t } = useTranslation();
+  const ref = React.useRef(null);
+  const progress = useDampedProgress(ref, ["start end", "end start"]);
+  const draw = React.useMemo(() => drawStaffChapter(id), [id]);
+  const live = STAFF_LIVE[id];
+  const base = `office.chapters.${id}`;
+  const flip = index % 2 === 1;
+  const AT = 0.3;
+
+  let overlay = null;
+  if (id === "veda") overlay = <StaffReport report={t(`${base}.report`, { returnObjects: true })} progress={progress} at={AT} />;
+  else if (id === "eho") overlay = <StaffCall call={t(`${base}.call`, { returnObjects: true })} progress={progress} at={AT} />;
+  else overlay = <StaffChat lines={t(`${base}.chat`, { returnObjects: true })} progress={progress} at={AT} />;
+
+  return (
+    <section ref={ref} id={`staff-${id}`} className="py-14 md:py-24">
+      <Container>
+        <div className="grid gap-6 md:grid-cols-12 md:grid-rows-[auto_auto] md:gap-x-10 md:gap-y-4">
+          <Reveal className={["md:col-span-5 md:row-start-1 md:self-end", flip ? "md:col-start-8" : "md:col-start-1"].join(" ")}>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <SectionLabel>{t(`${base}.eyebrow`)}</SectionLabel>
+              <StaffStatus live={live} />
+            </div>
+            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[40px] md:text-[46px]">{t(`${base}.title`)}</h2>
+          </Reveal>
+          <div className={["md:col-span-7 md:row-span-2 md:row-start-1 md:self-center", flip ? "md:col-start-1" : "md:col-start-6"].join(" ")}>
+            <div className="relative -mx-5 sm:mx-0">
+              <PixelStage
+                draw={draw}
+                logicalH={CHAPTER_HEIGHT}
+                scale={CHAPTER_SCALE}
+                minW={150}
+                progress={progress}
+                label={t(`${base}.sceneAlt`)}
+                className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
+              />
+              {/* what is really on the screen, floated over the quiet half of the wall */}
+              <div className="absolute left-[49%] right-[4%] top-[4%] sm:left-[50%]">{overlay}</div>
+            </div>
+          </div>
+          <Reveal className={["md:col-span-5 md:row-start-2 md:self-start", flip ? "md:col-start-8" : "md:col-start-1"].join(" ")}>
+            <p className="max-w-[460px] text-[17px] leading-[1.47] text-fg-muted">{t(`${base}.body`)}</p>
+            <div className="mt-6 border-t border-white/[0.08] pt-5">
+              <StaffPrice id={id} />
+              <div className="mt-5">
+                <MagneticButton onClick={() => onHire([id])} variant={live ? "primary" : "secondary"} className="min-h-[44px]">
+                  {t(`${base}.cta`)}
+                </MagneticButton>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+// A pixel portrait cut from the atlas with CSS, idling in six frames.
+function StaffAvatar({ id, size = 2, className = "" }) {
+  const reduced = useReducedMotion();
+  const a = STAFF_CHARS[id].idle;
+  return (
+    <span
+      aria-hidden
+      className={["block shrink-0 overflow-hidden", className].join(" ")}
+      style={{
+        width: a.w * size,
+        height: a.h * size,
+        backgroundImage: `url(${STAFF_ATLAS.url})`,
+        backgroundSize: `${STAFF_ATLAS.w * size}px ${STAFF_ATLAS.h * size}px`,
+        backgroundPosition: "var(--staff-x) var(--staff-y)",
+        backgroundRepeat: "no-repeat",
+        imageRendering: "pixelated",
+        animation: reduced ? "none" : `staffIdle 1.4s steps(${a.n}) infinite`,
+        "--staff-x": `-${a.x * size}px`,
+        "--staff-y": `-${a.y * size}px`,
+        "--staff-strip": `-${a.w * a.n * size}px`,
+      }}
+    />
+  );
+}
+
+function StaffTeam({ onHire }) {
+  const { t } = useTranslation();
+  const [picked, setPicked] = React.useState(() => new Set(["ara"]));
+  const ids = STAFF_ORDER;
+  const toggle = (id) =>
+    setPicked((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  const chosen = ids.filter((id) => picked.has(id));
+  const bundle = OFFICE_BUNDLES.find((b) => b.agents === chosen.length);
+  const discount = bundle ? bundle.discount : 0;
+  const monthlyFull = chosen.reduce((s, id) => s + OFFICE_AGENTS[id].monthly, 0);
+  const monthly = Math.round(monthlyFull * (1 - discount));
+  const setup = chosen.reduce((s, id) => s + OFFICE_AGENTS[id].setup, 0);
+  const vedaAlone = chosen.length === 1 && chosen[0] === "veda";
+  const anyLive = chosen.some((id) => STAFF_LIVE[id]);
+  const blocked = chosen.length === 0 || vedaAlone;
+
+  return (
+    <section id="team" className="bg-[#F5F5F7] py-16 text-ink-950 md:py-24">
+      <Container>
+        <div className="mx-auto max-w-[980px]">
+          <Reveal className="text-center">
+            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5A6E94]">
+              <span className="h-px w-6 bg-gradient-to-r from-transparent via-brand-500/60 to-transparent" />
+              {t("office.team.eyebrow")}
+            </span>
+            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest sm:text-[42px] md:text-[48px]">{t("office.team.title")}</h2>
+            <p className="mx-auto mt-4 max-w-[560px] text-[17px] leading-[1.47] text-[#4B5878]">{t("office.team.description")}</p>
+          </Reveal>
+
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 md:grid-cols-4" role="group" aria-label={t("office.team.pick")}>
+            {ids.map((id) => {
+              const on = picked.has(id);
+              const a = OFFICE_AGENTS[id];
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => toggle(id)}
+                  aria-pressed={on}
+                  data-cursor="hover"
+                  className={[
+                    "pressable flex min-h-[44px] items-center gap-3 rounded-[18px] border bg-white p-3 text-left transition-[border-color,box-shadow,transform] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/70 md:flex-col md:items-start md:gap-2 md:p-4",
+                    on ? "border-brand-500 shadow-[0_0_0_1px_#2563EB,0_10px_30px_-18px_rgba(37,99,235,0.6)]" : "border-black/[0.08] hover:border-black/[0.2]",
+                  ].join(" ")}
+                >
+                  <span className="flex h-[64px] w-[64px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-[#EEF1F8]">
+                    <StaffAvatar id={id} size={2} className="-mt-7" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span className="font-display text-[17px] font-semibold tracking-tight">{t(`office.agents.${id}.name`)}</span>
+                      <span className={["h-4 w-4 shrink-0 rounded-full border transition-colors", on ? "border-brand-500 bg-brand-500" : "border-black/20 bg-white"].join(" ")} aria-hidden>
+                        {on && <svg viewBox="0 0 16 16" className="h-full w-full text-white"><path d="M4 8.3l2.6 2.6L12 5.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                      </span>
+                    </span>
+                    <span className="block text-[12px] text-[#5A6E94]">{t(`office.agents.${id}.role`)}{!STAFF_LIVE[id] && <> · {t("office.status.soon")}</>}</span>
+                    <span className="mt-1 block text-[13px] font-medium tabular-nums">{formatTugrik(a.monthly)}<span className="font-normal text-[#5A6E94]">{t("office.price.perMonth")}</span></span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-6 rounded-[22px] border border-black/[0.08] bg-white p-5 sm:p-6">
+            <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+              <div className="flex items-baseline justify-between gap-4 sm:block">
+                <dt className="text-[13px] text-[#5A6E94]">{t("office.team.monthly")}</dt>
+                <dd className="text-right sm:mt-1 sm:text-left">
+                  <span className="font-display text-[30px] font-semibold leading-none tracking-tight tabular-nums">{formatTugrik(chosen.length ? monthly : 0)}</span>
+                  <span className="text-[14px] text-[#5A6E94]">{t("office.price.perMonth")}</span>
+                  {discount > 0 && (
+                    <span className="ml-2 inline-flex items-center gap-1.5 align-middle text-[13px] tabular-nums text-[#5A6E94]">
+                      <s>{formatTugrik(monthlyFull)}</s>
+                      <span className="rounded-full bg-brand-500/10 px-2 py-0.5 text-[11px] font-semibold text-brand-500">{t("office.team.discount", { percent: Math.round(discount * 100) })}</span>
+                    </span>
+                  )}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-4 sm:block">
+                <dt className="text-[13px] text-[#5A6E94]">{t("office.team.setup")}</dt>
+                <dd className="text-right font-display text-[22px] font-semibold tracking-tight tabular-nums sm:mt-1 sm:text-left">{formatTugrik(setup)}</dd>
+              </div>
+            </dl>
+            <div className="mt-4 min-h-[20px] text-[12.5px] leading-[1.5] text-[#5A6E94]" aria-live="polite">
+              {chosen.length === 0 && <p>{t("office.team.empty")}</p>}
+              {vedaAlone && <p>{t("office.team.vedaAlone")}</p>}
+              {!blocked && picked.has("eho") && <p>{t("office.team.perMinuteNote")}</p>}
+              {!blocked && chosen.some((id) => !STAFF_LIVE[id]) && <p>{t("office.team.soonNote")}</p>}
+            </div>
+            <button
+              type="button"
+              disabled={blocked}
+              onClick={() => onHire(chosen)}
+              data-cursor="hover"
+              className="pressable mt-4 inline-flex min-h-[48px] w-full items-center justify-center rounded-xl bg-ink-950 px-5 py-3 text-[15px] font-semibold tracking-tight text-white transition-colors hover:bg-ink-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/70 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+            >
+              {anyLive ? t("office.team.cta") : t("office.team.ctaPreorder")}
+            </button>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function StaffSteps() {
+  const { t } = useTranslation();
+  const items = t("office.steps.items", { returnObjects: true });
+  return (
+    <section className="py-16 md:py-24">
+      <Container>
+        <Reveal className="text-center">
+          <h2 className="font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[36px]">{t("office.steps.title")}</h2>
+        </Reveal>
+        <StaggerGroup className="mx-auto mt-10 grid max-w-[900px] gap-6 sm:grid-cols-3">
+          {items.map((s, i) => (
+            <StaggerItem key={i}>
+              <div className="border-t border-white/[0.1] pt-5">
+                <p className="font-display text-[13px] font-semibold tabular-nums text-sky-400">0{i + 1}</p>
+                <p className="mt-2 font-display text-[18px] font-semibold tracking-tight text-fg">{s.title}</p>
+                <p className="mt-1.5 text-[15px] leading-[1.5] text-fg-muted">{s.body}</p>
+              </div>
+            </StaggerItem>
+          ))}
+        </StaggerGroup>
+      </Container>
+    </section>
   );
 }
 
 function OfficePage() {
-  const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  // The open desk lives in the URL, so the browser back button closes it and
-  // a shared link opens straight onto a desk.
-  const requested = searchParams.get("desk");
-  const activeId = OFFICE_DESKS.some((d) => d.id === requested) ? requested : null;
-  const select = React.useCallback(
-    (id) => {
-      const next = new URLSearchParams(searchParams);
-      if (id) next.set("desk", id); else next.delete("desk");
-      setSearchParams(next, { replace: !id });
-    },
-    [searchParams, setSearchParams]
-  );
-
+  const { open: openDemoRequest } = useDemoRequest();
+  const hire = React.useCallback((ids) => openDemoRequest(ids), [openDemoRequest]);
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+  };
   return (
-    <PageShell>
-      <section id="office" className="relative py-10 md:py-16">
-        <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="mesh-blob animate-meshShift opacity-40" style={{ top: "10%", right: "-10%", width: "30rem", height: "30rem", background: "radial-gradient(circle at 50% 50%, rgba(245,158,11,0.10), transparent 70%)" }} />
-        </div>
-        <Container className="relative">
-          <SectionHeader eyebrow={t("office.section")} title={t("office.title")} description={t("office.description")} />
-          <div className="-mx-5 mt-10 sm:mx-0 md:mt-14">
-            <OfficeStage activeId={activeId} onSelect={select} />
-          </div>
-          <OfficeRoster activeId={activeId} onSelect={select} />
-          <OfficeBundles />
-        </Container>
-      </section>
-    </PageShell>
+    <div id="office">
+      <StaffHero onHire={() => scrollTo("team")} onSee={() => scrollTo("staff-ara")} />
+      {STAFF_ORDER.map((id, i) => (
+        <StaffChapter key={id} id={id} index={i} onHire={hire} />
+      ))}
+      <StaffTeam onHire={hire} />
+      <StaffSteps />
+    </div>
   );
 }
 
