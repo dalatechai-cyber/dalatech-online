@@ -438,14 +438,15 @@ const LANGUAGES = [
   { code: "zh-TW", label: "繁體中文" },
 ];
 
+// Buying decisions only. Process, technology and location are trust pages
+// and live in the footer, which keeps the bar narrow enough for a laptop.
+// The website entry points into the pricing page's website block, so it
+// never shows as the active page; the pricing entry does.
 const NAV_ITEMS = [
-  { to: "/products", labelKey: "capabilities" },
   { to: "/office", labelKey: "staff" },
-  { to: "/process", labelKey: "process" },
-  { to: "/technology", labelKey: "stack" },
-  { to: "/location", labelKey: "location" },
-  { to: "/portfolio", labelKey: "portfolio" },
+  { to: "/pricing", labelKey: "website", state: { scrollTo: "website" } },
   { to: "/pricing", labelKey: "pricing" },
+  { to: "/portfolio", labelKey: "portfolio" },
   { to: "/faq", labelKey: "faq" },
 ];
 
@@ -552,23 +553,24 @@ function Navbar() {
           {/* in flow, not centred by absolute position: with eight items the
               links would sit under the logo and the CTA on anything narrower
               than a wide desktop, so below xl the menu button takes over */}
-          <nav className="mx-6 hidden min-w-0 flex-1 items-center justify-center gap-5 xl:flex 2xl:gap-7">
-            {NAV_ITEMS.map(({ to, labelKey }) => (
+          <nav className="mx-6 hidden min-w-0 flex-1 items-center justify-center gap-6 lg:flex xl:gap-7">
+            {NAV_ITEMS.map(({ to, labelKey, state }) => (
               <RouterNavLink
-                key={to}
+                key={labelKey}
                 to={to}
+                state={state}
                 data-cursor="hover"
                 className={({ isActive }) =>
                   [
                     "relative whitespace-nowrap text-[13.5px] font-medium tracking-[-0.005em] transition-colors duration-200",
-                    isActive ? "text-fg" : "text-fg-muted hover:text-fg",
+                    isActive && !state ? "text-fg" : "text-fg-muted hover:text-fg",
                   ].join(" ")
                 }
               >
                 {({ isActive }) => (
                   <span className="relative inline-block">
                     {navLabel(labelKey)}
-                    {isActive && (
+                    {isActive && !state && (
                       <motion.span
                         layoutId="nav-active-underline"
                         className="absolute -bottom-1.5 left-0 right-0 h-px bg-sky-400/70"
@@ -628,7 +630,7 @@ function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="pressable flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-fg xl:hidden"
+              className="pressable flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-fg lg:hidden"
               aria-label="Open menu"
               aria-expanded={mobileOpen}
             >
@@ -658,7 +660,7 @@ function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22, ease: EASE_OUT }}
-            className="fixed inset-0 flex flex-col xl:hidden"
+            className="fixed inset-0 flex flex-col lg:hidden"
             style={{ backgroundColor: "#050A18", zIndex: 2147483647 }}
           >
             <div className="flex items-center justify-between px-5 pt-5 sm:px-7">
@@ -691,11 +693,11 @@ function Navbar() {
               }}
               className="flex flex-1 flex-col justify-center gap-2 px-5 sm:px-7"
             >
-              {NAV_ITEMS.map(({ to, labelKey }) => {
+              {NAV_ITEMS.map(({ to, labelKey, state }) => {
                 const isActive = location.pathname === to;
                 return (
                   <motion.div
-                    key={to}
+                    key={labelKey}
                     variants={{
                       hidden: { opacity: 0, y: 24 },
                       show: { opacity: 1, y: 0, transition: SPRING_REVEAL },
@@ -703,6 +705,7 @@ function Navbar() {
                   >
                     <Link
                       to={to}
+                      state={state}
                       onClick={() => setMobileOpen(false)}
                       className={[
                         "block py-1 font-display font-semibold tracking-tight transition-colors",
@@ -987,568 +990,6 @@ function SectionHeader({ eyebrow, title, description, align = "center" }) {
         </p>
       )}
     </Reveal>
-  );
-}
-
-function ServiceCard({ index, title, subtitle, bullets, badge, featured = false }) {
-  return (
-    <StaggerItem>
-      <article
-        className={[
-          "relative flex h-full flex-col overflow-hidden rounded-2xl p-7 transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          featured
-            ? "border border-sky-400/40 bg-gradient-to-b from-sky-400/[0.07] to-ink-800/60 shadow-[0_30px_70px_-30px_rgba(56,189,248,0.45)] hover:-translate-y-1 hover:border-sky-400/60 hover:shadow-[0_40px_90px_-30px_rgba(56,189,248,0.55)] md:-translate-y-2"
-            : "border border-white/[0.08] bg-ink-800/45 hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]",
-        ].join(" ")}
-      >
-        {featured && (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -top-px left-1/2 h-[2px] w-2/3 -translate-x-1/2 rounded-full"
-            style={{ background: "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.7) 50%, transparent 100%)" }}
-          />
-        )}
-        <div className="flex items-center justify-between gap-3">
-          <span className={["text-[11px] font-semibold uppercase tracking-[0.16em]", featured ? "text-sky-300" : "text-fg-muted"].join(" ")}>
-            {String(index).padStart(2, "0")}
-          </span>
-          {badge && (
-            <span
-              className={[
-                "rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]",
-                featured
-                  ? "bg-sky-400/15 text-sky-200 ring-1 ring-inset ring-sky-400/40"
-                  : "bg-white/[0.03] text-fg-muted ring-1 ring-inset ring-white/10",
-              ].join(" ")}
-            >
-              {badge}
-            </span>
-          )}
-        </div>
-        <h3 className="mt-5 font-display text-[22px] font-semibold leading-[1.15] tracking-tight text-fg sm:text-[24px]">
-          {title}
-        </h3>
-        <p className="mt-3 text-[14px] leading-[1.6] text-fg-muted">{subtitle}</p>
-        <ul className="mt-6 space-y-3 text-[13.5px] leading-[1.55] text-fg/90">
-          {bullets.map((b, i) => (
-            <li key={i} className="flex items-start gap-2.5">
-              <CheckIcon />
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-      </article>
-    </StaggerItem>
-  );
-}
-
-function Features() {
-  const { t } = useTranslation();
-  return (
-    <section id="features" className="relative py-28">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="mesh-blob animate-meshShift opacity-50" style={{ top: "20%", left: "-10%", width: "32rem", height: "32rem", background: "radial-gradient(circle at 50% 50%, rgba(37,99,235,0.2), transparent 70%)" }} />
-      </div>
-      <Container className="relative">
-        <SectionHeader eyebrow={t("features.section")} title={t("features.title")} description={t("features.description")} />
-
-        <StaggerGroup className="mt-14 grid items-stretch gap-5 md:grid-cols-3 md:items-end">
-          <ServiceCard
-            index={1}
-            title={t("features.voiceAgent.title")}
-            badge={t("features.voiceAgent.badge")}
-            subtitle={t("features.voiceAgent.subtitle")}
-            bullets={[t("features.voiceAgent.bullets.0"), t("features.voiceAgent.bullets.1"), t("features.voiceAgent.bullets.2")]}
-          />
-          <ServiceCard
-            index={2}
-            title={t("features.chatbot.title")}
-            badge={t("features.chatbot.badge")}
-            subtitle={t("features.chatbot.subtitle")}
-            bullets={[t("features.chatbot.bullets.0"), t("features.chatbot.bullets.1"), t("features.chatbot.bullets.2")]}
-            featured
-          />
-          <ServiceCard
-            index={3}
-            title={t("features.fullIntegration.title")}
-            badge={t("features.fullIntegration.badge")}
-            subtitle={t("features.fullIntegration.subtitle")}
-            bullets={[t("features.fullIntegration.bullets.0"), t("features.fullIntegration.bullets.1"), t("features.fullIntegration.bullets.2")]}
-          />
-        </StaggerGroup>
-      </Container>
-    </section>
-  );
-}
-
-function BentoCardShell({ children, onPointerEnter, onPointerLeave, innerRef, className = "" }) {
-  return (
-    <div
-      ref={innerRef}
-      onPointerEnter={onPointerEnter}
-      onPointerLeave={onPointerLeave}
-      className={["card-glow group relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-ink-800/55 p-6 shadow-card sm:p-7", className].join(" ")}
-    >
-      {children}
-    </div>
-  );
-}
-
-// Touch devices don't get a sustained pointerenter, so the bento micro-animations
-// would never play on mobile. Watch the card and flip an "in view" flag once per
-// session so the animation runs automatically. Desktop hover paths are untouched.
-function useTouchInViewOnce() {
-  const ref = React.useRef(null);
-  const [inView, setInView] = React.useState(false);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    const isTouch =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(hover: none)").matches;
-    if (!isTouch) return;
-    const el = ref.current;
-    if (!el) return;
-    // Only start the animation once the card's center has crossed roughly
-    // 60% of the viewport from the top. Bottom rootMargin of -38% delays the
-    // intersection until the card is comfortably in view, so the visitor
-    // catches the animation at its start instead of arriving on a finished
-    // state. threshold 0 keeps the firing crisp at that boundary.
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setInView(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0, rootMargin: "0px 0px -38% 0px" }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  return [ref, inView];
-}
-
-function BentoLabel({ children, dot = "sky" }) {
-  const dotColor = dot === "emerald" ? "bg-emerald-400" : "bg-sky-400";
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="relative flex h-2 w-2">
-        <span className={["absolute inline-flex h-full w-full rounded-full opacity-60 animate-ping", dotColor].join(" ")} />
-        <span className={["relative inline-flex h-2 w-2 rounded-full", dotColor].join(" ")} />
-      </span>
-      <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-fg-muted">{children}</span>
-    </div>
-  );
-}
-
-function ChatBubble({ side, children }) {
-  if (side === "user") {
-    return (
-      <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-sky-400 px-3.5 py-2 text-[13px] leading-snug text-ink-950">
-          {children}
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="flex justify-start">
-      <div className="max-w-[82%] rounded-2xl rounded-bl-md border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[13px] leading-snug text-fg">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function TypingDots({ side = "ai" }) {
-  if (side === "user") {
-    return (
-      <div className="flex justify-end">
-        <div className="rounded-2xl rounded-br-md bg-sky-400 px-3.5 py-2.5">
-          <div className="flex gap-1">
-            {[0, 1, 2].map((i) => (
-              <motion.span
-                key={i}
-                className="block h-1.5 w-1.5 rounded-full bg-ink-950/70"
-                animate={{ opacity: [0.35, 1, 0.35], y: [0, -2, 0] }}
-                transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.14, ease: "easeInOut" }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="flex justify-start">
-      <div className="rounded-2xl rounded-bl-md border border-white/10 bg-white/[0.04] px-3.5 py-2.5">
-        <div className="flex gap-1">
-          {[0, 1, 2].map((i) => (
-            <motion.span
-              key={i}
-              className="block h-1.5 w-1.5 rounded-full bg-fg-muted"
-              animate={{ opacity: [0.25, 1, 0.25], y: [0, -2, 0] }}
-              transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.14, ease: "easeInOut" }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const BENTO_CHAT_MESSAGES = [
-  { side: "user", key: "user1" },
-  { side: "ai", key: "ai1" },
-  { side: "user", key: "user2" },
-  { side: "ai", key: "ai2" },
-  { side: "user", key: "user3" },
-  { side: "ai", key: "ai3" },
-  { side: "user", key: "user4" },
-  { side: "ai", key: "ai4" },
-];
-
-function BentoChatbotCard() {
-  const { t } = useTranslation();
-  const reduced = useReducedMotion();
-  const [hovered, setHovered] = React.useState(false);
-  const [cardRef, inViewOnce] = useTouchInViewOnce();
-  const playing = hovered || inViewOnce;
-  const [visibleCount, setVisibleCount] = React.useState(0);
-  const [typingSide, setTypingSide] = React.useState(null);
-  const transcriptRef = React.useRef(null);
-
-  React.useEffect(() => {
-    const el = transcriptRef.current;
-    if (!el) return;
-    const id = requestAnimationFrame(() => {
-      el.scrollTo({ top: el.scrollHeight, behavior: reduced ? "auto" : "smooth" });
-    });
-    return () => cancelAnimationFrame(id);
-  }, [visibleCount, typingSide, reduced]);
-
-  React.useEffect(() => {
-    if (reduced) {
-      setVisibleCount(BENTO_CHAT_MESSAGES.length);
-      setTypingSide(null);
-      return;
-    }
-    if (!playing) {
-      setVisibleCount(0);
-      setTypingSide(null);
-      return;
-    }
-
-    const TYPING_MS = 720;
-    const GAP_MS = 720;
-    const LOOP_PAUSE_MS = 2600;
-    let timer;
-
-    const step = (i) => {
-      if (i >= BENTO_CHAT_MESSAGES.length) {
-        timer = setTimeout(() => {
-          setVisibleCount(0);
-          setTypingSide(null);
-          timer = setTimeout(() => step(0), 480);
-        }, LOOP_PAUSE_MS);
-        return;
-      }
-      setTypingSide(BENTO_CHAT_MESSAGES[i].side);
-      timer = setTimeout(() => {
-        setTypingSide(null);
-        setVisibleCount(i + 1);
-        timer = setTimeout(() => step(i + 1), GAP_MS);
-      }, TYPING_MS);
-    };
-
-    setVisibleCount(0);
-    setTypingSide(null);
-    timer = setTimeout(() => step(0), 240);
-
-    return () => clearTimeout(timer);
-  }, [playing, reduced]);
-
-  return (
-    <BentoCardShell innerRef={cardRef} onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
-      <BentoLabel dot="emerald">{t("bento.chatbot.label")}</BentoLabel>
-      <h3 className="mt-3 font-display text-[26px] font-semibold leading-[1.1] tracking-tight text-fg sm:text-[30px]">
-        {t("bento.chatbot.title")}
-      </h3>
-      <p className="mt-2.5 max-w-md text-[14.5px] leading-[1.55] text-fg-muted">
-        {t("bento.chatbot.description")}
-      </p>
-
-      <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-sky-400/[0.07] blur-3xl" />
-
-      <div className="mt-auto pt-7">
-        <div className="rounded-2xl border border-white/10 bg-ink-900/70 p-3.5 sm:p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky-400/15 text-[10px] font-semibold text-sky-400">AI</span>
-              <span className="text-[12px] font-medium text-fg">{t("bento.chatbot.ai")}</span>
-            </div>
-            <span className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">online</span>
-          </div>
-
-          <div
-            ref={transcriptRef}
-            className="h-[280px] overflow-y-auto sm:h-[300px]"
-            style={{ scrollbarWidth: "none", maskImage: "linear-gradient(to bottom, transparent 0, #000 28px, #000 100%)", WebkitMaskImage: "linear-gradient(to bottom, transparent 0, #000 28px, #000 100%)" }}
-          >
-            <div className="flex min-h-full flex-col justify-end gap-2.5">
-              <AnimatePresence mode="popLayout" initial={false}>
-                {BENTO_CHAT_MESSAGES.slice(0, visibleCount).map((m) => (
-                  <motion.div
-                    key={m.key}
-                    initial={reduced ? false : { opacity: 0, y: 10, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -4, transition: { duration: 0.18 } }}
-                    transition={{ type: "spring", stiffness: 260, damping: 24, mass: 0.55 }}
-                  >
-                    <ChatBubble side={m.side}>{t(`bento.chatbot.messages.${m.key}`)}</ChatBubble>
-                  </motion.div>
-                ))}
-                {typingSide && !reduced && (
-                  <motion.div
-                    key={`typing-${typingSide}`}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -2, transition: { duration: 0.14 } }}
-                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <TypingDots side={typingSide} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </div>
-    </BentoCardShell>
-  );
-}
-
-function BentoAutomationCard() {
-  const { t } = useTranslation();
-  const reduced = useReducedMotion();
-  const [hovered, setHovered] = React.useState(false);
-  const [cardRef, inViewOnce] = useTouchInViewOnce();
-  const playing = hovered || inViewOnce;
-  const [done, setDone] = React.useState(0);
-  const total = 7;
-
-  React.useEffect(() => {
-    if (reduced) {
-      setDone(total);
-      return;
-    }
-    if (!playing) {
-      setDone(0);
-      return;
-    }
-    const timers = [];
-    for (let i = 1; i <= total; i++) {
-      timers.push(setTimeout(() => setDone(i), 220 + (i - 1) * 280));
-    }
-    return () => timers.forEach(clearTimeout);
-  }, [playing, reduced]);
-
-  const tasks = [
-    t("bento.automation.tasks.t1"),
-    t("bento.automation.tasks.t2"),
-    t("bento.automation.tasks.t3"),
-    t("bento.automation.tasks.t4"),
-    t("bento.automation.tasks.t5"),
-    t("bento.automation.tasks.t6"),
-    t("bento.automation.tasks.t7"),
-  ];
-
-  return (
-    <BentoCardShell innerRef={cardRef} onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
-      <BentoLabel dot={done === total ? "emerald" : "sky"}>{t("bento.automation.label")}</BentoLabel>
-      <h3 className="mt-3 font-display text-[22px] font-semibold leading-[1.12] tracking-tight text-fg sm:text-[24px]">
-        {t("bento.automation.title")}
-      </h3>
-      <p className="mt-2 text-[13.5px] leading-[1.55] text-fg-muted">
-        {t("bento.automation.description")}
-      </p>
-
-      <div className="mt-auto pt-5">
-        <div className="rounded-xl border border-white/10 bg-ink-900/70 p-4">
-          <ul className="space-y-2.5">
-            {tasks.map((task, i) => {
-              const isDone = done > i;
-              return (
-                <li key={i} className="flex items-center gap-2.5">
-                  <span
-                    className={[
-                      "relative flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors duration-200",
-                      isDone ? "border-emerald-400/70 bg-emerald-400/15" : "border-white/15 bg-white/[0.02]",
-                    ].join(" ")}
-                  >
-                    {isDone && (
-                      <motion.svg
-                        viewBox="0 0 12 12"
-                        className="h-2.5 w-2.5 text-emerald-400"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.12 }}
-                      >
-                        <motion.path
-                          d="M2 6.5 L5 9 L10 3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          initial={{ pathLength: 0 }}
-                          animate={{ pathLength: 1 }}
-                          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                        />
-                      </motion.svg>
-                    )}
-                  </span>
-                  <span className={["text-[12.5px] transition-colors duration-200", isDone ? "text-fg" : "text-fg-muted"].join(" ")}>{task}</span>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="mt-4 h-[2px] overflow-hidden rounded-full bg-white/5">
-            <motion.div
-              className="h-full origin-left rounded-full"
-              style={{ background: "linear-gradient(90deg, #38BDF8 0%, #3B82F6 60%, #34D399 100%)" }}
-              animate={{ scaleX: done / total }}
-              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            />
-          </div>
-        </div>
-      </div>
-    </BentoCardShell>
-  );
-}
-
-function BentoWebCard() {
-  const { t } = useTranslation();
-  const reduced = useReducedMotion();
-  const [hovered, setHovered] = React.useState(false);
-  const [cardRef, inViewOnce] = useTouchInViewOnce();
-  const playing = hovered || inViewOnce;
-  const [lines, setLines] = React.useState(0);
-  const codeLines = [
-    { tag: "Header", attr: "sticky" },
-    { tag: "Hero", attr: "animate" },
-    { tag: "Features", attr: "cols={3}" },
-    { tag: "Showcase", attr: "loop" },
-    { tag: "Stats", attr: "live" },
-    { tag: "Testimonials", attr: "" },
-    { tag: "Pricing", attr: "tiers={3}" },
-    { tag: "CTA", attr: "" },
-    { tag: "Footer", attr: "" },
-  ];
-  const totalLines = codeLines.length;
-
-  React.useEffect(() => {
-    if (reduced) {
-      setLines(totalLines);
-      return;
-    }
-    if (!playing) {
-      setLines(0);
-      return;
-    }
-    const timers = [];
-    for (let i = 1; i <= totalLines; i++) {
-      timers.push(setTimeout(() => setLines(i), 160 + (i - 1) * 150));
-    }
-    return () => timers.forEach(clearTimeout);
-  }, [playing, reduced, totalLines]);
-
-  return (
-    <BentoCardShell innerRef={cardRef} onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
-      <BentoLabel>{t("bento.web.label")}</BentoLabel>
-      <h3 className="mt-3 font-display text-[22px] font-semibold leading-[1.12] tracking-tight text-fg sm:text-[24px]">
-        {t("bento.web.title")}
-      </h3>
-      <p className="mt-2 text-[13.5px] leading-[1.55] text-fg-muted">
-        {t("bento.web.description")}
-      </p>
-
-      <div className="mt-auto pt-5">
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-ink-900/80">
-          <div className="flex items-center gap-1.5 border-b border-white/5 px-3 py-2">
-            <span className="h-2 w-2 rounded-full bg-white/15" />
-            <span className="h-2 w-2 rounded-full bg-white/15" />
-            <span className="h-2 w-2 rounded-full bg-white/15" />
-            <div className="ml-2 flex flex-1 items-center justify-center rounded-md bg-white/[0.03] px-2 py-0.5 text-[10px] tracking-tight text-fg-muted">
-              {t("bento.web.url")}
-            </div>
-          </div>
-          <div className="px-3 py-3 font-mono text-[12px] leading-[1.7]">
-            {codeLines.map((line, i) => (
-              <div
-                key={i}
-                className={[
-                  "flex items-center gap-3 transition-opacity duration-150",
-                  lines > i ? "opacity-100" : "opacity-30",
-                ].join(" ")}
-              >
-                <span className="w-3 text-right text-[10px] tabular-nums text-fg-dim">{i + 1}</span>
-                <div className="relative overflow-hidden">
-                  <motion.span
-                    initial={false}
-                    animate={{ clipPath: lines > i ? "inset(0 0% 0 0)" : "inset(0 100% 0 0)" }}
-                    transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-                    className="inline-block whitespace-nowrap text-fg"
-                  >
-                    <span className="text-fg-dim">{"<"}</span>
-                    <span className="text-sky-400">{line.tag}</span>
-                    {line.attr && <span className="text-fg/70"> {line.attr}</span>}
-                    <span className="text-fg-dim">{" />"}</span>
-                  </motion.span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </BentoCardShell>
-  );
-}
-
-function BentoFeatures() {
-  const { t } = useTranslation();
-  return (
-    <section id="bento" className="relative py-16 md:py-28">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div
-          className="mesh-blob animate-meshShift2 opacity-50"
-          style={{ top: "10%", right: "-12%", width: "30rem", height: "30rem", background: "radial-gradient(circle at 50% 50%, rgba(56,189,248,0.16), transparent 70%)" }}
-        />
-      </div>
-      <Container className="relative">
-        <SectionHeader
-          eyebrow={t("bento.section")}
-          title={t("bento.title")}
-          description={t("bento.description")}
-        />
-
-        <Reveal className="mt-14">
-          <div className="grid gap-5 md:grid-cols-3 md:grid-rows-2 md:gap-6">
-            <div className="md:col-span-2 md:row-span-2">
-              <BentoChatbotCard />
-            </div>
-            <div className="md:col-span-1 md:row-span-1">
-              <BentoWebCard />
-            </div>
-            <div className="md:col-span-1 md:row-span-1">
-              <BentoAutomationCard />
-            </div>
-          </div>
-        </Reveal>
-      </Container>
-    </section>
   );
 }
 
@@ -2457,6 +1898,7 @@ function Pricing() {
           {STAFF_ORDER.map((id) => <StaffPriceCard key={id} id={id} />)}
         </StaggerGroup>
 
+        <div id="website" className="scroll-mt-24" />
         <Reveal className="mt-16">
           <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("pricing.website.title")}</h3>
           <p className="mt-1.5 text-[14.5px] text-fg-muted">{t("pricing.website.description")}</p>
@@ -2664,7 +2106,7 @@ function ContactOrbField() {
 /** Options offered as chips, in display order. Keys are shared with the API. */
 // The four AI staff from /office come first so a visitor arriving from a desk
 // sees their choice at the top of the chips.
-const DEMO_SERVICES = ["ara", "nova", "veda", "eho", "website", "chatbot", "voice", "unsure"];
+const DEMO_SERVICES = ["ara", "nova", "veda", "eho", "website", "unsure"];
 
 const DEMO_DRAFT_KEY = "dalatech:demo-draft";
 /** Pre-selected chips for CTAs whose context already implies a product. */
@@ -2878,7 +2320,9 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
     if (!isOpen) return;
     const draft = readDemoDraft();
     setValues((current) => {
-      const base = draft || (current.name || current.phone ? current : EMPTY_DEMO_FORM);
+      const restored = draft || (current.name || current.phone ? current : EMPTY_DEMO_FORM);
+      // a draft saved before a chip was retired must not submit it
+      const base = { ...restored, services: restored.services.filter((sv) => DEMO_SERVICES.includes(sv)) };
       if (!preset || !preset.length) return base;
       // The button that opened the form states the selection: its preset
       // replaces whatever was picked on an earlier visit, so the chips always
@@ -3581,7 +3025,7 @@ function FooterColumn({ heading, links }) {
                 {l.label}
               </button>
             ) : l.to ? (
-              <Link to={l.to} className={linkClass} data-cursor="hover">
+              <Link to={l.to} state={l.state} className={linkClass} data-cursor="hover">
                 {l.label}
               </Link>
             ) : (
@@ -3621,13 +3065,14 @@ function Footer({ onOpenPrivacy }) {
   };
 
   const services = [
-    { label: t("nav.capabilities"), to: "/products" },
     { label: t("nav.staff"), to: "/office" },
+    { label: t("nav.website"), to: "/pricing", state: { scrollTo: "website" } },
     { label: t("nav.pricing"), to: "/pricing" },
   ];
   const company = [
     { label: t("nav.portfolio"), to: "/portfolio" },
     { label: t("nav.process"), to: "/process" },
+    { label: t("nav.stack"), to: "/technology" },
     { label: t("nav.location"), to: "/location" },
     { label: t("nav.contact"), onClick: goToContact },
   ];
@@ -3794,45 +3239,6 @@ function PrivacyTermsModal({ isOpen, onClose }) {
         </div>
       )}
     </AnimatePresence>
-  );
-}
-
-function CapabilityMarquee() {
-  const { t } = useTranslation();
-  const items = [0, 1, 2, 3, 4, 5].map((i) => t(`marquee.items.${i}`));
-
-  return (
-    <section
-      aria-label={t("marquee.label")}
-      className="marquee-strip relative overflow-hidden border-y border-white/[0.06] bg-white/[0.012] py-5"
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-ink-950 via-ink-950/85 to-transparent sm:w-32"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-ink-950 via-ink-950/85 to-transparent sm:w-32"
-      />
-      <div className="marquee-track flex w-max items-center">
-        {[0, 1].map((copy) => (
-          <div
-            key={copy}
-            aria-hidden={copy === 1 ? "true" : undefined}
-            className="flex shrink-0 items-center gap-10 pr-10 sm:gap-14 sm:pr-14"
-          >
-            {items.map((item, i) => (
-              <span key={i} className="flex shrink-0 items-center gap-10 sm:gap-14">
-                <span className="whitespace-nowrap font-display text-[14px] font-medium tracking-[-0.005em] text-fg-muted sm:text-[15px]">
-                  {item}
-                </span>
-                <span aria-hidden className="block h-1 w-1 rounded-full bg-sky-400/55" />
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
-    </section>
   );
 }
 
@@ -4035,22 +3441,12 @@ function LandingPage() {
       <Hero />
       {/* proof, not claims: Ара's chapter from the office page, then the live client */}
       <StaffChapter id="ara" index={0} onHire={hire} />
+      <LiveDemo />
       <Portfolio />
       <Testimonials />
       <StaffSteps />
       <Contact />
     </>
-  );
-}
-
-function ProductsPage() {
-  return (
-    <PageShell>
-      <CapabilityMarquee />
-      <Features />
-      <BentoFeatures />
-      <LiveDemo />
-    </PageShell>
   );
 }
 
@@ -4720,7 +4116,8 @@ function Shell() {
             <ErrorBoundary>
               <Routes location={location}>
                 <Route path="/" element={<LandingPage />} />
-                <Route path="/products" element={<ProductsPage />} />
+                {/* the products page became the office page; old links and bookmarks still land */}
+                <Route path="/products" element={<Navigate to="/office" replace />} />
                 <Route path="/office" element={<OfficePage />} />
                 <Route path="/process" element={<ProcessPage />} />
                 <Route path="/technology" element={<TechnologyPage />} />

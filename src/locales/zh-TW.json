@@ -1,7 +1,6 @@
 {
   "nav": {
     "brand": "DalaTech",
-    "capabilities": "產品",
     "process": "流程",
     "stack": "技術棧",
     "location": "據點",
@@ -12,7 +11,8 @@
     "features": "服務",
     "howItWorks": "運作方式",
     "getDemo": "免費試用示範",
-    "staff": "AI 員工"
+    "staff": "AI 員工",
+    "website": "網站"
   },
   "hero": {
     "badge": "為蒙古企業打造的 AI 員工",
@@ -27,51 +27,6 @@
       "24/7，全年無休",
       "3–5 天內上線"
     ]
-  },
-  "features": {
-    "section": "服務",
-    "title": "客戶溝通自動化的一站式解決方案",
-    "description": "我們打造整合 AI 的現代化網站，能自動處理常見問題、產品諮詢及基本客服，讓您的團隊專注於更重要的事情。",
-    "chatbot": {
-      "title": "網站 + AI 聊天機器人",
-      "badge": "最受歡迎",
-      "subtitle": "24/7 在您的網站上即時回應。",
-      "bullets": [
-        "自動回答產品與服務相關問題",
-        "根據您的業務資訊與常見問題進行訓練",
-        "收集潛在客戶與購買意向"
-      ]
-    },
-    "voiceAgent": {
-      "title": "網站 + AI 語音助理",
-      "badge": "電話服務",
-      "subtitle": "透過自動化電話處理減少電話工作量。",
-      "bullets": [
-        "回答常見問題並轉接請求",
-        "最適合簡單流程（營業時間、庫存、基本資訊）",
-        "可選擇提供通話摘要給您的團隊"
-      ]
-    },
-    "fullIntegration": {
-      "title": "完整 AI 整合方案",
-      "badge": "完整版",
-      "subtitle": "網站 + 聊天機器人 + 語音助理一體化系統。",
-      "bullets": [
-        "網站與電話的統一客戶體驗",
-        "更多自動化，更少重複性工作",
-        "持續優化與每月技術支援"
-      ]
-    },
-    "stats": {
-      "fasterResponses": "更快速的回應",
-      "fasterResponsesValue": "24/7",
-      "lessRepetitiveWork": "減少重複性工作",
-      "lessRepetitiveWorkValue": "全自動化",
-      "betterExperience": "更好的客戶體驗",
-      "betterExperienceValue": "即時回應",
-      "setupTime": "建置時間",
-      "setupTimeValue": "快速"
-    }
   },
   "howItWorks": {
     "section": "運作方式",
@@ -145,18 +100,18 @@
   },
   "liveDemo": {
     "section": "即時示範",
-    "title": "親眼看真實對話，正在發生。",
-    "description": "這就是 DalaTech 聊天機器人在客戶網站上的真實樣貌。不需要點擊，不需要註冊，對話會自行進行。",
-    "ctaLabel": "為您的業務打造一個",
+    "title": "Ara 就是這樣回覆。",
+    "description": "這就是 Ara 與您的客戶對話的真實樣貌，在一個真實的客戶網站上。不需要點擊，不需要註冊，對話會自行進行。",
+    "ctaLabel": "讓 Ara 為您的生意工作",
     "widget": {
       "businessName": "Matrix Eco Salon",
       "statusOnline": "線上",
       "statusReply": "平均回應 1.2 秒",
-      "agentName": "DalaTech AI",
-      "agentRole": "客服助理",
+      "agentName": "Ara",
+      "agentRole": "接待員",
       "inputPlaceholder": "輸入訊息…",
-      "typing": "AI 正在輸入",
-      "footnote": "由 DalaTech AI 提供支援"
+      "typing": "Ara 正在輸入",
+      "footnote": "DalaTech 的 Ara 為您服務"
     },
     "messages": {
       "user1": "你好，請問明天有營業嗎？",
@@ -283,59 +238,6 @@
     "emailCta": "發送電子郵件",
     "requestCta": "預約展示"
   },
-  "bento": {
-    "section": "產品能力",
-    "title": "三項產品，每一個都活靈活現。",
-    "description": "把游標移到卡片上看看。這些不是截圖，您看見的每一個動作都是產品本身。",
-    "chatbot": {
-      "label": "即時示範",
-      "title": "AI 聊天機器人",
-      "description": "以您的業務資料訓練，即時回應客戶的真實對話。",
-      "you": "您",
-      "ai": "AI 助理",
-      "messages": {
-        "user1": "新款還有現貨嗎？",
-        "ai1": "有的，倉庫還剩三台。",
-        "user2": "可以幫我預留到明天嗎？",
-        "ai2": "已預留，明天下午六點前以您的名字保留。",
-        "user3": "可以一併寄規格表嗎？",
-        "ai3": "已寄到您留存的信箱。還有其他需要嗎？",
-        "user4": "保固期多長？",
-        "ai4": "兩年，零件與工資皆包含。"
-      }
-    },
-    "automation": {
-      "label": "執行中",
-      "title": "業務流程自動化",
-      "description": "重複性工作自動執行，讓您專注於真正重要的事。",
-      "tasks": {
-        "t1": "偵測到新名單",
-        "t2": "資料完成補充",
-        "t3": "歡迎信已寄出",
-        "t4": "CRM 紀錄已建立",
-        "t5": "已通知 Slack 頻道",
-        "t6": "行事曆會議已安排",
-        "t7": "銷售階段已更新"
-      }
-    },
-    "web": {
-      "label": "細緻打造",
-      "title": "客製化網頁開發",
-      "description": "現代、快速、為轉換而生。我們像打造產品般打造網站，而非製作型錄。",
-      "url": "yourbrand.com"
-    }
-  },
-  "marquee": {
-    "label": "我們所打造的",
-    "items": [
-      "網站開發",
-      "AI 聊天機器人",
-      "企業自動化",
-      "蒙古烏蘭巴托",
-      "24/7 全天候支援",
-      "客製化解決方案"
-    ]
-  },
   "techStack": {
     "section": "技術堆疊",
     "title": "我們以這些工具打造",
@@ -412,8 +314,6 @@
     },
     "services": {
       "website": "網站",
-      "chatbot": "AI 聊天機器人",
-      "voice": "AI 語音助理",
       "unsure": "還不確定",
       "ara": "Ara — 接待員",
       "nova": "Nova — 客戶關懷",
