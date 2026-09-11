@@ -81,6 +81,19 @@ def map_colours(img, cmap):
     return img
 
 
+def tint_layer(img, shades):
+    """Recolour a generator layer: its three main colours, darkest to lightest,
+    become `shades` (dark, base, light). Outlines and highlights stay."""
+    img = img.convert("RGBA")
+    counts = {}
+    for r, g, b, a in img.getdata():
+        if a and (r, g, b) not in OUTLINES and (r, g, b) != (0, 0, 0):
+            counts[(r, g, b)] = counts.get((r, g, b), 0) + 1
+    main = sorted(sorted(counts, key=lambda c: -counts[c])[:3], key=lambda c: hls(c)[1])
+    cmap = {"#%02x%02x%02x" % c: shades[i] for i, c in enumerate(main)}
+    return map_colours(img, cmap)
+
+
 def rule_colours(img, rule):
     img = img.convert("RGBA")
     px = img.load()
@@ -251,8 +264,10 @@ def props():
 
 # ---------------------------------------------------------------- characters
 FW, FH = 32, 64
-# LimeZu 32x32 sheets: rows of 32x64 frames. idle/sit run right, up, left, down.
-ROWS = {"idle": 1, "sit": 4, "phone": 6, "read": 7}
+# LimeZu 32x32 sheets: rows of 32x64 frames. The idle row runs right, up,
+# left, down; the sitting row only has side views, so a person at a desk
+# facing the camera uses the idle frames and lets the desk hide the legs.
+ROWS = {"idle": 1, "phone": 6, "read": 7}
 
 
 def layer(kind, name):
@@ -265,7 +280,8 @@ def compose(spec):
         Image.open(layer("Bodies", spec["body"])).convert("RGBA"),
         Image.open(layer("Eyes", spec["eyes"])).convert("RGBA"),
         map_colours(Image.open(layer("Outfits", spec["outfit"])), spec.get("outfitMap")),
-        map_colours(Image.open(layer("Hairstyles", spec["hair"])), spec.get("hairMap")),
+        tint_layer(Image.open(layer("Hairstyles", spec["hair"])), spec["hairTint"]) if spec.get("hairTint")
+        else map_colours(Image.open(layer("Hairstyles", spec["hair"])), spec.get("hairMap")),
     ]
     if spec.get("accessory"):
         layers.append(Image.open(layer("Accessories", spec["accessory"])).convert("RGBA"))
@@ -305,20 +321,24 @@ def headset(fr):
     return fr
 
 
+# Four people who read as four at a glance: different hair, clothes, skin,
+# and each in the pose of their own job. Hair and outfit layers are tinted by
+# luminance rank so any LimeZu style can take any colour.
 PEOPLE = {
-    # Ара: reception. Long chestnut hair, pale jacket.
-    "ara": {"body": "Body_32x32_02", "eyes": "Eyes_32x32_01", "outfit": "Outfit_25_32x32_01", "hair": "Hairstyle_21_32x32_07",
-            "outfitMap": {"#fbabc6": PAPER["hi"], "#dd71a3": PAPER["lo"]},
-            "hairMap": {"#647e99": HAIR_DARK["light"], "#566279": HAIR_DARK["base"], "#535662": HAIR_DARK["shade"]}},
-    # Веда: analyst. Hair up, glasses, brand-blue shirt.
-    "veda": {"body": "Body_32x32_04", "eyes": "Eyes_32x32_04", "outfit": "Outfit_21_32x32_01", "hair": "Hairstyle_18_32x32_04",
+    # Ара: reception. Long auburn hair, white blouse, at the laptop.
+    "ara": {"body": "Body_32x32_02", "eyes": "Eyes_32x32_01", "outfit": "Outfit_08_32x32_01", "hair": "Hairstyle_12_32x32_04",
+            "hairTint": ("#7A2E1E", "#A8442A", "#C9603C")},
+    # Веда: analyst. Black hair up, glasses, brand-blue cardigan, reading the report.
+    "veda": {"body": "Body_32x32_01", "eyes": "Eyes_32x32_04", "outfit": "Outfit_21_32x32_01", "hair": "Hairstyle_18_32x32_04",
              "accessory": "Accessory_15_Glasses_32x32_01",
+             "hairTint": ("#1B1826", "#2A2638", "#443E5C"),
              "outfitMap": {"#645d9a": BRAND["shade"], "#76689e": BRAND["base"], "#8d6ea7": BRAND["light"], "#8e99c8": BRAND["dark"]}},
-    # Нова: customer care. Short brown hair, brand-blue top.
-    "nova": {"body": "Body_32x32_07", "eyes": "Eyes_32x32_01", "outfit": "Outfit_24_32x32_01", "hair": "Hairstyle_12_32x32_03",
-             "outfitMap": {"#fbabc6": PAPER["hi"], "#eb8fb3": PAPER["lo"], "#0092e3": BRAND["base"], "#0970d4": BRAND["shade"], "#96d0f0": BRAND["light"]}},
-    # Эхо: phone operator. Short crop, light hoodie, headset.
-    "eho": {"body": "Body_32x32_01", "eyes": "Eyes_32x32_05", "outfit": "Outfit_31_32x32_01", "hair": "Hairstyle_06_32x32_04", "headset": True},
+    # Эхо: phone operator. Blond crop, orange hoodie, headset, on the phone.
+    "eho": {"body": "Body_32x32_07", "eyes": "Eyes_32x32_05", "outfit": "Outfit_16_32x32_01", "hair": "Hairstyle_26_32x32_02",
+            "hairTint": ("#A67B2C", "#D1A64A", "#EED07C"), "headset": True},
+    # Нова: customer care. Dark brown bob, teal top, phone in hand.
+    "nova": {"body": "Body_32x32_04", "eyes": "Eyes_32x32_01", "outfit": "Outfit_23_32x32_03", "hair": "Hairstyle_20_32x32_03",
+             "hairTint": ("#3B261C", "#5A3B2C", "#75503C")},
 }
 
 
@@ -331,8 +351,6 @@ def characters():
         for aname, row in ROWS.items():
             if aname == "idle":
                 frames = [frame(sheet, row, c) for c in range(18, 24)]  # facing down
-            elif aname == "sit":
-                frames = [frame(sheet, row, c) for c in range(9, 12)]  # facing down
             elif aname == "phone":
                 frames = []
                 for c in range(12):

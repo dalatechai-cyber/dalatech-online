@@ -16,11 +16,13 @@ export const CHAPTER_HOUR = { ara: 2.25, veda: 8.5, eho: 12.1, nova: 15.5 };
 // Four weeks of the sample report, the same bars the page shows in HTML.
 const REPORT = [0.5, 0.62, 0.48, 0.9];
 
+// Ара types (idle breathing behind the laptop), Веда reads the report, Эхо
+// has the phone at his ear, Нова has hers in her hand.
 const KIT = {
-  ara: { anim: "sit", fps: 3 },
-  veda: { anim: "sit", fps: 3 },
+  ara: { anim: "idle", fps: 4 },
+  veda: { anim: "read", fps: 5 },
   eho: { anim: "phone", fps: 8, loop: [4, 9] },
-  nova: { anim: "sit", fps: 3 },
+  nova: { anim: "phone", fps: 2, loop: [2, 3] },
 };
 
 function frameIndex(kit, t, seed) {
@@ -38,8 +40,8 @@ function station(ctx, img, o) {
   const deskW = pieces.reduce((w, p) => w + SPRITES[p].w, 0);
   const cx = x + (o.personX ?? Math.floor((deskW - 32) / 2));
   // head and shoulders clear the desk; the desk hides the rest
-  const cy = y - 44;
-  sprite(ctx, img, "CHAIR", cx, cy + 20);
+  const cy = y - 58;
+  sprite(ctx, img, "CHAIR", cx, cy + 26);
   charFrame(ctx, img, id, kit.anim, frameIndex(kit, t, seed), cx, cy);
   let px = x;
   for (const p of pieces) {
@@ -87,9 +89,9 @@ export function drawHero(ctx, img, { W, H, t, progress }) {
     const x = ox + 4 + i * 60;
     const props = {
       ara: [["DESK_PHONE", 0, 6], ["LAPTOP", 24, 0]],
-      veda: [["MONITOR", 18, 2], ["PAPER_STACK", -2, 6]],
+      veda: [["PAPER_STACK", 26, 4], ["PAPERS", 2, 10], ["MUG", 40, 18]],
       eho: [["MONITOR_KB", 20, 2], ["DESK_PHONE", -2, 8]],
-      nova: [["LAPTOP", 24, 0], ["MUG", 6, 12]],
+      nova: [["LAPTOP", 22, 2], ["MUG", 4, 12]],
     }[id];
     station(ctx, img, {
       id, x, y: deskY, t, hour, seed: i, props,
