@@ -15,14 +15,18 @@
     "staff": "AI staff"
   },
   "hero": {
-    "badge": "AI-powered websites for businesses",
-    "title": "Professional websites with AI chatbots and voice agents.",
-    "description": "Automate repetitive customer questions, respond instantly 24/7, and reduce workload without adding staff. Built for small and mid-sized businesses, and growing teams.",
+    "badge": "AI staff for Mongolian businesses",
+    "title": "AI staff that work day and night.",
+    "description": "Ara answers every message, Veda prepares the monthly report, Eho answers the phone, Nova keeps in touch with your customers. On Facebook, Instagram and your website, in Mongolian, within seconds. If you need the website too, we build it.",
     "buttons": {
       "getDemo": "Get a free demo",
-      "seeWork": "See our work"
+      "seeWork": "Meet the staff"
     },
-    "tech": "Built with modern technology"
+    "facts": [
+      "Answer in Mongolian",
+      "24/7, no days off",
+      "Start within 3 to 5 days"
+    ]
   },
   "features": {
     "section": "SERVICES",
@@ -108,13 +112,13 @@
   "portfolio": {
     "section": "PORTFOLIO",
     "title": "Featured project",
-    "description": "A real example of a business website with an integrated AI chatbot experience.",
+    "description": "A real business website with Ara answering on it.",
     "visitWebsite": "Visit website",
     "getDemo": "Get a free demo",
     "japantok": {
       "pills": {
         "website": "Website",
-        "chatbot": "AI Chatbot",
+        "chatbot": "Ara",
         "productQA": "QPay",
         "availability": "Online Booking"
       },

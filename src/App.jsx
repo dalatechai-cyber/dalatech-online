@@ -882,40 +882,15 @@ function MatrixSalonPreview() {
   );
 }
 
-function HeroDemoCard() {
-  const { scrollY } = useScroll();
-  const reduced = useReducedMotion();
-  const isMobile = useIsMobile();
-  const parallaxDistance = reduced || isMobile ? 0 : -36;
-  const yT = useTransform(scrollY, [0, 600], [0, parallaxDistance]);
-  const y = useSpring(yT, { stiffness: 80, damping: 22, mass: 0.4 });
-
-  return (
-    <motion.div style={isMobile ? undefined : { y }} className="relative">
-      <BrowserMockup url="matrixecosalon.org">
-        <MatrixSalonPreview />
-      </BrowserMockup>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-ink-900/80 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-fg-muted backdrop-blur md:left-0 md:top-auto md:bottom-full md:mb-3"
-      >
-        <span className="relative flex h-1.5 w-1.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
-        </span>
-        Live client
-      </div>
-    </motion.div>
-  );
-}
-
 function Hero() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const facts = t("hero.facts", { returnObjects: true });
   return (
-    <section id="top" className="relative overflow-hidden pt-24 pb-16 md:pt-40 md:pb-36">
+    <section id="top" className="relative overflow-hidden pb-16 pt-24 md:pb-24 md:pt-36">
       <MeshBackground />
       <Container className="relative">
-        <div className="grid items-center gap-14 md:grid-cols-[1fr_1fr] md:gap-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-16">
+        <div className="grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-12 lg:gap-16">
           <div>
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -930,7 +905,7 @@ function Hero() {
               {t("hero.badge")}
             </motion.div>
 
-            <h1 className="mt-7 font-display text-[44px] font-semibold leading-[1.05] tracking-tightest text-fg sm:text-[56px] md:text-[60px] lg:text-[68px]">
+            <h1 className="mt-7 font-display text-[44px] font-semibold leading-[1.05] tracking-tightest text-fg sm:text-[56px] md:text-[56px] lg:text-[64px]">
               <HeroWords text={t("hero.title")} delay={0.15} />
             </h1>
 
@@ -938,7 +913,7 @@ function Hero() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...SPRING_REVEAL, delay: 0.55 }}
-              className="mt-6 max-w-[44ch] text-[17px] leading-[1.6] text-fg-muted"
+              className="mt-6 max-w-[46ch] text-[17px] leading-[1.6] text-fg-muted"
             >
               {t("hero.description")}
             </motion.p>
@@ -955,35 +930,44 @@ function Hero() {
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                 </svg>
               </MagneticButton>
-              <MagneticButton href="/portfolio" variant="ghost">
+              <MagneticButton href="/office" variant="ghost">
                 {t("hero.buttons.seeWork")}
               </MagneticButton>
             </motion.div>
 
-            <motion.div
+            <motion.ul
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...SPRING_REVEAL, delay: 0.85 }}
-              className="mt-12"
+              className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px] text-fg-muted"
             >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-fg-muted/80">
-                {t("hero.tech")}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2.5">
-                {["React", "Tailwind CSS", "OpenAI", "Vite"].map((label) => (
-                  <span
-                    key={label}
-                    className="rounded-lg border border-white/10 bg-white/[0.02] px-3.5 py-2 text-[13px] font-medium text-fg/90 transition-colors hover:border-white/20"
-                  >
-                    {label}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
+              {facts.map((f) => (
+                <li key={f} className="inline-flex items-center gap-2">
+                  <span className="h-1 w-1 rounded-full bg-sky-400" aria-hidden />
+                  {f}
+                </li>
+              ))}
+            </motion.ul>
           </div>
 
-          <HeroDemoCard />
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...SPRING_REVEAL, delay: 0.3 }}
+            className="-mx-5 sm:mx-0"
+          >
+            <PixelStage
+              draw={drawStaffHero}
+              logicalH={128}
+              scale={HERO_SCALE}
+              minW={STAFF_HERO_MIN_W}
+              label={t("office.hero.sceneAlt")}
+              className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
+            />
+          </motion.div>
         </div>
+
+        <StaffCards className="mt-10 md:mt-14" onPick={(id) => navigate("/office", { state: { scrollTo: `staff-${id}` } })} />
       </Container>
     </section>
   );
@@ -4044,10 +4028,16 @@ function LocationBadge() {
 // repeats on the landing page and /products by design — landing surfaces it
 // as a teaser, /products treats it as part of a deeper product story.
 function LandingPage() {
+  const { open: openDemoRequest } = useDemoRequest();
+  const hire = React.useCallback((ids) => openDemoRequest(ids), [openDemoRequest]);
   return (
     <>
       <Hero />
-      <BentoFeatures />
+      {/* proof, not claims: Ара's chapter from the office page, then the live client */}
+      <StaffChapter id="ara" index={0} onHire={hire} />
+      <Portfolio />
+      <Testimonials />
+      <StaffSteps />
       <Contact />
     </>
   );
@@ -4228,6 +4218,44 @@ function StaffStatus({ live }) {
   );
 }
 
+// The four, at a glance: name, role, job, monthly price and whether they are
+// live. Each card jumps to that person's chapter on the office page.
+function StaffCards({ onPick, className = "" }) {
+  const { t } = useTranslation();
+  return (
+    <StaggerGroup className={["mx-auto grid max-w-[1040px] auto-rows-fr grid-cols-2 gap-3 md:grid-cols-4", className].join(" ")}>
+      {STAFF_ORDER.map((id) => (
+        <StaggerItem key={id} className="h-full">
+          <button
+            type="button"
+            onClick={() => onPick(id)}
+            data-cursor="hover"
+            className="pressable group flex h-full w-full flex-col rounded-[18px] border border-white/[0.08] bg-white/[0.03] p-3.5 text-left transition-colors hover:border-white/[0.2] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:p-4"
+          >
+            <span className="flex items-center gap-3">
+              {/* the face, not the hair: the head sits on rows 20-53 of the frame; at 3x, 90px down puts the eyes in the box */}
+              <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
+                <StaffAvatar id={id} size={3} className="-mt-[90px]" />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-display text-[17px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</span>
+                <span className="block text-[12px] leading-[1.3] text-fg-muted">{t(`office.agents.${id}.role`)}</span>
+              </span>
+            </span>
+            <span className="mt-3 block flex-1 text-[13px] leading-[1.45] text-fg-muted">{t(`office.agents.${id}.job`)}</span>
+            <span className="mt-3 flex flex-col gap-1.5 border-t border-white/[0.08] pt-3 sm:flex-row sm:items-end sm:justify-between sm:gap-2">
+              <span className="whitespace-nowrap font-display text-[15px] font-semibold tabular-nums tracking-tight text-fg">
+                {formatTugrik(OFFICE_AGENTS[id].monthly)}<span className="text-[12px] font-normal text-fg-muted">{t("office.price.perMonth")}</span>
+              </span>
+              <StaffStatus live={STAFF_LIVE[id]} />
+            </span>
+          </button>
+        </StaggerItem>
+      ))}
+    </StaggerGroup>
+  );
+}
+
 function StaffHero({ onHire, onSee, onPick }) {
   const { t } = useTranslation();
   return (
@@ -4279,38 +4307,8 @@ function StaffHero({ onHire, onSee, onPick }) {
           className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
         />
       </motion.div>
-      {/* who the four are, before any scrolling: name, job, price, whether they are live */}
       <Container>
-        <StaggerGroup className="mx-auto mt-6 grid max-w-[1040px] auto-rows-fr grid-cols-2 gap-3 md:mt-8 md:grid-cols-4">
-          {STAFF_ORDER.map((id) => (
-            <StaggerItem key={id} className="h-full">
-              <button
-                type="button"
-                onClick={() => onPick(id)}
-                data-cursor="hover"
-                className="pressable group flex h-full w-full flex-col rounded-[18px] border border-white/[0.08] bg-white/[0.03] p-3.5 text-left transition-colors hover:border-white/[0.2] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:p-4"
-              >
-                <span className="flex items-center gap-3">
-                  {/* the face, not the hair: the head sits on rows 20-53 of the frame; at 3x, 90px down puts the eyes in the box */}
-                  <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-                    <StaffAvatar id={id} size={3} className="-mt-[90px]" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block font-display text-[17px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</span>
-                    <span className="block text-[12px] leading-[1.3] text-fg-muted">{t(`office.agents.${id}.role`)}</span>
-                  </span>
-                </span>
-                <span className="mt-3 block flex-1 text-[13px] leading-[1.45] text-fg-muted">{t(`office.agents.${id}.job`)}</span>
-                <span className="mt-3 flex flex-col gap-1.5 border-t border-white/[0.08] pt-3 sm:flex-row sm:items-end sm:justify-between sm:gap-2">
-                  <span className="whitespace-nowrap font-display text-[15px] font-semibold tabular-nums tracking-tight text-fg">
-                    {formatTugrik(OFFICE_AGENTS[id].monthly)}<span className="text-[12px] font-normal text-fg-muted">{t("office.price.perMonth")}</span>
-                  </span>
-                  <StaffStatus live={STAFF_LIVE[id]} />
-                </span>
-              </button>
-            </StaggerItem>
-          ))}
-        </StaggerGroup>
+        <StaffCards className="mt-6 md:mt-8" onPick={onPick} />
       </Container>
     </section>
   );
