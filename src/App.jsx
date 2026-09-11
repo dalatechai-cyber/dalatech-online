@@ -2491,7 +2491,12 @@ function Pricing() {
           <PriceCard
             title={t("pricing.cards.bundle.title")}
             badge={t("pricing.cards.bundle.badge")}
-            priceLine={t("pricing.cards.bundle.price")}
+            priceLine={
+              <span>
+                <span className="text-fg-muted/70 line-through">{t("pricing.cards.bundle.was")}</span>{" "}
+                <span className="text-fg">{t("pricing.cards.bundle.price")}</span>
+              </span>
+            }
             subLine={t("pricing.cards.bundle.subLine")}
             desc={t("pricing.cards.bundle.description")}
             bullets={t("pricing.cards.bundle.bullets", { returnObjects: true })}

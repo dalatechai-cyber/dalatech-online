@@ -205,16 +205,17 @@
       },
       "bundle": {
         "title": "Website + Ara",
-        "badge": "Start together",
-        "price": "900,000₮",
-        "subLine": "Website 750,000₮ + Ara setup 150,000₮ · then Ara 250,000₮/month",
+        "badge": "Save 100,000₮",
+        "price": "800,000₮",
+        "subLine": "Separately 900,000₮ (website 750,000₮ + Ara setup 150,000₮). Together 800,000₮ · then Ara 250,000₮/month",
         "description": "Launch your new website with its receptionist already answering.",
         "bullets": [
           "Smart website included",
           "Ara answers on the site and on Messenger",
-          "One contract, one handover"
+          "100,000₮ off the setup"
         ],
-        "cta": "Start together"
+        "cta": "Start together",
+        "was": "900,000₮"
       }
     },
     "paymentTerms": {
