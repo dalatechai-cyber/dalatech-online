@@ -433,9 +433,8 @@ function BrandLockup({ size = 40 }) {
 }
 
 const LANGUAGES = [
-  { code: "en", label: "English" },
   { code: "mn", label: "Монгол" },
-  { code: "zh-TW", label: "繁體中文" },
+  { code: "en", label: "English" },
 ];
 
 // Buying decisions only. Process, technology and location are trust pages
@@ -3045,7 +3044,7 @@ function FooterColumn({ heading, links }) {
   );
 }
 
-function Footer({ onOpenPrivacy }) {
+function Footer() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const navigate = useNavigate();
@@ -3077,7 +3076,8 @@ function Footer({ onOpenPrivacy }) {
     { label: t("nav.contact"), onClick: goToContact },
   ];
   const legal = [
-    { label: t("footer.privacy"), onClick: onOpenPrivacy },
+    { label: t("footer.privacyPolicy"), href: "/privacy/" },
+    { label: t("footer.terms"), href: "/terms/" },
     { label: t("nav.faq"), to: "/faq" },
   ];
 
@@ -3145,178 +3145,12 @@ function Footer({ onOpenPrivacy }) {
             <p className="text-[12.5px] text-fg-muted">
               © {new Date().getFullYear()} DalaTech. {t("footer.rightsReserved")}
             </p>
-            <p className="text-[12.5px] text-fg-muted/80">{t("footer.builtIn")}</p>
           </div>
-          {/* art credits the /office page's licences ask for */}
-          <p className="mt-3 text-[11.5px] leading-[1.6] text-fg-dim">
-            {t("footer.artCredit")}{" "}
-            <a href="https://limezu.itch.io/" target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-fg-muted">LimeZu</a>
-            {" — Modern Interiors · Modern Office"}
-          </p>
         </Container>
       </motion.div>
     </footer>
   );
 }
-
-function PrivacyTermsModal({ isOpen, onClose }) {
-  React.useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", onKey);
-    lockBodyScroll();
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      unlockBodyScroll();
-    };
-  }, [isOpen, onClose]);
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-[100000] flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="privacy-terms-title"
-        >
-          <motion.button
-            type="button"
-            aria-label="Close Privacy Policy and Terms"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: EASE_OUT }}
-            className="absolute inset-0 bg-ink-950/70 backdrop-blur-md"
-            onClick={onClose}
-          />
-          <motion.div
-            initial={{ opacity: 0, y: 16, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.97 }}
-            transition={{ duration: 0.25, ease: EASE_OUT }}
-            className="relative z-10 w-full max-w-3xl rounded-2xl border border-white/10 bg-ink-800/95 p-7 shadow-2xl backdrop-blur"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <h2 id="privacy-terms-title" className="font-display text-[22px] font-semibold tracking-tight text-fg">Нууцлалын бодлого ба Үйлчилгээний нөхцөл</h2>
-                <p className="text-[13px] text-fg-muted">Хүчин төгөлдөр болсон огноо: 2026 оны 2 дугаар сарын 10</p>
-              </div>
-              <button type="button" onClick={onClose} className="pressable rounded-full border border-white/10 px-3.5 py-1.5 text-[12.5px] text-fg-muted hover:border-white/20 hover:text-fg">
-                Хаах
-              </button>
-            </div>
-            <div className="mt-6 max-h-[70vh] space-y-6 overflow-y-auto pr-2 text-[13.5px] leading-[1.65] text-fg-muted">
-              <div className="space-y-3">
-                <h3 className="font-display text-[16px] font-semibold text-fg">1. Танилцуулга</h3>
-                <p>DalaTech.ai ("бид", "бидний" эсвэл "манай") үйлчилгээнд тавтай морилно уу. Энэхүү үйлчилгээг Монгол Улсад бүртгэлтэй Цэрэнцоодол Билгүүн (Хувиараа эрхлэгч) эзэмшиж, ажиллуулдаг. Манай Facebook Messenger чатботод нэвтрэх буюу ашиглах замаар та энэхүү Үйлчилгээний нөхцөл болон Нууцлалын бодлогыг хүлээн зөвшөөрсөнд тооцогдоно.</p>
-              </div>
-              <div className="space-y-3">
-                <h3 className="font-display text-[16px] font-semibold text-fg">2. Нууцлалын бодлого</h3>
-                <p>Бид таны хувийн мэдээллийн нууцлалыг хүндэтгэн, түүнийг хамгаалахыг эрхэмлэдэг.</p>
-                <ul className="list-disc space-y-2 pl-5">
-                  <li>Цуглуулдаг мэдээлэл: Бид таны Facebook-ийн нийтийн профайлын мэдээлэл (нэр, профайл зураг) болон чатботод илгээсэн зурвасуудыг цуглуулдаг.</li>
-                  <li>Демо хүсэлтийн маягт: dalatech.online дээрх маягтаар илгээсэн нэр, утасны дугаар, бизнесийн нэр болон чиглэл, сонгосон үйлчилгээ, нэмэлт тайлбар, мөн таны сайн дураар үлдээсэн имэйл хаягийг хүлээн авдаг. Түүнчлэн хүсэлт илгээсэн хуудас, хэл, огноог автоматаар тэмдэглэдэг.</li>
-                  <li>Мэдээллийг хэрхэн ашигладаг: Бид таны зурвасуудыг зөвхөн Google Gemini API-аар дамжуулан AI хариулт үүсгэхэд ашигладаг. Демо хүсэлтийн мэдээллийг зөвхөн тантай эргэн холбогдож, хүсэлтэд тань хариулахад ашиглана. Таны зөвшөөрөлгүйгээр зар сурталчилгаа, маркетингийн зорилгоор таны мэдээллийг ашиглахгүй.</li>
-                  <li>Мэдээлэл хуваалцах: Таны зурвасын өгөгдлийг хариулт үүсгэх зорилгоор Google-ийн AI үйлчилгээ боловсруулах боловч бусад гуравдагч этгээдэд дамжуулагдахгүй, худалдаалагдахгүй.</li>
-                  <li>Мэдээлэл устгах: Хэрэв та манай системээс өөрийн мэдээллийг устгуулахыг хүсвэл dalatech.ai@gmail.com хаягаар холбогдох эсвэл чатад "DELETE" гэж хариу бичнэ үү.</li>
-                </ul>
-              </div>
-              <div className="space-y-3">
-                <h3 className="font-display text-[16px] font-semibold text-fg">3. Үйлчилгээний нөхцөл</h3>
-                <ul className="list-disc space-y-2 pl-5">
-                  <li>Ашиглалт: Та энэхүү чатботыг зөвхөн хууль ёсны зорилгоор ашиглахыг зөвшөөрч байна. Хортой, доромжилсон болон хууль бус агуулга илгээхийг хориглоно.</li>
-                  <li>Хариуцлага: AI-ийн хариултууд автоматаар үүсгэгддэг. Цэрэнцоодол Билгүүн болон DalaTech.ai нь AI-ийн хариултын алдаа, нарийвчлалгүй мэдээллийн төлөө хариуцлага хүлээхгүй.</li>
-                  <li>Үйлчилгээг зогсоох: Энэхүү нөхцөлийг зөрчсөн аливаа хэрэглэгчийг хориглох эрхийг бид өөртөө хадгална.</li>
-                </ul>
-              </div>
-              <div className="space-y-3">
-                <h3 className="font-display text-[16px] font-semibold text-fg">4. Холбоо барих мэдээлэл</h3>
-                <p>И-мэйл: dalatech.ai@gmail.com</p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-const TECH_STACK = [
-  {
-    name: "React",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10">
-        <g fill="none" stroke="#61DAFB" strokeWidth="1.6">
-          <ellipse cx="24" cy="24" rx="16" ry="6" />
-          <ellipse cx="24" cy="24" rx="16" ry="6" transform="rotate(60 24 24)" />
-          <ellipse cx="24" cy="24" rx="16" ry="6" transform="rotate(-60 24 24)" />
-        </g>
-        <circle cx="24" cy="24" r="2.6" fill="#61DAFB" />
-      </svg>
-    ),
-  },
-  {
-    name: "Next.js",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10">
-        <circle cx="24" cy="24" r="22" fill="#0A0A0A" stroke="#F0F4FF" strokeOpacity="0.22" />
-        <path
-          d="M16.4 14.4h2.5v19.2h-2.5zM18.9 14.4h2L31 30.1V14.4h2.5v19.2H31L20.9 17.9v15.7h-2z"
-          fill="#F0F4FF"
-        />
-      </svg>
-    ),
-  },
-  {
-    name: "OpenAI",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#10A37F">
-        <path d="M44.56 19.64a11.97 11.97 0 0 0-1.03-9.82A12.09 12.09 0 0 0 30.51 3.99a12.13 12.13 0 0 0-20.59 4.36 11.97 11.97 0 0 0-8 5.8 12.09 12.09 0 0 0 1.49 14.19A11.96 11.96 0 0 0 4.45 38.16a12.1 12.1 0 0 0 13.03 5.8A11.97 11.97 0 0 0 26.52 48a12.11 12.11 0 0 0 11.55-8.41 11.98 11.98 0 0 0 7.99-5.8 12.11 12.11 0 0 0-1.5-14.15zM26.52 44.86a8.95 8.95 0 0 1-5.75-2.08l.28-.16 9.56-5.52a1.59 1.59 0 0 0 .79-1.36V22.27l4.04 2.34c.05.02.07.06.08.1v11.17a9 9 0 0 1-9 8.98zM7.2 36.61a8.94 8.94 0 0 1-1.07-6.03l.28.17 9.56 5.52a1.54 1.54 0 0 0 1.56 0l11.69-6.74v4.66a.16.16 0 0 1-.07.13l-9.66 5.57a8.99 8.99 0 0 1-12.29-3.28zm-2.5-20.82a8.97 8.97 0 0 1 4.73-3.94v11.36a1.53 1.53 0 0 0 .77 1.35l11.63 6.71-4.04 2.34a.15.15 0 0 1-.14 0l-9.66-5.57a8.99 8.99 0 0 1-3.29-12.25zm33.16 7.69-11.69-6.79 4.04-2.32a.16.16 0 0 1 .14 0l9.66 5.58a8.98 8.98 0 0 1-1.35 16.21V24.82a1.58 1.58 0 0 0-.8-1.34zm4.02-6.04-.28-.17-9.55-5.56a1.55 1.55 0 0 0-1.57 0L18.79 18.45v-4.66a.13.13 0 0 1 .06-.13l9.66-5.57a9 9 0 0 1 13.36 9.32zm-25.31 8.27-4.05-2.33a.16.16 0 0 1-.07-.11V12.15a8.99 8.99 0 0 1 14.74-6.9l-.28.16-9.56 5.51a1.59 1.59 0 0 0-.79 1.37zm2.19-4.73 5.21-3 5.21 3v6L18.86 26z" />
-      </svg>
-    ),
-  },
-  {
-    name: "Tailwind CSS",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#38BDF8">
-        <path d="M24 9.6c-6.4 0-10.4 3.2-12 9.6 2.4-3.2 5.2-4.4 8.4-3.6 1.83.46 3.13 1.78 4.58 3.25C27.34 21.24 30.05 24 36 24c6.4 0 10.4-3.2 12-9.6-2.4 3.2-5.2 4.4-8.4 3.6-1.83-.46-3.13-1.78-4.58-3.25C32.66 12.36 29.95 9.6 24 9.6zM12 24c-6.4 0-10.4 3.2-12 9.6 2.4-3.2 5.2-4.4 8.4-3.6 1.83.46 3.13 1.78 4.58 3.25C15.34 35.64 18.05 38.4 24 38.4c6.4 0 10.4-3.2 12-9.6-2.4 3.2-5.2 4.4-8.4 3.6-1.83-.46-3.13-1.78-4.58-3.25C20.66 26.76 17.95 24 12 24z" />
-      </svg>
-    ),
-  },
-  {
-    name: "Node.js",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#5FA04E">
-        <path d="M24 0a2.4 2.4 0 0 1 1.21.32l18.7 10.79c.75.43 1.21 1.24 1.21 2.1v21.58c0 .87-.46 1.67-1.21 2.1L25.21 47.68a2.4 2.4 0 0 1-2.42 0L4.09 36.89c-.75-.43-1.21-1.23-1.21-2.1V13.21c0-.86.46-1.67 1.21-2.1L22.79.32A2.4 2.4 0 0 1 24 0zm0 4.32L7.2 14V34l16.8 9.7L40.8 34V14L24 4.32zM20.4 16.32h2.4v15.36H20.4zm4.8 0h1.92l5.28 8.16v-8.16h2.4v15.36H32.4l-4.8-7.44v7.44H25.2z" />
-      </svg>
-    ),
-  },
-  {
-    name: "Vercel",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-8 w-8 sm:h-9 sm:w-9" fill="#F0F4FF">
-        <path d="M24 5L46 43H2L24 5z" />
-      </svg>
-    ),
-  },
-  {
-    name: "MongoDB",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#47A248">
-        <path d="M24 2c-1 2-2 4-2 6 0 8 2 14 0 22 0 3-2 8-2 10 2 0 4 2 4 6 0-4 2-6 4-6 0-2-2-7-2-10-2-8 0-14 0-22 0-2-1-4-2-6z" />
-      </svg>
-    ),
-  },
-  {
-    name: "Framer Motion",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#FF0080">
-        <path d="M10 2h28v14H24l14 14H24v14L10 30V16h14L10 2z" />
-      </svg>
-    ),
-  },
-];
 
 function TechStack() {
   const { t } = useTranslation();
@@ -3881,7 +3715,8 @@ function StaffChapter({ id, index, onHire }) {
 
 // A pixel portrait cut from the atlas with CSS, idling in six frames.
 function StaffAvatar({ id, size = 2, className = "" }) {
-  const reduced = useReducedMotion();
+  // One still frame. The portraits used to step through the idle strip, which
+  // read as bobbing on a card; the pixel scenes carry the motion instead.
   const a = STAFF_CHARS[id].idle;
   return (
     <span
@@ -3895,10 +3730,8 @@ function StaffAvatar({ id, size = 2, className = "" }) {
         backgroundPosition: "var(--staff-x) var(--staff-y)",
         backgroundRepeat: "no-repeat",
         imageRendering: "pixelated",
-        animation: reduced ? "none" : `staffIdle 1.4s steps(${a.n}) infinite`,
         "--staff-x": `-${a.x * size}px`,
         "--staff-y": `-${a.y * size}px`,
-        "--staff-strip": `-${a.w * a.n * size}px`,
       }}
     />
   );
@@ -4036,6 +3869,7 @@ function StaffSteps() {
 }
 
 function OfficePage() {
+  const { t } = useTranslation();
   const { open: openDemoRequest } = useDemoRequest();
   const hire = React.useCallback((ids) => openDemoRequest(ids), [openDemoRequest]);
   const scrollTo = (id) => {
@@ -4052,6 +3886,14 @@ function OfficePage() {
       ))}
       <StaffTeam onHire={hire} />
       <StaffSteps />
+      {/* the Modern Interiors licence requires this credit; it belongs beside the art */}
+      <Container>
+        <p className="border-t border-white/[0.06] py-8 text-[11.5px] leading-[1.6] text-fg-dim">
+          {t("office.artCredit")}{" "}
+          <a href="https://limezu.itch.io/" target="_blank" rel="noreferrer" className="underline decoration-white/20 underline-offset-2 hover:text-fg-muted">LimeZu</a>
+          {" — Modern Interiors · Modern Office"}
+        </p>
+      </Container>
     </div>
   );
 }
@@ -4092,7 +3934,6 @@ function RouteScrollManager() {
 }
 
 function Shell() {
-  const [isPrivacyOpen, setIsPrivacyOpen] = React.useState(false);
   const location = useLocation();
 
   return (
@@ -4140,10 +3981,9 @@ function Shell() {
         </AnimatePresence>
       </main>
       <ErrorBoundary>
-        <Footer onOpenPrivacy={() => setIsPrivacyOpen(true)} />
+        <Footer />
       </ErrorBoundary>
       <ErrorBoundary>
-        <PrivacyTermsModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
       </ErrorBoundary>
       <ErrorBoundary>
         <Chatbot />

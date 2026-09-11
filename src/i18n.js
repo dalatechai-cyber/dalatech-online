@@ -2,7 +2,6 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enTranslations from './locales/en.json';
 import mnTranslations from './locales/mn.json';
-import zhTWTranslations from './locales/zh-TW.json';
 
 const resources = {
   en: {
@@ -11,13 +10,15 @@ const resources = {
   mn: {
     translation: mnTranslations,
   },
-  'zh-TW': {
-    translation: zhTWTranslations,
-  },
 };
 
-// Get saved language from localStorage or default to 'mn'
-const savedLanguage = localStorage.getItem('language') || 'mn';
+// Get saved language from localStorage or default to 'mn'. A visitor who
+// picked a locale we no longer ship (zh-TW) must land on Mongolian, the
+// default — not on i18next's English fallback.
+const SUPPORTED = ['mn', 'en'];
+const stored = localStorage.getItem('language');
+const savedLanguage = SUPPORTED.includes(stored) ? stored : 'mn';
+if (stored && stored !== savedLanguage) localStorage.setItem('language', savedLanguage);
 
 i18n
   .use(initReactI18next)
