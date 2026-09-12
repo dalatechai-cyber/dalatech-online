@@ -18,12 +18,13 @@ import {
   useTransform,
   useSpring,
   useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
 } from "framer-motion";
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawHero as drawStaffHero, drawChapter as drawStaffChapter, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { drawHero as drawStaffHero, drawChapter as drawStaffChapter, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -64,84 +65,6 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) return this.props.fallback ?? null;
     return this.props.children;
   }
-}
-
-function CustomCursor() {
-  const reduced = useReducedMotion();
-  const x = useMotionValue(-100);
-  const y = useMotionValue(-100);
-  const sx = useSpring(x, { stiffness: 200, damping: 28, mass: 0.5 });
-  const sy = useSpring(y, { stiffness: 200, damping: 28, mass: 0.5 });
-  const [hover, setHover] = React.useState(false);
-  const [visible, setVisible] = React.useState(false);
-  const visibleRef = React.useRef(false);
-
-  React.useEffect(() => {
-    visibleRef.current = visible;
-  }, [visible]);
-
-  React.useEffect(() => {
-    if (reduced) return;
-    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    if (!fine) return;
-
-    document.documentElement.classList.add("has-custom-cursor");
-
-    const move = (e) => {
-      x.set(e.clientX);
-      y.set(e.clientY);
-      if (!visibleRef.current) setVisible(true);
-    };
-    const leave = () => setVisible(false);
-    const enter = () => setVisible(true);
-    const checkHover = (e) => {
-      const t = e.target;
-      if (!(t instanceof Element)) return;
-      const interactive = t.closest('a,button,[role="button"],input,textarea,select,summary,label,[data-cursor="hover"]');
-      setHover(Boolean(interactive));
-    };
-
-    window.addEventListener("pointermove", move, { passive: true });
-    window.addEventListener("pointerover", checkHover, { passive: true });
-    window.addEventListener("pointerleave", leave);
-    window.addEventListener("pointerenter", enter);
-    return () => {
-      document.documentElement.classList.remove("has-custom-cursor");
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerover", checkHover);
-      window.removeEventListener("pointerleave", leave);
-      window.removeEventListener("pointerenter", enter);
-    };
-  }, [reduced, x, y]);
-
-  if (reduced) return null;
-
-  return (
-    <>
-      <motion.div
-        aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[100001] hidden md:block"
-        style={{ x, y, opacity: visible ? 1 : 0 }}
-      >
-        <motion.div
-          className="h-2 w-2 rounded-full bg-fg"
-          style={{ x: "-50%", y: "-50%", scale: hover ? 0.5 : 1 }}
-          transition={{ scale: { type: "spring", stiffness: 300, damping: 25 } }}
-        />
-      </motion.div>
-      <motion.div
-        aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[100000] hidden md:block"
-        style={{ x: sx, y: sy, opacity: visible ? 1 : 0 }}
-      >
-        <motion.div
-          className="h-9 w-9 rounded-full border border-sky-400/60 mix-blend-difference"
-          style={{ x: "-50%", y: "-50%", scale: hover ? 1.6 : 1 }}
-          transition={{ scale: { type: "spring", stiffness: 220, damping: 20 } }}
-        />
-      </motion.div>
-    </>
-  );
 }
 
 function Reveal({ children, delay = 0, y = 28, className = "", once = true, amount = 0.2 }) {
@@ -236,11 +159,14 @@ function MagneticButton({
 
   const onMove = (e) => {
     if (reduced || !ref.current || disabled) return;
+    // A pointermove also fires while a finger drags across the button, which
+    // made the label slide under the thumb on a phone. Restrict to a real
+    // pointer, and keep the pull small enough to read as weight, not as a toy.
+    if (!window.matchMedia("(pointer: fine) and (prefers-reduced-motion: no-preference)").matches) return;
     const r = ref.current.getBoundingClientRect();
-    const relX = e.clientX - (r.left + r.width / 2);
-    const relY = e.clientY - (r.top + r.height / 2);
-    x.set(relX * 0.25);
-    y.set(relY * 0.35);
+    const clamp = (v) => Math.max(-10, Math.min(10, v));
+    x.set(clamp((e.clientX - (r.left + r.width / 2)) * 0.12));
+    y.set(clamp((e.clientY - (r.top + r.height / 2)) * 0.12));
   };
   const onLeave = () => { x.set(0); y.set(0); };
 
@@ -261,13 +187,6 @@ function MagneticButton({
       onPointerLeave={onLeave}
     >
       <span className="relative z-10 flex items-center gap-2">{children}</span>
-      {variant === "primary" && !disabled && (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
-          style={{ boxShadow: "0 0 0 1px rgba(56,189,248,0.45), 0 16px 40px -8px rgba(56,189,248,0.45)" }}
-        />
-      )}
     </motion.span>
   );
 
@@ -313,57 +232,6 @@ function MagneticButton({
   );
 }
 
-function MeshBackground({ intensity = 1 }) {
-  const isMobile = useIsMobile();
-  if (isMobile) {
-    return (
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-grid" />
-        <div
-          className="mesh-blob"
-          style={{
-            top: "-8%", left: "-10%",
-            width: "26rem", height: "26rem",
-            background: "radial-gradient(circle at 50% 50%, rgba(37,99,235,0.45), rgba(37,99,235,0) 65%)",
-            filter: "blur(48px)",
-          }}
-        />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink-950" />
-      </div>
-    );
-  }
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-grid animate-gridPulse" />
-      <div
-        className="mesh-blob animate-meshShift"
-        style={{
-          top: "-12%", left: "10%",
-          width: `${44 * intensity}rem`, height: `${44 * intensity}rem`,
-          background: "radial-gradient(circle at 30% 30%, rgba(37,99,235,0.65), rgba(37,99,235,0) 60%)",
-        }}
-      />
-      <div
-        className="mesh-blob animate-meshShift2"
-        style={{
-          bottom: "-18%", right: "-8%",
-          width: `${52 * intensity}rem`, height: `${52 * intensity}rem`,
-          background: "radial-gradient(circle at 60% 50%, rgba(56,189,248,0.45), rgba(56,189,248,0) 65%)",
-        }}
-      />
-      <div
-        className="mesh-blob animate-meshShift"
-        style={{
-          top: "20%", right: "20%",
-          width: "28rem", height: "28rem",
-          background: "radial-gradient(circle at 50% 50%, rgba(13,20,48,0.85), rgba(13,20,48,0) 70%)",
-        }}
-      />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink-950" />
-    </div>
-  );
-}
-
 function Container({ children, className = "" }) {
   return (
     <div className={["mx-auto w-full max-w-[1180px] px-5 sm:px-7 lg:px-10", className].join(" ")}>
@@ -375,7 +243,7 @@ function Container({ children, className = "" }) {
 function SectionLabel({ children }) {
   return (
     <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
-      <span className="h-px w-6 bg-gradient-to-r from-transparent via-sky-400/60 to-sky-400/0" />
+      <span className="h-px w-6 bg-white/15" />
       {children}
     </span>
   );
@@ -534,7 +402,7 @@ function Navbar() {
               backgroundColor: "rgba(5,10,24,0.85)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
-              borderBottom: "1px solid rgba(56,189,248,0.20)",
+              borderBottom: "1px solid rgba(255,255,255,0.08)",
             }
           : {
               backgroundColor: "transparent",
@@ -756,7 +624,7 @@ function Navbar() {
   );
 }
 
-function HeroWords({ text, delay = 0 }) {
+function HeroWords({ text, delay = 0, stagger = 0.06 }) {
   const reduced = useReducedMotion();
   const words = text.split(/(\s+)/);
   let wIndex = 0;
@@ -770,7 +638,7 @@ function HeroWords({ text, delay = 0 }) {
             <motion.span
               initial={reduced ? false : { y: "110%" }}
               animate={{ y: 0 }}
-              transition={{ ...SPRING_HEADLINE, delay: delay + idx * 0.06 }}
+              transition={{ ...SPRING_HEADLINE, delay: delay + idx * stagger }}
               className="inline-block"
             >
               {tok}
@@ -886,91 +754,83 @@ function MatrixSalonPreview() {
 
 function Hero() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const facts = t("hero.facts", { returnObjects: true });
+  const reduced = useReducedMotion();
+  const heroRef = React.useRef(null);
+  // The text leaves as you scroll; the canvas does not move and does not fade,
+  // because the pinned scene below is the same room at the same art scale and
+  // the cut between them should be invisible.
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const textY = useTransform(scrollYProgress, [0.35, 1], [0, -56]);
+  const textOpacity = useTransform(scrollYProgress, [0.35, 1], [1, 0]);
+
   return (
-    <section id="top" className="relative overflow-hidden pb-16 pt-24 md:pb-24 md:pt-36">
-      <MeshBackground />
-      <Container className="relative">
-        <div className="grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-12 lg:gap-16">
-          <div>
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium tracking-wide text-fg-muted backdrop-blur"
-            >
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
-              </span>
-              {t("hero.badge")}
-            </motion.div>
+    <section id="top" ref={heroRef} className="relative pb-16 pt-24 md:pb-24 md:pt-36">
+      <Container>
+        <motion.div
+          style={reduced ? undefined : { y: textY, opacity: textOpacity }}
+          className="mx-auto max-w-[640px] text-center lg:max-w-[760px]"
+        >
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
+            className="text-[11.5px] font-medium leading-[1.5] tracking-[0.14em] text-fg-dim"
+          >
+            {t("hero.badge")}
+          </motion.p>
 
-            <h1 className="mt-7 font-display text-[44px] font-semibold leading-[1.05] tracking-tightest text-fg sm:text-[56px] md:text-[56px] lg:text-[64px]">
-              <HeroWords text={t("hero.title")} delay={0.15} />
-            </h1>
+          <h1 className="mt-4 font-display text-[36px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[48px] lg:text-[64px]">
+            <HeroWords text={t("hero.title")} delay={0.15} stagger={0.045} />
+          </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_REVEAL, delay: 0.55 }}
-              className="mt-6 max-w-[46ch] text-[17px] leading-[1.6] text-fg-muted"
-            >
-              {t("hero.description")}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_REVEAL, delay: 0.7 }}
-              className="mt-9 flex flex-col gap-3 sm:flex-row"
-            >
-              <MagneticButton href="#demo" variant="primary">
-                {t("hero.buttons.getDemo")}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </MagneticButton>
-              <MagneticButton href="/office" variant="ghost">
-                {t("hero.buttons.seeWork")}
-              </MagneticButton>
-            </motion.div>
-
-            <motion.ul
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_REVEAL, delay: 0.85 }}
-              className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px] text-fg-muted"
-            >
-              {facts.map((f) => (
-                <li key={f} className="inline-flex items-center gap-2">
-                  <span className="h-1 w-1 rounded-full bg-sky-400" aria-hidden />
-                  {f}
-                </li>
-              ))}
-            </motion.ul>
-          </div>
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...SPRING_REVEAL, delay: 0.5 }}
+            className="mx-auto mt-6 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px] lg:text-[18px]"
+          >
+            {t("hero.description")}
+          </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...SPRING_REVEAL, delay: 0.3 }}
-            className="-mx-5 sm:mx-0"
+            transition={{ ...SPRING_REVEAL, delay: 0.65 }}
+            className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6"
           >
-            <PixelStage
-              draw={drawStaffHero}
-              logicalH={128}
-              scale={HERO_SCALE}
-              minW={STAFF_HERO_MIN_W}
-              label={t("office.hero.sceneAlt")}
-              className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
-            />
+            <MagneticButton href="#demo" variant="primary" className="w-full sm:w-auto">
+              {t("hero.buttons.getDemo")}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+              </svg>
+            </MagneticButton>
+            {/* a link, not a second button box: the hero gets one accent */}
+            <Link
+              to="/office"
+              className="inline-flex min-h-[44px] items-center gap-1.5 text-[17px] text-sky-400 transition-colors hover:text-sky-300"
+            >
+              {t("hero.buttons.seeWork")}
+              <span aria-hidden>&rsaquo;</span>
+            </Link>
           </motion.div>
-        </div>
-
-        <StaffCards className="mt-10 md:mt-14" onPick={(id) => navigate("/office", { state: { scrollTo: `staff-${id}` } })} />
+        </motion.div>
       </Container>
+
+      {/* full-bleed: the room runs edge to edge at every width */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING_REVEAL, delay: 0.3 }}
+        className="mt-12 md:mt-16"
+      >
+        <PixelStage
+          draw={drawStaffHero}
+          logicalH={128}
+          scale={HERO_SCALE}
+          minW={STAFF_HERO_MIN_W}
+          label={t("office.hero.sceneAlt")}
+        />
+      </motion.div>
     </section>
   );
 }
@@ -1482,12 +1342,49 @@ function Portfolio() {
   );
 }
 
+const ASK_CHIPS = [
+  { id: "u1", label: "liveDemo.messages.user1", reply: "liveDemo.messages.ai1" },
+  { id: "u2", label: "liveDemo.messages.user2", reply: "liveDemo.messages.ai2" },
+  { id: "u3", label: "liveDemo.ask.chip3", reply: null },
+];
+
+// The hand-off: the one moment on the page driven by physics rather than by
+// scroll. It rises from under the Messenger card and overlaps it, because the
+// point is that the conversation left the bot and reached a person.
+function HandoffCard({ question }) {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  return (
+    <motion.div
+      initial={reduced ? false : { y: 24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.7, delay: reduced ? 0 : 0.04 }}
+      className="relative z-10 -mt-11 mx-3 rounded-[18px] border border-white/[0.1] bg-ink-800 p-4 shadow-[0_24px_60px_-20px_rgba(3,6,16,0.95)]"
+    >
+      <p className="flex items-center gap-2 text-[13px] font-semibold text-fg">
+        <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-300">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        </span>
+        {t("liveDemo.ask.handoffTitle")}
+      </p>
+      <p className="mt-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-dim">{t("liveDemo.ask.handoffLine")}</p>
+      <p className="mt-1 text-[13.5px] leading-[1.5] text-fg/90">{question}</p>
+    </motion.div>
+  );
+}
+
 function LiveDemo() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const scrollRef = React.useRef(null);
+  const sectionRef = React.useRef(null);
   const [step, setStep] = React.useState(0);
   const [typing, setTyping] = React.useState(false);
+  // "script" until the scripted demo ends, then the visitor can ask.
+  const [phase, setPhase] = React.useState("script");
+  const [asked, setAsked] = React.useState([]);
+  const askTimers = React.useRef([]);
+  React.useEffect(() => () => askTimers.current.forEach(clearTimeout), []);
 
   React.useEffect(() => {
     if (reduced) {
@@ -1514,12 +1411,29 @@ function LiveDemo() {
       });
     };
 
-    runOnce();
-    const loop = setInterval(runOnce, 13500);
+    // This used to run on a 13.5s interval from mount for the life of the
+    // visit, burning battery on a phone whether or not the section was on
+    // screen. Play it once, when it is actually being looked at.
+    const host = sectionRef.current;
+    if (!host) return undefined;
+    let played = false;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && !played) {
+            played = true;
+            runOnce();
+            io.disconnect();
+          }
+        }
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(host);
 
     return () => {
+      io.disconnect();
       timers.forEach(clearTimeout);
-      clearInterval(loop);
     };
   }, [reduced]);
 
@@ -1530,7 +1444,31 @@ function LiveDemo() {
       el.scrollTo({ top: el.scrollHeight, behavior: reduced ? "auto" : "smooth" });
     });
     return () => cancelAnimationFrame(id);
-  }, [step, typing, reduced]);
+  }, [step, typing, reduced, asked, phase]);
+
+  // A chip becomes a user bubble, a beat of typing, then either the answer the
+  // site already ships or — for the one she cannot answer — a plain refusal
+  // and a hand-off to a person.
+  const ask = React.useCallback(
+    (chip) => {
+      if (phase === "answering") return;
+      askTimers.current.forEach(clearTimeout);
+      askTimers.current = [];
+      setPhase("answering");
+      setAsked((prev) => [...prev, { id: `${chip.id}-${prev.length}`, chip, state: "sent" }]);
+      const beat = reduced ? 0 : 900;
+      const settle = () => {
+        setAsked((prev) => prev.map((a, i) => (i === prev.length - 1 ? { ...a, state: "answered" } : a)));
+        setPhase(chip.reply ? "idle" : "handover");
+      };
+      if (beat === 0) settle();
+      else askTimers.current.push(setTimeout(settle, beat));
+    },
+    [phase, reduced]
+  );
+
+  // Both cards have to be visible at once or the hand-off does not read.
+  const handover = phase === "handover";
 
   const messages = [
     { from: "user", key: "user1", at: 1 },
@@ -1541,7 +1479,7 @@ function LiveDemo() {
   ];
 
   return (
-    <section id="live-demo" className="relative py-28">
+    <section id="live-demo" ref={sectionRef} className="relative py-28">
       <Container>
         <div className="grid items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
           <Reveal>
@@ -1565,15 +1503,10 @@ function LiveDemo() {
 
           <Reveal delay={0.08}>
             <div className="relative mx-auto w-full max-w-[440px]">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -inset-6 -z-10 rounded-[32px]"
-                style={{
-                  background:
-                    "radial-gradient(60% 60% at 50% 25%, rgba(56,189,248,0.18) 0%, rgba(56,189,248,0) 70%)",
-                }}
-              />
-              <div className="overflow-hidden rounded-[22px] border border-white/[0.08] bg-ink-900/85 shadow-[0_40px_90px_-30px_rgba(8,12,28,0.9)] backdrop-blur">
+              <motion.div
+                animate={handover ? { y: reduced ? 0 : 6, opacity: 0.55 } : { y: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.7 }}
+                className="overflow-hidden rounded-[22px] border border-white/[0.08] bg-ink-900/85 shadow-[0_40px_90px_-30px_rgba(8,12,28,0.9)] backdrop-blur">
                 <div className="relative flex items-center justify-between gap-3 border-b border-white/[0.06] bg-white/[0.015] px-4 py-3.5">
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-400/30 to-sky-400/[0.06] ring-1 ring-inset ring-sky-400/45">
@@ -1587,15 +1520,8 @@ function LiveDemo() {
                         {t("liveDemo.widget.businessName")}
                       </p>
                       <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-fg-muted">
-                        <span className="inline-flex items-center gap-1.5">
-                          <span className="relative inline-flex h-1.5 w-1.5">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/60" />
-                            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                          </span>
-                          {t("liveDemo.widget.statusOnline")}
-                        </span>
-                        <span className="text-fg-muted/40">·</span>
-                        <span className="truncate">{t("liveDemo.widget.statusReply")}</span>
+                        <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        {t("liveDemo.widget.statusOnline")}
                       </p>
                     </div>
                   </div>
@@ -1616,7 +1542,7 @@ function LiveDemo() {
 
                 <div
                   ref={scrollRef}
-                  className="relative h-[380px] overflow-y-auto px-4 py-5"
+                  className="relative h-[300px] overflow-y-auto px-4 py-5 lg:h-[380px]"
                   style={{ scrollbarWidth: "none" }}
                 >
                   <div className="flex flex-col gap-3">
@@ -1680,24 +1606,138 @@ function LiveDemo() {
                           </div>
                         </motion.div>
                       )}
+                      {asked.map((a) => (
+                        <React.Fragment key={a.id}>
+                          <motion.div
+                            layout
+                            initial={reduced ? false : { opacity: 0, y: 8, scale: 0.97 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                            className="flex w-full items-end justify-end gap-2"
+                          >
+                            <div className="max-w-[78%] rounded-2xl rounded-br-md bg-sky-400/[0.14] px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-fg ring-1 ring-inset ring-sky-400/25">
+                              {t(a.chip.label)}
+                            </div>
+                          </motion.div>
+                          {a.state === "answered" && a.chip.reply && (
+                            <motion.div
+                              layout
+                              initial={reduced ? false : { opacity: 0, y: 8, scale: 0.97 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+                              className="flex w-full items-end justify-start gap-2"
+                            >
+                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
+                                <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
+                              </div>
+                              <div className="max-w-[78%] rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-fg/95 ring-1 ring-inset ring-white/[0.06]">
+                                {t(a.chip.reply)}
+                              </div>
+                            </motion.div>
+                          )}
+                          {a.state === "answered" && !a.chip.reply && (
+                            <motion.div
+                              layout
+                              initial={reduced ? false : { opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ duration: 0.18 }}
+                              className="flex flex-col gap-3"
+                            >
+                              {/* no bubble, no red, no warning icon: a refusal
+                                  is a normal thing for her to do, not an error */}
+                              <p className="border-y border-white/[0.06] py-2.5 text-[13px] leading-[1.5] text-fg-muted">
+                                {t("liveDemo.ask.decline")}
+                              </p>
+                              <div className="flex w-full items-end justify-start gap-2">
+                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
+                                </div>
+                                <div className="max-w-[78%] rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-fg/95 ring-1 ring-inset ring-white/[0.06]">
+                                  {t("liveDemo.messages.ai3")}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </React.Fragment>
+                      ))}
+                      {phase === "answering" && !reduced && (
+                        <motion.div
+                          key="ask-typing"
+                          layout
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4, transition: { duration: 0.14 } }}
+                          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+                          className="flex w-full items-end gap-2"
+                        >
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
+                            <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
+                          </div>
+                          <div className="rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-3 ring-1 ring-inset ring-white/[0.06]">
+                            <span className="flex items-center gap-1.5">
+                              {[0, 1, 2].map((i) => (
+                                <motion.span
+                                  key={i}
+                                  className="h-1.5 w-1.5 rounded-full bg-fg-muted/75"
+                                  animate={{ y: [0, -3, 0], opacity: [0.45, 1, 0.45] }}
+                                  transition={{ duration: 1.0, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
+                                />
+                              ))}
+                            </span>
+                            <span className="sr-only">{t("liveDemo.widget.typing")}</span>
+                          </div>
+                        </motion.div>
+                      )}
                     </AnimatePresence>
                   </div>
                 </div>
 
                 <div className="border-t border-white/[0.06] bg-white/[0.015] px-3 py-3">
-                  <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-ink-950/45 px-3.5 py-2.5 text-[13px] text-fg-muted/80">
-                    <span className="flex-1 truncate">{t("liveDemo.widget.inputPlaceholder")}</span>
-                    <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-400/15 text-sky-300 ring-1 ring-inset ring-sky-400/30">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="m5 12 14-7-7 14-2-5z" />
-                      </svg>
-                    </span>
-                  </div>
+                  {step < 5 ? (
+                    <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-ink-950/45 px-3.5 py-2.5 text-[13px] text-fg-muted/80">
+                      <span className="flex-1 truncate">{t("liveDemo.widget.inputPlaceholder")}</span>
+                      <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-400/15 text-sky-300 ring-1 ring-inset ring-sky-400/30">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m5 12 14-7-7 14-2-5z" />
+                        </svg>
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="px-0.5 text-[11.5px] text-fg-muted">{t("liveDemo.ask.prompt")}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {ASK_CHIPS.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            disabled={phase === "answering"}
+                            onClick={() => ask(c)}
+                            className="pressable min-h-[44px] rounded-xl border border-white/[0.09] bg-white/[0.03] px-3 py-2 text-left text-[12.5px] leading-[1.35] text-fg/90 transition-colors hover:border-white/20 hover:bg-white/[0.06] disabled:opacity-50"
+                          >
+                            {t(c.label)}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
                   <p className="mt-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/55">
                     {t("liveDemo.widget.footnote")}
                   </p>
                 </div>
-              </div>
+              </motion.div>
+
+              {handover && <HandoffCard question={t("liveDemo.ask.chip3")} />}
+
+              {handover && (
+                <motion.p
+                  initial={reduced ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3, delay: reduced ? 0 : 0.25 }}
+                  className="mt-6 text-[19px] font-medium leading-[1.45] text-fg"
+                >
+                  {t("liveDemo.ask.reassure")}
+                </motion.p>
+              )}
             </div>
           </Reveal>
         </div>
@@ -2052,54 +2092,6 @@ function FAQ() {
   );
 }
 
-function ContactOrbField() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-grid opacity-[0.55]" />
-
-      <div
-        className="contact-orb-glow absolute left-1/2 top-1/2 h-[44rem] w-[44rem] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(56,189,248,0.34) 0%, rgba(56,189,248,0.10) 28%, rgba(37,99,235,0.04) 50%, rgba(56,189,248,0) 70%)",
-          filter: "blur(48px)",
-        }}
-      />
-
-      <svg
-        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2"
-        viewBox="-200 -200 400 400"
-      >
-        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
-        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
-        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
-      </svg>
-
-      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-2 w-2 rounded-full bg-sky-300"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
-        />
-      </div>
-      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
-        />
-      </div>
-      <div className="contact-orbit contact-orbit-3 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1 w-1 rounded-full bg-white/85"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(190px)", boxShadow: "0 0 14px 2px rgba(255,255,255,0.55)" }}
-        />
-      </div>
-
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink-950 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink-950 to-transparent" />
-    </div>
-  );
-}
-
 /* ----------------------------------------------------------- demo request */
 
 /** Options offered as chips, in display order. Keys are shared with the API. */
@@ -2368,12 +2360,6 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
     lockBodyScroll();
     document.documentElement.classList.add("demo-dialog-open");
 
-    // The custom cursor renders far below this dialog, and its stylesheet
-    // hides the real one — leaving the desktop visitor with no cursor at all
-    // over the form. Hand the native cursor back while we are on top.
-    const hadCustomCursor = document.documentElement.classList.contains("has-custom-cursor");
-    if (hadCustomCursor) document.documentElement.classList.remove("has-custom-cursor");
-
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         event.stopPropagation();
@@ -2401,7 +2387,6 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
       document.removeEventListener("keydown", onKeyDown);
       unlockBodyScroll();
       document.documentElement.classList.remove("demo-dialog-open");
-      if (hadCustomCursor) document.documentElement.classList.add("has-custom-cursor");
       const previous = restoreFocusRef.current;
       if (previous && typeof previous.focus === "function") previous.focus();
     };
@@ -2949,7 +2934,6 @@ function Contact() {
 
   return (
     <section id="contact" className="relative overflow-hidden py-20 sm:py-40">
-      <ContactOrbField />
 
       <Container className="relative">
         <StaggerGroup className="text-center" stagger={0.08} amount={0.3}>
@@ -3267,17 +3251,350 @@ function LocationBadge() {
 // Page wrappers: each route renders only its own sections. The bento grid
 // repeats on the landing page and /products by design — landing surfaces it
 // as a teaser, /products treats it as part of a deeper product story.
+// ------------------------------------------------------------ a working day
+// ζ = 1.05: critically damped, so scroll never springs past itself. restDelta
+// has to be this small because the steepest leg of the timeline covers ~94
+// scene-hours per unit of progress — framer's default would quantise the
+// clock to roughly an hour.
+const DAY_SPRING = { stiffness: 260, damping: 34, mass: 1, restDelta: 0.0002 };
+const DAY_SCALE = (w) => (w < 1024 ? 2 : w < 1280 ? 3 : 3.5);
+const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
+
+// Where each moment's text wipes in and lifts out, in progress units.
+const MOMENT_TEXT = [
+  { in: [0.07, 0.115], out: [0.245, 0.28] },
+  { in: [0.45, 0.495], out: [0.565, 0.6] },
+  { in: [0.765, 0.81], out: [0.865, 0.9] },
+];
+
+function dayLabel(t, id) {
+  const eyebrow = t(`office.chapters.${id}.eyebrow`);
+  // Эхо is not in service yet, and the scene depicts him working; the site's
+  // own word for that state goes on the label rather than being implied.
+  return id === "eho" ? `${eyebrow} · ${t("office.status.soon")}` : eyebrow;
+}
+
+// A per-frame ticking clock reads as a slot machine. This steps in five
+// minutes and hard-snaps to the three real timestamps inside the holds.
+function DayClock({ progress }) {
+  const [label, setLabel] = React.useState(DAY_MOMENTS[0].time);
+  const read = React.useCallback((p) => {
+    const hold = DAY_MOMENTS.find((m) => p >= m.from && p <= m.to);
+    if (hold) return hold.time;
+    const h = dayHour(p);
+    let hh = Math.floor(h);
+    let mm = Math.round(((h - hh) * 60) / 5) * 5;
+    if (mm === 60) { mm = 0; hh += 1; }
+    return `${String(hh % 24).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  }, []);
+  React.useEffect(() => setLabel(read(progress.get())), [progress, read]);
+  useMotionValueEvent(progress, "change", (p) => setLabel(read(p)));
+  return (
+    <span className="block font-display text-[34px] font-medium leading-none tabular-nums text-fg/90 md:text-[40px] lg:text-[44px]">
+      {label}
+    </span>
+  );
+}
+
+function MomentHeadline({ progress, range, className = "", children }) {
+  const reduced = useReducedMotion();
+  const stops = [range.in[0], range.in[1], range.out[0], range.out[1]];
+  const clip = useTransform(progress, [range.in[0], range.in[1]], ["inset(0 0 100% 0)", "inset(0 0 0% 0)"]);
+  const opacity = useTransform(progress, stops, [0, 1, 1, 0]);
+  const y = useTransform(progress, [range.out[0], range.out[1]], [0, -14]);
+  if (reduced) return <p className={className}>{children}</p>;
+  return (
+    <motion.p style={{ clipPath: clip, opacity, y }} className={className}>
+      {children}
+    </motion.p>
+  );
+}
+
+// Reduced motion, or no atlas: three ordinary stacked blocks in document
+// order, each a still of the same scene held at the middle of its own hold.
+// Every word and every bar is in the DOM, so this renders correctly even if
+// no canvas ever appears.
+const DAY_STATIC_SCALE = () => 2;
+const DAY_STILLS = [0.17, 0.51, 0.82];
+
+function DayStatic() {
+  const { t } = useTranslation();
+  // One motion value per block, created once: a hook may not run inside a
+  // loop, and a fresh `scale` identity each render would tear the stage down.
+  const p0 = useMotionValue(DAY_STILLS[0]);
+  const p1 = useMotionValue(DAY_STILLS[1]);
+  const p2 = useMotionValue(DAY_STILLS[2]);
+  const one = useMotionValue(1);
+  const stills = [p0, p1, p2];
+  return (
+    <div className="mt-12 flex flex-col gap-16">
+      {DAY_MOMENTS.map((m, i) => (
+        <div key={m.id}>
+          <p className="text-[11.5px] font-medium uppercase tracking-[0.16em] text-fg-dim">{dayLabel(t, m.id)}</p>
+          <p className="mt-2 font-display text-[26px] font-medium leading-none tabular-nums text-fg/90">{m.time}</p>
+          <p className="mt-3 font-display text-[22px] font-semibold leading-[1.2] tracking-tight text-fg sm:text-[26px]">
+            {t(`day.moments.${m.id}`)}
+          </p>
+          <div className="mt-5">
+            <PixelStage draw={drawWorkingDay} logicalH={128} scale={DAY_STATIC_SCALE} minW={STAFF_HERO_MIN_W} progress={stills[i]} label={t("day.sceneAlt")} />
+          </div>
+          <div className="mx-auto mt-5 max-w-[440px]">
+            <DayArtefact id={m.id} progress={one} at={-1} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// The artefact beside each moment: the real chat, the real report, the real
+// call, reusing the components /office already ships.
+function DayArtefact({ id, progress, at, until }) {
+  const { t } = useTranslation();
+  const base = `office.chapters.${id}`;
+  if (id === "veda") return <StaffReport report={t(`${base}.report`, { returnObjects: true })} progress={progress} at={at} span={0.12} until={until} />;
+  if (id === "eho") return <StaffCall call={t(`${base}.call`, { returnObjects: true })} progress={progress} at={at} step={0.025} until={until} />;
+  return (
+    <div className="rounded-[18px] border border-white/[0.07] bg-ink-950/70 p-3 backdrop-blur-[2px]">
+      <StaffChat lines={t(`${base}.chat`, { returnObjects: true })} progress={progress} at={at} step={0.035} until={until} />
+    </div>
+  );
+}
+
+const DAY_ARTEFACT_AT = { ara: 0.09, veda: 0.44, eho: 0.76 };
+
+function DayArtefactHolder({ moment, progress, stacked, hidden }) {
+  const opacity = useTransform(progress, [moment.from, moment.from + 0.03, moment.to - 0.03, moment.to], [0, 1, 1, 0]);
+  return (
+    <motion.div
+      style={{ opacity, pointerEvents: "none" }}
+      className={stacked ? "absolute inset-x-0 top-0" : ""}
+      aria-hidden={hidden}
+    >
+      <DayArtefact id={moment.id} progress={progress} at={DAY_ARTEFACT_AT[moment.id]} until={moment.to} />
+    </motion.div>
+  );
+}
+
+function WorkingDay() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const { error } = useStaffAtlas();
+  const dayRef = React.useRef(null);
+  const progress = useDampedProgress(dayRef, ["start start", "end end"], DAY_SPRING);
+
+  const settleScale = useTransform(progress, [0, 0.06], [1.03, 1]);
+  const settleOpacity = useTransform(progress, [0, 0.06], [0.35, 1]);
+  const chromeOpacity = useTransform(progress, [0, 0.05, 0.97, 1], [0, 1, 1, 0]);
+
+  // The page itself lifts as the sun comes up and settles back by nightfall.
+  // It returns home at p = 1, so there is nothing to reset on the way out.
+  const pageBg = useTransform(
+    progress,
+    [0, 0.3, 0.48, 0.64, 0.86, 1],
+    ["#050A18", "#050A18", "#0D1430", "#0D1430", "#080D1E", "#050A18"]
+  );
+  useMotionValueEvent(pageBg, "change", (v) => {
+    document.documentElement.style.setProperty("--page-bg", v);
+  });
+  React.useEffect(() => () => document.documentElement.style.removeProperty("--page-bg"), []);
+
+  const [active, setActive] = React.useState(0);
+  useMotionValueEvent(progress, "change", (p) => {
+    const i = DAY_MOMENTS.findIndex((m) => p >= m.from && p <= m.to);
+    if (i !== -1 && i !== active) setActive(i);
+  });
+
+  const heading = (
+    <Container>
+      <h2 className="max-w-[18ch] font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px] lg:text-[44px]">
+        {t("day.title")}
+      </h2>
+      <p className="mt-4 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px]">{t("day.lead")}</p>
+    </Container>
+  );
+
+  if (reduced || error) {
+    return (
+      <section className="py-20 md:py-28">
+        {heading}
+        <Container>
+          <DayStatic />
+          <p className="mt-14 text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
+        </Container>
+      </section>
+    );
+  }
+
+  return (
+    <section data-pin className="relative py-20 md:py-28">
+      {heading}
+
+      <div ref={dayRef} className="relative mt-10 h-[260vh] md:h-[320vh]">
+        <div className="day-pin flex flex-col justify-center">
+          <Container>
+            <motion.div style={{ opacity: chromeOpacity }}>
+              <DayClock progress={progress} />
+              <p className="mt-1.5 text-[11.5px] font-medium uppercase tracking-[0.16em] text-fg-dim">
+                {dayLabel(t, DAY_MOMENTS[active].id)}
+              </p>
+            </motion.div>
+          </Container>
+
+          <div className="relative mt-4 lg:order-3 lg:mt-8">
+            <motion.div style={{ scale: settleScale, opacity: settleOpacity }} className="day-band origin-bottom">
+              <PixelStage
+                draw={drawWorkingDay}
+                logicalH={DAY_H}
+                scale={DAY_SCALE}
+                minW={STAFF_HERO_MIN_W}
+                progress={progress}
+                label={t("day.sceneAlt")}
+              />
+            </motion.div>
+          </div>
+
+          <Container className="mt-4 lg:order-2 lg:mt-0">
+            <div className="relative z-10 min-h-[60px] lg:min-h-[96px]">
+              {DAY_MOMENTS.map((m, i) => (
+                <MomentHeadline
+                  key={m.id}
+                  progress={progress}
+                  range={MOMENT_TEXT[i]}
+                  className="absolute inset-x-0 top-0 max-w-[18ch] font-display text-[22px] font-semibold leading-[1.15] tracking-tight text-fg sm:text-[26px] lg:text-[40px]"
+                >
+                  {t(`day.moments.${m.id}`)}
+                </MomentHeadline>
+              ))}
+            </div>
+          </Container>
+
+          {/* all three stay mounted; the inactive ones are inert and hidden */}
+          <Container className="mt-4 lg:mt-0">
+            <div className="relative z-10 mx-auto max-w-[440px] lg:absolute lg:right-[max(40px,calc(50vw-560px))] lg:top-1/2 lg:m-0 lg:max-w-[380px] lg:-translate-y-1/2">
+              {DAY_MOMENTS.map((m, i) => (
+                <DayArtefactHolder key={m.id} moment={m} progress={progress} stacked={i > 0} hidden={active !== i} />
+              ))}
+            </div>
+          </Container>
+        </div>
+      </div>
+
+      <Container>
+        <p className="mt-14 text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
+      </Container>
+    </section>
+  );
+}
+
+// The four, named once. Not cards: the owner's complaint was that the same
+// priced, profiled cards appeared again and again down the page. Prices live
+// on /pricing and the job descriptions on /office, so this is a type list —
+// portrait, name, role, and whether they are in service yet.
+function TheFour() {
+  const { t } = useTranslation();
+  return (
+    <section className="py-20 md:py-28">
+      <Container>
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <h2 className="font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px]">
+            {t("theFour.title")}
+          </h2>
+          <Link to="/office" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
+            {t("hero.buttons.seeWork")}
+            <span aria-hidden>&rsaquo;</span>
+          </Link>
+        </div>
+
+        <StaggerGroup className="mt-8 md:mt-10" stagger={0.06}>
+          {STAFF_ORDER.map((id) => (
+            <StaffRow key={id} id={id} />
+          ))}
+        </StaggerGroup>
+      </Container>
+    </section>
+  );
+}
+
+function StaffRow({ id }) {
+  const { t } = useTranslation();
+  const live = STAFF_LIVE[id];
+  return (
+    <StaggerItem y={12}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[88px] sm:flex-nowrap sm:py-0">
+        <span className="flex h-[44px] w-[40px] shrink-0 items-start justify-center overflow-hidden rounded-[10px] bg-white/[0.05]">
+          <StaffAvatar id={id} size={2} className="-mt-[58px]" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
+            {t(`office.agents.${id}.name`)}
+          </span>
+          <span className="block text-[13px] text-fg-muted">{t(`office.agents.${id}.role`)}</span>
+        </span>
+        {/* the live dot is this section's one accent */}
+        <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-dim">
+          <span aria-hidden className={["h-1 w-1 rounded-full", live ? "bg-sky-400" : "bg-fg-dim"].join(" ")} />
+          {t(live ? "office.status.live" : "office.status.soon")}
+        </span>
+      </div>
+    </StaggerItem>
+  );
+}
+
+// The page's one bright moment, and its only contradiction: staff by the
+// month, a website once. ink-700 and ink-600 appear nowhere else here. No
+// image — the client mock is one section above, and repeating it is exactly
+// the repetition this pass is removing. No price either; prices live on
+// /pricing. Every row below is lifted verbatim from what that page publishes.
+function WebsiteOffer() {
+  const { t } = useTranslation();
+  const bullets = t("pricing.cards.website.bullets", { returnObjects: true });
+  const rows = [...(Array.isArray(bullets) ? bullets : []), t("websiteOffer.delivery")];
+  return (
+    <section className="bg-ink-700 py-24 md:py-40">
+      <Container>
+        <div className="mx-auto max-w-[780px] rounded-[24px] bg-ink-600 px-6 py-10 sm:px-10 sm:py-14">
+          <h2 className="max-w-[20ch] font-display text-[30px] font-semibold leading-[1.12] tracking-tightest text-fg sm:text-[40px]">
+            {t("websiteOffer.title")}
+          </h2>
+          <p className="mt-5 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px]">
+            {t("websiteOffer.lead")}
+          </p>
+          <ul className="mt-10">
+            {rows.map((r) => (
+              <li key={r} className="border-t border-white/[0.09] py-4 text-[14.5px] leading-[1.5] text-fg/90">
+                {r}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+            <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_DEMO_SERVICES}>
+              {t("pricing.cards.website.cta")}
+            </MagneticButton>
+            <Link to="/pricing" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
+              {t("websiteOffer.link")}
+              <span aria-hidden>&rsaquo;</span>
+            </Link>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 function LandingPage() {
-  const { open: openDemoRequest } = useDemoRequest();
-  const hire = React.useCallback((ids) => openDemoRequest(ids), [openDemoRequest]);
   return (
     <>
       <Hero />
-      {/* proof, not claims: Ара's chapter from the office page, then the live client */}
-      <StaffChapter id="ara" index={0} onHire={hire} />
+      {/* one day in one room: the page's argument, made once, in pictures */}
+      <ErrorBoundary fallback={null}>
+        <WorkingDay />
+      </ErrorBoundary>
+      <TheFour />
       <LiveDemo />
       <Portfolio />
       <Testimonials />
+      <WebsiteOffer />
       <StaffSteps />
       <Contact />
     </>
@@ -3401,8 +3718,20 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
   }, [img, draw, logicalH, scale, minW, progress, reduced]);
 
   const h = typeof logicalH === "function" ? logicalH(hostW) : logicalH;
+  // Reserve exactly what the canvas will occupy. createStage clamps the device
+  // scale so the scene still fits the width, then sets the CSS height from that
+  // clamped value — so reserving `h * scale(hostW)` over-reserves wherever the
+  // clamp bites. At 390 CSS px and dpr 3 that left an 85px band of bare
+  // ink-900 under the hero on a phone.
+  const reserved = React.useMemo(() => {
+    if (!hostW) return undefined;
+    const dpr = Math.min(3, (typeof window !== "undefined" && window.devicePixelRatio) || 1);
+    const sDev = Math.max(1, Math.min(Math.round(scale(hostW) * dpr), Math.floor((hostW * dpr) / minW)));
+    return (h * sDev) / dpr;
+  }, [hostW, h, scale, minW]);
+
   return (
-    <div ref={hostRef} className={["relative flex items-center justify-center overflow-hidden bg-ink-900", className].join(" ")} style={{ minHeight: hostW ? h * scale(hostW) : undefined }}>
+    <div ref={hostRef} className={["relative flex items-center justify-center overflow-hidden bg-ink-900", className].join(" ")} style={{ minHeight: reserved }}>
       {error ? (
         <p className="px-6 py-10 text-center text-[13px] text-fg-muted">{t("office.unavailable")}</p>
       ) : (
@@ -3414,18 +3743,37 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
 
 // Scroll progress through an element, smoothed so the motion trails the
 // finger a little; reduced motion reads the raw value so nothing lags.
-function useDampedProgress(ref, offset) {
+const CHAPTER_SPRING = { stiffness: 90, damping: 26, mass: 0.6, restDelta: 0.0005 };
+
+function useDampedProgress(ref, offset, spring = CHAPTER_SPRING) {
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset });
-  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.6, restDelta: 0.0005 });
+  const smooth = useSpring(scrollYProgress, spring);
   return reduced ? scrollYProgress : smooth;
 }
 
 // One line that rises into place as the scroll passes `at`.
-function Rise({ progress, at, span = 0.08, className = "", children }) {
+function Rise({ progress, at, span = 0.08, until, className = "", children }) {
   const reduced = useReducedMotion();
-  const opacity = useTransform(progress, [at, at + span], [0, 1]);
-  const y = useTransform(progress, [at, at + span], [reduced ? 0 : 14, 0]);
+  // Without `until` a line rises once and stays, which is what the chapters
+  // want. The pinned day scene needs the block to leave before the next
+  // moment arrives, so the ramp runs back down to zero at the far end.
+  //
+  // The exit ramp is a short fixed fade, not another `span`: a late line in a
+  // staggered group can start after `until - span`, and useTransform requires
+  // strictly increasing inputs — a non-monotonic stop list silently produced a
+  // broken transform and the card never appeared.
+  const OUT = 0.04;
+  const inEnd = at + span;
+  const outStart = Math.max(inEnd + 1e-4, Math.min(until - OUT, until - 1e-4));
+  const useUntil = until !== undefined && until > inEnd;
+  const stops = useUntil ? [at, inEnd, outStart, until] : [at, inEnd];
+  const opacity = useTransform(progress, stops, useUntil ? [0, 1, 1, 0] : [0, 1]);
+  const y = useTransform(
+    progress,
+    stops,
+    useUntil ? [reduced ? 0 : 14, 0, 0, reduced ? 0 : -10] : [reduced ? 0 : 14, 0]
+  );
   return (
     <motion.div style={{ opacity, y }} className={className}>
       {children}
@@ -3564,14 +3912,14 @@ function StaffPrice({ id, align = "left" }) {
 
 // A chat as the customer sees it in Messenger. The time is shown once per
 // exchange, beside the bubble that opens it, never as a log under each line.
-function StaffChat({ lines, progress, at }) {
+function StaffChat({ lines, progress, at, step = 0.07, until }) {
   return (
     <ol className="flex flex-col gap-2" role="list">
       {lines.map((m, i) => {
         const mine = m.from === "staff";
         const stamp = i === 0 || m.time !== lines[i - 1].time ? m.time : null;
         return (
-          <Rise key={i} progress={progress} at={at + i * 0.07} className={["flex max-w-[94%] items-end gap-1.5", mine ? "flex-row-reverse self-end" : "self-start"].join(" ")}>
+          <Rise key={i} progress={progress} at={at + i * step} until={until} className={["flex max-w-[94%] items-end gap-1.5", mine ? "flex-row-reverse self-end" : "self-start"].join(" ")}>
             <li
               className={[
                 "rounded-[16px] px-3 py-2 text-[13px] leading-[1.42] shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[14px]",
@@ -3589,10 +3937,10 @@ function StaffChat({ lines, progress, at }) {
 }
 
 // Веда's report: the same four bars the scene draws on her screen.
-function StaffReport({ report, progress, at }) {
-  const grow = useTransform(progress, [at, at + 0.22], [0, 1]);
+function StaffReport({ report, progress, at, span = 0.22, until }) {
+  const grow = useTransform(progress, [at, at + span], [0, 1]);
   return (
-    <Rise progress={progress} at={at} className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+    <Rise progress={progress} at={at} until={until} className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
       <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-fg-dim">{report.tag}</p>
       <p className="mt-1 text-[13px] font-semibold text-fg">{report.title}</p>
       <div className="mt-3 flex h-[72px] items-end gap-2" aria-hidden>
@@ -3622,18 +3970,18 @@ function ReportBar({ value, index, count, grow, last }) {
 }
 
 // Эхо's call: incoming, answered, the first line.
-function StaffCall({ call, progress, at }) {
+function StaffCall({ call, progress, at, step = 0.09, until }) {
   const reduced = useReducedMotion();
   return (
     <div className="flex flex-col gap-2">
-      <Rise progress={progress} at={at} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+      <Rise progress={progress} at={at} until={until} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-400/15 text-sky-400" aria-hidden>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
         </span>
         <span className="min-w-0 flex-1 text-[13px] font-semibold text-fg">{call.incoming}</span>
         <span className="shrink-0 text-[11px] tabular-nums text-fg-muted">18:05</span>
       </Rise>
-      <Rise progress={progress} at={at + 0.09} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+      <Rise progress={progress} at={at + step} until={until} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
         <span className="flex h-9 w-9 shrink-0 items-end justify-center gap-[3px] rounded-full bg-sky-400/15 pb-[11px]" aria-hidden>
           {[0, 1, 2, 3].map((i) => (
             <span
@@ -3648,7 +3996,7 @@ function StaffCall({ call, progress, at }) {
           <span className="block text-[12px] text-fg-muted">{call.after}</span>
         </span>
       </Rise>
-      <Rise progress={progress} at={at + 0.18} className="self-end">
+      <Rise progress={progress} at={at + 2 * step} until={until} className="self-end">
         <p className="max-w-[92%] rounded-[16px] rounded-br-[5px] bg-brand-500 px-3 py-2 text-[13px] leading-[1.42] text-white shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[14px]">{call.line}</p>
       </Rise>
     </div>
@@ -3856,7 +4204,7 @@ function StaffSteps() {
           {items.map((s, i) => (
             <StaggerItem key={i}>
               <div className="border-t border-white/[0.1] pt-5">
-                <p className="font-display text-[13px] font-semibold tabular-nums text-sky-400">0{i + 1}</p>
+                <p className="font-display text-[13px] font-semibold tabular-nums text-fg-dim">0{i + 1}</p>
                 <p className="mt-2 font-display text-[18px] font-semibold tracking-tight text-fg">{s.title}</p>
                 <p className="mt-1.5 text-[15px] leading-[1.5] text-fg-muted">{s.body}</p>
               </div>
@@ -3939,7 +4287,6 @@ function Shell() {
   return (
     <div className="relative min-h-screen bg-ink-950 text-fg">
       <ErrorBoundary>
-        <CustomCursor />
       </ErrorBoundary>
       <ErrorBoundary>
         <Navbar />

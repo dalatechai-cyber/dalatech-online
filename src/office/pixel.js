@@ -416,3 +416,24 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
     },
   };
 }
+
+// Darkens everything outside the art-pixel band [x0, x1] in three hard steps.
+// Stepped rather than a gradient: a soft radial falloff over a pixel room
+// reads as a CSS effect pasted on top of the art. Call it last — after
+// grade(), after sunPatch(), after the deferred lights — so the focused
+// desk's screen and lamp glow survive it.
+export function focusDim(ctx, W, H, x0, x1, amount) {
+  if (amount <= 0) return;
+  const STEPS = [[44, 0.14], [24, 0.22], [0, 0.3]];
+  ctx.save();
+  ctx.fillStyle = "#050A18";
+  for (const [pad, a] of STEPS) {
+    ctx.globalAlpha = a * amount;
+    const L = Math.max(0, (x0 - pad) | 0);
+    const R = Math.min(W, (x1 + pad) | 0);
+    ctx.fillRect(0, 0, L, H);
+    ctx.fillRect(R, 0, W - R, H);
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
