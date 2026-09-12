@@ -241,7 +241,25 @@ def props():
         "STICKY": single(B(452)),
         "BOOKSHELF": single(C(29)),
         "CLOCK": single(C(9)),
+        # the office around the desks: what makes the room read as one
+        "WHITEBOARD_CHART": single(O(172)),
+        "WHITEBOARD_LINE": single(O(171)),
+        "POST": single(O(207), rule=surface_rule),
+        "PANEL": single(O(208), rule=surface_rule),
+        "COOLER": single(O(173)),
+        "PRINTER_STAND": single(O(177)),
+        "CERT": single(O(113)),
+        "NOTICE": single(O(116)),
+        "BUSH": single(O(337)),
+        "BIN": single(O(329)),
+        "CHAIR_ORANGE": single(O(107), rule=surface_rule),
     }
+    # the coffee machine's steam: six 32x64 frames (steam row over mug row)
+    cf = Image.open(LZ / "moderninteriors-win" / "3_Animated_objects" / "32x32" / "spritesheets" / "animated_coffee_32x32.png").convert("RGBA")
+    strip = Image.new("RGBA", (6 * 32, 64))
+    for c in range(6):
+        strip.paste(cf.crop((c * 32, 0, (c + 1) * 32, 64)), (c * 32, 0))
+    S["COFFEE_STEAM"] = (strip, {"n": 6})
     # walls from the generic room builder; floor carpet from the office builder
     gb = Image.open(ROOM_GENERIC).convert("RGBA")
     tile = lambda c, r: gb.crop((c * 32, r * 32, (c + 1) * 32, (r + 1) * 32))
@@ -259,11 +277,18 @@ def props():
     S["FLOOR"] = (rule_colours(rb.crop((320, 160, 384, 224)), floor_rule), {})
     # speech bubbles: the "..." thinking emote and the heart one, five growing frames each
     em = Image.open(EMOTES).convert("RGBA")
-    for sid, row in (("BUBBLE", 0), ("HEART", 1)):
-        strip = Image.new("RGBA", (5 * 32, 32))
-        for c in range(5):
-            strip.paste(em.crop((c * 32, row * 32, (c + 1) * 32, (row + 1) * 32)), (c * 32, 0))
-        S[sid] = (strip, {"n": 5})
+    def emote(row, col0, n):
+        strip = Image.new("RGBA", (n * 32, 32))
+        for i in range(n):
+            strip.paste(em.crop(((col0 + i) * 32, row * 32, (col0 + i + 1) * 32, (row + 1) * 32)), (i * 32, 0))
+        return (strip, {"n": n})
+    S["BUBBLE"] = emote(0, 0, 5)   # the "..." thought bubble growing
+    S["HEART"] = emote(2, 0, 5)    # the bubble growing into a heart (row 1 was the sheet's sample dots)
+    S["MSG"] = emote(6, 8, 2)      # a message box: Ара receives one, Нова sends them
+    S["TYPING"] = emote(9, 2, 2)   # the "..." dots
+    S["STAR"] = emote(6, 4, 2)     # a sparkle, for a satisfied customer
+    S["ALERT"] = emote(4, 0, 2)    # "!" — an incoming call
+    S["DOLLAR"] = emote(4, 2, 2)   # a sale, for Веда's report
     return S
 
 
@@ -272,7 +297,10 @@ FW, FH = 32, 64
 # LimeZu 32x32 sheets: rows of 32x64 frames. The idle row runs right, up,
 # left, down; the sitting row only has side views, so a person at a desk
 # facing the camera uses the idle frames and lets the desk hide the legs.
-ROWS = {"idle": 1, "phone": 6, "read": 7}
+# Row 5 is seated in profile. The generator has no front-facing seated pose,
+# so a person behind a desk keeps using the idle frames with the desk hiding
+# the legs; the profile pose is here for someone turning to a side task.
+ROWS = {"idle": 1, "sitSide": 5, "phone": 6, "read": 7}
 
 
 def layer(kind, name):
@@ -359,6 +387,8 @@ def characters():
         for aname, row in ROWS.items():
             if aname == "idle":
                 frames = [frame(sheet, row, c) for c in range(18, 24)]  # facing down
+            elif aname == "sitSide":
+                frames = [frame(sheet, row, c) for c in range(0, 6)]   # seated, side view (row 5 has no front-facing frames)
             elif aname == "phone":
                 frames = []
                 for c in range(12):

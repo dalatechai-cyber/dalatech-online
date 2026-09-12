@@ -374,3 +374,15 @@ html.demo-dialog-open #dt-chat-frame {
     max-height: 170px;
   }
 }
+
+/* the owner's phone over the room: breathes when the scroll stops */
+.day-phone {
+  animation: dayPhoneFloat 5.5s ease-in-out infinite alternate;
+}
+@keyframes dayPhoneFloat {
+  from { transform: translateY(0); }
+  to { transform: translateY(-7px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .day-phone { animation: none; }
+}

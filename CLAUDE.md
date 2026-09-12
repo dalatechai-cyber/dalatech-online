@@ -12,7 +12,7 @@ in this repo and no build step that would typecheck it.
 - Styling: Tailwind CSS 3 (`tailwind.config.js`), plus `src/index.css`
 - Animation: `framer-motion`
 - 3D: `three` (the globe on the location section)
-- Pixel art: a plain 2D canvas on `/office` (`src/office/pixel.js`)
+- Pixel art: a plain 2D canvas on `/` and `/office` (`src/office/pixel.js`)
 - i18n: `i18next` + `react-i18next`
 - Deploy: Vercel, framework preset `vite`, output `dist/`
 
@@ -58,9 +58,11 @@ safety gain. Keep it that way when adding rules.
     src/main.jsx          entry; mounts <App> in StrictMode
     src/App.jsx           ~3.4k lines: every component, page and the router
     src/Globe.jsx         three.js globe, lazy-loaded
-    src/office/           the /office page's pixel art: pixel.js (atlas, stage,
-                          sprite helpers), scenes.js (the hero row and the four
-                          chapters), agents.js (prices), staff.json (atlas manifest)
+    src/office/           the pixel office: pixel.js (atlas, stage, sprite
+                          helpers), scenes.js (the office room, the four /office
+                          chapters, and the landing page's working-day timeline
+                          that runs behind the owner's phone), agents.js (prices),
+                          staff.json (atlas manifest)
     src/Setup.jsx         Facebook SDK page-connect flow, lazy-loaded at /setup
     eslint.config.js      the build's lint gate (see Commands)
     src/i18n.js           i18next init
@@ -77,10 +79,10 @@ defined above them. Keep new sections in the same file unless something
 genuinely stands alone, like `Globe.jsx`.
 
 ## Routing — read before adding a route
-Routes are client-side: `/`, `/office`, `/process`, `/technology`,
-`/location`, `/portfolio`, `/pricing`, `/faq`, `/setup`, `/products` (a
-redirect to `/office`, kept for old links), and a `*` fallback that
-redirects to `/`.
+Routes are client-side: `/`, `/office`, `/process`, `/location`,
+`/portfolio` (the website page), `/pricing`, `/faq`, `/setup`, two
+redirects kept for old links (`/products` to `/office`, `/technology` to
+`/`), and a `*` fallback that renders the not-found page.
 
 `vercel.json` rewrites everything to `/index.html` so direct hits and
 refreshes reach the app. **Do not remove it** — without it every route

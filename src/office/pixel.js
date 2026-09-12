@@ -220,11 +220,18 @@ export function screenChart(ctx, id, k, x, y, values, grow) {
 // Warm light from a desk lamp: stacked translucent squares, pixel style.
 export function lampGlow(ctx, x, y, amount) {
   if (amount <= 0) return;
-  for (let r = 22; r > 4; r -= 6) {
-    ctx.globalAlpha = 0.05 * amount;
-    rect(ctx, x - r, y - r, r * 2, r * 2, "#F59E0B");
+  // Stepped rings with the corners cut, added with "lighter": a pool of
+  // light rather than the stack of translucent squares this used to draw,
+  // whose edges showed against the dark wall.
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (let r = 24; r > 4; r -= 5) {
+    ctx.globalAlpha = 0.028 * amount;
+    const c = Math.max(2, Math.round(r * 0.45));
+    rect(ctx, x - r + c, y - r, r * 2 - c * 2, r * 2, "#F59E0B");
+    rect(ctx, x - r, y - r + c, r * 2, r * 2 - c * 2, "#F59E0B");
   }
-  ctx.globalAlpha = 1;
+  ctx.restore();
 }
 
 // The light in the room over the day: [hour, multiply colour]. White is

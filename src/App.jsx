@@ -305,14 +305,13 @@ const LANGUAGES = [
   { code: "en", label: "English" },
 ];
 
-// Buying decisions in the bar itself. The website entry points into the
-// pricing page's website block, so it never shows as the active page; the
-// pricing entry does.
+// Buying decisions in the bar itself: the two things we sell, the price of
+// both, and the questions. The website entry lands on its own page, not on a
+// block inside pricing, so no two entries share a destination.
 const NAV_ITEMS = [
   { to: "/office", labelKey: "staff" },
-  { to: "/pricing", labelKey: "website", state: { scrollTo: "website" } },
+  { to: "/portfolio", labelKey: "website" },
   { to: "/pricing", labelKey: "pricing" },
-  { to: "/portfolio", labelKey: "portfolio" },
   { to: "/faq", labelKey: "faq" },
 ];
 
@@ -321,7 +320,6 @@ const NAV_ITEMS = [
 // more destinations, and the bar still fits a laptop.
 const COMPANY_ITEMS = [
   { to: "/process", labelKey: "process" },
-  { to: "/technology", labelKey: "stack" },
   { to: "/location", labelKey: "location" },
 ];
 
@@ -418,7 +416,6 @@ function Navbar() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { open: openDemoRequest } = useDemoRequest();
   const [scrolled, setScrolled] = React.useState(false);
   const [langOpen, setLangOpen] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -464,11 +461,6 @@ function Navbar() {
       document.documentElement.classList.remove("nav-menu-open");
     };
   }, [mobileOpen]);
-
-  const openDemo = () => {
-    setMobileOpen(false);
-    openDemoRequest();
-  };
 
   const navLabel = (labelKey) => t(`nav.${labelKey}`);
 
@@ -589,8 +581,8 @@ function Navbar() {
             </button>
 
             <div className="hidden md:block">
-              <MagneticButton onClick={openDemo} variant="primary">
-                {t("nav.getDemo")}
+              <MagneticButton href="https://app.dalatech.online" variant="primary">
+                {t("nav.createDemo")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                 </svg>
@@ -711,8 +703,8 @@ function Navbar() {
                   </button>
                 ))}
               </div>
-              <MagneticButton onClick={openDemo} variant="primary">
-                {t("nav.getDemo")}
+              <MagneticButton href="https://app.dalatech.online" variant="primary">
+                {t("nav.createDemo")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                 </svg>
@@ -753,7 +745,7 @@ function HeroWords({ text, delay = 0, stagger = 0.06 }) {
   );
 }
 
-function BrowserMockup({ url = "matrixecosalon.org", children, className = "" }) {
+function BrowserMockup({ url, children, className = "" }) {
   return (
     <div className={["group relative overflow-hidden rounded-[20px] border border-white/10 bg-ink-800/70 shadow-[0_30px_80px_-30px_rgba(8,12,28,0.85)] backdrop-blur-sm", className].join(" ")}>
       <div
@@ -787,7 +779,7 @@ function BrowserMockup({ url = "matrixecosalon.org", children, className = "" })
   );
 }
 
-function MatrixSalonPreview() {
+function SalonPreview() {
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div
@@ -806,7 +798,7 @@ function MatrixSalonPreview() {
               <path d="M12 11v8" />
             </svg>
           </div>
-          <span className="font-display text-[11.5px] font-semibold tracking-tight text-white sm:text-[13px]">Matrix Eco Salon</span>
+          <span className="font-display text-[11.5px] font-semibold tracking-tight text-white sm:text-[13px]">Салон</span>
         </div>
         <div className="hidden items-center gap-4 text-[10.5px] text-white/55 sm:flex">
           <span>Үйлчилгээ</span>
@@ -901,8 +893,8 @@ function Hero() {
             transition={{ ...SPRING_REVEAL, delay: 0.65 }}
             className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6"
           >
-            <MagneticButton href="#demo" variant="primary" className="w-full sm:w-auto">
-              {t("hero.buttons.getDemo")}
+            <MagneticButton href="https://app.dalatech.online" variant="primary" className="w-full sm:w-auto">
+              {t("hero.buttons.createDemo")}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
               </svg>
@@ -1368,7 +1360,6 @@ function Portfolio() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <MagneticButton href="https://matrixecosalon.org" variant="ghost">{t("portfolio.visitWebsite")}</MagneticButton>
               <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_ARA_DEMO_SERVICES}>{t("portfolio.getDemo")}</MagneticButton>
             </div>
           </div>
@@ -1376,57 +1367,44 @@ function Portfolio() {
 
         <div className="mt-14 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <Reveal>
-            <a
-              href="https://matrixecosalon.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group block"
-              data-cursor="hover"
-            >
-              <div className="relative">
-                <BrowserMockup url="matrixecosalon.org">
-                  <MatrixSalonPreview />
-                </BrowserMockup>
-              </div>
-              <div className="mt-5 flex flex-wrap items-center gap-2">
-                <Pill>{t("portfolio.japantok.pills.website")}</Pill>
-                <Pill>{t("portfolio.japantok.pills.chatbot")}</Pill>
-                <Pill>{t("portfolio.japantok.pills.productQA")}</Pill>
-                <Pill>{t("portfolio.japantok.pills.availability")}</Pill>
-                <span className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-sky-400">
-                  matrixecosalon.org
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-                    <path d="M7 17 17 7" /><path d="M7 7h10v10" />
-                  </svg>
-                </span>
-              </div>
-            </a>
+            {/* the client is not named on this site, so the mock is not a link */}
+            <div className="relative">
+              <BrowserMockup url={t("portfolio.case.url")}>
+                <SalonPreview />
+              </BrowserMockup>
+            </div>
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <Pill>{t("portfolio.case.pills.website")}</Pill>
+              <Pill>{t("portfolio.case.pills.chatbot")}</Pill>
+              <Pill>{t("portfolio.case.pills.productQA")}</Pill>
+              <Pill>{t("portfolio.case.pills.availability")}</Pill>
+            </div>
           </Reveal>
 
           <Reveal delay={0.08}>
             <div className="card-glow flex h-full flex-col rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card">
-              <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("portfolio.japantok.title")}</h3>
-              <p className="mt-3 text-[14.5px] leading-[1.65] text-fg-muted">{t("portfolio.japantok.description")}</p>
+              <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("portfolio.case.title")}</h3>
+              <p className="mt-3 text-[14.5px] leading-[1.65] text-fg-muted">{t("portfolio.case.description")}</p>
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("portfolio.japantok.whatWeBuilt")}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("portfolio.case.whatWeBuilt")}</p>
                   <ul className="mt-3 space-y-2 text-[13.5px] text-fg/85">
                     {[0, 1, 2].map((i) => (
                       <li key={i} className="flex gap-2.5">
                         <CheckIcon />
-                        <span>{t(`portfolio.japantok.features.${i}`)}</span>
+                        <span>{t(`portfolio.case.features.${i}`)}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("portfolio.japantok.idealOutcomes")}</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("portfolio.case.idealOutcomes")}</p>
                   <ul className="mt-3 space-y-2 text-[13.5px] text-fg/85">
                     {[0, 1, 2].map((i) => (
                       <li key={i} className="flex gap-2.5">
                         <CheckIcon />
-                        <span>{t(`portfolio.japantok.outcomes.${i}`)}</span>
+                        <span>{t(`portfolio.case.outcomes.${i}`)}</span>
                       </li>
                     ))}
                   </ul>
@@ -1434,8 +1412,7 @@ function Portfolio() {
               </div>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_ARA_DEMO_SERVICES}>{t("portfolio.japantok.buttons.requestDemo")}</MagneticButton>
-                <MagneticButton href="https://matrixecosalon.org" variant="ghost">{t("portfolio.japantok.buttons.viewLive")}</MagneticButton>
+                <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_ARA_DEMO_SERVICES}>{t("portfolio.case.buttons.requestDemo")}</MagneticButton>
               </div>
             </div>
           </Reveal>
@@ -1594,7 +1571,7 @@ function LiveDemo() {
               {t("liveDemo.description")}
             </p>
             <div className="mt-9">
-              <MagneticButton variant="ghost" href="#demo">
+              <MagneticButton variant="primary" href="https://app.dalatech.online">
                 {t("liveDemo.ctaLabel")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" />
@@ -1849,74 +1826,6 @@ function LiveDemo() {
   );
 }
 
-function TestimonialCard({ quote, name, business, featured = false, offsetClass = "" }) {
-  return (
-    <StaggerItem className={offsetClass}>
-      <figure
-        className={[
-          "group relative flex h-full flex-col rounded-2xl border bg-ink-800/45 p-7 sm:p-8",
-          "transition-[transform,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          "hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]",
-          featured
-            ? "border-sky-400/35 bg-gradient-to-b from-sky-400/[0.05] to-transparent shadow-[0_0_0_1px_rgba(56,189,248,0.10),0_24px_60px_-30px_rgba(56,189,248,0.35)] hover:border-sky-400/60"
-            : "border-white/[0.08]",
-        ].join(" ")}
-      >
-        <svg
-          aria-hidden
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className={[
-            "h-7 w-7 shrink-0 transition-colors duration-300",
-            featured ? "text-sky-300/70" : "text-sky-400/40 group-hover:text-sky-300/55",
-          ].join(" ")}
-        >
-          <path d="M9 7H5.5A3.5 3.5 0 0 0 2 10.5v2A3.5 3.5 0 0 0 5.5 16H7v.6A4.4 4.4 0 0 1 2.6 21H2v2h.6A6.4 6.4 0 0 0 9 16.6V8a1 1 0 0 0-1-1Zm12 0h-3.5A3.5 3.5 0 0 0 14 10.5v2A3.5 3.5 0 0 0 17.5 16H19v.6A4.4 4.4 0 0 1 14.6 21H14v2h.6A6.4 6.4 0 0 0 21 16.6V8a1 1 0 0 0-1-1Z" />
-        </svg>
-        <blockquote className="mt-5 flex-1 text-[15.5px] leading-[1.7] text-fg/95 sm:text-[16px]">
-          {quote}
-        </blockquote>
-        <figcaption className="mt-7 flex flex-col gap-0.5 border-t border-white/[0.06] pt-5">
-          <span className="font-display text-[14.5px] font-semibold tracking-tight text-fg">{name}</span>
-          <span className="text-[12.5px] text-fg-muted">{business}</span>
-        </figcaption>
-      </figure>
-    </StaggerItem>
-  );
-}
-
-function Testimonials() {
-  const { t } = useTranslation();
-  const items = [
-    { key: "0", offsetClass: "" },
-    { key: "1", offsetClass: "lg:mt-10", featured: true },
-    { key: "2", offsetClass: "" },
-  ];
-  return (
-    <section id="testimonials" className="relative py-28">
-      <Container>
-        <SectionHeader
-          eyebrow={t("testimonials.section")}
-          title={t("testimonials.title")}
-          description={t("testimonials.description")}
-        />
-        <StaggerGroup className="mt-14 grid gap-5 lg:grid-cols-3 lg:items-start lg:gap-6">
-          {items.map((item) => (
-            <TestimonialCard
-              key={item.key}
-              offsetClass={item.offsetClass}
-              featured={item.featured}
-              quote={t(`testimonials.items.${item.key}.quote`)}
-              name={t(`testimonials.items.${item.key}.name`)}
-              business={t(`testimonials.items.${item.key}.business`)}
-            />
-          ))}
-        </StaggerGroup>
-      </Container>
-    </section>
-  );
-}
-
 function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote, demoServices }) {
   return (
     <StaggerItem>
@@ -2087,7 +1996,7 @@ function Pricing() {
                   ))}
                 </ul>
               </div>
-              <MagneticButton href="#demo" variant="primary">{t("contact.title")}</MagneticButton>
+              <MagneticButton href="https://app.dalatech.online" variant="primary">{t("contact.demoCta")}</MagneticButton>
             </div>
             <p className="mt-6 border-t border-white/[0.06] pt-5 text-[12.5px] leading-[1.55] text-fg-muted">{t("pricing.paymentTerms.note")}</p>
           </div>
@@ -3030,12 +2939,61 @@ function DemoRequestProvider({ children }) {
   );
 }
 
+function ContactOrbField() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-grid opacity-[0.55]" />
+
+      <div
+        className="contact-orb-glow absolute left-1/2 top-1/2 h-[44rem] w-[44rem] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(56,189,248,0.34) 0%, rgba(56,189,248,0.10) 28%, rgba(37,99,235,0.04) 50%, rgba(56,189,248,0) 70%)",
+          filter: "blur(48px)",
+        }}
+      />
+
+      <svg
+        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2"
+        viewBox="-200 -200 400 400"
+      >
+        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
+        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
+        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
+      </svg>
+
+      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-2 w-2 rounded-full bg-sky-300"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
+        />
+      </div>
+      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
+        />
+      </div>
+      <div className="contact-orbit contact-orbit-3 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-1 w-1 rounded-full bg-white/85"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(190px)", boxShadow: "0 0 14px 2px rgba(255,255,255,0.55)" }}
+        />
+      </div>
+
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink-950 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink-950 to-transparent" />
+    </div>
+  );
+}
+
 function Contact() {
   const { t } = useTranslation();
   const mailtoHref = `mailto:${DEMO_EMAIL}?subject=${encodeURIComponent("Демо хүсэлт / Demo Request")}`;
 
   return (
     <section id="contact" className="relative overflow-hidden py-20 sm:py-40">
+      <ContactOrbField />
 
       <Container className="relative">
         <StaggerGroup className="text-center" stagger={0.08} amount={0.3}>
@@ -3053,12 +3011,12 @@ function Contact() {
 
           <StaggerItem>
             <div className="mt-11 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-              <MagneticButton href="#demo" variant="primary">
-                <span>{t("contact.requestCta")}</span>
+              <MagneticButton href="https://app.dalatech.online" variant="primary">
+                <span>{t("contact.demoCta")}</span>
                 <span aria-hidden className="contact-arrow inline-block">→</span>
               </MagneticButton>
-              <MagneticButton href="https://app.dalatech.online" variant="ghost">
-                {t("contact.demoCta")}
+              <MagneticButton href="#demo" variant="ghost">
+                {t("contact.requestCta")}
               </MagneticButton>
               <MagneticButton href={mailtoHref} variant="ghost">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -3151,13 +3109,11 @@ function Footer() {
 
   const services = [
     { label: t("nav.staff"), to: "/office" },
-    { label: t("nav.website"), to: "/pricing", state: { scrollTo: "website" } },
+    { label: t("nav.website"), to: "/portfolio" },
     { label: t("nav.pricing"), to: "/pricing" },
   ];
   const company = [
-    { label: t("nav.portfolio"), to: "/portfolio" },
     { label: t("nav.process"), to: "/process" },
-    { label: t("nav.stack"), to: "/technology" },
     { label: t("nav.location"), to: "/location" },
     { label: t("nav.contact"), onClick: goToContact },
   ];
@@ -3238,133 +3194,6 @@ function Footer() {
   );
 }
 
-const TECH_STACK = [
-  {
-    name: "React",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10">
-        <g fill="none" stroke="#61DAFB" strokeWidth="1.6">
-          <ellipse cx="24" cy="24" rx="16" ry="6" />
-          <ellipse cx="24" cy="24" rx="16" ry="6" transform="rotate(60 24 24)" />
-          <ellipse cx="24" cy="24" rx="16" ry="6" transform="rotate(-60 24 24)" />
-        </g>
-        <circle cx="24" cy="24" r="2.6" fill="#61DAFB" />
-      </svg>
-    ),
-  },
-  {
-    name: "Next.js",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10">
-        <circle cx="24" cy="24" r="22" fill="#0A0A0A" stroke="#F0F4FF" strokeOpacity="0.22" />
-        <path
-          d="M16.4 14.4h2.5v19.2h-2.5zM18.9 14.4h2L31 30.1V14.4h2.5v19.2H31L20.9 17.9v15.7h-2z"
-          fill="#F0F4FF"
-        />
-      </svg>
-    ),
-  },
-  {
-    name: "OpenAI",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#10A37F">
-        <path d="M44.56 19.64a11.97 11.97 0 0 0-1.03-9.82A12.09 12.09 0 0 0 30.51 3.99a12.13 12.13 0 0 0-20.59 4.36 11.97 11.97 0 0 0-8 5.8 12.09 12.09 0 0 0 1.49 14.19A11.96 11.96 0 0 0 4.45 38.16a12.1 12.1 0 0 0 13.03 5.8A11.97 11.97 0 0 0 26.52 48a12.11 12.11 0 0 0 11.55-8.41 11.98 11.98 0 0 0 7.99-5.8 12.11 12.11 0 0 0-1.5-14.15zM26.52 44.86a8.95 8.95 0 0 1-5.75-2.08l.28-.16 9.56-5.52a1.59 1.59 0 0 0 .79-1.36V22.27l4.04 2.34c.05.02.07.06.08.1v11.17a9 9 0 0 1-9 8.98zM7.2 36.61a8.94 8.94 0 0 1-1.07-6.03l.28.17 9.56 5.52a1.54 1.54 0 0 0 1.56 0l11.69-6.74v4.66a.16.16 0 0 1-.07.13l-9.66 5.57a8.99 8.99 0 0 1-12.29-3.28zm-2.5-20.82a8.97 8.97 0 0 1 4.73-3.94v11.36a1.53 1.53 0 0 0 .77 1.35l11.63 6.71-4.04 2.34a.15.15 0 0 1-.14 0l-9.66-5.57a8.99 8.99 0 0 1-3.29-12.25zm33.16 7.69-11.69-6.79 4.04-2.32a.16.16 0 0 1 .14 0l9.66 5.58a8.98 8.98 0 0 1-1.35 16.21V24.82a1.58 1.58 0 0 0-.8-1.34zm4.02-6.04-.28-.17-9.55-5.56a1.55 1.55 0 0 0-1.57 0L18.79 18.45v-4.66a.13.13 0 0 1 .06-.13l9.66-5.57a9 9 0 0 1 13.36 9.32zm-25.31 8.27-4.05-2.33a.16.16 0 0 1-.07-.11V12.15a8.99 8.99 0 0 1 14.74-6.9l-.28.16-9.56 5.51a1.59 1.59 0 0 0-.79 1.37zm2.19-4.73 5.21-3 5.21 3v6L18.86 26z" />
-      </svg>
-    ),
-  },
-  {
-    name: "Tailwind CSS",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#38BDF8">
-        <path d="M24 9.6c-6.4 0-10.4 3.2-12 9.6 2.4-3.2 5.2-4.4 8.4-3.6 1.83.46 3.13 1.78 4.58 3.25C27.34 21.24 30.05 24 36 24c6.4 0 10.4-3.2 12-9.6-2.4 3.2-5.2 4.4-8.4 3.6-1.83-.46-3.13-1.78-4.58-3.25C32.66 12.36 29.95 9.6 24 9.6zM12 24c-6.4 0-10.4 3.2-12 9.6 2.4-3.2 5.2-4.4 8.4-3.6 1.83.46 3.13 1.78 4.58 3.25C15.34 35.64 18.05 38.4 24 38.4c6.4 0 10.4-3.2 12-9.6-2.4 3.2-5.2 4.4-8.4 3.6-1.83-.46-3.13-1.78-4.58-3.25C20.66 26.76 17.95 24 12 24z" />
-      </svg>
-    ),
-  },
-  {
-    name: "Node.js",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#5FA04E">
-        <path d="M24 0a2.4 2.4 0 0 1 1.21.32l18.7 10.79c.75.43 1.21 1.24 1.21 2.1v21.58c0 .87-.46 1.67-1.21 2.1L25.21 47.68a2.4 2.4 0 0 1-2.42 0L4.09 36.89c-.75-.43-1.21-1.23-1.21-2.1V13.21c0-.86.46-1.67 1.21-2.1L22.79.32A2.4 2.4 0 0 1 24 0zm0 4.32L7.2 14V34l16.8 9.7L40.8 34V14L24 4.32zM20.4 16.32h2.4v15.36H20.4zm4.8 0h1.92l5.28 8.16v-8.16h2.4v15.36H32.4l-4.8-7.44v7.44H25.2z" />
-      </svg>
-    ),
-  },
-  {
-    name: "Vercel",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-8 w-8 sm:h-9 sm:w-9" fill="#F0F4FF">
-        <path d="M24 5L46 43H2L24 5z" />
-      </svg>
-    ),
-  },
-  {
-    name: "MongoDB",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#47A248">
-        <path d="M24 2c-1 2-2 4-2 6 0 8 2 14 0 22 0 3-2 8-2 10 2 0 4 2 4 6 0-4 2-6 4-6 0-2-2-7-2-10-2-8 0-14 0-22 0-2-1-4-2-6z" />
-      </svg>
-    ),
-  },
-  {
-    name: "Framer Motion",
-    icon: (
-      <svg viewBox="0 0 48 48" aria-hidden focusable="false" className="h-9 w-9 sm:h-10 sm:w-10" fill="#FF0080">
-        <path d="M10 2h28v14H24l14 14H24v14L10 30V16h14L10 2z" />
-      </svg>
-    ),
-  },
-];
-
-function TechStack() {
-  const { t } = useTranslation();
-  return (
-    <section id="tech-stack" className="relative py-16 md:py-28">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div
-          className="mesh-blob animate-meshShift2 opacity-40"
-          style={{
-            top: "20%",
-            right: "-8%",
-            width: "26rem",
-            height: "26rem",
-            background: "radial-gradient(circle at 50% 50%, rgba(56,189,248,0.13), transparent 70%)",
-          }}
-        />
-      </div>
-      <Container className="relative">
-        <SectionHeader
-          eyebrow={t("techStack.section")}
-          title={t("techStack.title")}
-          description={t("techStack.description")}
-        />
-        <Reveal className="mt-16">
-          <ul
-            className="mx-auto grid max-w-5xl grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 sm:gap-x-8 sm:gap-y-12 lg:grid-cols-8 lg:gap-x-4"
-            role="list"
-          >
-            {TECH_STACK.map((tech, i) => (
-              <li key={tech.name} className="flex flex-col items-center gap-3">
-                <div
-                  className="animate-floatY pressable group relative flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.07] bg-white/[0.025] transition-[transform,border-color,box-shadow] duration-300 ease-out hover:scale-[1.06] hover:border-sky-400/45 hover:shadow-[0_0_38px_-10px_rgba(56,189,248,0.55)] sm:h-[72px] sm:w-[72px]"
-                  style={{
-                    animationDelay: `${i * 0.45}s`,
-                    animationDuration: `${5.4 + (i % 4) * 0.6}s`,
-                  }}
-                  data-cursor="hover"
-                >
-                  {tech.icon}
-                </div>
-                <span className="text-[12.5px] font-medium tracking-[-0.005em] text-fg-muted transition-colors duration-300 group-hover:text-fg sm:text-[13px]">
-                  {tech.name}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Reveal>
-      </Container>
-    </section>
-  );
-}
-
 function LocationBadge() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
@@ -3397,12 +3226,6 @@ function LocationBadge() {
             <p className="mx-auto mt-5 max-w-[46ch] text-[15.5px] leading-[1.65] text-fg-muted md:mx-0">
               {t("location.tagline")}
             </p>
-            <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.022] px-3.5 py-1.5 ring-1 ring-inset ring-white/[0.04]">
-              <span className="inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
-              <span className="text-[11px] font-medium tracking-wide text-fg-muted">
-                47.91°N · 106.88°E
-              </span>
-            </div>
           </div>
         </motion.div>
       </Container>
@@ -3420,27 +3243,36 @@ const DAY_SPRING = { stiffness: 260, damping: 34, mass: 1, restDelta: 0.0002 };
 const DAY_SCALE = (w) => (w < 1024 ? 2 : w < 1280 ? 3 : 3.5);
 const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 
-// Where each moment's text wipes in and lifts out, in progress units.
-const MOMENT_TEXT = [
-  { in: [0.07, 0.115], out: [0.245, 0.28] },
-  { in: [0.45, 0.495], out: [0.565, 0.6] },
-  { in: [0.765, 0.81], out: [0.865, 0.9] },
-];
+// The owner's phone, over the room. Each group of notifications lands during
+// its own hold and leaves before the next moment's light arrives, so the
+// stack never holds two moments at once. Progress units; the times are the
+// scene's own timestamps.
+const PHONE_FEED = {
+  ara: { from: 0.05, until: 0.4 },
+  veda: { from: 0.46, until: 0.7 },
+  eho: { from: 0.76, until: 0.88 },
+  nova: { from: 0.895, until: 0.94 },
+  done: { from: 0.95 },
+};
+const PHONE_STEP = 0.035;
+// The last screen has less runway than the others: the summary and the door
+// in must both be fully up before the pin lets go at p = 1.
+const PHONE_DONE_STEP = 0.02;
 
-function dayLabel(t, id) {
-  const eyebrow = t(`office.chapters.${id}.eyebrow`);
-  // Эхо is not in service yet, and the scene depicts him working; the site's
-  // own word for that state goes on the label rather than being implied.
-  return id === "eho" ? `${eyebrow} · ${t("office.status.soon")}` : eyebrow;
+function phoneGroupAt(p) {
+  if (p >= PHONE_FEED.done.from) return "done";
+  return Object.keys(PHONE_FEED).find((k) => p >= PHONE_FEED[k].from && p <= (PHONE_FEED[k].until ?? 1)) || null;
 }
 
 // A per-frame ticking clock reads as a slot machine. This steps in five
 // minutes and hard-snaps to the three real timestamps inside the holds.
-function DayClock({ progress }) {
+function PhoneTime({ progress }) {
   const [label, setLabel] = React.useState(DAY_MOMENTS[0].time);
   const read = React.useCallback((p) => {
     const hold = DAY_MOMENTS.find((m) => p >= m.from && p <= m.to);
     if (hold) return hold.time;
+    if (p >= PHONE_FEED.nova.from && p <= PHONE_FEED.nova.until) return "19:41";
+    if (p >= PHONE_FEED.done.from) return "21:00";
     const h = dayHour(p);
     let hh = Math.floor(h);
     let mm = Math.round(((h - hh) * 60) / 5) * 5;
@@ -3449,90 +3281,199 @@ function DayClock({ progress }) {
   }, []);
   React.useEffect(() => setLabel(read(progress.get())), [progress, read]);
   useMotionValueEvent(progress, "change", (p) => setLabel(read(p)));
+  return <span className="tabular-nums">{label}</span>;
+}
+
+// The app icon on a notification: the agent's pixel head, or the customer's
+// initial. No logos of other companies.
+function PhoneIcon({ who, name }) {
+  if (STAFF_LIVE[who] !== undefined) {
+    return (
+      <span className="flex h-[22px] w-[22px] shrink-0 items-start justify-center overflow-hidden rounded-[6px] bg-white/[0.08]" aria-hidden>
+        <StaffAvatar id={who} size={1} className="-mt-[27px]" />
+      </span>
+    );
+  }
+  if (who === "call") {
+    return (
+      <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px] bg-sky-400/15 text-sky-400" aria-hidden>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
+      </span>
+    );
+  }
+  if (who === "summary") {
+    return <span className="h-[22px] w-[22px] shrink-0 rounded-[6px] bg-gradient-to-br from-sky-400 to-brand-500" aria-hidden />;
+  }
   return (
-    <span className="block font-display text-[34px] font-medium leading-none tabular-nums text-fg/90 md:text-[40px] lg:text-[44px]">
-      {label}
+    <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px] bg-brand-500/25 text-[11px] font-semibold text-sky-300" aria-hidden>
+      {name.slice(0, 1)}
     </span>
   );
 }
 
-function MomentHeadline({ progress, range, className = "", children }) {
-  const reduced = useReducedMotion();
-  const stops = [range.in[0], range.in[1], range.out[0], range.out[1]];
-  const clip = useTransform(progress, [range.in[0], range.in[1]], ["inset(0 0 100% 0)", "inset(0 0 0% 0)"]);
-  const opacity = useTransform(progress, stops, [0, 1, 1, 0]);
-  const y = useTransform(progress, [range.out[0], range.out[1]], [0, -14]);
-  if (reduced) return <p className={className}>{children}</p>;
-  return (
-    <motion.p style={{ clipPath: clip, opacity, y }} className={className}>
+function PhoneCard({ progress, at, until, span = PHONE_STEP, who, name, time, title, children, className = "" }) {
+  const rise = progress ? { progress, at, until, span } : null;
+  const body = (
+    <div className={["rounded-[14px] border border-white/[0.09] bg-[#111A3A]/95 px-3 py-2.5 shadow-[0_6px_22px_rgba(0,0,0,0.35)] backdrop-blur-[6px]", className].join(" ")}>
+      <div className="flex items-center gap-2">
+        <PhoneIcon who={who} name={name} />
+        <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-fg-muted">{name}</span>
+        {time && <span className="shrink-0 text-[10.5px] tabular-nums text-fg-dim">{time}</span>}
+      </div>
+      {title && <p className="mt-1.5 text-[13px] font-semibold leading-[1.3] text-fg">{title}</p>}
       {children}
-    </motion.p>
+    </div>
   );
+  return rise ? <Rise {...rise}>{body}</Rise> : body;
 }
 
-// Reduced motion, or no atlas: three ordinary stacked blocks in document
-// order, each a still of the same scene held at the middle of its own hold.
-// Every word and every bar is in the DOM, so this renders correctly even if
-// no canvas ever appears.
-const DAY_STATIC_SCALE = () => 2;
-const DAY_STILLS = [0.17, 0.51, 0.82];
+const phoneText = "mt-1 text-[12.5px] leading-[1.42] text-fg/85";
 
-function DayStatic() {
-  const { t } = useTranslation();
-  // One motion value per block, created once: a hook may not run inside a
-  // loop, and a fresh `scale` identity each render would tear the stage down.
-  const p0 = useMotionValue(DAY_STILLS[0]);
-  const p1 = useMotionValue(DAY_STILLS[1]);
-  const p2 = useMotionValue(DAY_STILLS[2]);
+// Веда's report card: the same four bars the scene draws on her screen.
+function PhoneReport({ progress, at, until, report, feed }) {
+  // hooks run unconditionally; at rest the bars are simply full
   const one = useMotionValue(1);
-  const stills = [p0, p1, p2];
+  const grow = useTransform(progress ?? one, progress ? [at + 0.01, at + 0.1] : [0, 1], [0, 1]);
   return (
-    <div className="mt-12 flex flex-col gap-16">
-      {DAY_MOMENTS.map((m, i) => (
-        <div key={m.id}>
-          <p className="text-[11.5px] font-medium uppercase tracking-[0.16em] text-fg-dim">{dayLabel(t, m.id)}</p>
-          <p className="mt-2 font-display text-[26px] font-medium leading-none tabular-nums text-fg/90">{m.time}</p>
-          <p className="mt-3 font-display text-[22px] font-semibold leading-[1.2] tracking-tight text-fg sm:text-[26px]">
-            {t(`day.moments.${m.id}`)}
-          </p>
-          <div className="mt-5">
-            <PixelStage draw={drawWorkingDay} logicalH={128} scale={DAY_STATIC_SCALE} minW={STAFF_HERO_MIN_W} progress={stills[i]} label={t("day.sceneAlt")} />
-          </div>
-          <div className="mx-auto mt-5 max-w-[440px]">
-            <DayArtefact id={m.id} progress={one} at={-1} />
-          </div>
-        </div>
+    <PhoneCard progress={progress} at={at} until={until} who="veda" name={feed.veda.from} time="09:00" title={feed.veda.title}>
+      <div className="mt-2.5 flex h-[54px] items-end gap-1.5" aria-hidden>
+        {report.values.map((v, i) => (
+          <ReportBar key={i} value={v} index={i} count={report.values.length} grow={grow} last={i === report.values.length - 1} />
+        ))}
+      </div>
+      <div className="mt-1 grid grid-cols-4 gap-1.5 text-[9.5px] text-fg-dim">
+        {report.weeks.map((w) => <span key={w} className="truncate text-center">{w}</span>)}
+      </div>
+      <p className={phoneText}>{feed.veda.body}</p>
+    </PhoneCard>
+  );
+}
+
+function PhoneWave() {
+  const reduced = useReducedMotion();
+  return (
+    <span className="flex h-[22px] w-[22px] shrink-0 items-end justify-center gap-[2px] rounded-[6px] bg-sky-400/15 pb-[6px]" aria-hidden>
+      {[0, 1, 2, 3].map((i) => (
+        <span
+          key={i}
+          className={["w-[2px] rounded-full bg-sky-400", reduced ? "" : "animate-[staffWave_1.1s_ease-in-out_infinite]"].join(" ")}
+          style={{ height: 4 + (i % 2) * 4, animationDelay: `${i * 0.14}s` }}
+        />
       ))}
-    </div>
+    </span>
   );
 }
 
-// The artefact beside each moment: the real chat, the real report, the real
-// call, reusing the components /office already ships.
-function DayArtefact({ id, progress, at, until }) {
+// Every card of the day, in the order they land. `progress` undefined draws
+// the whole feed at rest, which is what the static variant and screen readers
+// get.
+function PhoneFeed({ progress, group }) {
   const { t } = useTranslation();
-  const base = `office.chapters.${id}`;
-  if (id === "veda") return <StaffReport report={t(`${base}.report`, { returnObjects: true })} progress={progress} at={at} span={0.12} until={until} />;
-  if (id === "eho") return <StaffCall call={t(`${base}.call`, { returnObjects: true })} progress={progress} at={at} step={0.025} until={until} />;
+  const feed = t("day.phone", { returnObjects: true });
+  const report = t("office.chapters.veda.report", { returnObjects: true });
+  const one = useMotionValue(1);
+  const g = (k) => PHONE_FEED[k];
+  const step = (k, i) => g(k).from + i * PHONE_STEP;
+  const groupCls = progress ? "absolute inset-x-0 top-0 flex flex-col gap-2" : "flex flex-col gap-2";
+  const show = (k) => !progress || group === k;
   return (
-    <div className="rounded-[18px] border border-white/[0.07] bg-ink-950/70 p-3 backdrop-blur-[2px]">
-      <StaffChat lines={t(`${base}.chat`, { returnObjects: true })} progress={progress} at={at} step={0.035} until={until} />
-    </div>
+    <>
+      <div className={groupCls} aria-hidden={!show("ara")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneCard progress={progress} at={step("ara", 0)} until={g("ara").until} who="customer" name={feed.customer} time="02:14">
+          <p className={phoneText}>{feed.ara.in}</p>
+        </PhoneCard>
+        <PhoneCard progress={progress} at={step("ara", 1)} until={g("ara").until} who="ara" name={feed.ara.from} time="02:14">
+          <p className={phoneText}>{feed.ara.reply}</p>
+        </PhoneCard>
+        <PhoneCard progress={progress} at={step("ara", 2)} until={g("ara").until} who="customer" name={feed.customer} time="02:15">
+          <p className={phoneText}>{feed.ara.pick}</p>
+        </PhoneCard>
+        <PhoneCard progress={progress} at={step("ara", 3)} until={g("ara").until} who="ara" name={feed.ara.from} time="02:15" title={feed.ara.booked} className="border-sky-400/30">
+          <p className={phoneText}>{feed.ara.bookedBody}</p>
+        </PhoneCard>
+      </div>
+
+      <div className={groupCls} aria-hidden={!show("veda")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneReport progress={progress} at={step("veda", 0)} until={g("veda").until} report={report} feed={feed} />
+      </div>
+
+      <div className={groupCls} aria-hidden={!show("eho")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneCard progress={progress} at={step("eho", 0)} until={g("eho").until} who="call" name={feed.eho.incoming} time="18:05">
+          <p className={phoneText}>{feed.eho.number}</p>
+        </PhoneCard>
+        <PhoneCard progress={progress} at={step("eho", 1)} until={g("eho").until} who="eho" name={feed.eho.from} time="18:05" title={feed.eho.answered}>
+          <div className="mt-1.5 flex items-center gap-2">
+            <PhoneWave />
+            <p className="text-[12.5px] leading-[1.42] text-fg/85">{feed.eho.line}</p>
+          </div>
+        </PhoneCard>
+        <PhoneCard progress={progress} at={step("eho", 2)} until={g("eho").until} who="eho" name={feed.eho.from} time="18:08" title={feed.eho.booked} className="border-sky-400/30">
+          <p className={phoneText}>{feed.eho.bookedBody}</p>
+        </PhoneCard>
+      </div>
+
+      <div className={groupCls} aria-hidden={!show("nova")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneCard progress={progress} at={step("nova", 0)} until={g("nova").until} who="nova" name={feed.nova.from} time="19:41" title={feed.nova.title}>
+          <p className={phoneText}>{feed.nova.body}</p>
+        </PhoneCard>
+      </div>
+
+      {/* the last screen is the product: what the day added up to, and the door in */}
+      <div className={groupCls} aria-hidden={!show("done")} style={progress ? { pointerEvents: show("done") ? "auto" : "none" } : undefined}>
+        <PhoneCard progress={progress} at={step("done", 0)} span={PHONE_DONE_STEP} who="summary" name={feed.summary.app} time="21:00" title={feed.summary.title}>
+          <ul className="mt-2 flex flex-col gap-1.5 text-[12.5px] leading-[1.35] text-fg/85">
+            {feed.summary.rows.map((r) => (
+              <li key={r} className="flex items-center gap-2">
+                <span aria-hidden className="h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+                {r}
+              </li>
+            ))}
+          </ul>
+        </PhoneCard>
+        <Rise progress={progress ?? one} at={progress ? step("done", 0) + PHONE_DONE_STEP : 0} span={PHONE_DONE_STEP}>
+          <a
+            href="https://app.dalatech.online"
+            className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
+          >
+            {feed.cta}
+            <span aria-hidden>→</span>
+          </a>
+          <p className="mt-2 text-center text-[11px] text-fg-dim">{feed.ctaHint}</p>
+        </Rise>
+      </div>
+    </>
   );
 }
 
-const DAY_ARTEFACT_AT = { ara: 0.09, veda: 0.44, eho: 0.76 };
-
-function DayArtefactHolder({ moment, progress, stacked, hidden }) {
-  const opacity = useTransform(progress, [moment.from, moment.from + 0.03, moment.to - 0.03, moment.to], [0, 1, 1, 0]);
+// The device: a plain frame, no brand marks, no wallpaper. The screen is the
+// dark page colour so the cards are the only thing on it.
+function OwnerPhone({ progress, group, className = "" }) {
+  const { t } = useTranslation();
   return (
-    <motion.div
-      style={{ opacity, pointerEvents: "none" }}
-      className={stacked ? "absolute inset-x-0 top-0" : ""}
-      aria-hidden={hidden}
-    >
-      <DayArtefact id={moment.id} progress={progress} at={DAY_ARTEFACT_AT[moment.id]} until={moment.to} />
-    </motion.div>
+    <div className={["relative w-[240px] sm:w-[270px]", className].join(" ")} role="group" aria-label={t("day.phone.alt")}>
+      <div className="day-phone rounded-[42px] border border-white/[0.14] bg-[#0B1022] p-[7px] shadow-[0_30px_80px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+        {/* at rest the whole feed is on screen, so the screen grows to hold it */}
+        <div className={["relative overflow-hidden rounded-[36px] bg-[#070C1F]", progress ? "h-[500px] sm:h-[560px]" : "min-h-[500px] pb-8 sm:min-h-[560px]"].join(" ")}>
+          {/* status bar */}
+          <div className="flex items-center justify-between px-6 pt-4 text-[12px] font-semibold text-fg/90">
+            <span>{progress ? <PhoneTime progress={progress} /> : "21:00"}</span>
+            <span className="flex items-center gap-1.5" aria-hidden>
+              <span className="flex items-end gap-[2px]">
+                {[3, 5, 7, 9].map((h) => <span key={h} className="w-[3px] rounded-[1px] bg-fg/85" style={{ height: h }} />)}
+              </span>
+              <span className="ml-1 h-[10px] w-[20px] rounded-[3px] border border-fg/60 p-[1.5px]"><span className="block h-full w-[70%] rounded-[1px] bg-fg/85" /></span>
+            </span>
+          </div>
+          <span aria-hidden className="absolute left-1/2 top-[11px] h-[22px] w-[74px] -translate-x-1/2 rounded-full bg-black" />
+
+          <div className="relative mx-3 mt-5">
+            <PhoneFeed progress={progress} group={group} />
+          </div>
+
+          <span aria-hidden className="absolute bottom-2 left-1/2 h-[4px] w-[96px] -translate-x-1/2 rounded-full bg-fg/40" />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -3545,7 +3486,6 @@ function WorkingDay() {
 
   const settleScale = useTransform(progress, [0, 0.06], [1.03, 1]);
   const settleOpacity = useTransform(progress, [0, 0.06], [0.35, 1]);
-  const chromeOpacity = useTransform(progress, [0, 0.05, 0.97, 1], [0, 1, 1, 0]);
 
   // The page itself lifts as the sun comes up and settles back by nightfall.
   // It returns home at p = 1, so there is nothing to reset on the way out.
@@ -3559,10 +3499,11 @@ function WorkingDay() {
   });
   React.useEffect(() => () => document.documentElement.style.removeProperty("--page-bg"), []);
 
-  const [active, setActive] = React.useState(0);
+  const [group, setGroup] = React.useState(() => phoneGroupAt(0));
+  const still = useMotionValue(0.51);
   useMotionValueEvent(progress, "change", (p) => {
-    const i = DAY_MOMENTS.findIndex((m) => p >= m.from && p <= m.to);
-    if (i !== -1 && i !== active) setActive(i);
+    const g = phoneGroupAt(p);
+    if (g !== group) setGroup(g);
   });
 
   const heading = (
@@ -3574,34 +3515,44 @@ function WorkingDay() {
     </Container>
   );
 
+  const closing = (
+    <Container>
+      <div className="mt-14 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <p className="max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
+        <MagneticButton href="https://app.dalatech.online" variant="primary">{t("day.phone.cta")}</MagneticButton>
+      </div>
+    </Container>
+  );
+
+  // Reduced motion, or no atlas: the room held at nine in the morning and the
+  // phone at the end of its day, both in document order. Every card is in the
+  // DOM, so this reads correctly even if no canvas ever appears.
   if (reduced || error) {
     return (
       <section className="py-20 md:py-28">
         {heading}
-        <Container>
-          <DayStatic />
-          <p className="mt-14 text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
-        </Container>
+        <div className="relative mt-10">
+          {!error && (
+            <div className="day-band">
+              <PixelStage draw={drawWorkingDay} logicalH={DAY_H} scale={DAY_SCALE} minW={STAFF_HERO_MIN_W} progress={still} label={t("day.sceneAlt")} />
+            </div>
+          )}
+          <Container className="mt-8 flex justify-center">
+            <OwnerPhone />
+          </Container>
+        </div>
+        {closing}
       </section>
     );
   }
 
   return (
-    <section data-pin className="relative py-20 md:py-28">
+    <section data-pin className="relative pb-20 pt-10 md:pb-28 md:pt-14">
       {heading}
 
-      <div ref={dayRef} className="relative mt-10 h-[260vh] md:h-[320vh]">
+      <div ref={dayRef} className="relative mt-10 h-[280vh] md:h-[340vh]">
         <div className="day-pin flex flex-col justify-center">
-          <Container>
-            <motion.div style={{ opacity: chromeOpacity }}>
-              <DayClock progress={progress} />
-              <p className="mt-1.5 text-[11.5px] font-medium uppercase tracking-[0.16em] text-fg-dim">
-                {dayLabel(t, DAY_MOMENTS[active].id)}
-              </p>
-            </motion.div>
-          </Container>
-
-          <div className="relative mt-4 lg:order-3 lg:mt-8">
+          <div className="relative">
             <motion.div style={{ scale: settleScale, opacity: settleOpacity }} className="day-band origin-bottom">
               <PixelStage
                 draw={drawWorkingDay}
@@ -3612,37 +3563,20 @@ function WorkingDay() {
                 label={t("day.sceneAlt")}
               />
             </motion.div>
+
+            {/* the phone: under the room on a phone, in front of it on a desk */}
+            <div className="relative -mt-14 flex justify-center lg:absolute lg:inset-0 lg:mt-0 lg:block">
+              <Container className="lg:relative lg:h-full">
+                <div className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
+                  <OwnerPhone progress={progress} group={group} />
+                </div>
+              </Container>
+            </div>
           </div>
-
-          <Container className="mt-4 lg:order-2 lg:mt-0">
-            <div className="relative z-10 min-h-[60px] lg:min-h-[96px]">
-              {DAY_MOMENTS.map((m, i) => (
-                <MomentHeadline
-                  key={m.id}
-                  progress={progress}
-                  range={MOMENT_TEXT[i]}
-                  className="absolute inset-x-0 top-0 max-w-[18ch] font-display text-[22px] font-semibold leading-[1.15] tracking-tight text-fg sm:text-[26px] lg:text-[40px]"
-                >
-                  {t(`day.moments.${m.id}`)}
-                </MomentHeadline>
-              ))}
-            </div>
-          </Container>
-
-          {/* all three stay mounted; the inactive ones are inert and hidden */}
-          <Container className="mt-4 lg:mt-0">
-            <div className="relative z-10 mx-auto max-w-[440px] lg:absolute lg:right-[max(40px,calc(50vw-560px))] lg:top-1/2 lg:m-0 lg:max-w-[380px] lg:-translate-y-1/2">
-              {DAY_MOMENTS.map((m, i) => (
-                <DayArtefactHolder key={m.id} moment={m} progress={progress} stacked={i > 0} hidden={active !== i} />
-              ))}
-            </div>
-          </Container>
         </div>
       </div>
 
-      <Container>
-        <p className="mt-14 text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
-      </Container>
+      {closing}
     </section>
   );
 }
@@ -3736,40 +3670,6 @@ function WebsiteOffer() {
               <span aria-hidden>&rsaquo;</span>
             </Link>
           </div>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-function LocationBand() {
-  const { t } = useTranslation();
-  return (
-    <section id="location" aria-label={t("location.eyebrow")} className="py-16 md:py-20">
-      <Container>
-        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 border-t border-white/[0.07] pt-10">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-dim">
-              {t("location.eyebrow")}
-            </p>
-            <p className="mt-2.5 font-display text-[26px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[30px]">
-              {t("location.city")}, {t("location.country")}
-            </p>
-            <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">
-              {t("location.tagline")}
-            </p>
-          </div>
-          <a
-            href="https://www.facebook.com/profile.php?id=61586065058744"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-[44px] items-center gap-2 text-[15.5px] text-fg transition-colors hover:text-white"
-          >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-              <path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7A10 10 0 0 0 22 12z" />
-            </svg>
-            {t("nav.contact")}
-          </a>
         </div>
       </Container>
     </section>
@@ -3870,10 +3770,6 @@ function LandingPage() {
       <TheFour />
       <LiveDemo />
       <Portfolio />
-      <Testimonials />
-      <WebsiteOffer />
-      <StaffSteps />
-      <LocationBand />
       <Contact />
     </>
   );
@@ -3885,15 +3781,6 @@ function ProcessPage() {
     <PageShell>
       <HowItWorks />
       <ProcessTimeline />
-    </PageShell>
-  );
-}
-
-function TechnologyPage() {
-  usePageMeta("/technology");
-  return (
-    <PageShell>
-      <TechStack />
     </PageShell>
   );
 }
@@ -3912,6 +3799,7 @@ function PortfolioPage() {
   return (
     <PageShell>
       <Portfolio />
+      <WebsiteOffer />
     </PageShell>
   );
 }
@@ -3930,7 +3818,6 @@ function FAQPage() {
   return (
     <PageShell>
       <FAQ />
-      <Testimonials />
     </PageShell>
   );
 }
@@ -4158,15 +4045,16 @@ function StaffHero({ onHire, onSee, onPick }) {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...SPRING_REVEAL, delay: 0.22 }}
-        className="mx-auto mt-10 w-full max-w-[1040px] px-0 sm:px-7 md:mt-12"
+        className="mt-10 w-full md:mt-12"
       >
+        {/* full-bleed: at 1440 the room is 480 art pixels wide, enough for
+            the corners — bookshelf, whiteboard, cooler — to exist */}
         <PixelStage
           draw={drawStaffHero}
           logicalH={128}
           scale={HERO_SCALE}
           minW={STAFF_HERO_MIN_W}
           label={t("office.hero.sceneAlt")}
-          className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
         />
       </motion.div>
       <Container>
@@ -4625,9 +4513,9 @@ function Shell() {
                 <Route path="/" element={<LandingPage />} />
                 {/* the products page became the office page; old links and bookmarks still land */}
                 <Route path="/products" element={<Navigate to="/office" replace />} />
+                <Route path="/technology" element={<Navigate to="/" replace />} />
                 <Route path="/office" element={<OfficePage />} />
                 <Route path="/process" element={<ProcessPage />} />
-                <Route path="/technology" element={<TechnologyPage />} />
                 <Route path="/location" element={<LocationPage />} />
                 <Route path="/portfolio" element={<PortfolioPage />} />
                 <Route path="/pricing" element={<PricingPage />} />
