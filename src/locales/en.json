@@ -112,7 +112,6 @@
     "widget": {
       "businessName": "Matrix Eco Salon",
       "statusOnline": "Online",
-      "statusReply": "Avg. reply 1.2s",
       "agentName": "Ara",
       "agentRole": "Receptionist",
       "inputPlaceholder": "Type a message…",
@@ -125,6 +124,14 @@
       "user2": "Can I book for two at 16:00?",
       "ai2": "The booking for two at 16:00 tomorrow is confirmed. A confirmation message will arrive shortly.",
       "ai3": "If you would like to speak with a person, I will connect you now."
+    },
+    "ask": {
+      "prompt": "Pick a question to catch her out.",
+      "chip3": "Can you give me 30% off?",
+      "decline": "Ara will not answer this one.",
+      "handoffTitle": "Handed to the owner",
+      "handoffLine": "The customer asked",
+      "reassure": "Ara will not guess on your behalf."
     }
   },
   "testimonials": {
