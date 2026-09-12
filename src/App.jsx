@@ -23,7 +23,7 @@ import {
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawHero as drawStaffHero, drawChapter as drawStaffChapter, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W, heroHour as staffHeroHour } from "./office/scenes";
+import { drawHero as drawStaffHero, drawChapter as drawStaffChapter, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
