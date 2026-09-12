@@ -536,6 +536,64 @@
         "job": "Answers incoming calls, handles questions, and records orders."
       }
     },
-    "artCredit": "Pixel art on this page by"
+    "artCredit": "Pixel art on this page by",
+    "limits": {
+      "title": "What Ara will not do",
+      "lead": "Trust rests less on what it can do than on what it will not.",
+      "items": [
+        "It does not guess. It answers within the prices, hours, services and terms you gave it.",
+        "It does not offer a discount or a concession you have not approved.",
+        "It does not decide anything that needs a decision — it hands the customer to your team."
+      ],
+      "link": "Other questions"
+    }
+  },
+  "meta": {
+    "/": {
+      "title": "AI staff for Mongolian businesses",
+      "desc": "Four AI staff answering customer questions in Mongolian, around the clock, on Facebook, Instagram and your website."
+    },
+    "/office": {
+      "title": "AI staff",
+      "desc": "Ara, Veda, Eho and Nova. What each one does, how they work, and which channels they answer on."
+    },
+    "/pricing": {
+      "title": "Pricing",
+      "desc": "Monthly fee and setup for AI staff, and the price of a website. Team discounts and payment terms."
+    },
+    "/portfolio": {
+      "title": "Portfolio",
+      "desc": "Websites and AI work we have built."
+    },
+    "/faq": {
+      "title": "Questions",
+      "desc": "How an AI staff member works, what it will not do, and how soon it starts."
+    },
+    "/process": {
+      "title": "How we work",
+      "desc": "The steps from order to a working AI staff member."
+    },
+    "/technology": {
+      "title": "Technology",
+      "desc": "The technology we build on."
+    },
+    "/location": {
+      "title": "Where we are",
+      "desc": "Ulaanbaatar, Mongolia. How to reach us."
+    },
+    "/setup": {
+      "title": "Connect a Facebook Page",
+      "desc": "Connect your AI staff member to a Facebook Page."
+    },
+    "404": {
+      "title": "Page not found",
+      "desc": "That page does not exist."
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "That page does not exist. The link may be out of date, or the address may be wrong.",
+    "home": "Home",
+    "staff": "AI staff"
   }
 }
