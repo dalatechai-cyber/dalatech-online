@@ -1,223 +1,310 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mn">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="index, follow" />
-    <title>Data Deletion Instructions &middot; Dalatech</title>
-    <meta
-      name="description"
-      content="How to request deletion of data Dalatech holds about you from Facebook Messenger. Contact dalatech.ai@gmail.com — handled within 30 days."
-    />
+    <title>Мэдээлэл устгах хүсэлт · DalaTech</title>
+    <meta name="description" content="DalaTech-ээс өөрийн мэдээллээ устгуулах хүсэлт гаргах журам. · How to request deletion of your data from DalaTech." />
+    <link rel="canonical" href="https://dalatech.online/data-deletion/" />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap"
+    />
     <style>
-      :root { color-scheme: light; }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; }
-      body {
-        background: #fafafa;
-        color: #18181b;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        line-height: 1.65;
-      }
-      header.site {
-        border-bottom: 1px solid #e4e4e7;
-        background: #ffffffcc;
-        backdrop-filter: saturate(140%) blur(8px);
-        position: sticky;
-        top: 0;
-        z-index: 10;
-      }
-      .wrap { max-width: 768px; margin: 0 auto; padding: 0 24px; }
-      header.site .wrap {
-        display: flex; align-items: center; justify-content: space-between; height: 64px;
-      }
-      .brand {
-        display: inline-flex; align-items: center; gap: 10px;
-        text-decoration: none; color: #09090b; font-weight: 700; font-size: 16px;
-      }
-      .brand img { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; }
-      nav a {
-        color: #3f3f46; text-decoration: none; font-size: 14px; margin-left: 18px;
-      }
-      nav a:hover { color: #09090b; }
-      main { padding: 48px 0 96px; }
-      h1 {
-        font-size: 36px; line-height: 1.15; letter-spacing: -0.02em;
-        margin: 0 0 8px; color: #09090b;
-      }
-      .lede { color: #52525b; margin: 0 0 32px; }
-      h2 {
-        font-size: 20px; margin: 36px 0 8px;
-        color: #09090b; letter-spacing: -0.01em;
-      }
-      p, li { color: #27272a; }
-      ul, ol { padding-left: 22px; }
-      ol li { margin-bottom: 10px; }
-      a.inline { color: #09090b; text-decoration: underline; text-underline-offset: 3px; }
-      a.inline:hover { color: #2563eb; }
-      .meta { font-size: 13px; color: #71717a; margin-top: 0; }
-      .card {
-        margin-top: 32px; padding: 20px 22px;
-        background: #ffffff; border: 1px solid #e4e4e7; border-radius: 14px;
-      }
-      .pill {
-        display: inline-block; padding: 4px 10px; border-radius: 999px;
-        background: #ecfdf5; color: #065f46; font-size: 12px; font-weight: 600;
-        border: 1px solid #a7f3d0; margin-bottom: 8px;
-      }
-      .email {
-        display: inline-block; padding: 14px 18px; border-radius: 12px;
-        background: #ffffff; border: 1px solid #e4e4e7;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        font-size: 15px; color: #09090b; text-decoration: none; margin-top: 6px;
-      }
-      .email:hover { border-color: #09090b; }
-      footer {
-        border-top: 1px solid #e4e4e7; padding: 24px 0;
-        color: #71717a; font-size: 13px;
-      }
-      footer .wrap {
-        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-      }
-      footer a { color: #3f3f46; text-decoration: none; margin-right: 16px; }
-      footer a:hover { color: #09090b; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { background: #050A18; color-scheme: dark; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: #050A18;
+      color: #F0F4FF;
+      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #7DD3FC; }
+    a:hover { color: #BAE6FD; }
+    :focus-visible { outline: 2px solid #38BDF8; outline-offset: 3px; border-radius: 4px; }
+    .wrap { width: 100%; max-width: 768px; margin: 0 auto; padding: 0 20px; }
+    header.site {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(5, 10, 24, 0.82);
+      backdrop-filter: saturate(150%) blur(14px);
+      -webkit-backdrop-filter: saturate(150%) blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    header.site .wrap {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; min-height: 62px; flex-wrap: wrap;
+    }
+    .brand {
+      font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 700; font-size: 17px; letter-spacing: -0.02em;
+      color: #F0F4FF; text-decoration: none;
+    }
+    .brand:hover { color: #FFFFFF; }
+    .lang { display: flex; gap: 4px; padding: 3px; border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; }
+    .lang button {
+      appearance: none; border: 0; cursor: pointer; background: transparent;
+      color: #8B9FC4; font: inherit; font-size: 12.5px; font-weight: 500;
+      padding: 5px 13px; border-radius: 999px; transition: background-color .18s, color .18s;
+      min-height: 30px;
+    }
+    .lang button:hover { color: #F0F4FF; }
+    .lang button[aria-pressed="true"] { background: rgba(255,255,255,0.09); color: #F0F4FF; }
+    main { padding: 48px 0 72px; }
+    article + article { margin-top: 64px; padding-top: 48px; border-top: 1px solid rgba(255,255,255,0.07); }
+    h1 {
+      font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 700; font-size: clamp(30px, 6vw, 42px); line-height: 1.1;
+      letter-spacing: -0.025em; margin: 0 0 18px;
+    }
+    h2 {
+      font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 600; font-size: 19px; line-height: 1.35; letter-spacing: -0.012em;
+      margin: 42px 0 10px; color: #F0F4FF;
+    }
+    p, li { color: #C5D2EA; margin: 0 0 14px; }
+    .summary { font-size: 17.5px; line-height: 1.65; color: #A9BBDA; margin-bottom: 16px; }
+    .updated {
+      font-size: 12.5px; color: #5A6E94; margin: 0 0 8px;
+      padding-bottom: 22px; border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    ul { margin: 0 0 16px; padding-left: 22px; }
+    li { margin-bottom: 7px; }
+    li::marker { color: #5A6E94; }
+    footer.site { border-top: 1px solid rgba(255,255,255,0.07); padding: 26px 0 44px; }
+    footer.site nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+    footer.site a { font-size: 13.5px; color: #8B9FC4; text-decoration: none; }
+    footer.site a:hover { color: #F0F4FF; }
+    footer.site p { font-size: 12.5px; color: #5A6E94; margin: 18px 0 0; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
     </style>
   </head>
   <body>
     <header class="site">
       <div class="wrap">
-        <a class="brand" href="/">
-          <img src="/Photos/dalatech-logo.png" alt="Dalatech logo" />
-          Dalatech
-        </a>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/privacy/">Privacy</a>
-          <a href="/terms/">Terms</a>
-        </nav>
+        <a class="brand" href="/">DalaTech</a>
+        <div class="lang" role="group" aria-label="Хэл / Language">
+          <button type="button" data-lang="mn" aria-pressed="true">Монгол</button>
+          <button type="button" data-lang="en" aria-pressed="false">English</button>
+        </div>
       </div>
     </header>
 
-    <main>
-      <div class="wrap">
-        <span class="pill">For users of our Facebook Page</span>
+    <main class="wrap">
+      <article lang="mn" data-lang="mn">
+        <h1>Мэдээлэл устгах заавар</h1>
+        <p class="summary">Энэ хуудас DalaTech-ийн хадгалж буй таны мэдээллийг хэрхэн устгуулах, хүсэлтдээ юу бичих, бид хэдэн хоногт багтаан гүйцэтгэхийг алхам алхмаар тайлбарлана. Хүсэлт гаргахад төлбөр байхгүй.</p>
+        <p class="updated">Сүүлд шинэчилсэн: 2026 оны 9 дүгээр сарын 11</p>
+        <h2>1. Энэ хуудас хэнд зориулагдсан бэ</h2>
+        <p>Дараах хүмүүс бидний хадгалж буй мэдээллээ устгуулах хүсэлт гаргаж болно:</p>
+        <ul>
+          <li>DalaTech-ийн Facebook хуудсанд Messenger-ээр зурвас бичсэн хүн.</li>
+          <li><a class="inline" href="https://dalatech.online">dalatech.online</a> сайт дээрх чат цонхоор бидэнтэй ярьсан хүн.</li>
+          <li>Сайтаас демо эсвэл урьдчилан бүртгэлийн хүсэлт илгээсэн хүн.</li>
+          <li>Өөр бизнесийн Facebook, Instagram, вэбсайт дээр DalaTech-ийн AI ажилтан Ара-тай ярилцсан хүн — 7 дугаар хэсгийг үзнэ үү.</li>
+          <li>DalaTech-ээс үйлчилгээ авдаг бизнес — 8 дугаар хэсгийг үзнэ үү.</li>
+        </ul>
+        <h2>2. Ямар мэдээллийг устгуулж болох вэ</h2>
+        <p>Messenger-ээр бидэнтэй холбогдсон бол бид дараах мэдээллийг хадгалдаг:</p>
+        <ul>
+          <li>Таны бичсэн зурвас болон бидний хариу.</li>
+          <li>Facebook хэрэглэгчийн дугаар — зөвхөн манай хуудсанд хамаарах тоон дугаар.</li>
+          <li>Facebook дээр нээлттэй харагдах нэр, профайл зураг.</li>
+          <li>Зурвас бүрийн огноо, цаг, хэл, мөн таны илгээсэн хавсралт (зураг, файл, дуу).</li>
+        </ul>
+        <p>Сайтын чат цонхоор бичсэн бол бид таны зурвас, бидний хариу, огноо, цагийг хадгална. Энэ сувгаар Facebook-ийн профайлын мэдээлэл ирдэггүй — та чатдаа нэр, утасны дугаараа өөрөө бичсэн бол л бид түүнийг мэднэ.</p>
+        <p>Демо эсвэл урьдчилан бүртгэлийн хүсэлт илгээсэн бол бид дараах мэдээллийг хадгалдаг:</p>
+        <ul>
+          <li>Нэр, утасны дугаар, бизнесийн нэр, бизнес юу хийдэг тухай тайлбар.</li>
+          <li>Сонгосон үйлчилгээ, нэмж бичсэн тэмдэглэл, өгсөн бол имэйл хаяг.</li>
+          <li>Хүсэлт илгээсэн хуудас, сайтын хэл, огноо, цаг.</li>
+        </ul>
+        <p>Эхо (утасны оператор), Нова (харилцагчийн үйлчилгээ) хараахан ажиллаж эхлээгүй. Тиймээс бид дуудлагын бичлэг, дуу хоолойн мэдээлэл хадгалдаггүй. Эдгээрт урьдчилан бүртгүүлэхэд өгсөн мэдээлэл нь дээр жагсаасан демо хүсэлтийн мэдээлэлтэй адил.</p>
+        <h2>3. Хүсэлтээ хэрхэн илгээх вэ</h2>
+        <p>Хоёр зам байна, аль нь ч ижил хүчинтэй. Бид автомат маягт ашигладаггүй — хүсэлтийг хүн уншиж, зөв ярианы түүхийг олж устгаад, танд баталгаажуулж хариулна.</p>
+        <ul>
+          <li>Имэйл: <a class="inline" href="mailto:dalatech.ai@gmail.com?subject=%D0%9C%D1%8D%D0%B4%D1%8D%D1%8D%D0%BB%D1%8D%D0%BB%20%D1%83%D1%81%D1%82%D0%B3%D0%B0%D1%85%20%D1%85%D2%AF%D1%81%D1%8D%D0%BB%D1%82%20%E2%80%94%20DalaTech&amp;body=%D0%A1%D0%B0%D0%B9%D0%BD%20%D0%B1%D0%B0%D0%B9%D0%BD%D0%B0%20%D1%83%D1%83%2C%20DalaTech.%0A%0A%D0%9C%D0%B8%D0%BD%D0%B8%D0%B9%20%D1%82%D1%83%D1%85%D0%B0%D0%B9%20%D1%85%D0%B0%D0%B4%D0%B3%D0%B0%D0%BB%D0%B6%20%D0%B1%D1%83%D0%B9%20%D0%BC%D1%8D%D0%B4%D1%8D%D1%8D%D0%BB%D0%BB%D0%B8%D0%B9%D0%B3%20%D1%83%D1%81%D1%82%D0%B3%D0%B0%D0%B6%20%D3%A9%D0%B3%D0%BD%D3%A9%20%D2%AF%D2%AF.%0A%0A%D0%A5%D0%BE%D0%BB%D0%B1%D0%BE%D0%B3%D0%B4%D1%81%D0%BE%D0%BD%20%D1%81%D1%83%D0%B2%D0%B0%D0%B3%20%28Messenger%20%2F%20%D1%81%D0%B0%D0%B9%D1%82%D1%8B%D0%BD%20%D1%87%D0%B0%D1%82%20%2F%20%D0%B4%D0%B5%D0%BC%D0%BE%20%D1%85%D2%AF%D1%81%D1%8D%D0%BB%D1%82%29%3A%20%0AFacebook%20%D0%B4%D1%8D%D1%8D%D1%80%20%D1%85%D0%B0%D1%80%D0%B0%D0%B3%D0%B4%D0%B0%D1%85%20%D0%BD%D1%8D%D1%80%2C%20%D1%8D%D1%81%D0%B2%D1%8D%D0%BB%20%D1%87%D0%B0%D1%82%D0%B0%D0%B4%20%D2%AF%D0%BB%D0%B4%D1%8D%D1%8D%D1%81%D1%8D%D0%BD%20%D0%BD%D1%8D%D1%80%2C%20%D1%83%D1%82%D0%B0%D1%81%D0%BD%D1%8B%20%D0%B4%D1%83%D0%B3%D0%B0%D0%B0%D1%80%3A%20%0A%D0%9E%D0%B9%D1%80%D0%BE%D0%BB%D1%86%D0%BE%D0%BE%20%D0%BE%D0%B3%D0%BD%D0%BE%D0%BE%3A%20%0A%0A%D0%91%D0%B0%D1%8F%D1%80%D0%BB%D0%B0%D0%BB%D0%B0%D0%B0.">dalatech.ai@gmail.com</a> хаяг руу «Мэдээлэл устгах хүсэлт — DalaTech» гэсэн гарчигтай захидал илгээнэ.</li>
+          <li>Facebook: DalaTech-ийн Facebook хуудсанд Messenger-ээр зурвас бичиж, мэдээллээ устгуулах хүсэлтэй байгаагаа мэдэгдэнэ.</li>
+        </ul>
+        <p>Боломжтой бол Facebook бүртгэлдээ холбосон имэйл хаягаасаа бичээрэй — ингэвэл бид хүсэлтийг хурдан баталгаажуулна. Боломжгүй бол урьд нь зурвас бичихдээ ашигласан Facebook бүртгэлээсээ Messenger-ээр бичнэ үү.</p>
+        <h2>4. Хүсэлтдээ юу бичих вэ</h2>
+        <p>Зөв мэдээллийг олохын тулд дараах зүйлийг бичнэ үү:</p>
+        <ul>
+          <li>Messenger-ээр бичсэн бол: Facebook дээр харагдах нэр, бидэнд хамгийн сүүлд бичсэн ойролцоо огноо.</li>
+          <li>Сайтын чат цонхоор ярьсан бол: ярьсан ойролцоо огноо, цаг, мөн чатдаа нэр, утасны дугаараа үлдээсэн бол түүнийг.</li>
+          <li>Демо эсвэл урьдчилан бүртгэлийн хүсэлт: хүсэлтдээ бичсэн нэр, утасны дугаар.</li>
+          <li>Өөр бизнесийн AI ажилтантай ярьсан бол: тухайн бизнесийн нэр, ямар суваг дээр ярьсан (Facebook, Instagram, вэбсайт), ойролцоо огноо.</li>
+        </ul>
+        <p>Өөр хувийн мэдээлэл шаардахгүй. Хэрэв ярианы түүхийг олж чадахгүй, эсвэл хүсэлт гаргасан хүн мөн эсэхийг тодруулах шаардлагатай бол бид нэмэлт нэг асуулт асууна. Баталгаажаагүй хүсэлтээр бид өөр хүний мэдээллийг устгахгүй.</p>
+        <h2>5. Бид юу хийх вэ, хэдэн хоногт багтах вэ</h2>
+        <ul>
+          <li>Хүсэлтийг хүлээн авснаа 3 ажлын өдөрт багтаан имэйлээр мэдэгдэнэ.</li>
+          <li>Шаардлагатай бол зөв ярианы түүхийг олохын тулд нэг тодруулах асуулт асууна.</li>
+          <li>Таны мэдээллийг Facebook хуудасны ирсэн зурвасны сангаас, түүнд холбосон системүүдээс, сайтын чатын бүртгэлээс, демо хүсэлтийн бүртгэлээс, мөн тухайн хүсэлтийн талаар бидэнд ирсэн имэйл, мэдэгдлийн хуулбараас устгана. Тухайн яриатай холбож хийсэн тэмдэглэл байвал түүнийг ч устгана.</li>
+          <li>Устгаж дууссаныг имэйлээр баталгаажуулна. Бүх ажиллагаа анхны хүсэлтээс хойш 30 хоногт багтана.</li>
+        </ul>
+        <p>Хүсэлт гаргах, гүйцэтгэхэд ямар ч төлбөр байхгүй.</p>
+        <h2>6. Юу устах вэ, юу үлдэх вэ</h2>
+        <p>Хүсэлт биелсний дараа 2 дугаар хэсэгт жагсаасан мэдээлэл бидний системд үлдэхгүй. Устгасан мэдээллийг сэргээх боломжгүй.</p>
+        <p>Дараах зүйл устахгүй:</p>
+        <ul>
+          <li>Таны өөрийн Facebook эсвэл Messenger бүртгэл дэх ярианы хуулбар. Үүнийг та Messenger програмаасаа хүссэн үедээ өөрөө устгана.</li>
+          <li>Meta-гийн өөрийн системд байгаа мэдээлэл. Энэ нь Meta-гийн нууцлалын нөхцлөөр зохицуулагдана.</li>
+          <li>Хариуг боловсруулахад ашигладаг AI загварын үйлчилгээ үзүүлэгчид үлдсэн байж болох хуулбар. Зурвас хариу үүсгэхийн тулд тэднээр дамждаг бөгөөд тэдний талд байгаа мэдээлэл тухайн үйлчилгээ үзүүлэгчийн нөхцлөөр зохицуулагдана. Хэнээр дамждагийг Нууцлалын бодлого хуудсанд бичсэн.</li>
+          <li>Сайтаар илгээсэн хүсэлт серверийн техникийн бүртгэлд автоматаар тэмдэглэгддэг. Эдгээр бүртгэл богино хугацаанд хадгалагдаад автоматаар дарагддаг тул тусад нь устгах боломжгүй.</li>
+          <li>Устгах хүсэлтийн тухай хамгийн бага бүртгэл: хүсэлт ирсэн огноо, гүйцэтгэсэн огноо. Энэ бүртгэлд ярианы агуулга байхгүй бөгөөд бид үүнийг зөвхөн хүсэлт биелснийг батлахад ашиглана.</li>
+          <li>Үйлчилгээний төлбөр төлсөн бол хууль тогтоомжийн дагуу хадгалах ёстой төлбөр, санхүүгийн баримт.</li>
+        </ul>
+        <h2>7. Өөр бизнесийн AI ажилтантай ярьсан бол</h2>
+        <p>Ара зэрэг AI ажилтан манай үйлчлүүлэгч бизнесүүдийн нэрийн өмнөөс тэдний Facebook, Instagram, вэбсайт дээр ажилладаг. Ийм ярианы мэдээлэл тухайн бизнест харьяалагдана; DalaTech түүнийг зөвхөн тэдний даалгавраар хадгалж, боловсруулдаг.</p>
+        <ul>
+          <li>Хамгийн хурдан зам: тухайн бизнест шууд хандаж, мэдээллээ устгуулахыг хүсэх.</li>
+          <li>Эсвэл бидэнд бичээрэй. Бид хүсэлтийг тухайн бизнест дамжуулж, тэдний зааврын дагуу бидний ажиллуулж буй системээс устгана.</li>
+        </ul>
+        <p>Хугацаа адилхан: 3 ажлын өдөрт хүлээн авснаа мэдэгдэж, 30 хоногт багтаан гүйцэтгэнэ. Тухайн бизнес өөрийн бүртгэлдээ хадгалсан мэдээллийг зөвхөн тэд өөрсдөө устгаж чадна.</p>
+        <h2>8. Үйлчилгээ авдаг бизнес байгууллагад</h2>
+        <p>Та DalaTech-ээс AI ажилтан эсвэл вэбсайтын үйлчилгээ авдаг бол дараах мэдээллийг устгуулах хүсэлт гаргаж болно:</p>
+        <ul>
+          <li>AI ажилтныг сургахад өгсөн бизнесийн мэдээлэл — үнэ, үйлчилгээ, түгээмэл асуулт, баримт бичиг буюу мэдлэгийн сан.</li>
+          <li>Бид танай өмнөөс хадгалж буй харилцагчидтай хийсэн ярианы түүх, түүнд тулгуурлан бэлдсэн тайлан.</li>
+          <li>Facebook хуудсанд холбогдохоор өгсөн эрх. Энэ эрхийг та Facebook-ийн тохиргооноос хүссэн үедээ өөрөө ч цуцалж болно.</li>
+        </ul>
+        <p>Хүсэлтээ имэйлээр илгээнэ үү. Хүлээн авснаа 3 ажлын өдөрт багтаан мэдэгдэнэ. Устгахаас өмнө ярианы түүх, мэдлэгийн сангийнхаа хуулбарыг авахыг хүсвэл бидэнд хэлээрэй — бид хуулбарыг өгнө. Устгалыг хүсэлт ирснээс хойш 30 хоногт багтаан гүйцэтгэж, имэйлээр баталгаажуулна. Хууль ёсоор хадгалах ёстой төлбөрийн баримт үүнд хамаарахгүй.</p>
+        <h2>Холбоо барих</h2>
+        <p>Мэдээлэл устгах хүсэлт, эсвэл энэ хуудастай холбоотой асуултаа <a class="inline" href="mailto:dalatech.ai@gmail.com?subject=%D0%9C%D1%8D%D0%B4%D1%8D%D1%8D%D0%BB%D1%8D%D0%BB%20%D1%83%D1%81%D1%82%D0%B3%D0%B0%D1%85%20%D1%85%D2%AF%D1%81%D1%8D%D0%BB%D1%82%20%E2%80%94%20DalaTech&amp;body=%D0%A1%D0%B0%D0%B9%D0%BD%20%D0%B1%D0%B0%D0%B9%D0%BD%D0%B0%20%D1%83%D1%83%2C%20DalaTech.%0A%0A%D0%9C%D0%B8%D0%BD%D0%B8%D0%B9%20%D1%82%D1%83%D1%85%D0%B0%D0%B9%20%D1%85%D0%B0%D0%B4%D0%B3%D0%B0%D0%BB%D0%B6%20%D0%B1%D1%83%D0%B9%20%D0%BC%D1%8D%D0%B4%D1%8D%D1%8D%D0%BB%D0%BB%D0%B8%D0%B9%D0%B3%20%D1%83%D1%81%D1%82%D0%B3%D0%B0%D0%B6%20%D3%A9%D0%B3%D0%BD%D3%A9%20%D2%AF%D2%AF.%0A%0A%D0%A5%D0%BE%D0%BB%D0%B1%D0%BE%D0%B3%D0%B4%D1%81%D0%BE%D0%BD%20%D1%81%D1%83%D0%B2%D0%B0%D0%B3%20%28Messenger%20%2F%20%D1%81%D0%B0%D0%B9%D1%82%D1%8B%D0%BD%20%D1%87%D0%B0%D1%82%20%2F%20%D0%B4%D0%B5%D0%BC%D0%BE%20%D1%85%D2%AF%D1%81%D1%8D%D0%BB%D1%82%29%3A%20%0AFacebook%20%D0%B4%D1%8D%D1%8D%D1%80%20%D1%85%D0%B0%D1%80%D0%B0%D0%B3%D0%B4%D0%B0%D1%85%20%D0%BD%D1%8D%D1%80%2C%20%D1%8D%D1%81%D0%B2%D1%8D%D0%BB%20%D1%87%D0%B0%D1%82%D0%B0%D0%B4%20%D2%AF%D0%BB%D0%B4%D1%8D%D1%8D%D1%81%D1%8D%D0%BD%20%D0%BD%D1%8D%D1%80%2C%20%D1%83%D1%82%D0%B0%D1%81%D0%BD%D1%8B%20%D0%B4%D1%83%D0%B3%D0%B0%D0%B0%D1%80%3A%20%0A%D0%9E%D0%B9%D1%80%D0%BE%D0%BB%D1%86%D0%BE%D0%BE%20%D0%BE%D0%B3%D0%BD%D0%BE%D0%BE%3A%20%0A%0A%D0%91%D0%B0%D1%8F%D1%80%D0%BB%D0%B0%D0%BB%D0%B0%D0%B0.">dalatech.ai@gmail.com</a> хаягаар илгээнэ үү. Мөн DalaTech-ийн Facebook хуудсанд зурвас бичиж болно. Хүсэлтийг хүн уншиж, хариулна.</p>
+        <p>Бид ямар мэдээллийг яагаад цуглуулдаг, хэр удаан хадгалдаг талаар Нууцлалын бодлого хуудаснаас, үйлчилгээний нөхцлийг Үйлчилгээний нөхцөл хуудаснаас уншина уу.</p>
+        <p>Хүсэлтийг шийдвэрлэсэн байдалд сэтгэл хангалуун бус байвал та Монгол Улсын хувийн мэдээлэл хамгаалах асуудал эрхэлсэн эрх бүхий байгууллагад гомдол гаргах эрхтэй.</p>
+      </article>
+      <article lang="en" data-lang="en">
         <h1>Data Deletion Instructions</h1>
-        <p class="lede">
-          If you have ever messaged the Dalatech Facebook Page through
-          Messenger, you can ask us to delete the data we hold about you.
-          This page explains exactly how.
-        </p>
-        <p class="meta">Last updated: 8 May 2026</p>
-
-        <h2>What data this covers</h2>
-        <p>
-          Through Facebook Messenger, Dalatech receives and stores a limited
-          set of information from Meta&rsquo;s Messenger Platform:
-        </p>
+        <p class="summary">This page explains, step by step, how to ask DalaTech to delete the data we hold about you, what to put in the request, and how long we take. There is no charge for a request.</p>
+        <p class="updated">Last updated: 11 September 2026</p>
+        <h2>1. Who this page is for</h2>
+        <p>Any of the following people can ask us to delete the data we hold about them:</p>
         <ul>
-          <li>The messages you sent to our Page and our replies.</li>
-          <li>Your Facebook user ID (a numeric identifier scoped to our Page).</li>
-          <li>Your public profile name and profile picture.</li>
-          <li>Timestamps and any attachments you sent.</li>
+          <li>Anyone who has messaged the DalaTech Facebook Page through Messenger.</li>
+          <li>Anyone who has chatted with us through the chat window on dalatech.online.</li>
+          <li>Anyone who has sent a demo request or a pre-registration request from the site.</li>
+          <li>Anyone who has chatted with Ara, DalaTech's AI staff member, on another business's Facebook, Instagram or website — see section 7.</li>
+          <li>A business that buys our services — see section 8.</li>
         </ul>
-        <p>
-          A deletion request will remove all of the above from our records.
-          For full context on how this data is collected and used, see our
-          <a class="inline" href="/privacy/">Privacy Policy</a>.
-        </p>
-
-        <h2>How to request deletion</h2>
-        <p>
-          We do not run a self-serve deletion form &mdash; deletion requests
-          are handled by a human at Dalatech to make sure we delete the right
-          conversation and confirm it back to you.
-        </p>
-
-        <ol>
-          <li>
-            Send an email to
-            <a class="inline" href="mailto:dalatech.ai@gmail.com?subject=Data%20deletion%20request%20%E2%80%94%20Dalatech%20Facebook%20Messenger&amp;body=Hi%20Dalatech%2C%0A%0AI%27d%20like%20you%20to%20delete%20the%20data%20you%20hold%20about%20me%20from%20Facebook%20Messenger.%0A%0AMy%20Facebook%20display%20name%3A%20%0AApproximate%20date%20of%20our%20last%20message%20to%20your%20Page%3A%20%0A%0AThank%20you.">dalatech.ai@gmail.com</a>
-            with the subject line &ldquo;Data deletion request &mdash; Dalatech
-            Facebook Messenger&rdquo;.
-          </li>
-          <li>
-            In the email, include the Facebook display name you used when
-            messaging our Page, and the approximate date of your last message
-            so we can locate the conversation. You do <strong>not</strong>
-            need to share any other personal details.
-          </li>
-          <li>
-            Send the email from the address associated with your Facebook
-            account where possible &mdash; this lets us verify the request
-            quickly. If that is not possible, reply to us on Messenger from
-            the same Facebook account asking us to delete your data.
-          </li>
-        </ol>
-
-        <p>
-          <a class="email" href="mailto:dalatech.ai@gmail.com?subject=Data%20deletion%20request%20%E2%80%94%20Dalatech%20Facebook%20Messenger">
-            &rarr; dalatech.ai@gmail.com
-          </a>
-        </p>
-
-        <h2>What happens next</h2>
-        <ol>
-          <li>
-            We acknowledge your request by email within
-            <strong>3 business days</strong>.
-          </li>
-          <li>
-            We delete the conversation and any related notes from our Page
-            inbox and any tooling we have connected to the Messenger Platform
-            API.
-          </li>
-          <li>
-            We confirm completion to you by email. The full process is handled
-            within <strong>30 days</strong> of your initial request.
-          </li>
-        </ol>
-
-        <h2>Things to know</h2>
+        <h2>2. What you can ask us to delete</h2>
+        <p>If you contacted us through Messenger, we hold:</p>
         <ul>
-          <li>
-            Deletion is irreversible &mdash; once we delete your conversation,
-            we cannot recover it.
-          </li>
-          <li>
-            Deletion only affects what Dalatech stores. It does <em>not</em>
-            delete the conversation from your own Facebook account; you can do
-            that from your Messenger app at any time.
-          </li>
-          <li>
-            We may retain a minimal record of the deletion request itself
-            (date and the fact that it was completed) for our own audit
-            purposes, with no message content.
-          </li>
+          <li>The messages you sent us and our replies.</li>
+          <li>Your Facebook user ID — a numeric identifier that applies only to our Page.</li>
+          <li>Your public display name and profile picture on Facebook.</li>
+          <li>The date, time and language of each message, and any attachment you sent (image, file, audio).</li>
         </ul>
-
-        <div class="card">
-          <strong>Need help with the request?</strong><br />
-          Email
-          <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>
-          and a person at Dalatech will walk you through it. We respond
-          within 30 days, usually within 3 business days.
-        </div>
-      </div>
+        <p>If you wrote through the chat window on our site, we hold your messages, our replies, and the date and time. No Facebook profile data reaches us through that channel — we know your name or phone number only if you typed it into the chat yourself.</p>
+        <p>If you sent a demo request or a pre-registration request, we hold:</p>
+        <ul>
+          <li>Your name, phone number, business name, and your description of what your business does.</li>
+          <li>The service you selected, any note you added, and your email address if you gave one.</li>
+          <li>The page you sent it from, the language the site was in, and the date and time.</li>
+        </ul>
+        <p>Eho, the phone operator, and Nova, customer care, are not yet in service. We therefore hold no call recordings and no voice data. What you give us when you pre-register for them is the same data as the demo request listed above.</p>
+        <h2>3. How to send the request</h2>
+        <p>There are two routes, and both carry the same weight. We do not run a self-serve form — a person reads the request, finds the right conversation, deletes it, and confirms back to you.</p>
+        <ul>
+          <li>Email: write to <a class="inline" href="mailto:dalatech.ai@gmail.com?subject=Data%20deletion%20request%20%E2%80%94%20DalaTech&amp;body=Hello%20DalaTech%2C%0A%0APlease%20delete%20the%20data%20you%20hold%20about%20me.%0A%0AWhere%20we%20were%20in%20touch%20%28Messenger%20%2F%20site%20chat%20%2F%20demo%20request%29%3A%20%0AThe%20display%20name%2C%20or%20the%20name%20and%20phone%20number%20I%20left%3A%20%0AApproximate%20date%3A%20%0A%0AThank%20you.">dalatech.ai@gmail.com</a> with the subject line "Data deletion request — DalaTech".</li>
+          <li>Facebook: message the DalaTech Facebook Page on Messenger and tell us you want your data deleted.</li>
+        </ul>
+        <p>Where you can, send the email from the address linked to your Facebook account — that lets us verify the request quickly. If you cannot, message us on Messenger from the same Facebook account you used before.</p>
+        <h2>4. What to put in the request</h2>
+        <p>So that we find the right data, please tell us:</p>
+        <ul>
+          <li>For Messenger: your Facebook display name, and the approximate date you last wrote to us.</li>
+          <li>For the chat window on our site: the approximate date and time you chatted, and the name or phone number if you left one in the chat.</li>
+          <li>For a demo or pre-registration request: the name and phone number you entered in it.</li>
+          <li>If you chatted with an AI staff member on another business's page: the name of that business, the channel you used (Facebook, Instagram, website), and the approximate date.</li>
+        </ul>
+        <p>We do not need any other personal detail. If we cannot find the conversation, or we need to confirm that the request is really yours, we will ask one further question. We will not delete someone else's data on an unverified request.</p>
+        <h2>5. What we do, and how long it takes</h2>
+        <ul>
+          <li>We confirm by email within 3 business days that we have received the request.</li>
+          <li>If we need to, we ask one clarifying question so we delete the right conversation.</li>
+          <li>We delete your data from the Page inbox, from the systems connected to it, from the site chat records, from our demo request records, and from the copies of the email and messaging notifications we received about that request. Any notes we made about the conversation are deleted with it.</li>
+          <li>We confirm by email once it is done. The whole process is completed within 30 days of your first request.</li>
+        </ul>
+        <p>Making a request costs nothing, and neither does carrying it out.</p>
+        <h2>6. What is deleted, and what remains</h2>
+        <p>Once the request is carried out, the data listed in section 2 is no longer in our systems. Deleted data cannot be recovered.</p>
+        <p>The following is not deleted:</p>
+        <ul>
+          <li>The copy of the conversation in your own Facebook or Messenger account. You can delete that yourself from the Messenger app at any time.</li>
+          <li>Data held inside Meta's own systems, which is governed by Meta's privacy terms.</li>
+          <li>Any copy held by the AI model provider used to draft replies. Messages pass through that provider so an answer can be generated, and what remains on their side is governed by their own terms. Our Privacy Policy names who the messages pass through.</li>
+          <li>Technical server logs that automatically record a request sent from the site. These logs are kept for a short time and are overwritten automatically, so they cannot be deleted individually.</li>
+          <li>A minimal record of the deletion request itself: the date it arrived and the date it was completed. This record holds no message content and we use it only to show that the request was carried out.</li>
+          <li>If you have paid for our services, the payment and accounting records that law requires us to keep.</li>
+        </ul>
+        <h2>7. If you chatted with an AI staff member of another business</h2>
+        <p>AI staff such as Ara work on behalf of our client businesses, on their Facebook, Instagram and website channels. Data from those conversations belongs to that business; DalaTech only stores and processes it on their instructions.</p>
+        <ul>
+          <li>The fastest route is to contact that business directly and ask them to delete your data.</li>
+          <li>Alternatively, write to us. We pass the request to the business and, on their instruction, delete the data from the systems we run for them.</li>
+        </ul>
+        <p>The timing is the same: we acknowledge within 3 business days and complete within 30 days. Anything that business keeps in its own records can only be deleted by them.</p>
+        <h2>8. For businesses that buy our services</h2>
+        <p>If you buy an AI staff member or a website from DalaTech, you can ask us to delete:</p>
+        <ul>
+          <li>The business information you gave us to train the AI staff member — prices, services, common questions, documents: the knowledge base.</li>
+          <li>The conversation history with your customers that we hold on your behalf, and the reports prepared from it.</li>
+          <li>The access you granted to your Facebook Page. You can also revoke that yourself at any time in your Facebook settings.</li>
+        </ul>
+        <p>Send the request by email. We acknowledge it within 3 business days. If you want a copy of your conversation history and knowledge base before we delete them, tell us and we will provide it. We complete the deletion within 30 days of the request and confirm it by email. Payment records that law requires us to keep are not covered by this.</p>
+        <h2>Contact</h2>
+        <p>Send deletion requests, or any question about this page, to <a class="inline" href="mailto:dalatech.ai@gmail.com?subject=Data%20deletion%20request%20%E2%80%94%20DalaTech&amp;body=Hello%20DalaTech%2C%0A%0APlease%20delete%20the%20data%20you%20hold%20about%20me.%0A%0AWhere%20we%20were%20in%20touch%20%28Messenger%20%2F%20site%20chat%20%2F%20demo%20request%29%3A%20%0AThe%20display%20name%2C%20or%20the%20name%20and%20phone%20number%20I%20left%3A%20%0AApproximate%20date%3A%20%0A%0AThank%20you.">dalatech.ai@gmail.com</a>. You can also message the DalaTech Facebook Page. A person reads and answers every request.</p>
+        <p>For what data we collect, why, and how long we keep it, see our Privacy Policy; for the commercial terms, see our Terms of Service.</p>
+        <p>If you are not satisfied with how we handled your request, you may raise it with the competent authority for personal data protection in Mongolia.</p>
+      </article>
     </main>
 
-    <footer>
+    <footer class="site">
       <div class="wrap">
-        <div>&copy; 2026 Dalatech &middot; Ulaanbaatar, Mongolia</div>
-        <div>
-          <a href="/">Home</a>
-          <a href="/privacy/">Privacy</a>
-          <a href="/terms/">Terms</a>
-          <a href="/data-deletion/">Data deletion</a>
-        </div>
+        <nav aria-label="Legal">
+          <a href="/privacy/">Нууцлалын бодлого</a>
+          <a href="/terms/">Үйлчилгээний нөхцөл</a>
+          <a href="/">Нүүр хуудас руу буцах</a>
+        </nav>
+        <p>© 2026 DalaTech</p>
       </div>
     </footer>
+
+    <script>
+    // Both languages ship in the markup. Hide one, and remember the choice
+    // under the key the main site already uses. Wrapped because storage throws
+    // in a private window, and a legal page must still render if it does.
+    (function () {
+      var articles = document.querySelectorAll("article[data-lang]");
+      var buttons = document.querySelectorAll(".lang button");
+      function read() {
+        try { return localStorage.getItem("language"); } catch (e) { return null; }
+      }
+      function apply(lang) {
+        articles.forEach(function (a) { a.hidden = a.getAttribute("data-lang") !== lang; });
+        buttons.forEach(function (b) {
+          b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === lang));
+        });
+        document.documentElement.setAttribute("lang", lang);
+      }
+      apply(read() === "en" ? "en" : "mn");
+      buttons.forEach(function (b) {
+        b.addEventListener("click", function () {
+          var lang = b.getAttribute("data-lang");
+          try { localStorage.setItem("language", lang); } catch (e) {}
+          apply(lang);
+        });
+      });
+    })();
+    </script>
   </body>
 </html>
