@@ -4460,12 +4460,16 @@ function Rise({ progress, at, span = 0.08, until, className = "", children }) {
   );
 }
 
-const CHAPTER_SCALE = (w) => (w < 640 ? 2 : 3);
-// The room needs height to read as a room: a wall tall enough to carry a
-// full window bay, a band under it, and a floor deep enough to stand things
-// on. `w` here is the frame's own width, not the viewport's — at 1440 the
-// chapter column is about 620px, so most desktops take the first branch too.
-const CHAPTER_HEIGHT = (w) => (w < 640 ? 214 : 196);
+// One scale and one height, deliberately not branched on width. The stage
+// measures its own frame, and the chapter frame is not monotonic in viewport
+// width: below md the scene is full width, at md it becomes seven columns of
+// twelve and shrinks. A width branch therefore made the room jump taller
+// between 696 and 767 pixels of window and snap back again.
+//
+// The room needs the height to read as a room: a wall tall enough to carry a
+// full window bay, a band under it, and a floor deep enough to stand on.
+const CHAPTER_SCALE = () => 2;
+const CHAPTER_HEIGHT = () => 214;
 
 function StaffStatus({ live }) {
   const { t } = useTranslation();
