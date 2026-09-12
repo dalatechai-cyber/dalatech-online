@@ -430,15 +430,16 @@ html.demo-dialog-open #dt-chat-frame {
   gap: 6px 14px;
   align-items: center;
   padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.022);
+  /* No border: the staff cards directly below carry one, and two bordered
+     surfaces stacked read as one long list with a gap in it rather than as
+     two moves. The board is a field; the cards are objects. */
+  background: rgba(255, 255, 255, 0.03);
 }
 /* "Not built yet" is carried by the badge and an outlined chip, and by the
    lane's graphics stepping back. Group opacity is deliberately not used: it
    multiplies the text too, and the badge is already the dimmest token on the
    page, which put it under three to one against its own ground. */
-.board-lane[data-soon="true"] .board-face,
 .board-lane[data-soon="true"] .board-track,
 .board-lane[data-soon="true"] .board-arrow,
 /* :not() so the rule cannot resurrect the note Нова has already sent, which
@@ -677,7 +678,6 @@ html.demo-dialog-open #dt-chat-frame {
    only handling of it with it; this replaces it on the surface that needs it. */
 @media (prefers-contrast: more) {
   .board-lane { background: #0B1226; border-color: rgba(240, 244, 255, 0.5); }
-  .board-lane[data-soon="true"] .board-face,
   .board-lane[data-soon="true"] .board-track,
   .board-lane[data-soon="true"] .board-arrow,
   .board-lane[data-soon="true"] .board-token:not(.board-token--ghost) { opacity: 1; }

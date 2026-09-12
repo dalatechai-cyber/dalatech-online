@@ -266,6 +266,22 @@ function lightColour(hour) {
   return LIGHT[0][1];
 }
 
+// The brand is a cool dark navy, and at a low sun the table above tints the
+// whole interior far enough toward orange that the room turns brown and
+// fights everything around it on the page. The sky keeps the full warmth —
+// it is the part that should say what time it is — but the light falling
+// *into* the room is pulled back toward a neutral of the same brightness, so
+// the wall and the carpet stay in the ink range at every hour.
+const INTERIOR_COOL = 0.55;
+
+function interiorLight(hour) {
+  const c = lightColour(hour);
+  const warmth = clamp01((c[0] - Math.min(c[1], c[2])) / 80);
+  if (warmth <= 0) return c;
+  const lum = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2];
+  return mix(c, [lum, lum, lum * 1.07], warmth * INTERIOR_COOL);
+}
+
 // Where the sun is: 0 at sunrise (6:00), 1 at sunset (19:00); null at night.
 export function sunArc(hour) {
   if (hour < 6 || hour > 19) return null;
@@ -274,15 +290,31 @@ export function sunArc(hour) {
 
 // Grade the whole room for the hour, leaving the window openings alone.
 export function grade(ctx, W, H, hour, holes = []) {
-  const c = lightColour(hour);
+  const c = interiorLight(hour);
   if (c[0] >= 254 && c[1] >= 254 && c[2] >= 254) return;
+  const fill = rgb(c);
   ctx.save();
-  ctx.beginPath();
-  ctx.rect(0, 0, W, H);
-  for (const h of holes) ctx.rect(h.x, h.y, h.w, h.h);
-  ctx.clip("evenodd");
   ctx.globalCompositeOperation = "multiply";
-  rect(ctx, 0, 0, W, H, rgb(c));
+  if (holes.length === 1) {
+    // One rectangular opening is four rectangles, not a clip path. An
+    // evenodd clip cannot take the fast integer path, so it was rebuilding a
+    // path mask every frame for a shape that is always the same four edges.
+    const h = holes[0];
+    const x0 = Math.max(0, h.x);
+    const x1 = Math.min(W, h.x + h.w);
+    const y0 = Math.max(0, h.y);
+    const y1 = Math.min(H, h.y + h.h);
+    rect(ctx, 0, 0, W, y0, fill);
+    rect(ctx, 0, y1, W, H - y1, fill);
+    rect(ctx, 0, y0, x0, y1 - y0, fill);
+    rect(ctx, x1, y0, W - x1, y1 - y0, fill);
+  } else {
+    ctx.beginPath();
+    ctx.rect(0, 0, W, H);
+    for (const h of holes) ctx.rect(h.x, h.y, h.w, h.h);
+    ctx.clip("evenodd");
+    rect(ctx, 0, 0, W, H, fill);
+  }
   ctx.restore();
 }
 
@@ -371,6 +403,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
   let running = false;
   let last = 0;
   let t = 0;
+  let dirty = false;
 
   const render = () => {
     ctx.setTransform(sDev, 0, 0, sDev, 0, 0);
@@ -420,6 +453,9 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
   const io = new IntersectionObserver((entries) => {
     visible = entries.some((e) => e.isIntersecting);
     update();
+    // a scroll that happened while this stage was off screen still has to
+    // land, but it lands here, once, rather than on every scroll event
+    if (visible && !running && dirty) { dirty = false; render(); }
   }, { rootMargin: "80px" });
   io.observe(canvas);
   const ro = new ResizeObserver(resize);
@@ -431,7 +467,16 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
   return {
     setProgress(p) {
       progress = p;
-      if (!running) render(); // reduced motion or off-screen: still reflect scroll
+      // The scroll spring feeds this from a scroll handler and keeps feeding
+      // it for a second or two after the finger lifts. Redrawing a canvas
+      // nobody can see is the whole frame's work for nothing — and the
+      // scroll range that drives progress is wider than the range that keeps
+      // the stage on screen, so it was happening on every chapter. Off
+      // screen the progress is just recorded; the observer draws it once
+      // when the stage comes back.
+      if (running) return;
+      if (visible || reduced) render();
+      else dirty = true;
     },
     destroy() {
       running = false;

@@ -936,6 +936,8 @@ function DayRing({ className = "" }) {
   // which event the centre is showing, so text is written only when it changes
   const shownRef = React.useRef(-1);
   const clockRef = React.useRef("");
+  const spinRef = React.useRef("");
+  const litRef = React.useRef(-2);
   const [active, setActive] = React.useState(RING_EVENTS.length - 1);
 
   React.useEffect(() => {
@@ -967,8 +969,15 @@ function DayRing({ className = "" }) {
       const hour = raw < 0 ? raw + 24 : raw;
       const p = hour / 24;
 
-      if (handRef.current) handRef.current.style.transform = `rotate(${(p * 360).toFixed(2)}deg)`;
-      if (trailRef.current) trailRef.current.style.strokeDashoffset = String(RING_C * (1 - p));
+      // The hand is motionless for four and a half of every six seconds, so
+      // the written values are usually identical to the last ones. Comparing
+      // first skips the string building, not just the style write.
+      const spin = `rotate(${(p * 360).toFixed(2)}deg)`;
+      if (spin !== spinRef.current) {
+        spinRef.current = spin;
+        if (handRef.current) handRef.current.style.transform = spin;
+        if (trailRef.current) trailRef.current.style.strokeDashoffset = String(RING_C * (1 - p));
+      }
 
       // The moment the hand has reached, taken from the step rather than from
       // the hour: the step index is exact, a compared float is not. While the
@@ -978,13 +987,11 @@ function DayRing({ className = "" }) {
       const idx = moving ? (si === 0 ? (raw < 0 ? RING_EVENTS.length - 1 : -1) : si - 1) : si;
       const shown = idx === -1 ? RING_EVENTS.length - 1 : idx;
 
-      for (let i = 0; i < RING_EVENTS.length; i += 1) {
-        const el = dotsRef.current[i];
-        if (!el) continue;
-        const lit = i <= idx;
-        if (el.dataset.lit !== String(lit)) {
-          el.dataset.lit = String(lit);
-          el.classList.toggle("is-lit", lit);
+      if (idx !== litRef.current) {
+        litRef.current = idx;
+        for (let i = 0; i < RING_EVENTS.length; i += 1) {
+          const el = dotsRef.current[i];
+          if (el) el.classList.toggle("is-lit", i <= idx);
         }
       }
 
@@ -4447,7 +4454,15 @@ function Rise({ progress, at, span = 0.08, until, className = "", children }) {
   const outStart = Math.max(inEnd + 1e-4, Math.min(until - OUT, until - 1e-4));
   const useUntil = until !== undefined && until > inEnd;
   const stops = useUntil ? [at, inEnd, outStart, until] : [at, inEnd];
-  const opacity = useTransform(progress, stops, useUntil ? [0, 1, 1, 0] : [0, 1]);
+  // Opacity is ramped over a third of the travel, not over all of it. A chat
+  // row is a dark plate with a light timestamp beside it: over a night scene
+  // the plate disappears at half opacity while the stamp is still perfectly
+  // legible, so a long cross-fade left bare times floating on the pixel art
+  // with nothing under them. The movement keeps the full ramp.
+  const fadeIn = at + span * 0.34;
+  const fadeOut = useUntil ? outStart + (until - outStart) * 0.66 : 0;
+  const opacityStops = useUntil ? [at, fadeIn, fadeOut, until] : [at, fadeIn];
+  const opacity = useTransform(progress, opacityStops, useUntil ? [0, 1, 1, 0] : [0, 1]);
   const y = useTransform(
     progress,
     stops,
@@ -4531,12 +4546,11 @@ function StaffCards({ onPick, className = "" }) {
 // runs *from* the start state via animation-fill-mode: backwards. So the board
 // is true with the animation off, blocked, or never started — it is a diagram
 // that happens to move, not a sequence you have to catch.
-const BOARD_LANES = [
-  { id: "ara", dir: "in" },
-  { id: "eho", dir: "in" },
-  { id: "veda", dir: "still" },
-  { id: "nova", dir: "out" },
-];
+// In the same order as the cards below, the four chapters and the pricing:
+// three lists of the same four people on one page, and two of them running a
+// different order was a small cruelty. The direction is carried by the rails
+// and the chips, which is where it belongs, not by the sequence.
+const BOARD_DIR = { ara: "in", eho: "in", veda: "still", nova: "out" };
 
 // Each lane's payload, drawn small enough to sit on a 28px rail. The glyph is
 // the job: a message, a ringing call, four weeks of numbers, a note going out.
@@ -4663,8 +4677,8 @@ function ShiftBoard({ className = "" }) {
   return (
     <div ref={ref} data-board={play ? "on" : undefined} className={["w-full", className].join(" ")}>
       <ul role="list" className="board-lanes" aria-label={t("office.board.label")}>
-        {BOARD_LANES.map((lane, i) => (
-          <BoardLane key={lane.id} id={lane.id} dir={lane.dir} step={i} />
+        {STAFF_ORDER.map((id, i) => (
+          <BoardLane key={id} id={id} dir={BOARD_DIR[id]} step={i} />
         ))}
       </ul>
       <p className="mx-auto mt-5 max-w-[540px] text-center text-[13px] leading-[1.5] text-fg-muted">

@@ -684,7 +684,7 @@
       "caption": "Four different kinds of work, one member of staff responsible for each.",
       "lanes": {
         "ara": {
-          "end": "Messenger · Instagram · Website",
+          "end": "Incoming messages",
           "dir": "Work that arrives"
         },
         "eho": {
@@ -692,7 +692,7 @@
           "dir": "Work that arrives"
         },
         "veda": {
-          "end": "Monthly report",
+          "end": "The month's numbers",
           "dir": "Work done at the desk"
         },
         "nova": {

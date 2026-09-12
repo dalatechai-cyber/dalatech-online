@@ -85,14 +85,20 @@ function desk(ctx, img, o) {
 
 // A desk lamp standing on a desk. Lit once the light goes; the glow is
 // drawn after the grade so it reads as light, not as a yellow sprite.
-function deskLamp(ctx, img, x, y, night, lights) {
+function deskLamp(ctx, img, x, y, night, lights, showSprite = true) {
   // Lit from dusk. The unlit sprite is a dark hook against a dark wall, so
   // the threshold sits below the dimmest hour any chapter is set at.
+  //
+  // `showSprite` exists because the lamp is 30 art pixels wide and the
+  // landing row gives each person a 50-pixel desk they already share with a
+  // laptop. There the sprite landed across the character's chest and read,
+  // unmistakably, as a brass instrument being played. That row keeps the
+  // pool of light and drops the object.
   const on = night > 0.25;
-  if (!on) { sprite(ctx, img, "LAMP_OFF", x, y); return; }
+  if (!on) { if (showSprite) sprite(ctx, img, "LAMP_OFF", x, y); return; }
   lights.push(() => {
     lampGlow(ctx, x + 15, y + 12, night);
-    sprite(ctx, img, "LAMP", x, y);
+    if (showSprite) sprite(ctx, img, "LAMP", x, y);
   });
 }
 
@@ -245,7 +251,7 @@ function officeRoom(ctx, img, { W, H, t }, {
     let s;
     if (id === "ara") {
       s = desk(ctx, img, { ...base, props: [["LAPTOP", 22, 0]] });
-      deskLamp(ctx, img, base.x - 2, deskY - 14, night, lights);
+      deskLamp(ctx, img, base.x - 2, deskY - 14, night, lights, false);
       if (occupied) actAra(ctx, img, { ...s, x: base.x, y: deskY }, t, lights, araPhase);
     } else if (id === "veda") {
       s = desk(ctx, img, { ...base, pieces: ["DESK_L", "DESK_M", "DESK_R"], personX: 24, props: [["PAPER_STACK", -2, 4], ["DUAL", 10, -4]] });
@@ -295,6 +301,23 @@ export function drawHero(ctx, img, v) {
 // frame. That strip is the one place nothing may be: `quiet` below is its
 // boundary, and every piece of furniture is placed against it, so the room
 // can be filled everywhere else without anything being half hidden.
+
+// What each room keeps. Without this the four chapters ran one placement
+// path and came out as the same photograph four times, differing only in the
+// hour of the sky and the colour of the hair. The pack has few pieces short
+// enough for the back wall — everything there has to clear the panel the
+// page floats over it — so the character of each room is carried by its
+// front row, which sits low in the frame and can hold the tall things.
+const CHAPTER_KIT = {
+  // reception: somewhere for whoever walks in to sit
+  ara: { left: ["SHELF_UNIT", "stand"], wall: "CERT", plant: true, front: ["CHAIR_ORANGE", "PLANT", "PLANT_3"] },
+  // the analyst: the month on the wall, the printer, the files
+  veda: { left: ["WHITEBOARD_CHART", "hang"], wall: "CORK", plant: true, front: ["CABINET", "PLANT_3"] },
+  // the phone desk: the corner people actually stand in between calls
+  eho: { left: ["SHELF_UNIT", "stand"], wall: "NOTICE", plant: false, front: ["COFFEE", "COOLER", "PLANT"] },
+  // customer manager: the board of who has not been back, and a seat for them
+  nova: { left: ["CABINET", "stand"], wall: "CORK", plant: true, front: ["PLANT", "CHAIR_ORANGE", "PLANT_3"] },
+};
 
 // Where a sprite stands on a floor line: its feet sink four pixels into the
 // carpet, which is what stops furniture looking like it floats.
@@ -359,42 +382,41 @@ export function drawChapter(id) {
       actNova(ctx, img, { ...s, x: deskX + 38, y: deskY }, t, lights);
     }
 
+    const kit = CHAPTER_KIT[id];
+
     // ---- the back wall left of the panel, where height is unconstrained
-    // The dressed shelf is the piece LimeZu anchors a back wall with in
-    // their own office layouts; it goes in whenever the gap beside the desk
-    // is wide enough, and a framed certificate goes in when it is not.
     const gapX = deskX + s.deskW + 2;
     const gap = quiet.x - gapX;
-    const wallY = Math.max(quiet.y, glass.y + glass.h + 10);
-    if (id !== "veda" && gap >= SPRITES.SHELF_UNIT.w) {
-      stand(ctx, img, "SHELF_UNIT", gapX, floorY);
-    } else if (gap >= SPRITES.CERT.w + 2 && wallY + SPRITES.CERT.h <= floorY - 2) {
-      sprite(ctx, img, "CERT", gapX, wallY);
+    if (kit.left) {
+      const [lid, mode] = kit.left;
+      const lw = SPRITES[lid].w;
+      if (gap >= lw) {
+        if (mode === "stand") stand(ctx, img, lid, gapX, floorY);
+        else sprite(ctx, img, lid, gapX, floorY - SPRITES[lid].h - 6);
+      }
     }
 
     // ---- the back wall behind the panel: only what fits under it
     let bx = quiet.x + 6;
-    for (const low of ["PLANT_2", "CORK"]) {
-      const sp = SPRITES[low];
-      // the cork board hangs, the plant stands, so each is tested at the y it
-      // is drawn at rather than at a shared one
-      const y = low === "CORK" ? floorY - sp.h - 4 : floorY - sp.h + 4;
-      if (y < quiet.y || bx + sp.w > W - 6) continue;
-      sprite(ctx, img, low, bx, y);
-      bx += sp.w + 8;
+    if (kit.plant) {
+      const sp = SPRITES.PLANT_2;
+      const y = floorY - sp.h + 4;
+      if (y >= quiet.y && bx + sp.w <= W - 6) { sprite(ctx, img, "PLANT_2", bx, y); bx += sp.w + 8; }
     }
-    // the notice board in the far corner
-    const nx = W - 8 - SPRITES.NOTICE.w;
-    if (wallY + SPRITES.NOTICE.h <= floorY - 3 && nx > bx - 6) {
-      sprite(ctx, img, "NOTICE", nx, wallY + 2);
+    // and one thing hung in the far corner, under the panel's bottom edge
+    if (kit.wall) {
+      const sp = SPRITES[kit.wall];
+      const wx = W - 8 - sp.w;
+      const wy = floorY - sp.h - 4;
+      if (wy >= quiet.y && wx > bx - 6) sprite(ctx, img, kit.wall, wx, wy);
     }
 
     // ---- the front of the room, at the depth the desk stands at
-    // The floor would otherwise be a bare expanse. This row is low in the
-    // frame, so it can carry the tall things the back wall cannot.
+    // The floor would otherwise be a bare expanse, and this row is low in
+    // the frame, so it carries the tall pieces the back wall cannot.
     let fx = W - 6;
     const frontStop = Math.max(deskX + s.deskW + 12, frontLeft);
-    for (const tall of ["PLANT", "CHAIR_ORANGE", "COOLER"]) {
+    for (const tall of kit.front) {
       const w = SPRITES[tall].w;
       if (fx - w < frontStop) break;
       fx -= w;
