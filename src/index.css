@@ -27,7 +27,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
 }
 
 html {
@@ -35,8 +34,7 @@ html {
 }
 
 @supports (overflow-x: clip) {
-  html,
-  body {
+  html {
     overflow-x: clip;
   }
 }
@@ -62,13 +60,21 @@ html {
 
 section {
   scroll-margin-top: 96px;
+}
+
+section:not([data-pin]) {
   overflow-x: hidden;
 }
 
 @supports (overflow-x: clip) {
-  section {
+  section:not([data-pin]) {
     overflow-x: clip;
   }
+}
+
+/* a pinned section must not clip or scroll-contain its sticky child */
+section[data-pin] {
+  overflow: visible;
 }
 
 ::selection {
@@ -77,15 +83,6 @@ section {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  html.has-custom-cursor,
-  html.has-custom-cursor * {
-    cursor: none !important;
-  }
-  html.has-custom-cursor input,
-  html.has-custom-cursor textarea,
-  html.has-custom-cursor select {
-    cursor: text !important;
-  }
 }
 
 html.nav-menu-open #dt-chat-toggle,

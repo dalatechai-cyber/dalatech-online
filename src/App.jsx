@@ -66,84 +66,6 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-function CustomCursor() {
-  const reduced = useReducedMotion();
-  const x = useMotionValue(-100);
-  const y = useMotionValue(-100);
-  const sx = useSpring(x, { stiffness: 200, damping: 28, mass: 0.5 });
-  const sy = useSpring(y, { stiffness: 200, damping: 28, mass: 0.5 });
-  const [hover, setHover] = React.useState(false);
-  const [visible, setVisible] = React.useState(false);
-  const visibleRef = React.useRef(false);
-
-  React.useEffect(() => {
-    visibleRef.current = visible;
-  }, [visible]);
-
-  React.useEffect(() => {
-    if (reduced) return;
-    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    if (!fine) return;
-
-    document.documentElement.classList.add("has-custom-cursor");
-
-    const move = (e) => {
-      x.set(e.clientX);
-      y.set(e.clientY);
-      if (!visibleRef.current) setVisible(true);
-    };
-    const leave = () => setVisible(false);
-    const enter = () => setVisible(true);
-    const checkHover = (e) => {
-      const t = e.target;
-      if (!(t instanceof Element)) return;
-      const interactive = t.closest('a,button,[role="button"],input,textarea,select,summary,label,[data-cursor="hover"]');
-      setHover(Boolean(interactive));
-    };
-
-    window.addEventListener("pointermove", move, { passive: true });
-    window.addEventListener("pointerover", checkHover, { passive: true });
-    window.addEventListener("pointerleave", leave);
-    window.addEventListener("pointerenter", enter);
-    return () => {
-      document.documentElement.classList.remove("has-custom-cursor");
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerover", checkHover);
-      window.removeEventListener("pointerleave", leave);
-      window.removeEventListener("pointerenter", enter);
-    };
-  }, [reduced, x, y]);
-
-  if (reduced) return null;
-
-  return (
-    <>
-      <motion.div
-        aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[100001] hidden md:block"
-        style={{ x, y, opacity: visible ? 1 : 0 }}
-      >
-        <motion.div
-          className="h-2 w-2 rounded-full bg-fg"
-          style={{ x: "-50%", y: "-50%", scale: hover ? 0.5 : 1 }}
-          transition={{ scale: { type: "spring", stiffness: 300, damping: 25 } }}
-        />
-      </motion.div>
-      <motion.div
-        aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[100000] hidden md:block"
-        style={{ x: sx, y: sy, opacity: visible ? 1 : 0 }}
-      >
-        <motion.div
-          className="h-9 w-9 rounded-full border border-sky-400/60 mix-blend-difference"
-          style={{ x: "-50%", y: "-50%", scale: hover ? 1.6 : 1 }}
-          transition={{ scale: { type: "spring", stiffness: 220, damping: 20 } }}
-        />
-      </motion.div>
-    </>
-  );
-}
-
 function Reveal({ children, delay = 0, y = 28, className = "", once = true, amount = 0.2 }) {
   const reduced = useReducedMotion();
   return (
@@ -236,11 +158,14 @@ function MagneticButton({
 
   const onMove = (e) => {
     if (reduced || !ref.current || disabled) return;
+    // A pointermove also fires while a finger drags across the button, which
+    // made the label slide under the thumb on a phone. Restrict to a real
+    // pointer, and keep the pull small enough to read as weight, not as a toy.
+    if (!window.matchMedia("(pointer: fine) and (prefers-reduced-motion: no-preference)").matches) return;
     const r = ref.current.getBoundingClientRect();
-    const relX = e.clientX - (r.left + r.width / 2);
-    const relY = e.clientY - (r.top + r.height / 2);
-    x.set(relX * 0.25);
-    y.set(relY * 0.35);
+    const clamp = (v) => Math.max(-10, Math.min(10, v));
+    x.set(clamp((e.clientX - (r.left + r.width / 2)) * 0.12));
+    y.set(clamp((e.clientY - (r.top + r.height / 2)) * 0.12));
   };
   const onLeave = () => { x.set(0); y.set(0); };
 
@@ -261,13 +186,6 @@ function MagneticButton({
       onPointerLeave={onLeave}
     >
       <span className="relative z-10 flex items-center gap-2">{children}</span>
-      {variant === "primary" && !disabled && (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
-          style={{ boxShadow: "0 0 0 1px rgba(56,189,248,0.45), 0 16px 40px -8px rgba(56,189,248,0.45)" }}
-        />
-      )}
     </motion.span>
   );
 
@@ -313,57 +231,6 @@ function MagneticButton({
   );
 }
 
-function MeshBackground({ intensity = 1 }) {
-  const isMobile = useIsMobile();
-  if (isMobile) {
-    return (
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-grid" />
-        <div
-          className="mesh-blob"
-          style={{
-            top: "-8%", left: "-10%",
-            width: "26rem", height: "26rem",
-            background: "radial-gradient(circle at 50% 50%, rgba(37,99,235,0.45), rgba(37,99,235,0) 65%)",
-            filter: "blur(48px)",
-          }}
-        />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink-950" />
-      </div>
-    );
-  }
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-grid animate-gridPulse" />
-      <div
-        className="mesh-blob animate-meshShift"
-        style={{
-          top: "-12%", left: "10%",
-          width: `${44 * intensity}rem`, height: `${44 * intensity}rem`,
-          background: "radial-gradient(circle at 30% 30%, rgba(37,99,235,0.65), rgba(37,99,235,0) 60%)",
-        }}
-      />
-      <div
-        className="mesh-blob animate-meshShift2"
-        style={{
-          bottom: "-18%", right: "-8%",
-          width: `${52 * intensity}rem`, height: `${52 * intensity}rem`,
-          background: "radial-gradient(circle at 60% 50%, rgba(56,189,248,0.45), rgba(56,189,248,0) 65%)",
-        }}
-      />
-      <div
-        className="mesh-blob animate-meshShift"
-        style={{
-          top: "20%", right: "20%",
-          width: "28rem", height: "28rem",
-          background: "radial-gradient(circle at 50% 50%, rgba(13,20,48,0.85), rgba(13,20,48,0) 70%)",
-        }}
-      />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink-950" />
-    </div>
-  );
-}
-
 function Container({ children, className = "" }) {
   return (
     <div className={["mx-auto w-full max-w-[1180px] px-5 sm:px-7 lg:px-10", className].join(" ")}>
@@ -375,7 +242,7 @@ function Container({ children, className = "" }) {
 function SectionLabel({ children }) {
   return (
     <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
-      <span className="h-px w-6 bg-gradient-to-r from-transparent via-sky-400/60 to-sky-400/0" />
+      <span className="h-px w-6 bg-white/15" />
       {children}
     </span>
   );
@@ -534,7 +401,7 @@ function Navbar() {
               backgroundColor: "rgba(5,10,24,0.85)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
-              borderBottom: "1px solid rgba(56,189,248,0.20)",
+              borderBottom: "1px solid rgba(255,255,255,0.08)",
             }
           : {
               backgroundColor: "transparent",
@@ -756,7 +623,7 @@ function Navbar() {
   );
 }
 
-function HeroWords({ text, delay = 0 }) {
+function HeroWords({ text, delay = 0, stagger = 0.06 }) {
   const reduced = useReducedMotion();
   const words = text.split(/(\s+)/);
   let wIndex = 0;
@@ -770,7 +637,7 @@ function HeroWords({ text, delay = 0 }) {
             <motion.span
               initial={reduced ? false : { y: "110%" }}
               animate={{ y: 0 }}
-              transition={{ ...SPRING_HEADLINE, delay: delay + idx * 0.06 }}
+              transition={{ ...SPRING_HEADLINE, delay: delay + idx * stagger }}
               className="inline-block"
             >
               {tok}
@@ -886,91 +753,83 @@ function MatrixSalonPreview() {
 
 function Hero() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const facts = t("hero.facts", { returnObjects: true });
+  const reduced = useReducedMotion();
+  const heroRef = React.useRef(null);
+  // The text leaves as you scroll; the canvas does not move and does not fade,
+  // because the pinned scene below is the same room at the same art scale and
+  // the cut between them should be invisible.
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const textY = useTransform(scrollYProgress, [0.35, 1], [0, -56]);
+  const textOpacity = useTransform(scrollYProgress, [0.35, 1], [1, 0]);
+
   return (
-    <section id="top" className="relative overflow-hidden pb-16 pt-24 md:pb-24 md:pt-36">
-      <MeshBackground />
-      <Container className="relative">
-        <div className="grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-12 lg:gap-16">
-          <div>
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium tracking-wide text-fg-muted backdrop-blur"
-            >
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
-              </span>
-              {t("hero.badge")}
-            </motion.div>
+    <section id="top" ref={heroRef} className="relative pb-16 pt-24 md:pb-24 md:pt-36">
+      <Container>
+        <motion.div
+          style={reduced ? undefined : { y: textY, opacity: textOpacity }}
+          className="mx-auto max-w-[640px] text-center lg:max-w-[760px]"
+        >
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
+            className="text-[11.5px] font-medium leading-[1.5] tracking-[0.14em] text-fg-dim"
+          >
+            {t("hero.badge")}
+          </motion.p>
 
-            <h1 className="mt-7 font-display text-[44px] font-semibold leading-[1.05] tracking-tightest text-fg sm:text-[56px] md:text-[56px] lg:text-[64px]">
-              <HeroWords text={t("hero.title")} delay={0.15} />
-            </h1>
+          <h1 className="mt-4 font-display text-[36px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[48px] lg:text-[64px]">
+            <HeroWords text={t("hero.title")} delay={0.15} stagger={0.045} />
+          </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_REVEAL, delay: 0.55 }}
-              className="mt-6 max-w-[46ch] text-[17px] leading-[1.6] text-fg-muted"
-            >
-              {t("hero.description")}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_REVEAL, delay: 0.7 }}
-              className="mt-9 flex flex-col gap-3 sm:flex-row"
-            >
-              <MagneticButton href="#demo" variant="primary">
-                {t("hero.buttons.getDemo")}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </MagneticButton>
-              <MagneticButton href="/office" variant="ghost">
-                {t("hero.buttons.seeWork")}
-              </MagneticButton>
-            </motion.div>
-
-            <motion.ul
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_REVEAL, delay: 0.85 }}
-              className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px] text-fg-muted"
-            >
-              {facts.map((f) => (
-                <li key={f} className="inline-flex items-center gap-2">
-                  <span className="h-1 w-1 rounded-full bg-sky-400" aria-hidden />
-                  {f}
-                </li>
-              ))}
-            </motion.ul>
-          </div>
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ ...SPRING_REVEAL, delay: 0.5 }}
+            className="mx-auto mt-6 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px] lg:text-[18px]"
+          >
+            {t("hero.description")}
+          </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...SPRING_REVEAL, delay: 0.3 }}
-            className="-mx-5 sm:mx-0"
+            transition={{ ...SPRING_REVEAL, delay: 0.65 }}
+            className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6"
           >
-            <PixelStage
-              draw={drawStaffHero}
-              logicalH={128}
-              scale={HERO_SCALE}
-              minW={STAFF_HERO_MIN_W}
-              label={t("office.hero.sceneAlt")}
-              className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
-            />
+            <MagneticButton href="#demo" variant="primary" className="w-full sm:w-auto">
+              {t("hero.buttons.getDemo")}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+              </svg>
+            </MagneticButton>
+            {/* a link, not a second button box: the hero gets one accent */}
+            <Link
+              to="/office"
+              className="inline-flex min-h-[44px] items-center gap-1.5 text-[17px] text-sky-400 transition-colors hover:text-sky-300"
+            >
+              {t("hero.buttons.seeWork")}
+              <span aria-hidden>&rsaquo;</span>
+            </Link>
           </motion.div>
-        </div>
-
-        <StaffCards className="mt-10 md:mt-14" onPick={(id) => navigate("/office", { state: { scrollTo: `staff-${id}` } })} />
+        </motion.div>
       </Container>
+
+      {/* full-bleed: the room runs edge to edge at every width */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING_REVEAL, delay: 0.3 }}
+        className="mt-12 md:mt-16"
+      >
+        <PixelStage
+          draw={drawStaffHero}
+          logicalH={128}
+          scale={HERO_SCALE}
+          minW={STAFF_HERO_MIN_W}
+          label={t("office.hero.sceneAlt")}
+        />
+      </motion.div>
     </section>
   );
 }
@@ -2052,54 +1911,6 @@ function FAQ() {
   );
 }
 
-function ContactOrbField() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-grid opacity-[0.55]" />
-
-      <div
-        className="contact-orb-glow absolute left-1/2 top-1/2 h-[44rem] w-[44rem] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(56,189,248,0.34) 0%, rgba(56,189,248,0.10) 28%, rgba(37,99,235,0.04) 50%, rgba(56,189,248,0) 70%)",
-          filter: "blur(48px)",
-        }}
-      />
-
-      <svg
-        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2"
-        viewBox="-200 -200 400 400"
-      >
-        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
-        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
-        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
-      </svg>
-
-      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-2 w-2 rounded-full bg-sky-300"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
-        />
-      </div>
-      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
-        />
-      </div>
-      <div className="contact-orbit contact-orbit-3 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1 w-1 rounded-full bg-white/85"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(190px)", boxShadow: "0 0 14px 2px rgba(255,255,255,0.55)" }}
-        />
-      </div>
-
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink-950 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink-950 to-transparent" />
-    </div>
-  );
-}
-
 /* ----------------------------------------------------------- demo request */
 
 /** Options offered as chips, in display order. Keys are shared with the API. */
@@ -2368,12 +2179,6 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
     lockBodyScroll();
     document.documentElement.classList.add("demo-dialog-open");
 
-    // The custom cursor renders far below this dialog, and its stylesheet
-    // hides the real one — leaving the desktop visitor with no cursor at all
-    // over the form. Hand the native cursor back while we are on top.
-    const hadCustomCursor = document.documentElement.classList.contains("has-custom-cursor");
-    if (hadCustomCursor) document.documentElement.classList.remove("has-custom-cursor");
-
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         event.stopPropagation();
@@ -2401,7 +2206,6 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
       document.removeEventListener("keydown", onKeyDown);
       unlockBodyScroll();
       document.documentElement.classList.remove("demo-dialog-open");
-      if (hadCustomCursor) document.documentElement.classList.add("has-custom-cursor");
       const previous = restoreFocusRef.current;
       if (previous && typeof previous.focus === "function") previous.focus();
     };
@@ -2949,7 +2753,6 @@ function Contact() {
 
   return (
     <section id="contact" className="relative overflow-hidden py-20 sm:py-40">
-      <ContactOrbField />
 
       <Container className="relative">
         <StaggerGroup className="text-center" stagger={0.08} amount={0.3}>
@@ -3939,7 +3742,6 @@ function Shell() {
   return (
     <div className="relative min-h-screen bg-ink-950 text-fg">
       <ErrorBoundary>
-        <CustomCursor />
       </ErrorBoundary>
       <ErrorBoundary>
         <Navbar />

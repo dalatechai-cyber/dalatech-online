@@ -21,12 +21,7 @@
     "buttons": {
       "getDemo": "Request a demo",
       "seeWork": "Meet the staff"
-    },
-    "facts": [
-      "Replies in Mongolian",
-      "24/7 coverage",
-      "Live within 3–5 days"
-    ]
+    }
   },
   "howItWorks": {
     "section": "OUR PROCESS",
