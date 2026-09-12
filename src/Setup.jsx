@@ -7,6 +7,7 @@ export default function Setup() {
 
   // Initialize Facebook SDK
   React.useEffect(() => {
+    let mounted = true;
     // Load Facebook SDK
     window.fbAsyncInit = function () {
       FB.init({
@@ -14,8 +15,7 @@ export default function Setup() {
         xfbml: true,
         version: 'v18.0'
       });
-      setIsSDKLoaded(true);
-      console.log('Facebook SDK initialized');
+      if (mounted) setIsSDKLoaded(true);
     };
 
     // Load the SDK script
@@ -28,7 +28,7 @@ export default function Setup() {
     }(document, 'script', 'facebook-jssdk'));
 
     return () => {
-      // Cleanup if needed
+      mounted = false;
     };
   }, []);
 
@@ -42,14 +42,11 @@ export default function Setup() {
 
     FB.login(
       function (response) {
-        console.log('Authorization Response:', response);
         setIsLoading(false);
-
+        // The access token is deliberately not logged: a console line is easy
+        // to paste into a screenshot, and the reviewer only needs the status.
         if (response.authResponse) {
-          console.log('User authorized');
-          console.log('Access Token:', response.authResponse.accessToken);
-          console.log('User ID:', response.authResponse.userID);
-          console.log('Expires In:', response.authResponse.expiresIn);
+          console.log('Facebook authorization granted for user', response.authResponse.userID);
         } else {
           console.log('User cancelled login or did not fully authorize.');
         }

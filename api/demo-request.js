@@ -34,13 +34,14 @@ const MAX_BODY_BYTES = 20 * 1024;
 // selected together is the combo package; there is no separate key for it.
 const SERVICE_LABELS = {
   ara: "Ара — AI хүлээн авагч",
-  nova: "Нова — AI харилцагчийн үйлчилгээ",
-  veda: "Веда — AI шинжээч",
+  nova: "Нова — AI харилцагчийн менежер",
+  veda: "Веда — AI бизнес аналитик",
   eho: "Эхо — AI утасны оператор",
   website: "Вэбсайт",
-  chatbot: "AI Чатбот",
-  voice: "AI Дуут агент",
-  unsure: "Мэдэхгүй байна — зөвлөгөө хэрэгтэй",
+  // keys an older build of the form may still send
+  chatbot: "AI чатбот (хуучин нэр: Ара)",
+  voice: "AI дуут агент (хуучин нэр: Эхо)",
+  unsure: "Хараахан шийдээгүй — зөвлөгөө хэрэгтэй",
 };
 
 const FIELD_LIMITS = {
@@ -276,7 +277,7 @@ function telegramMessage(lead, useHtml) {
   const lines = [];
   if (lead.suspectedBot) lines.push(`⚠️ ${b("СЭЖИГТЭЙ (спам байж болзошгүй)")}`, "");
   lines.push(
-    `🔔 ${b("Шинэ демо хүсэлт")}`,
+    `🔔 ${b("Вэбсайтаас шинэ хүсэлт")}`,
     "",
     `👤 ${b("Нэр:")} ${v(lead.name)}`,
     `📞 ${b("Утас:")} ${v(lead.phone.e164 || lead.phone.display)}`,
@@ -299,7 +300,7 @@ function telegramMessage(lead, useHtml) {
 
 function emailSubject(lead) {
   const flag = lead.suspectedBot ? "[Сэжигтэй] " : "";
-  return `${flag}Шинэ демо хүсэлт — ${lead.name} (${lead.business})`;
+  return `${flag}Вэбсайтаас шинэ хүсэлт — ${lead.name} (${lead.business})`;
 }
 
 function emailText(lead) {
@@ -308,7 +309,7 @@ function emailText(lead) {
     lines.push("ЖИЧ: спам-эсрэг талбар дүүрсэн — сэжигтэй хүсэлт байж болзошгүй.", "");
   }
   lines.push(
-    "Шинэ демо хүсэлт",
+    "Вэбсайтаас шинэ хүсэлт",
     "",
     `Нэр:            ${lead.name}`,
     `Утас:           ${lead.phone.e164 || lead.phone.display}`,
@@ -369,7 +370,7 @@ function emailHtml(lead) {
   <div style="max-width:560px;margin:0 auto;padding:28px;border-radius:18px;background:#0A1024;border:1px solid rgba(56,189,248,0.18)">
     ${botBanner}
     <p style="margin:0;color:#38BDF8;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase">DalaTech</p>
-    <h1 style="margin:8px 0 24px;color:#F0F4FF;font-size:22px;font-weight:700">Шинэ демо хүсэлт</h1>
+    <h1 style="margin:8px 0 24px;color:#F0F4FF;font-size:22px;font-weight:700">Вэбсайтаас шинэ хүсэлт</h1>
     <table style="width:100%;border-collapse:collapse">${rows}</table>
     ${noteBlock}
     <p style="margin:24px 0 0;color:#5A6E94;font-size:12px;line-height:1.7">
