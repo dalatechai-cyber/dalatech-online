@@ -2,41 +2,77 @@
   "nav": {
     "brand": "DalaTech",
     "process": "Process",
-    "stack": "Technology",
     "location": "Location",
-    "portfolio": "Portfolio",
     "pricing": "Pricing",
     "faq": "FAQ",
     "contact": "Contact us",
     "features": "Services",
     "howItWorks": "How it works",
-    "getDemo": "Request a demo",
     "staff": "AI staff",
     "website": "Website",
-    "company": "Company"
+    "company": "Company",
+    "createDemo": "Create a demo"
   },
   "hero": {
     "badge": "AI staff for Mongolian businesses",
     "title": "AI staff that handle customer service 24/7.",
     "description": "Four AI staff answer customer questions in Mongolian, around the clock, on Facebook, Instagram, and your website. They add no headcount, shift, or leave costs.",
     "buttons": {
-      "getDemo": "Request a demo",
+      "createDemo": "Create a demo",
       "seeWork": "Meet the staff"
     }
   },
   "day": {
-    "title": "One day, one room.",
-    "lead": "A message at two in the morning, a report at nine, a call just before closing. All in the same room.",
-    "closing": "Four AI staff, working as one team.",
+    "title": "Work does not stop while you sleep.",
+    "lead": "Watch what reaches your phone over one day. A booking at night, a report in the morning, a call just before closing.",
+    "closing": "Four AI staff, working as one team. You can see how they would work for your business right now.",
     "sceneAlt": "An office from night to evening: Ara through the night, Veda in the morning, Eho in the evening.",
-    "moments": {
-      "ara": "A booking was taken while you slept.",
-      "veda": "The monthly report, on the desk.",
-      "eho": "The call at closing time was answered."
+    "phone": {
+      "alt": "The owner's phone: the notifications of one day",
+      "customer": "Bold",
+      "ara": {
+        "from": "Ara · DalaTech",
+        "in": "Hello, could I book a time for tomorrow?",
+        "reply": "Hello. Tomorrow 11:00 and 15:30 are free. Which suits you?",
+        "pick": "15:30",
+        "booked": "New booking recorded",
+        "bookedBody": "Bold · tomorrow 15:30. Confirmation message sent."
+      },
+      "veda": {
+        "from": "Veda · DalaTech",
+        "title": "September report is ready",
+        "body": "Sales, customers, returning customers. Next month's recommendations attached."
+      },
+      "eho": {
+        "from": "Eho · DalaTech",
+        "incoming": "Incoming call",
+        "number": "+976 •••• ••••",
+        "answered": "Call answered",
+        "line": "Hello, Dala Store. How can I help?",
+        "booked": "Booking recorded",
+        "bookedBody": "By phone · tomorrow 12:00 · 2 people."
+      },
+      "nova": {
+        "from": "Nova · DalaTech",
+        "title": "Customer feedback received",
+        "body": "Bold: “Yes, thank you.” Next appointment reminder set for 12 October."
+      },
+      "summary": {
+        "app": "DalaTech",
+        "title": "Today",
+        "rows": [
+          "2 bookings recorded",
+          "1 report ready",
+          "1 call answered",
+          "1 customer followed up"
+        ]
+      },
+      "cta": "Create a demo",
+      "ctaHint": "No sign-up. A few seconds."
     }
   },
   "theFour": {
-    "title": "Four members of staff."
+    "title": "Four staff, four jobs."
   },
   "websiteOffer": {
     "title": "Staff by the month. A website once.",
@@ -51,7 +87,7 @@
     "discovery": {
       "step": "1",
       "title": "Discovery",
-      "description": "We study your products, services, and the questions your customers ask most often. We then determine whether the fit is a chatbot, a voice agent, or both."
+      "description": "We study your products, services, and the questions your customers ask most often. We then determine which of the staff fit your business."
     },
     "buildTrain": {
       "step": "2",
@@ -71,7 +107,7 @@
     },
     "aiAssistant": {
       "title": "AI staff setup",
-      "description": "We configure a chatbot, a voice agent, or both for your most common customer questions."
+      "description": "We configure Ara, Eho, or both for your most common customer questions."
     },
     "monthlySupport": {
       "title": "Monthly support",
@@ -81,21 +117,20 @@
     "ctaDesc": "After the demo we set out the configuration that fits your business."
   },
   "portfolio": {
-    "section": "PORTFOLIO",
-    "title": "Featured project",
-    "description": "A live client website with Ara answering on it.",
-    "visitWebsite": "Visit the site",
-    "getDemo": "Request a demo",
-    "japantok": {
+    "section": "WEBSITE",
+    "title": "A website we built",
+    "description": "A website built for a beauty salon: online booking, QPay payments, and Ara integrated.",
+    "getDemo": "Order a website",
+    "case": {
+      "url": "Client website",
       "pills": {
         "website": "Website",
         "chatbot": "Ara",
         "productQA": "QPay",
         "availability": "Online booking"
       },
-      "link": "Link:",
-      "title": "Matrix Eco Salon — a modern eco salon",
-      "description": "We built a modern website for Matrix Eco Salon, matched to its eco-friendly brand. Online booking, QPay payments, and Ara are integrated into the site. Customers now book at any hour, and the team answers fewer repeat questions by phone.",
+      "title": "A beauty salon website",
+      "description": "A modern design matched to an eco-friendly brand. Customers book at any hour and pay by QPay. Ara answers the repeat questions.",
       "whatWeBuilt": "Work delivered",
       "features": [
         "Modern salon website",
@@ -109,18 +144,17 @@
         "Booking and payment in one flow"
       ],
       "buttons": {
-        "requestDemo": "Request a demo",
-        "viewLive": "Visit the site"
+        "requestDemo": "Get a website proposal"
       }
     }
   },
   "liveDemo": {
     "section": "LIVE DEMO",
-    "title": "This is how Ara talks to your customers.",
-    "description": "Ara is live on a real client site. No sign-up required; the conversation runs on its own.",
-    "ctaLabel": "Launch Ara in your business",
+    "title": "When a customer writes, Ara answers like this.",
+    "description": "A Messenger conversation at a sample salon. Ara books the time, answers the questions, and hands the owner what she does not know. A demo like this, built on your own business, takes a few seconds.",
+    "ctaLabel": "Create the demo for your business",
     "widget": {
-      "businessName": "Matrix Eco Salon",
+      "businessName": "Beauty salon",
       "statusOnline": "Online",
       "agentName": "Ara",
       "agentRole": "Receptionist",
@@ -136,34 +170,12 @@
       "ai3": "If you would like to speak with a person, I will connect you now."
     },
     "ask": {
-      "prompt": "Pick a question to catch her out.",
+      "prompt": "Pick a question and see how Ara answers.",
       "chip3": "Can you give me 30% off?",
-      "decline": "Ara will not answer this one.",
+      "decline": "Ara will not answer this one herself.",
       "handoffTitle": "Handed to the owner",
       "handoffLine": "The customer asked",
-      "reassure": "Ara will not guess on your behalf."
-    }
-  },
-  "testimonials": {
-    "section": "TESTIMONIALS",
-    "title": "Three businesses, in their own words",
-    "description": "Owners describe what changed after their AI staff went live.",
-    "items": {
-      "0": {
-        "name": "Munkhzaya",
-        "business": "Matrix Eco Salon",
-        "quote": "After we launched the AI chatbot, our bookings tripled. Customers can ask questions even at midnight and get a clear answer right away."
-      },
-      "1": {
-        "name": "Enkhbold",
-        "business": "Mongolian business owner",
-        "quote": "I used to spend two hours a day answering Facebook messages. Now the chatbot handles all of it on its own. I can finally focus on the work that actually matters."
-      },
-      "2": {
-        "name": "Battsetseg",
-        "business": "Beauty salon",
-        "quote": "It has been working from day one. I have no technical background and it is still simple to use. The DalaTech team delivered fast and at a serious professional level."
-      }
+      "reassure": "Ara does not make decisions on your behalf."
     }
   },
   "pricing": {
@@ -208,7 +220,7 @@
         "AI staff go live within 3–5 days"
       ],
       "note": "A tailored quote is prepared from your sector and the work you want to automate.",
-      "cta": "Request a demo"
+      "cta": "Contact us"
     },
     "staff": {
       "title": "AI staff",
@@ -251,20 +263,15 @@
       "answer": "AI staff go live within 3–5 days. A website is delivered within 7–10 working days."
     },
     "stillHaveQuestions": "More questions",
-    "contactPrompt": "A short call or a demo covers the remaining detail.",
+    "contactPrompt": "Send us the rest. We call back with the answers.",
     "talkToUs": "Contact us"
   },
   "contact": {
     "title": "A demo shaped to your business",
-    "description": "Describe your business in a few sentences. Within seconds, an AI staff member configured to your information starts work.",
-    "demoCta": "Generate the demo",
+    "description": "Describe your business in a few sentences and an AI staff member configured to your information starts work within seconds. No sign-up.",
+    "demoCta": "Create a demo",
     "emailCta": "Email us",
-    "requestCta": "Request a demo"
-  },
-  "techStack": {
-    "section": "TECHNOLOGY",
-    "title": "Our technology stack",
-    "description": "Every project is built on the stack used in international product engineering."
+    "requestCta": "Contact us"
   },
   "location": {
     "eyebrow": "LOCATION",
@@ -302,9 +309,9 @@
     }
   },
   "demoForm": {
-    "eyebrow": "FREE DEMO",
-    "title": "Request a demo",
-    "subtitle": "Once the form is submitted, we call you to determine the configuration that fits your business.",
+    "eyebrow": "REQUEST",
+    "title": "Contact us",
+    "subtitle": "Once the form is submitted, we call you and propose the configuration that fits your business.",
     "close": "Close",
     "optional": "Optional",
     "fields": {
@@ -319,7 +326,7 @@
       },
       "business": {
         "label": "Business name and sector",
-        "placeholder": "e.g. Matrix Eco Salon"
+        "placeholder": "e.g. Beauty salon"
       },
       "services": {
         "label": "Services of interest",
@@ -338,8 +345,8 @@
       "website": "Website",
       "unsure": "Not decided yet",
       "ara": "Ara — receptionist",
-      "nova": "Nova — customer care",
-      "veda": "Veda — analyst",
+      "nova": "Nova — customer manager",
+      "veda": "Veda — business analyst",
       "eho": "Eho — phone operator"
     },
     "errors": {
@@ -372,8 +379,8 @@
   "office": {
     "section": "AI STAFF",
     "hero": {
-      "title": "Four AI staff working for your business",
-      "lead": "Ara answers every message and Eho answers the phone. Veda prepares the monthly report and Nova follows up with customers. No additional hiring is required. The monthly fee is fixed.",
+      "title": "Four AI staff, working for your business.",
+      "lead": "Ara answers every message and Eho answers every call. Veda prepares the monthly report and Nova follows up with customers. No new headcount, one fixed monthly fee.",
       "hire": "Hire",
       "see": "See them at work",
       "sceneAlt": "Four AI staff at their desks in an evening office, under one long window.",
@@ -392,8 +399,8 @@
     "chapters": {
       "ara": {
         "eyebrow": "Ara · Receptionist",
-        "title": "Every message answered.",
-        "body": "Replies to Facebook, Instagram, and website messages within seconds. Takes bookings and sets appointments. A customer who writes at two in the morning still receives a reply.",
+        "title": "Every message, within seconds.",
+        "body": "Ara replies at once to messages on Facebook, Instagram and your website: prices, hours, services, and the booking itself. A customer left waiting goes to a competitor. Ara closes that leak.",
         "cta": "Hire Ara",
         "sceneAlt": "Ara at the desk at night, answering messages.",
         "chat": [
@@ -420,9 +427,9 @@
         ]
       },
       "veda": {
-        "eyebrow": "Veda · Analyst",
-        "title": "A report arrives every month.",
-        "body": "On the first morning of the month, a report on your sales, customers, and repeat visits is ready. It carries next month's recommendation alongside the figures.",
+        "eyebrow": "Veda · Business analyst",
+        "title": "See each month in numbers.",
+        "body": "On the first day of the month Veda prepares the report on sales, customers and repeat visits, and compares it with the month before. Which service grew and which customers went quiet, you decide from figures, not guesses.",
         "cta": "Add Veda",
         "sceneAlt": "Veda in the morning behind two screens, preparing the monthly report.",
         "report": {
@@ -440,13 +447,13 @@
             0.48,
             0.9
           ],
-          "insight": "Saturday orders run 1.4× the other days. Adding one person on Saturdays is recommended."
+          "insight": "Week 4 had the highest sales. The full figures and next month’s recommendations are in the report."
         }
       },
       "eho": {
         "eyebrow": "Eho · Phone operator",
-        "title": "Every call answered.",
-        "body": "When the phone rings, Eho speaks like a person, answers questions, and takes orders. It works the same after hours and at peak times.",
+        "title": "Every call, even at closing.",
+        "body": "Eho speaks on the phone like a person, answers the questions and records the order. After hours and at peak times, no call is lost. Every missed call is a missed order.",
         "cta": "Pre-register",
         "sceneAlt": "Eho with a headset, answering an incoming call.",
         "call": {
@@ -457,9 +464,9 @@
         }
       },
       "nova": {
-        "eyebrow": "Nova · Customer care",
-        "title": "No customer forgotten.",
-        "body": "Asks for feedback after each visit. Sends appointment and payment reminders. Re-engages customers who have not returned for some time.",
+        "eyebrow": "Nova · Customer manager",
+        "title": "A first-time customer comes back.",
+        "body": "After each visit Nova asks for feedback, sends appointment and payment reminders, and wins back customers who have stopped coming. Keeping a customer costs less than finding a new one.",
         "cta": "Pre-register",
         "sceneAlt": "Nova in the afternoon, writing to customers.",
         "chat": [
@@ -518,22 +525,22 @@
       "ara": {
         "name": "Ara",
         "role": "Receptionist",
-        "job": "Answers Facebook, Instagram, and website messages around the clock. Records bookings and appointments."
+        "job": "Answers every Facebook, Instagram and website message within seconds, and records bookings and appointments."
       },
       "nova": {
         "name": "Nova",
-        "role": "Customer care",
-        "job": "Follows up with customers, sends reminders, and checks satisfaction."
+        "role": "Customer manager",
+        "job": "Asks for feedback after each visit, sends reminders, and wins back customers who have stopped coming."
       },
       "veda": {
         "name": "Veda",
-        "role": "Analyst",
-        "job": "Prepares monthly sales and customer reports, then identifies areas to improve."
+        "role": "Business analyst",
+        "job": "Prepares the monthly sales and customer report, and sets out what to change next month."
       },
       "eho": {
         "name": "Eho",
         "role": "Phone operator",
-        "job": "Answers incoming calls, handles questions, and records orders."
+        "job": "Answers every incoming call, handles the questions, and records the order."
       }
     },
     "artCredit": "Pixel art on this page by",
@@ -562,8 +569,8 @@
       "desc": "Monthly fee and setup for AI staff, and the price of a website. Team discounts and payment terms."
     },
     "/portfolio": {
-      "title": "Portfolio",
-      "desc": "Websites and AI work we have built."
+      "title": "Website",
+      "desc": "A website built for a beauty salon: online booking, QPay payments, Ara."
     },
     "/faq": {
       "title": "Questions",
@@ -572,10 +579,6 @@
     "/process": {
       "title": "How we work",
       "desc": "The steps from order to a working AI staff member."
-    },
-    "/technology": {
-      "title": "Technology",
-      "desc": "The technology we build on."
     },
     "/location": {
       "title": "Where we are",
