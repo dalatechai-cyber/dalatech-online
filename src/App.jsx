@@ -9,6 +9,7 @@ import {
   NavLink as RouterNavLink,
   useLocation,
   useNavigate,
+  useNavigationType,
   Navigate,
 } from "react-router-dom";
 import {
@@ -24,7 +25,7 @@ import {
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawHero as drawStaffHero, drawChapter as drawStaffChapter, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { drawHero as drawStaffHero, drawHeroPan as drawStaffHeroPan, drawChapter as drawStaffChapter, drawWorkingDay, dayHour, heroStations, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -581,8 +582,8 @@ function Navbar() {
             </button>
 
             <div className="hidden md:block">
-              <MagneticButton href="https://app.dalatech.online" variant="primary">
-                {t("nav.createDemo")}
+              <MagneticButton href="#demo" variant="primary">
+                {t("nav.requestDemo")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                 </svg>
@@ -703,8 +704,8 @@ function Navbar() {
                   </button>
                 ))}
               </div>
-              <MagneticButton href="https://app.dalatech.online" variant="primary">
-                {t("nav.createDemo")}
+              <MagneticButton href="#demo" variant="primary">
+                {t("nav.requestDemo")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
                 </svg>
@@ -847,10 +848,184 @@ function SalonPreview() {
   );
 }
 
+// ------------------------------------------------------------ the first screen
+// Over the hero room: customer messages arrive from the edges of the screen,
+// land at the desk of whoever handles them, pause while they type, and get
+// their reply. It is the product doing its job, in the first three seconds.
+// While the room pans (a phone), one exchange at a time, centred.
+const SWITCH_FALLBACK = { ara: 0.5, eho: 0.5, nova: 0.5 };
+const SWITCH_EVERY_MS = 2400;
+const SWITCH_LIFE_MS = 4800;
+const SWITCH_MAX = 3;
+
+function SwitchChannel({ channel }) {
+  if (channel === "instagram") {
+    return (
+      <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#8134AF]" aria-hidden>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /></svg>
+      </span>
+    );
+  }
+  if (channel === "web") {
+    return (
+      <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-sky-400/25 text-sky-300" aria-hidden>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" /></svg>
+      </span>
+    );
+  }
+  return (
+    <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-[#0084FF]" aria-hidden>
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.5 3.7 7.2V22l3.4-1.9c.9.3 1.9.4 2.9.4 5.5 0 10-4.1 10-9.3S17.5 2 12 2zm1 12.5-2.6-2.7-5 2.7 5.5-5.8 2.6 2.7 4.9-2.7-5.4 5.8z" /></svg>
+    </span>
+  );
+}
+
+function SwitchItem({ item, anchor, onDone }) {
+  const [phase, setPhase] = React.useState("fly");
+  // `onDone` is the stable remover from the parent, keyed by id here, so a
+  // re-render of the list never restarts an item's clock.
+  React.useEffect(() => {
+    const a = window.setTimeout(() => setPhase("typing"), item.kind === "nova" ? 10 : 1250);
+    const b = window.setTimeout(() => setPhase("reply"), item.kind === "nova" ? 400 : 2250);
+    const c = window.setTimeout(() => onDone(item.id), SWITCH_LIFE_MS);
+    return () => { window.clearTimeout(a); window.clearTimeout(b); window.clearTimeout(c); };
+  }, [item, onDone]);
+
+  const left = `${(anchor * 100).toFixed(1)}%`;
+  const fromX = item.side === "left" ? "-60vw" : "60vw";
+  const incoming = item.kind !== "nova";
+  const ease = [0.16, 1, 0.3, 1];
+
+  return (
+    <>
+      {incoming && phase === "fly" && (
+        <motion.div
+          initial={{ x: fromX, y: -10, opacity: 0 }}
+          animate={{ x: 0, y: 0, opacity: 1 }}
+          transition={{ duration: 1.2, ease }}
+          style={{ left }}
+          className="absolute top-[14%] max-w-[230px] -translate-x-1/2"
+        >
+          <div className="flex items-center gap-2 rounded-[16px] rounded-bl-[6px] bg-[#1C2547]/95 px-3 py-2 text-[12.5px] leading-[1.35] text-fg shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-[4px] sm:text-[13px]">
+            {item.kind === "eho" ? (
+              <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-sky-400/20 text-sky-300" aria-hidden>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
+              </span>
+            ) : (
+              <SwitchChannel channel={item.channel} />
+            )}
+            <span>{item.text}</span>
+          </div>
+        </motion.div>
+      )}
+      {incoming && phase === "typing" && (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease }}
+          style={{ left }}
+          className="absolute top-[34%] -translate-x-1/2"
+        >
+          <div className="flex items-center gap-1 rounded-[14px] bg-brand-500/90 px-3 py-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="h-1.5 w-1.5 animate-[staffWave_0.9s_ease-in-out_infinite] rounded-full bg-white/90" style={{ animationDelay: `${i * 0.15}s` }} />
+            ))}
+          </div>
+        </motion.div>
+      )}
+      {phase === "reply" && (
+        <motion.div
+          initial={{ opacity: 0, y: item.kind === "nova" ? 0 : 8, scale: 0.96 }}
+          animate={item.kind === "nova" ? { opacity: [0, 1, 1, 0], y: [0, -30, -70, -110], x: [0, 20, 44, 70] } : { opacity: [0, 1, 1, 0], y: [8, 0, -8, -22], scale: 1 }}
+          transition={{ duration: item.kind === "nova" ? 3.6 : 2.4, ease: "easeOut", times: [0, 0.12, 0.7, 1] }}
+          style={{ left }}
+          className={["absolute max-w-[250px] -translate-x-1/2", item.kind === "nova" ? "top-[30%]" : "top-[30%]"].join(" ")}
+        >
+          <div className="flex items-center gap-2 rounded-[16px] rounded-br-[6px] bg-brand-500 px-3 py-2 text-[12.5px] leading-[1.35] text-white shadow-[0_8px_24px_rgba(37,99,235,0.35)] sm:text-[13px]">
+            <span className="flex h-[18px] w-[16px] shrink-0 items-start justify-center overflow-hidden rounded-[5px] bg-white/15" aria-hidden>
+              <StaffAvatar id={item.kind} size={1} className="-mt-[29px]" />
+            </span>
+            <span>{item.reply}</span>
+          </div>
+        </motion.div>
+      )}
+    </>
+  );
+}
+
+function HeroSwitchboard({ geometry }) {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const script = t("hero.switchboard", { returnObjects: true });
+  const [items, setItems] = React.useState([]);
+  const counter = React.useRef(0);
+  const cursor = React.useRef({ msg: 0, nova: 0, side: 0, kind: 0 });
+
+  const stations = geometry && geometry.stations;
+  const anchors = stations || SWITCH_FALLBACK;
+  const maxItems = stations ? SWITCH_MAX : 1;
+
+  React.useEffect(() => {
+    if (reduced || !script || !Array.isArray(script.incoming)) return undefined;
+    // ара, ара, эхо, ара, нова, ара, эхо, нова: every job gets its turn
+    const ORDER = ["ara", "ara", "eho", "ara", "nova", "ara", "eho", "nova"];
+    const spawn = () => {
+      setItems((current) => {
+        if (current.length >= maxItems) return current;
+        const c = cursor.current;
+        const kind = ORDER[c.kind++ % ORDER.length];
+        const side = c.side++ % 2 === 0 ? "left" : "right";
+        let item;
+        if (kind === "ara") {
+          const m = script.incoming[c.msg++ % script.incoming.length];
+          item = { kind, side, text: m.text, channel: m.channel, reply: m.reply };
+        } else if (kind === "eho") {
+          item = { kind, side, text: script.call.in, reply: script.call.out };
+        } else {
+          item = { kind, side, reply: script.nova[c.nova++ % script.nova.length] };
+        }
+        return [...current, { ...item, id: counter.current++ }];
+      });
+    };
+    const first = window.setTimeout(spawn, 900);
+    const id = window.setInterval(spawn, SWITCH_EVERY_MS);
+    return () => { window.clearTimeout(first); window.clearInterval(id); };
+  }, [reduced, script, maxItems]);
+
+  const remove = React.useCallback((id) => setItems((current) => current.filter((i) => i.id !== id)), []);
+
+  if (!script || !Array.isArray(script.incoming)) return null;
+
+  if (reduced) {
+    // one exchange, held still
+    const m = script.incoming[0];
+    return (
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div style={{ left: `${anchors.ara * 100}%` }} className="absolute top-[12%] max-w-[230px] -translate-x-1/2">
+          <div className="flex items-center gap-2 rounded-[16px] rounded-bl-[6px] bg-[#1C2547]/95 px-3 py-2 text-[12.5px] text-fg"><SwitchChannel channel={m.channel} /><span>{m.text}</span></div>
+        </div>
+        <div style={{ left: `${anchors.ara * 100}%` }} className="absolute top-[34%] max-w-[250px] -translate-x-1/2">
+          <div className="rounded-[16px] rounded-br-[6px] bg-brand-500 px-3 py-2 text-[12.5px] text-white">{m.reply}</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      {items.map((item) => (
+        <SwitchItem key={item.id} item={item} anchor={anchors[item.kind] ?? SWITCH_FALLBACK[item.kind]} onDone={remove} />
+      ))}
+    </div>
+  );
+}
+
 function Hero() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const heroRef = React.useRef(null);
+  const [geometry, setGeometry] = React.useState(null);
+  const onGeometry = React.useCallback((g) => setGeometry({ stations: heroStations(g.W) }), []);
   // The text leaves as you scroll; the canvas does not move and does not fade,
   // because the pinned scene below is the same room at the same art scale and
   // the cut between them should be invisible.
@@ -893,8 +1068,8 @@ function Hero() {
             transition={{ ...SPRING_REVEAL, delay: 0.65 }}
             className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6"
           >
-            <MagneticButton href="https://app.dalatech.online" variant="primary" className="w-full sm:w-auto">
-              {t("hero.buttons.createDemo")}
+            <MagneticButton href="#demo" variant="primary" className="w-full sm:w-auto">
+              {t("hero.buttons.requestDemo")}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
               </svg>
@@ -916,15 +1091,19 @@ function Hero() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...SPRING_REVEAL, delay: 0.3 }}
-        className="mt-12 md:mt-16"
+        className="relative mt-12 md:mt-16"
       >
         <PixelStage
-          draw={drawStaffHero}
-          logicalH={128}
+          draw={drawStaffHeroPan}
+          logicalH={HERO_H}
           scale={HERO_SCALE}
-          minW={STAFF_HERO_MIN_W}
+          minW={HERO_PAN_MIN_W}
           label={t("office.hero.sceneAlt")}
+          onGeometry={onGeometry}
         />
+        <ErrorBoundary fallback={null}>
+          <HeroSwitchboard geometry={geometry} />
+        </ErrorBoundary>
       </motion.div>
     </section>
   );
@@ -1360,7 +1539,8 @@ function Portfolio() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_ARA_DEMO_SERVICES}>{t("portfolio.getDemo")}</MagneticButton>
+              <MagneticButton href="https://app.dalatech.online" variant="primary">{t("portfolio.createDemo")}</MagneticButton>
+              <MagneticButton href="#demo" variant="ghost" demoServices={WEBSITE_ARA_DEMO_SERVICES}>{t("portfolio.getDemo")}</MagneticButton>
             </div>
           </div>
         </Reveal>
@@ -1571,7 +1751,7 @@ function LiveDemo() {
               {t("liveDemo.description")}
             </p>
             <div className="mt-9">
-              <MagneticButton variant="primary" href="https://app.dalatech.online">
+              <MagneticButton variant="primary" href="#demo" demoServices={["ara"]}>
                 {t("liveDemo.ctaLabel")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" />
@@ -1996,7 +2176,7 @@ function Pricing() {
                   ))}
                 </ul>
               </div>
-              <MagneticButton href="https://app.dalatech.online" variant="primary">{t("contact.demoCta")}</MagneticButton>
+              <MagneticButton href="#demo" variant="primary">{t("contact.requestCta")}</MagneticButton>
             </div>
             <p className="mt-6 border-t border-white/[0.06] pt-5 text-[12.5px] leading-[1.55] text-fg-muted">{t("pricing.paymentTerms.note")}</p>
           </div>
@@ -2108,7 +2288,9 @@ function FAQ() {
 /** Options offered as chips, in display order. Keys are shared with the API. */
 // The four AI staff from /office come first so a visitor arriving from a desk
 // sees their choice at the top of the chips.
-const DEMO_SERVICES = ["ara", "nova", "veda", "eho", "website", "unsure"];
+const DEMO_SERVICES = ["ara", "veda", "eho", "nova", "website", "unsure"];
+// The kinds of business that write to us, for the second question.
+const DEMO_SECTORS = ["salon", "shop", "clinic", "food", "auto", "education", "other"];
 
 const DEMO_DRAFT_KEY = "dalatech:demo-draft";
 /** Pre-selected chips for CTAs whose context already implies a product. */
@@ -2126,6 +2308,7 @@ const EMPTY_DEMO_FORM = {
   name: "",
   phone: "",
   business: "",
+  sector: "",
   services: [],
   note: "",
   email: "",
@@ -2167,6 +2350,7 @@ function readDemoDraft() {
       services: Array.isArray(parsed.values.services)
         ? parsed.values.services.filter((s) => DEMO_SERVICES.includes(s))
         : [],
+      sector: DEMO_SECTORS.includes(parsed.values.sector) ? parsed.values.sector : "",
     };
   } catch (error) {
     // Private browsing and quota errors must never stop the form from opening.
@@ -2307,6 +2491,9 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
   const [errors, setErrors] = React.useState({});
   const [status, setStatus] = React.useState("idle"); // idle | sending | sent | failed
   const [failureKind, setFailureKind] = React.useState(null);
+  // Three screens, one question each: what, whose business, how to reach you.
+  const [step, setStep] = React.useState(0);
+  const [dir, setDir] = React.useState(1);
 
   const panelRef = React.useRef(null);
   const firstFieldRef = React.useRef(null);
@@ -2315,6 +2502,8 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
   const requestIdRef = React.useRef(null);
   const abortRef = React.useRef(null);
   const restoreFocusRef = React.useRef(null);
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
 
   // Restore anything typed earlier in this tab, then layer the preset from the
   // button that opened the dialog on top of it.
@@ -2335,20 +2524,28 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
     setErrors({});
     setStatus("idle");
     setFailureKind(null);
+    // A button that already said what it is for skips the first question.
+    setStep(preset && preset.length ? 1 : 0);
+    setDir(1);
   }, [isOpen, preset]);
 
   // Android's back gesture is the universal "dismiss" on a phone, and there is
   // no Escape key there. Without an entry of our own to pop, Back would take
   // the visitor off the site entirely and lose the request.
+  //
+  // Keyed on isOpen alone. A version keyed on onClose too re-ran whenever the
+  // provider re-rendered: its cleanup popped our entry, its body pushed a
+  // fresh one, and once the pops and pushes crossed the visitor's real
+  // previous page was the one that got popped. onClose is read through a ref.
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
 
-    let closedByBack = false;
+    let poppedByVisitor = false;
     window.history.pushState({ ...window.history.state, dalatechDemoDialog: true }, "");
 
     const onPopState = () => {
-      closedByBack = true;
-      onClose();
+      poppedByVisitor = true;
+      onCloseRef.current();
     };
     window.addEventListener("popstate", onPopState);
 
@@ -2356,16 +2553,16 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
       window.removeEventListener("popstate", onPopState);
       // Closed with the button or Escape instead: drop the entry we added so
       // the next Back press does what the visitor expects.
-      if (!closedByBack && window.history.state && window.history.state.dalatechDemoDialog) {
+      if (!poppedByVisitor && window.history.state && window.history.state.dalatechDemoDialog) {
         window.history.back();
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   // Escape to close, focus trapped inside the panel, page behind frozen, and
   // the floating chat button hidden so it cannot overlap the sheet.
   React.useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
 
     restoreFocusRef.current = document.activeElement;
     lockBodyScroll();
@@ -2374,7 +2571,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         event.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== "Tab" || !panelRef.current) return;
@@ -2401,16 +2598,16 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
       const previous = restoreFocusRef.current;
       if (previous && typeof previous.focus === "function") previous.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   // On a phone, opening the keyboard immediately would hide the form, so only
-  // desktop gets the cursor placed for it.
+  // desktop gets the cursor placed for it. Runs again on each step.
   React.useEffect(() => {
-    if (!isOpen) return;
-    const target = isMobile ? panelRef.current : firstFieldRef.current;
+    if (!isOpen) return undefined;
+    const target = isMobile || step === 0 ? panelRef.current : firstFieldRef.current;
     const id = window.setTimeout(() => target && target.focus(), 60);
     return () => window.clearTimeout(id);
-  }, [isOpen, isMobile]);
+  }, [isOpen, isMobile, step]);
 
   // A live region that appears together with its content is announced
   // unreliably, so move focus to the confirmation heading instead.
@@ -2437,7 +2634,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
     []
   );
 
-  // Mirror every keystroke into sessionStorage: a backgrounded tab, a reload or
+  // Mirror every keystroke into localStorage: a backgrounded tab, a reload or
   // a failed send must never cost the visitor what they typed.
   React.useEffect(() => {
     if (!isOpen || status === "sent") return;
@@ -2463,25 +2660,57 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
     }));
   };
 
+  const go = (next) => {
+    setDir(next > step ? 1 : -1);
+    setStep(next);
+    if (panelRef.current) {
+      const body = panelRef.current.querySelector(".demo-sheet-body");
+      if (body) body.scrollTop = 0;
+    }
+  };
+
+  const focusInvalid = () => {
+    const firstInvalid = panelRef.current?.querySelector("[aria-invalid='true']");
+    if (firstInvalid) firstInvalid.focus();
+  };
+
+  const next = () => {
+    if (step === 1) {
+      if (values.business.trim().length < 2) {
+        setErrors({ business: t("demoForm.errors.business") });
+        focusInvalid();
+        return;
+      }
+    }
+    go(step + 1);
+  };
+
   const onSubmit = async (event) => {
     event.preventDefault();
     if (status === "sending") return;
+    if (step < 2) {
+      next();
+      return;
+    }
 
     const found = validateDemoForm(values, t);
     if (Object.keys(found).length) {
       setErrors(found);
-      const firstInvalid = panelRef.current?.querySelector("[aria-invalid='true']");
-      if (firstInvalid) firstInvalid.focus();
+      // the business field lives two screens back
+      if (found.business && !found.name && !found.phone && !found.email) go(1);
+      window.setTimeout(focusInvalid, 0);
       return;
     }
 
     if (!requestIdRef.current) requestIdRef.current = newRequestId();
 
+    const sectorLabel = values.sector ? t(`demoForm.sectors.${values.sector}`, { defaultValue: "" }) : "";
     const payload = {
       requestId: requestIdRef.current,
       name: values.name.trim(),
       phone: values.phone.trim(),
-      business: values.business.trim(),
+      // the API has one business field; the sector rides along in it
+      business: sectorLabel ? `${values.business.trim()} (${sectorLabel})` : values.business.trim(),
       services: values.services,
       note: values.note.trim(),
       email: values.email.trim(),
@@ -2541,10 +2770,19 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
     setErrors({});
     setStatus("idle");
     setFailureKind(null);
+    go(0);
   };
 
   const sending = status === "sending";
   const phoneLabel = values.phone.trim();
+  const steps = [t("demoForm.steps.what"), t("demoForm.steps.business"), t("demoForm.steps.contact")];
+  const slide = reduced
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
+    : {
+        initial: { opacity: 0, x: 28 * dir },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: -22 * dir },
+      };
 
   return (
     <AnimatePresence>
@@ -2576,29 +2814,43 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
             transition={{ duration: 0.26, ease: EASE_OUT }}
             className="demo-sheet relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-ink-900/95 shadow-2xl backdrop-blur-xl outline-none sm:rounded-2xl"
           >
-            <div className="flex items-start justify-between gap-4 border-b border-white/[0.07] px-5 py-4 sm:px-7 sm:py-5">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-300/90">
-                  {t("demoForm.eyebrow")}
-                </p>
-                <h2
-                  id="demo-request-title"
-                  className="mt-1.5 font-display text-[21px] font-semibold tracking-tight text-fg sm:text-[23px]"
+            <div className="border-b border-white/[0.07] px-5 pt-4 sm:px-7 sm:pt-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-300/90">
+                    {status === "sent" ? t("demoForm.eyebrow") : t("demoForm.stepOf", { n: step + 1, total: steps.length })}
+                  </p>
+                  <h2
+                    id="demo-request-title"
+                    className="mt-1.5 font-display text-[21px] font-semibold tracking-tight text-fg sm:text-[23px]"
+                  >
+                    {status === "sent" ? t("demoForm.title") : steps[step]}
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="pressable -mr-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-fg-muted transition-colors hover:border-white/25 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:h-9 sm:w-9"
+                  aria-label={t("demoForm.close")}
                 >
-                  {t("demoForm.title")}
-                </h2>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                  </svg>
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="pressable -mr-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-fg-muted transition-colors hover:border-white/25 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:h-9 sm:w-9"
-                aria-label={t("demoForm.close")}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                  <path d="M18 6 6 18" />
-                  <path d="m6 6 12 12" />
-                </svg>
-              </button>
+              {/* the rail: where you are in the three questions */}
+              {status !== "sent" && (
+                <div className="mt-4 flex gap-1.5 pb-4" aria-hidden>
+                  {steps.map((label, i) => (
+                    <span
+                      key={label}
+                      className={["h-[3px] flex-1 rounded-full transition-colors duration-300", i <= step ? "bg-sky-400" : "bg-white/[0.08]"].join(" ")}
+                    />
+                  ))}
+                </div>
+              )}
+              {status === "sent" && <div className="pb-4" />}
             </div>
 
             {status === "sent" ? (
@@ -2622,231 +2874,312 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                 <p className="mx-auto mt-2.5 max-w-[34ch] text-[14.5px] leading-[1.6] text-fg-muted">
                   {t("demoForm.success.body", { phone: phoneLabel })}
                 </p>
-                <div className="mt-7">
+                <div className="mt-7 flex flex-col items-center gap-3">
                   <MagneticButton onClick={onClose} variant="primary">
                     {t("demoForm.success.close")}
                   </MagneticButton>
+                  <Link
+                    to="/office"
+                    onClick={onClose}
+                    className="inline-flex min-h-[44px] items-center gap-1 text-[14.5px] text-sky-400 transition-colors hover:text-sky-300"
+                  >
+                    {t("demoForm.success.meanwhile")} <span aria-hidden>›</span>
+                  </Link>
                 </div>
               </div>
             ) : (
               <form onSubmit={onSubmit} noValidate className="flex min-h-0 flex-1 flex-col">
-                <div className="demo-sheet-body space-y-5 px-5 py-5 sm:px-7">
-                  <p className="text-[14px] leading-[1.6] text-fg-muted">{t("demoForm.subtitle")}</p>
+                <div className="demo-sheet-body px-5 py-5 sm:px-7">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div key={step} {...slide} transition={{ duration: 0.22, ease: EASE_OUT }}>
+                      {step === 0 && (
+                        <fieldset disabled={sending} className="border-0 p-0">
+                          <legend className="text-[14px] leading-[1.6] text-fg-muted">{t("demoForm.fields.services.hint")}</legend>
+                          <div className="mt-4 grid grid-cols-2 gap-2.5">
+                            {DEMO_SERVICES.map((service) => {
+                              const active = values.services.includes(service);
+                              const agent = STAFF_LIVE[service] !== undefined;
+                              return (
+                                <button
+                                  key={service}
+                                  type="button"
+                                  onClick={() => toggleService(service)}
+                                  aria-pressed={active}
+                                  className={[
+                                    "pressable flex min-h-[64px] items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70",
+                                    active
+                                      ? "border-sky-400/60 bg-sky-400/12"
+                                      : "border-white/10 bg-white/[0.02] hover:border-white/25",
+                                  ].join(" ")}
+                                >
+                                  {agent ? (
+                                    <span className="flex h-[36px] w-[32px] shrink-0 items-start justify-center overflow-hidden rounded-[9px] bg-white/[0.06]">
+                                      <StaffAvatar id={service} size={2} className="-mt-[60px]" />
+                                    </span>
+                                  ) : (
+                                    <span className="flex h-[36px] w-[32px] shrink-0 items-center justify-center rounded-[9px] bg-white/[0.06] text-fg-muted" aria-hidden>
+                                      {service === "website" ? (
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18" /></svg>
+                                      ) : (
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.7-2.5 2-2.5 3.5" /><path d="M12 17h.01" /></svg>
+                                      )}
+                                    </span>
+                                  )}
+                                  <span className="min-w-0">
+                                    <span className={["block text-[14px] font-semibold leading-tight", active ? "text-sky-100" : "text-fg"].join(" ")}>
+                                      {t(`demoForm.serviceCards.${service}.title`)}
+                                    </span>
+                                    <span className="mt-0.5 block text-[11.5px] leading-tight text-fg-dim">
+                                      {agent && !STAFF_LIVE[service] ? t("office.status.soon") : t(`demoForm.serviceCards.${service}.line`)}
+                                    </span>
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </fieldset>
+                      )}
 
-                  <DemoField id="demo-name" label={t("demoForm.fields.name.label")} error={errors.name}>
-                    <input
-                      ref={firstFieldRef}
-                      id="demo-name"
-                      name="name"
-                      type="text"
-                      className={DEMO_INPUT_CLASS}
-                      placeholder={t("demoForm.fields.name.placeholder")}
-                      value={values.name}
-                      onChange={(e) => update("name", e.target.value)}
-                      autoComplete="name"
-                      enterKeyHint="next"
-                      spellCheck={false}
-                      autoCapitalize="words"
-                      maxLength={80}
-                      disabled={sending}
-                      aria-invalid={errors.name ? "true" : undefined}
-                      aria-describedby={errors.name ? "demo-name-error" : undefined}
-                    />
-                  </DemoField>
-
-                  <DemoField
-                    id="demo-phone"
-                    label={t("demoForm.fields.phone.label")}
-                    error={errors.phone}
-                    hint={t("demoForm.fields.phone.hint")}
-                  >
-                    <input
-                      id="demo-phone"
-                      name="phone"
-                      type="tel"
-                      inputMode="tel"
-                      className={DEMO_INPUT_CLASS}
-                      placeholder={t("demoForm.fields.phone.placeholder")}
-                      value={values.phone}
-                      onChange={(e) => update("phone", e.target.value)}
-                      autoComplete="tel"
-                      enterKeyHint="next"
-                      maxLength={32}
-                      disabled={sending}
-                      aria-invalid={errors.phone ? "true" : undefined}
-                      aria-describedby={errors.phone ? "demo-phone-error" : undefined}
-                    />
-                  </DemoField>
-
-                  <DemoField
-                    id="demo-business"
-                    label={t("demoForm.fields.business.label")}
-                    error={errors.business}
-                  >
-                    <input
-                      id="demo-business"
-                      name="business"
-                      type="text"
-                      className={DEMO_INPUT_CLASS}
-                      placeholder={t("demoForm.fields.business.placeholder")}
-                      value={values.business}
-                      onChange={(e) => update("business", e.target.value)}
-                      autoComplete="organization"
-                      enterKeyHint="next"
-                      spellCheck={false}
-                      maxLength={120}
-                      disabled={sending}
-                      aria-invalid={errors.business ? "true" : undefined}
-                      aria-describedby={errors.business ? "demo-business-error" : undefined}
-                    />
-                  </DemoField>
-
-                  <fieldset disabled={sending} className="border-0 p-0">
-                    <legend className="text-[13px] font-medium text-fg">
-                      {t("demoForm.fields.services.label")}
-                    </legend>
-                    <p className="mt-1 text-[12px] text-fg-dim">{t("demoForm.fields.services.hint")}</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {DEMO_SERVICES.map((service) => {
-                        const active = values.services.includes(service);
-                        return (
-                          <button
-                            key={service}
-                            type="button"
-                            onClick={() => toggleService(service)}
-                            aria-pressed={active}
-                            className={[
-                              "pressable min-h-[44px] rounded-full border px-4 py-2.5 text-[13.5px] font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70",
-                              active
-                                ? "border-sky-400/60 bg-sky-400/12 text-sky-100"
-                                : "border-white/10 bg-white/[0.02] text-fg-muted hover:border-white/25 hover:text-fg",
-                            ].join(" ")}
-                          >
-                            {t(`demoForm.services.${service}`)}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </fieldset>
-
-                  <DemoField
-                    id="demo-note"
-                    label={t("demoForm.fields.note.label")}
-                    optional={t("demoForm.optional")}
-                  >
-                    <textarea
-                      id="demo-note"
-                      name="note"
-                      rows={3}
-                      className={`${DEMO_INPUT_CLASS} resize-y`}
-                      placeholder={t("demoForm.fields.note.placeholder")}
-                      value={values.note}
-                      onChange={(e) => update("note", e.target.value)}
-                      spellCheck={false}
-                      maxLength={1000}
-                      disabled={sending}
-                    />
-                  </DemoField>
-
-                  <DemoField
-                    id="demo-email"
-                    label={t("demoForm.fields.email.label")}
-                    optional={t("demoForm.optional")}
-                    error={errors.email}
-                  >
-                    <input
-                      id="demo-email"
-                      name="email"
-                      type="email"
-                      inputMode="email"
-                      className={DEMO_INPUT_CLASS}
-                      placeholder={t("demoForm.fields.email.placeholder")}
-                      value={values.email}
-                      onChange={(e) => update("email", e.target.value)}
-                      autoComplete="email"
-                      enterKeyHint="done"
-                      spellCheck={false}
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      maxLength={160}
-                      disabled={sending}
-                      aria-invalid={errors.email ? "true" : undefined}
-                      aria-describedby={errors.email ? "demo-email-error" : undefined}
-                    />
-                  </DemoField>
-
-                  {/* Honeypot — off-screen rather than display:none so bots still see it. */}
-                  <div aria-hidden className="demo-honeypot">
-                    <label htmlFor="demo-website">Website</label>
-                    <input
-                      id="demo-website"
-                      name="website"
-                      type="text"
-                      tabIndex={-1}
-                      autoComplete="off"
-                      value={values.website}
-                      onChange={(e) => update("website", e.target.value)}
-                    />
-                  </div>
-
-                  {status === "failed" && (
-                    <div
-                      ref={failureRef}
-                      className="rounded-xl border border-rose-400/30 bg-rose-500/[0.08] p-4"
-                      role="alert"
-                      aria-live="assertive"
-                    >
-                      <p className="text-[14px] font-semibold text-rose-100">
-                        {t(`demoForm.failure.${failureKind === "rejected" ? "rejectedTitle" : "title"}`)}
-                      </p>
-                      <p className="mt-1.5 text-[13.5px] leading-[1.6] text-rose-100/80">
-                        {t(`demoForm.failure.${failureKind === "rejected" ? "rejectedBody" : "body"}`)}
-                      </p>
-                      {failureKind !== "rejected" && (
-                        <div className="mt-3.5 flex flex-wrap gap-2">
-                          <a
-                            href={DEMO_MESSENGER}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="pressable rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-fg transition-colors hover:border-white/30"
-                          >
-                            {t("demoForm.failure.messenger")}
-                          </a>
-                          <a
-                            href={demoMailtoHref(values, t)}
-                            className="pressable rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-fg transition-colors hover:border-white/30"
-                          >
-                            {t("demoForm.failure.email")}
-                          </a>
+                      {step === 1 && (
+                        <div className="space-y-5">
+                          <DemoField id="demo-business" label={t("demoForm.fields.business.label")} error={errors.business}>
+                            <input
+                              ref={firstFieldRef}
+                              id="demo-business"
+                              name="business"
+                              type="text"
+                              className={DEMO_INPUT_CLASS}
+                              placeholder={t("demoForm.fields.business.placeholder")}
+                              value={values.business}
+                              onChange={(e) => update("business", e.target.value)}
+                              autoComplete="organization"
+                              enterKeyHint="next"
+                              spellCheck={false}
+                              maxLength={100}
+                              disabled={sending}
+                              aria-invalid={errors.business ? "true" : undefined}
+                              aria-describedby={errors.business ? "demo-business-error" : undefined}
+                            />
+                          </DemoField>
+                          <fieldset disabled={sending} className="border-0 p-0">
+                            <legend className="text-[13px] font-medium text-fg">{t("demoForm.fields.sector.label")}</legend>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {DEMO_SECTORS.map((sector) => {
+                                const active = values.sector === sector;
+                                return (
+                                  <button
+                                    key={sector}
+                                    type="button"
+                                    onClick={() => update("sector", active ? "" : sector)}
+                                    aria-pressed={active}
+                                    className={[
+                                      "pressable min-h-[44px] rounded-full border px-4 py-2.5 text-[13.5px] font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70",
+                                      active
+                                        ? "border-sky-400/60 bg-sky-400/12 text-sky-100"
+                                        : "border-white/10 bg-white/[0.02] text-fg-muted hover:border-white/25 hover:text-fg",
+                                    ].join(" ")}
+                                  >
+                                    {t(`demoForm.sectors.${sector}`)}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </fieldset>
                         </div>
                       )}
-                    </div>
-                  )}
+
+                      {step === 2 && (
+                        <div className="space-y-5">
+                          <DemoField id="demo-name" label={t("demoForm.fields.name.label")} error={errors.name}>
+                            <input
+                              ref={firstFieldRef}
+                              id="demo-name"
+                              name="name"
+                              type="text"
+                              className={DEMO_INPUT_CLASS}
+                              placeholder={t("demoForm.fields.name.placeholder")}
+                              value={values.name}
+                              onChange={(e) => update("name", e.target.value)}
+                              autoComplete="name"
+                              enterKeyHint="next"
+                              spellCheck={false}
+                              autoCapitalize="words"
+                              maxLength={80}
+                              disabled={sending}
+                              aria-invalid={errors.name ? "true" : undefined}
+                              aria-describedby={errors.name ? "demo-name-error" : undefined}
+                            />
+                          </DemoField>
+
+                          <DemoField
+                            id="demo-phone"
+                            label={t("demoForm.fields.phone.label")}
+                            error={errors.phone}
+                            hint={t("demoForm.fields.phone.hint")}
+                          >
+                            <input
+                              id="demo-phone"
+                              name="phone"
+                              type="tel"
+                              inputMode="tel"
+                              className={DEMO_INPUT_CLASS}
+                              placeholder={t("demoForm.fields.phone.placeholder")}
+                              value={values.phone}
+                              onChange={(e) => update("phone", e.target.value)}
+                              autoComplete="tel"
+                              enterKeyHint="next"
+                              maxLength={32}
+                              disabled={sending}
+                              aria-invalid={errors.phone ? "true" : undefined}
+                              aria-describedby={errors.phone ? "demo-phone-error" : undefined}
+                            />
+                          </DemoField>
+
+                          <DemoField
+                            id="demo-email"
+                            label={t("demoForm.fields.email.label")}
+                            optional={t("demoForm.optional")}
+                            error={errors.email}
+                          >
+                            <input
+                              id="demo-email"
+                              name="email"
+                              type="email"
+                              inputMode="email"
+                              className={DEMO_INPUT_CLASS}
+                              placeholder={t("demoForm.fields.email.placeholder")}
+                              value={values.email}
+                              onChange={(e) => update("email", e.target.value)}
+                              autoComplete="email"
+                              enterKeyHint="next"
+                              spellCheck={false}
+                              autoCapitalize="off"
+                              autoCorrect="off"
+                              maxLength={160}
+                              disabled={sending}
+                              aria-invalid={errors.email ? "true" : undefined}
+                              aria-describedby={errors.email ? "demo-email-error" : undefined}
+                            />
+                          </DemoField>
+
+                          <DemoField
+                            id="demo-note"
+                            label={t("demoForm.fields.note.label")}
+                            optional={t("demoForm.optional")}
+                          >
+                            <textarea
+                              id="demo-note"
+                              name="note"
+                              rows={3}
+                              className={`${DEMO_INPUT_CLASS} resize-y`}
+                              placeholder={t("demoForm.fields.note.placeholder")}
+                              value={values.note}
+                              onChange={(e) => update("note", e.target.value)}
+                              spellCheck={false}
+                              maxLength={1000}
+                              disabled={sending}
+                            />
+                          </DemoField>
+
+                          {/* what they chose, so the last screen is also the summary */}
+                          <p className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-3.5 py-3 text-[12.5px] leading-[1.6] text-fg-muted">
+                            <span className="font-medium text-fg">{values.business.trim() || t("demoForm.summary.noBusiness")}</span>
+                            {" · "}
+                            {values.services.length
+                              ? values.services.map((s) => t(`demoForm.serviceCards.${s}.title`)).join(", ")
+                              : t("demoForm.serviceCards.unsure.title")}
+                          </p>
+
+                          {/* Honeypot — off-screen rather than display:none so bots still see it. */}
+                          <div aria-hidden className="demo-honeypot">
+                            <label htmlFor="demo-website">Website</label>
+                            <input
+                              id="demo-website"
+                              name="website"
+                              type="text"
+                              tabIndex={-1}
+                              autoComplete="off"
+                              value={values.website}
+                              onChange={(e) => update("website", e.target.value)}
+                            />
+                          </div>
+
+                          {status === "failed" && (
+                            <div
+                              ref={failureRef}
+                              className="rounded-xl border border-rose-400/30 bg-rose-500/[0.08] p-4"
+                              role="alert"
+                              aria-live="assertive"
+                            >
+                              <p className="text-[14px] font-semibold text-rose-100">
+                                {t(`demoForm.failure.${failureKind === "rejected" ? "rejectedTitle" : "title"}`)}
+                              </p>
+                              <p className="mt-1.5 text-[13.5px] leading-[1.6] text-rose-100/80">
+                                {t(`demoForm.failure.${failureKind === "rejected" ? "rejectedBody" : "body"}`)}
+                              </p>
+                              {failureKind !== "rejected" && (
+                                <div className="mt-3.5 flex flex-wrap gap-2">
+                                  <a
+                                    href={DEMO_MESSENGER}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="pressable rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-fg transition-colors hover:border-white/30"
+                                  >
+                                    {t("demoForm.failure.messenger")}
+                                  </a>
+                                  <a
+                                    href={demoMailtoHref(values, t)}
+                                    className="pressable rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-[12.5px] font-medium text-fg transition-colors hover:border-white/30"
+                                  >
+                                    {t("demoForm.failure.email")}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
 
                 <div
                   className="border-t border-white/[0.07] bg-ink-900/80 px-5 py-4 sm:px-7"
                   style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
                 >
-                  <button
-                    type="submit"
-                    disabled={sending}
-                    className="pressable flex w-full items-center justify-center gap-2.5 rounded-xl bg-fg px-5 py-3.5 text-[15px] font-semibold tracking-tight text-ink-950 transition-colors duration-200 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {sending && (
-                      <span
-                        aria-hidden
-                        className="h-4 w-4 animate-spin rounded-full border-2 border-ink-950/25 border-t-ink-950"
-                      />
+                  <div className="flex items-center gap-3">
+                    {step > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => go(step - 1)}
+                        disabled={sending}
+                        className="pressable flex min-h-[48px] shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/10 px-4 text-[14px] font-medium text-fg-muted transition-colors hover:border-white/25 hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 disabled:opacity-60"
+                      >
+                        <span aria-hidden>‹</span> {t("demoForm.back")}
+                      </button>
                     )}
-                    {sending
-                      ? t("demoForm.submitting")
-                      : status === "failed"
-                        ? t("demoForm.retry")
-                        : t("demoForm.submit")}
-                  </button>
+                    <button
+                      type="submit"
+                      disabled={sending}
+                      className="pressable flex min-h-[48px] w-full items-center justify-center gap-2.5 rounded-xl bg-fg px-5 text-[15px] font-semibold tracking-tight text-ink-950 transition-colors duration-200 hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {sending && (
+                        <span
+                          aria-hidden
+                          className="h-4 w-4 animate-spin rounded-full border-2 border-ink-950/25 border-t-ink-950"
+                        />
+                      )}
+                      {step < 2
+                        ? t("demoForm.next")
+                        : sending
+                          ? t("demoForm.submitting")
+                          : status === "failed"
+                            ? t("demoForm.retry")
+                            : t("demoForm.submit")}
+                    </button>
+                  </div>
                   <p className="mt-3 text-center text-[11.5px] leading-[1.5] text-fg-dim">
-                    {t("demoForm.privacy")}
+                    {step === 2 ? t("demoForm.privacy") : t("demoForm.subtitle")}
                   </p>
                   {status === "failed" && (
                     <button
@@ -3011,12 +3344,12 @@ function Contact() {
 
           <StaggerItem>
             <div className="mt-11 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-              <MagneticButton href="https://app.dalatech.online" variant="primary">
-                <span>{t("contact.demoCta")}</span>
+              <MagneticButton href="#demo" variant="primary">
+                <span>{t("contact.requestCta")}</span>
                 <span aria-hidden className="contact-arrow inline-block">→</span>
               </MagneticButton>
-              <MagneticButton href="#demo" variant="ghost">
-                {t("contact.requestCta")}
+              <MagneticButton href="https://app.dalatech.online" variant="ghost">
+                {t("contact.demoCta")}
               </MagneticButton>
               <MagneticButton href={mailtoHref} variant="ghost">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -3249,10 +3582,10 @@ const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 // scene's own timestamps.
 const PHONE_FEED = {
   ara: { from: 0.05, until: 0.4 },
-  veda: { from: 0.46, until: 0.7 },
-  eho: { from: 0.76, until: 0.88 },
-  nova: { from: 0.895, until: 0.94 },
-  done: { from: 0.95 },
+  veda: { from: 0.46, until: 0.68 },
+  eho: { from: 0.73, until: 0.845 },
+  nova: { from: 0.865, until: 0.945 },
+  done: { from: 0.955 },
 };
 const PHONE_STEP = 0.035;
 // The last screen has less runway than the others: the summary and the door
@@ -3271,7 +3604,7 @@ function PhoneTime({ progress }) {
   const read = React.useCallback((p) => {
     const hold = DAY_MOMENTS.find((m) => p >= m.from && p <= m.to);
     if (hold) return hold.time;
-    if (p >= PHONE_FEED.nova.from && p <= PHONE_FEED.nova.until) return "19:41";
+    if (p >= PHONE_FEED.nova.from && p <= PHONE_FEED.nova.until) return "19:40";
     if (p >= PHONE_FEED.done.from) return "21:00";
     const h = dayHour(p);
     let hh = Math.floor(h);
@@ -3369,6 +3702,7 @@ function PhoneWave() {
 // get.
 function PhoneFeed({ progress, group }) {
   const { t } = useTranslation();
+  const { open: openDemoRequest } = useDemoRequest();
   const feed = t("day.phone", { returnObjects: true });
   const report = t("office.chapters.veda.report", { returnObjects: true });
   const one = useMotionValue(1);
@@ -3413,9 +3747,11 @@ function PhoneFeed({ progress, group }) {
       </div>
 
       <div className={groupCls} aria-hidden={!show("nova")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneCard progress={progress} at={step("nova", 0)} until={g("nova").until} who="nova" name={feed.nova.from} time="19:41" title={feed.nova.title}>
-          <p className={phoneText}>{feed.nova.body}</p>
-        </PhoneCard>
+        {feed.nova.items.map((n, i) => (
+          <PhoneCard key={n.title} progress={progress} at={step("nova", i)} span={0.025} until={g("nova").until} who="nova" name={feed.nova.from} time={n.time} title={n.title} className={i === feed.nova.items.length - 1 ? "border-sky-400/30" : ""}>
+            <p className={phoneText}>{n.body}</p>
+          </PhoneCard>
+        ))}
       </div>
 
       {/* the last screen is the product: what the day added up to, and the door in */}
@@ -3431,13 +3767,14 @@ function PhoneFeed({ progress, group }) {
           </ul>
         </PhoneCard>
         <Rise progress={progress ?? one} at={progress ? step("done", 0) + PHONE_DONE_STEP : 0} span={PHONE_DONE_STEP}>
-          <a
-            href="https://app.dalatech.online"
+          <button
+            type="button"
+            onClick={() => openDemoRequest()}
             className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
           >
             {feed.cta}
             <span aria-hidden>→</span>
-          </a>
+          </button>
           <p className="mt-2 text-center text-[11px] text-fg-dim">{feed.ctaHint}</p>
         </Rise>
       </div>
@@ -3519,7 +3856,7 @@ function WorkingDay() {
     <Container>
       <div className="mt-14 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
-        <MagneticButton href="https://app.dalatech.online" variant="primary">{t("day.phone.cta")}</MagneticButton>
+        <MagneticButton href="#demo" variant="primary">{t("day.phone.cta")}</MagneticButton>
       </div>
     </Container>
   );
@@ -3645,9 +3982,9 @@ function WebsiteOffer() {
   const bullets = t("pricing.cards.website.bullets", { returnObjects: true });
   const rows = [...(Array.isArray(bullets) ? bullets : []), t("websiteOffer.delivery")];
   return (
-    <section className="bg-ink-700 py-24 md:py-40">
+    <section className="py-16 md:py-28">
       <Container>
-        <div className="mx-auto max-w-[780px] rounded-[24px] bg-ink-600 px-6 py-10 sm:px-10 sm:py-14">
+        <div className="card-glow mx-auto max-w-[780px] rounded-2xl border border-white/10 bg-ink-800/55 px-6 py-10 shadow-card sm:px-10 sm:py-14">
           <h2 className="max-w-[20ch] font-display text-[30px] font-semibold leading-[1.12] tracking-tightest text-fg sm:text-[40px]">
             {t("websiteOffer.title")}
           </h2>
@@ -3662,7 +3999,10 @@ function WebsiteOffer() {
             ))}
           </ul>
           <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
-            <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_DEMO_SERVICES}>
+            <MagneticButton href="https://app.dalatech.online" variant="primary">
+              {t("portfolio.createDemo")}
+            </MagneticButton>
+            <MagneticButton href="#demo" variant="ghost" demoServices={WEBSITE_DEMO_SERVICES}>
               {t("pricing.cards.website.cta")}
             </MagneticButton>
             <Link to="/pricing" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
@@ -3851,7 +4191,7 @@ function useStaffAtlas() {
  * (0..1) the scene may read; `scale` is CSS pixels per art pixel for a given
  * width; `minW` keeps the scene's content inside the canvas on narrow screens.
  */
-function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, className = "" }) {
+function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, className = "", onGeometry }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const { img, error } = useStaffAtlas();
@@ -3872,7 +4212,7 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
     if (!img || !canvasRef.current) return undefined;
     let stage;
     try {
-      stage = createPixelStage(canvasRef.current, { img, draw, logicalH, scale, minW, reduced: !!reduced });
+      stage = createPixelStage(canvasRef.current, { img, draw, logicalH, scale, minW, reduced: !!reduced, onResize: onGeometry });
     } catch (e) {
       console.error(e);
       return undefined;
@@ -3886,7 +4226,7 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
       if (unsubscribe) unsubscribe();
       stage.destroy();
     };
-  }, [img, draw, logicalH, scale, minW, progress, reduced]);
+  }, [img, draw, logicalH, scale, minW, progress, reduced, onGeometry]);
 
   const h = typeof logicalH === "function" ? logicalH(hostW) : logicalH;
   // Reserve exactly what the canvas will occupy. createStage clamps the device
@@ -3952,10 +4292,15 @@ function Rise({ progress, at, span = 0.08, until, className = "", children }) {
   );
 }
 
-const HERO_SCALE = (w) => (w < 640 ? 1.5 : w < 900 ? 2 : 3);
+const HERO_SCALE = (w) => (w < 640 ? 2 : w < 900 ? 2 : 3);
+// The wall band, the desks and a row of carpet in front of them.
+const HERO_H = 144;
+// On a phone the landing hero pans across the room at a readable scale, so
+// it never needs the whole row to fit; the /office hero still does.
+const HERO_PAN_MIN_W = 160;
 const CHAPTER_SCALE = (w) => (w < 640 ? 2 : 3);
 // phones get a taller room so the messages fit beside the person
-const CHAPTER_HEIGHT = (w) => (w < 640 ? 176 : 128);
+const CHAPTER_HEIGHT = (w) => (w < 640 ? 150 : 128);
 
 function StaffStatus({ live }) {
   const { t } = useTranslation();
@@ -4051,7 +4396,7 @@ function StaffHero({ onHire, onSee, onPick }) {
             the corners — bookshelf, whiteboard, cooler — to exist */}
         <PixelStage
           draw={drawStaffHero}
-          logicalH={128}
+          logicalH={HERO_H}
           scale={HERO_SCALE}
           minW={STAFF_HERO_MIN_W}
           label={t("office.hero.sceneAlt")}
@@ -4202,7 +4547,7 @@ function StaffChapter({ id, index, onHire }) {
             <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[40px] md:text-[46px]">{t(`${base}.title`)}</h2>
           </Reveal>
           <div className={["md:col-span-7 md:row-span-2 md:row-start-1 md:self-center", flip ? "md:col-start-1" : "md:col-start-6"].join(" ")}>
-            <div className="relative -mx-5 sm:mx-0">
+            <div className="-mx-5 sm:mx-0">
               <PixelStage
                 draw={draw}
                 logicalH={CHAPTER_HEIGHT}
@@ -4212,9 +4557,9 @@ function StaffChapter({ id, index, onHire }) {
                 label={t(`${base}.sceneAlt`)}
                 className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
               />
-              {/* what is really on the screen, floated over the quiet half of the wall */}
-              <div className="absolute left-[49%] right-[4%] top-[4%] sm:left-[50%]">{overlay}</div>
             </div>
+            {/* what is really on the screen, under the scene */}
+            <div className={["mt-4 max-w-[400px]", flip ? "" : "md:ml-auto"].join(" ")}>{overlay}</div>
           </div>
           <Reveal className={["md:col-span-5 md:row-start-2 md:self-start", flip ? "md:col-start-8" : "md:col-start-1"].join(" ")}>
             <p className="max-w-[460px] text-[17px] leading-[1.47] text-fg-muted">{t(`${base}.body`)}</p>
@@ -4460,7 +4805,13 @@ function PageShell({ children }) {
 // On route change: scroll to top (or to a hash target if state.scrollTo set).
 function RouteScrollManager() {
   const location = useLocation();
+  const navType = useNavigationType();
   React.useEffect(() => {
+    // Back and Forward restore their own scroll position. Scrolling to the
+    // top on a POP threw the visitor to the top of the page every time the
+    // request dialog closed, because closing it pops the history entry it
+    // pushed to catch the Back gesture.
+    if (navType === "POP") return undefined;
     const target = location.state && location.state.scrollTo;
     if (target) {
       // Pages with canvases and reveals settle their layout over the first
@@ -4484,7 +4835,8 @@ function RouteScrollManager() {
       };
     }
     window.scrollTo({ top: 0, behavior: "auto" });
-  }, [location.pathname, location.state]);
+    return undefined;
+  }, [location.pathname, location.state, navType]);
   return null;
 }
 
