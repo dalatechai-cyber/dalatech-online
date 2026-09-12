@@ -359,15 +359,6 @@ html.demo-dialog-open #dt-chat-frame {
   50% { transform: scaleY(1.5); }
 }
 
-/* the pinned "a working day" scene */
-.day-pin {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  height: 100svh;
-  overflow: hidden;
-}
-
 .day-band {
   overflow: hidden;
 }
@@ -407,49 +398,260 @@ html.demo-dialog-open #dt-chat-frame {
   0% { opacity: 0.5; transform: scale(0.6); }
   100% { opacity: 0; transform: scale(3); }
 }
+/* each new moment arrives rather than swapping, so the eye catches the change */
+.ring-caption { animation: ringCaption 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes ringCaption {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .ring-dot { transition: none; }
   .ring-dot .halo { animation: none !important; }
+  .ring-caption { animation: none; }
 }
 
-/* ---------------------------------------------------------------- glass
-   Apple's Liquid Glass stack, minus the lensing CSS cannot do. Its own rule
-   is that glass belongs to the navigation layer and content stays sharp, so
-   real backdrop-filter is spent on the bar and the mobile menu only — two
-   layers, which is the whole budget on a phone.
+/* ------------------------------------------------ the office page's opening
+   Four lanes, one per member of staff: who they are on the left, what they
+   handle on the right, and which way the work travels in between. Two lanes
+   run inward, one stays put, one goes out and comes back.
 
-   .panel-glass is the content-layer substitute the same reference
-   prescribes: the two cheap, legible signals (a light top edge and the inner
-   specular) without the blur. It also survives what glass cannot — the
-   chapter panels sit inside a framer-motion wrapper that animates transform,
-   and a transformed ancestor silently collapses backdrop sampling. */
-.panel-glass {
-  position: relative;
-  border-radius: 22px;
-  background:
-    linear-gradient(180deg, rgba(26, 37, 87, 0.55) 0%, rgba(8, 14, 34, 0.92) 100%),
-    #080E22;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top-color: rgba(255, 255, 255, 0.15);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 8px 32px rgba(0, 0, 0, 0.45);
+   The resting styles below ARE the finished board. Nothing is hidden waiting
+   for a trigger: the animations are attached only under [data-board="on"] and
+   use animation-fill-mode: backwards, so with motion off the diagram still
+   reads. Everything animated is transform or opacity. It runs once. */
+.board-lanes {
+  display: grid;
+  gap: 10px;
 }
-/* the specular arc: ambient light from the top left, a third of the alpha
-   Apple uses on a light ground or it reads as fog */
-.panel-glass::before {
-  content: "";
+
+.board-lane {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px 14px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.022);
+}
+.board-lane[data-soon="true"] { opacity: 0.74; }
+
+@media (max-width: 719px) {
+  .board-lanes { gap: 8px; }
+  .board-lane { padding: 10px 12px; gap: 4px; }
+  .board-rail { height: 24px; }
+  .board-face { width: 30px; height: 34px; border-radius: 8px; }
+}
+
+@media (min-width: 720px) {
+  .board-lane {
+    grid-template-columns: minmax(172px, 194px) minmax(104px, 1fr) minmax(150px, 214px);
+    padding: 12px 16px;
+  }
+}
+
+/* who */
+.board-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.board-face {
+  display: flex;
+  width: 34px;
+  height: 38px;
+  flex: none;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.board-name {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-family: Manrope, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #F0F4FF;
+}
+.board-role {
+  display: block;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: #8B9FC4;
+}
+.board-soon {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5A6E94;
+}
+
+/* the route between them */
+.board-rail { position: relative; height: 28px; min-width: 0; }
+.board-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-image: linear-gradient(90deg, rgba(56, 189, 248, 0.38) 0 5px, transparent 5px 10px);
+  background-size: 10px 1px;
+  opacity: 0.65;
+}
+/* which way the work travels; the still lane has no arrow because nothing does */
+.board-arrow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -4px 0 0 -4px;
+  border-top: 1.4px solid rgba(56, 189, 248, 0.75);
+  border-right: 1.4px solid rgba(56, 189, 248, 0.75);
+}
+.board-lane[data-dir="in"] .board-arrow { transform: rotate(-135deg); }
+.board-lane[data-dir="out"] .board-arrow { left: 38%; transform: rotate(45deg); }
+.board-lane[data-dir="out"] .board-arrow--back { left: 64%; transform: rotate(-135deg); }
+/* nothing travels on the analyst's lane, so the route starts past her bars */
+.board-lane[data-dir="still"] .board-track { left: 44px; }
+
+/* The payload. The slide box spans the rail, so translating it by a
+   percentage of itself is a percentage of the rail — no measured pixels and
+   nothing to keep in sync with JS. One token width is subtracted so the
+   token lands flush with the far end instead of hanging over it. */
+.board-slide {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: radial-gradient(ellipse 80% 40% at 30% 0%, rgba(255, 255, 255, 0.09) 0%, transparent 70%);
+  display: flex;
+  align-items: center;
 }
-.panel-glass > * { position: relative; }
+.board-slide--in, .board-slide--back { justify-content: flex-start; }
+.board-slide--out { justify-content: flex-start; }
 
-@media (prefers-contrast: more) {
-  .panel-glass { background: #050A18; border-color: rgba(240, 244, 255, 0.55); }
-  .panel-glass::before { display: none; }
+.board-token {
+  position: relative;
+  display: flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: #0B1330;
+  color: #38BDF8;
+}
+/* the note Нова sends is gone once the answer is back; the answer is what rests */
+.board-token--ghost { opacity: 0; }
+.board-token--reply { color: #7DD3FC; }
+
+.board-ripple {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  opacity: 0;
+}
+
+/* the lane that never leaves the desk */
+.board-bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding-bottom: 4px;
+}
+.board-bar {
+  width: 6px;
+  height: var(--h);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #38BDF8, rgba(37, 99, 235, 0.55));
+  transform-origin: bottom;
+}
+
+/* what is at the far end */
+.board-end { min-width: 0; }
+.board-chip {
+  display: inline-block;
+  max-width: 100%;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  background: rgba(56, 189, 248, 0.09);
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: #C9DAF5;
+}
+.board-lane[data-soon="true"] .board-chip {
+  background: transparent;
+  border-color: rgba(240, 244, 255, 0.16);
+  color: #8B9FC4;
+}
+@media (min-width: 720px) {
+  .board-end { text-align: right; }
+}
+
+/* --- the one pass, attached only when the board is on screen --- */
+[data-board="on"] .board-slide--in {
+  animation: boardIn 820ms cubic-bezier(0.22, 0.61, 0.36, 1) var(--d) backwards;
+}
+[data-board="on"] .board-ripple {
+  animation: boardRipple 900ms ease-out calc(var(--d) + 700ms) 2 backwards;
+}
+[data-board="on"] .board-bar {
+  animation: boardBar 620ms cubic-bezier(0.16, 1, 0.3, 1) calc(var(--d) + var(--i) * 110ms) backwards;
+}
+[data-board="on"] .board-slide--out {
+  animation: boardOut 1500ms cubic-bezier(0.5, 0, 0.5, 1) var(--d) backwards;
+}
+[data-board="on"] .board-token--ghost {
+  animation: boardGhost 1500ms linear var(--d) backwards;
+}
+[data-board="on"] .board-slide--back {
+  animation: boardBack 1500ms cubic-bezier(0.5, 0, 0.5, 1) var(--d) backwards;
+}
+[data-board="on"] .board-token--reply {
+  animation: boardReply 1500ms linear var(--d) backwards;
+}
+
+@keyframes boardIn {
+  from { transform: translateX(calc(100% - 26px)); opacity: 0; }
+  60% { opacity: 1; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes boardRipple {
+  from { opacity: 0.75; transform: scale(1); }
+  to { opacity: 0; transform: scale(2.1); }
+}
+@keyframes boardBar {
+  from { transform: scaleY(0.08); }
+  to { transform: scaleY(1); }
+}
+/* out: the note leaves, reaches the far end, and stops existing */
+@keyframes boardOut {
+  0% { transform: translateX(0); }
+  55%, 100% { transform: translateX(calc(100% - 26px)); }
+}
+@keyframes boardGhost {
+  0%, 6% { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+/* back: the answer starts at the far end and comes home */
+@keyframes boardBack {
+  0%, 55% { transform: translateX(calc(100% - 26px)); }
+  100% { transform: translateX(0); }
+}
+@keyframes boardReply {
+  0%, 57% { opacity: 0; }
+  66%, 100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-board] .board-slide,
+  [data-board] .board-bar,
+  [data-board] .board-token,
+  [data-board] .board-ripple { animation: none !important; }
 }
 
 /* Nothing behind the request sheet needs to move. A running animation back

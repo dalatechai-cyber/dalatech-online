@@ -171,7 +171,11 @@ export function windowFrame(ctx, x, y, w, h, posts = [x + ((w / 2) | 0) - 1]) {
   rect(ctx, x - 4, y + h + 5, w + 8, 1, "#1A2148");
 }
 
-// The wall down to `floorY`, a skirting board on the floor line, carpet below.
+// The wall down to `floorY`, then the floor. The wall is three courses of
+// LimeZu's office wall: a cornice at the ceiling, plain face between, and a
+// bottom course whose last two rows are the dark line where wall meets floor
+// — which is why the skirting lands exactly on floorY. The floor pattern is
+// 96x64, so it is stepped by its own size rather than by a tile.
 export function room(ctx, img, W, H, floorY = 44) {
   const skirtY = floorY - SPRITES.SKIRT.h;
   for (let x = 0; x < W; x += TILE) {
@@ -179,8 +183,9 @@ export function room(ctx, img, W, H, floorY = 44) {
     for (let y = TILE; y < skirtY; y += TILE) sprite(ctx, img, "WALL_MID", x, y);
     sprite(ctx, img, "SKIRT", x, skirtY);
   }
-  for (let y = floorY; y < H; y += 64) {
-    for (let x = 0; x < W; x += 64) sprite(ctx, img, "FLOOR", x, y);
+  const f = SPRITES.FLOOR;
+  for (let y = floorY; y < H; y += f.h) {
+    for (let x = 0; x < W; x += f.w) sprite(ctx, img, "FLOOR", x, y);
   }
 }
 

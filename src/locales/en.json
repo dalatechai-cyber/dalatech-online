@@ -678,6 +678,28 @@
         "It does not decide anything that needs a decision — it hands the customer to your team."
       ],
       "link": "Other questions"
+    },
+    "board": {
+      "label": "How the work is split",
+      "caption": "Four different kinds of work, one member of staff responsible for each.",
+      "lanes": {
+        "ara": {
+          "end": "Messenger · Instagram · Website",
+          "dir": "Work that arrives"
+        },
+        "eho": {
+          "end": "Incoming calls",
+          "dir": "Work that arrives"
+        },
+        "veda": {
+          "end": "Monthly report",
+          "dir": "Work done at the desk"
+        },
+        "nova": {
+          "end": "Customers who went quiet",
+          "dir": "Goes out and comes back"
+        }
+      }
     }
   },
   "meta": {
