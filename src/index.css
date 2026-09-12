@@ -441,7 +441,9 @@ html.demo-dialog-open #dt-chat-frame {
 .board-lane[data-soon="true"] .board-face,
 .board-lane[data-soon="true"] .board-track,
 .board-lane[data-soon="true"] .board-arrow,
-.board-lane[data-soon="true"] .board-token { opacity: 0.58; }
+/* :not() so the rule cannot resurrect the note Нова has already sent, which
+   is authored invisible and is the one token meant to stay that way */
+.board-lane[data-soon="true"] .board-token:not(.board-token--ghost) { opacity: 0.58; }
 
 @media (max-width: 719.98px) {
   .board-lanes { gap: 8px; }
@@ -678,7 +680,7 @@ html.demo-dialog-open #dt-chat-frame {
   .board-lane[data-soon="true"] .board-face,
   .board-lane[data-soon="true"] .board-track,
   .board-lane[data-soon="true"] .board-arrow,
-  .board-lane[data-soon="true"] .board-token { opacity: 1; }
+  .board-lane[data-soon="true"] .board-token:not(.board-token--ghost) { opacity: 1; }
   .board-chip { border-color: rgba(240, 244, 255, 0.55); color: #F0F4FF; }
   .board-track { opacity: 1; }
   .board-role, .board-soon { color: #AEC0DE; }
