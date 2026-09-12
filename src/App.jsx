@@ -18,12 +18,13 @@ import {
   useTransform,
   useSpring,
   useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
 } from "framer-motion";
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawHero as drawStaffHero, drawChapter as drawStaffChapter, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { drawHero as drawStaffHero, drawChapter as drawStaffChapter, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -3070,14 +3071,250 @@ function LocationBadge() {
 // Page wrappers: each route renders only its own sections. The bento grid
 // repeats on the landing page and /products by design — landing surfaces it
 // as a teaser, /products treats it as part of a deeper product story.
+// ------------------------------------------------------------ a working day
+// ζ = 1.05: critically damped, so scroll never springs past itself. restDelta
+// has to be this small because the steepest leg of the timeline covers ~94
+// scene-hours per unit of progress — framer's default would quantise the
+// clock to roughly an hour.
+const DAY_SPRING = { stiffness: 260, damping: 34, mass: 1, restDelta: 0.0002 };
+const DAY_SCALE = (w) => (w < 1024 ? 2 : w < 1280 ? 3 : 3.5);
+const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
+
+// Where each moment's text wipes in and lifts out, in progress units.
+const MOMENT_TEXT = [
+  { in: [0.07, 0.115], out: [0.245, 0.28] },
+  { in: [0.45, 0.495], out: [0.565, 0.6] },
+  { in: [0.765, 0.81], out: [0.865, 0.9] },
+];
+
+function dayLabel(t, id) {
+  const eyebrow = t(`office.chapters.${id}.eyebrow`);
+  // Эхо is not in service yet, and the scene depicts him working; the site's
+  // own word for that state goes on the label rather than being implied.
+  return id === "eho" ? `${eyebrow} · ${t("office.status.soon")}` : eyebrow;
+}
+
+// A per-frame ticking clock reads as a slot machine. This steps in five
+// minutes and hard-snaps to the three real timestamps inside the holds.
+function DayClock({ progress }) {
+  const [label, setLabel] = React.useState(DAY_MOMENTS[0].time);
+  const read = React.useCallback((p) => {
+    const hold = DAY_MOMENTS.find((m) => p >= m.from && p <= m.to);
+    if (hold) return hold.time;
+    const h = dayHour(p);
+    let hh = Math.floor(h);
+    let mm = Math.round(((h - hh) * 60) / 5) * 5;
+    if (mm === 60) { mm = 0; hh += 1; }
+    return `${String(hh % 24).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  }, []);
+  React.useEffect(() => setLabel(read(progress.get())), [progress, read]);
+  useMotionValueEvent(progress, "change", (p) => setLabel(read(p)));
+  return (
+    <span className="block font-display text-[34px] font-medium leading-none tabular-nums text-fg/90 md:text-[40px] lg:text-[44px]">
+      {label}
+    </span>
+  );
+}
+
+function MomentHeadline({ progress, range, className = "", children }) {
+  const reduced = useReducedMotion();
+  const stops = [range.in[0], range.in[1], range.out[0], range.out[1]];
+  const clip = useTransform(progress, [range.in[0], range.in[1]], ["inset(0 0 100% 0)", "inset(0 0 0% 0)"]);
+  const opacity = useTransform(progress, stops, [0, 1, 1, 0]);
+  const y = useTransform(progress, [range.out[0], range.out[1]], [0, -14]);
+  if (reduced) return <p className={className}>{children}</p>;
+  return (
+    <motion.p style={{ clipPath: clip, opacity, y }} className={className}>
+      {children}
+    </motion.p>
+  );
+}
+
+// Reduced motion, or no atlas: three ordinary stacked blocks in document
+// order, each a still of the same scene held at the middle of its own hold.
+// Every word and every bar is in the DOM, so this renders correctly even if
+// no canvas ever appears.
+const DAY_STATIC_SCALE = () => 2;
+const DAY_STILLS = [0.17, 0.51, 0.82];
+
+function DayStatic() {
+  const { t } = useTranslation();
+  // One motion value per block, created once: a hook may not run inside a
+  // loop, and a fresh `scale` identity each render would tear the stage down.
+  const p0 = useMotionValue(DAY_STILLS[0]);
+  const p1 = useMotionValue(DAY_STILLS[1]);
+  const p2 = useMotionValue(DAY_STILLS[2]);
+  const one = useMotionValue(1);
+  const stills = [p0, p1, p2];
+  return (
+    <div className="mt-12 flex flex-col gap-16">
+      {DAY_MOMENTS.map((m, i) => (
+        <div key={m.id}>
+          <p className="text-[11.5px] font-medium uppercase tracking-[0.16em] text-fg-dim">{dayLabel(t, m.id)}</p>
+          <p className="mt-2 font-display text-[26px] font-medium leading-none tabular-nums text-fg/90">{m.time}</p>
+          <p className="mt-3 font-display text-[22px] font-semibold leading-[1.2] tracking-tight text-fg sm:text-[26px]">
+            {t(`day.moments.${m.id}`)}
+          </p>
+          <div className="mt-5">
+            <PixelStage draw={drawWorkingDay} logicalH={128} scale={DAY_STATIC_SCALE} minW={STAFF_HERO_MIN_W} progress={stills[i]} label={t("day.sceneAlt")} />
+          </div>
+          <div className="mx-auto mt-5 max-w-[440px]">
+            <DayArtefact id={m.id} progress={one} at={-1} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// The artefact beside each moment: the real chat, the real report, the real
+// call, reusing the components /office already ships.
+function DayArtefact({ id, progress, at, until }) {
+  const { t } = useTranslation();
+  const base = `office.chapters.${id}`;
+  if (id === "veda") return <StaffReport report={t(`${base}.report`, { returnObjects: true })} progress={progress} at={at} span={0.12} until={until} />;
+  if (id === "eho") return <StaffCall call={t(`${base}.call`, { returnObjects: true })} progress={progress} at={at} step={0.025} until={until} />;
+  return (
+    <div className="rounded-[18px] border border-white/[0.07] bg-ink-950/70 p-3 backdrop-blur-[2px]">
+      <StaffChat lines={t(`${base}.chat`, { returnObjects: true })} progress={progress} at={at} step={0.035} until={until} />
+    </div>
+  );
+}
+
+const DAY_ARTEFACT_AT = { ara: 0.09, veda: 0.44, eho: 0.76 };
+
+function DayArtefactHolder({ moment, progress, stacked, hidden }) {
+  const opacity = useTransform(progress, [moment.from, moment.from + 0.03, moment.to - 0.03, moment.to], [0, 1, 1, 0]);
+  return (
+    <motion.div
+      style={{ opacity, pointerEvents: "none" }}
+      className={stacked ? "absolute inset-x-0 top-0" : ""}
+      aria-hidden={hidden}
+    >
+      <DayArtefact id={moment.id} progress={progress} at={DAY_ARTEFACT_AT[moment.id]} until={moment.to} />
+    </motion.div>
+  );
+}
+
+function WorkingDay() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const { error } = useStaffAtlas();
+  const dayRef = React.useRef(null);
+  const progress = useDampedProgress(dayRef, ["start start", "end end"], DAY_SPRING);
+
+  const settleScale = useTransform(progress, [0, 0.06], [1.03, 1]);
+  const settleOpacity = useTransform(progress, [0, 0.06], [0.35, 1]);
+  const chromeOpacity = useTransform(progress, [0, 0.05, 0.97, 1], [0, 1, 1, 0]);
+
+  // The page itself lifts as the sun comes up and settles back by nightfall.
+  // It returns home at p = 1, so there is nothing to reset on the way out.
+  const pageBg = useTransform(
+    progress,
+    [0, 0.3, 0.48, 0.64, 0.86, 1],
+    ["#050A18", "#050A18", "#0D1430", "#0D1430", "#080D1E", "#050A18"]
+  );
+  useMotionValueEvent(pageBg, "change", (v) => {
+    document.documentElement.style.setProperty("--page-bg", v);
+  });
+  React.useEffect(() => () => document.documentElement.style.removeProperty("--page-bg"), []);
+
+  const [active, setActive] = React.useState(0);
+  useMotionValueEvent(progress, "change", (p) => {
+    const i = DAY_MOMENTS.findIndex((m) => p >= m.from && p <= m.to);
+    if (i !== -1 && i !== active) setActive(i);
+  });
+
+  const heading = (
+    <Container>
+      <h2 className="max-w-[18ch] font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px] lg:text-[44px]">
+        {t("day.title")}
+      </h2>
+      <p className="mt-4 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px]">{t("day.lead")}</p>
+    </Container>
+  );
+
+  if (reduced || error) {
+    return (
+      <section className="py-20 md:py-28">
+        {heading}
+        <Container>
+          <DayStatic />
+          <p className="mt-14 text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
+        </Container>
+      </section>
+    );
+  }
+
+  return (
+    <section data-pin className="relative py-20 md:py-28">
+      {heading}
+
+      <div ref={dayRef} className="relative mt-10 h-[260vh] md:h-[320vh]">
+        <div className="day-pin flex flex-col justify-center">
+          <Container>
+            <motion.div style={{ opacity: chromeOpacity }}>
+              <DayClock progress={progress} />
+              <p className="mt-1.5 text-[11.5px] font-medium uppercase tracking-[0.16em] text-fg-dim">
+                {dayLabel(t, DAY_MOMENTS[active].id)}
+              </p>
+            </motion.div>
+          </Container>
+
+          <div className="relative mt-4 lg:order-3 lg:mt-8">
+            <motion.div style={{ scale: settleScale, opacity: settleOpacity }} className="day-band origin-bottom">
+              <PixelStage
+                draw={drawWorkingDay}
+                logicalH={DAY_H}
+                scale={DAY_SCALE}
+                minW={STAFF_HERO_MIN_W}
+                progress={progress}
+                label={t("day.sceneAlt")}
+              />
+            </motion.div>
+          </div>
+
+          <Container className="mt-4 lg:order-2 lg:mt-0">
+            <div className="relative z-10 min-h-[60px] lg:min-h-[96px]">
+              {DAY_MOMENTS.map((m, i) => (
+                <MomentHeadline
+                  key={m.id}
+                  progress={progress}
+                  range={MOMENT_TEXT[i]}
+                  className="absolute inset-x-0 top-0 max-w-[18ch] font-display text-[22px] font-semibold leading-[1.15] tracking-tight text-fg sm:text-[26px] lg:text-[40px]"
+                >
+                  {t(`day.moments.${m.id}`)}
+                </MomentHeadline>
+              ))}
+            </div>
+          </Container>
+
+          {/* all three stay mounted; the inactive ones are inert and hidden */}
+          <Container className="mt-4 lg:mt-0">
+            <div className="relative z-10 mx-auto max-w-[440px] lg:absolute lg:right-[max(40px,calc(50vw-560px))] lg:top-1/2 lg:m-0 lg:max-w-[380px] lg:-translate-y-1/2">
+              {DAY_MOMENTS.map((m, i) => (
+                <DayArtefactHolder key={m.id} moment={m} progress={progress} stacked={i > 0} hidden={active !== i} />
+              ))}
+            </div>
+          </Container>
+        </div>
+      </div>
+
+      <Container>
+        <p className="mt-14 text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
+      </Container>
+    </section>
+  );
+}
+
 function LandingPage() {
-  const { open: openDemoRequest } = useDemoRequest();
-  const hire = React.useCallback((ids) => openDemoRequest(ids), [openDemoRequest]);
   return (
     <>
       <Hero />
-      {/* proof, not claims: Ара's chapter from the office page, then the live client */}
-      <StaffChapter id="ara" index={0} onHire={hire} />
+      {/* one day in one room: the page's argument, made once, in pictures */}
+      <ErrorBoundary fallback={null}>
+        <WorkingDay />
+      </ErrorBoundary>
       <LiveDemo />
       <Portfolio />
       <Testimonials />
@@ -3204,8 +3441,20 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
   }, [img, draw, logicalH, scale, minW, progress, reduced]);
 
   const h = typeof logicalH === "function" ? logicalH(hostW) : logicalH;
+  // Reserve exactly what the canvas will occupy. createStage clamps the device
+  // scale so the scene still fits the width, then sets the CSS height from that
+  // clamped value — so reserving `h * scale(hostW)` over-reserves wherever the
+  // clamp bites. At 390 CSS px and dpr 3 that left an 85px band of bare
+  // ink-900 under the hero on a phone.
+  const reserved = React.useMemo(() => {
+    if (!hostW) return undefined;
+    const dpr = Math.min(3, (typeof window !== "undefined" && window.devicePixelRatio) || 1);
+    const sDev = Math.max(1, Math.min(Math.round(scale(hostW) * dpr), Math.floor((hostW * dpr) / minW)));
+    return (h * sDev) / dpr;
+  }, [hostW, h, scale, minW]);
+
   return (
-    <div ref={hostRef} className={["relative flex items-center justify-center overflow-hidden bg-ink-900", className].join(" ")} style={{ minHeight: hostW ? h * scale(hostW) : undefined }}>
+    <div ref={hostRef} className={["relative flex items-center justify-center overflow-hidden bg-ink-900", className].join(" ")} style={{ minHeight: reserved }}>
       {error ? (
         <p className="px-6 py-10 text-center text-[13px] text-fg-muted">{t("office.unavailable")}</p>
       ) : (
@@ -3217,18 +3466,37 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
 
 // Scroll progress through an element, smoothed so the motion trails the
 // finger a little; reduced motion reads the raw value so nothing lags.
-function useDampedProgress(ref, offset) {
+const CHAPTER_SPRING = { stiffness: 90, damping: 26, mass: 0.6, restDelta: 0.0005 };
+
+function useDampedProgress(ref, offset, spring = CHAPTER_SPRING) {
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset });
-  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.6, restDelta: 0.0005 });
+  const smooth = useSpring(scrollYProgress, spring);
   return reduced ? scrollYProgress : smooth;
 }
 
 // One line that rises into place as the scroll passes `at`.
-function Rise({ progress, at, span = 0.08, className = "", children }) {
+function Rise({ progress, at, span = 0.08, until, className = "", children }) {
   const reduced = useReducedMotion();
-  const opacity = useTransform(progress, [at, at + span], [0, 1]);
-  const y = useTransform(progress, [at, at + span], [reduced ? 0 : 14, 0]);
+  // Without `until` a line rises once and stays, which is what the chapters
+  // want. The pinned day scene needs the block to leave before the next
+  // moment arrives, so the ramp runs back down to zero at the far end.
+  //
+  // The exit ramp is a short fixed fade, not another `span`: a late line in a
+  // staggered group can start after `until - span`, and useTransform requires
+  // strictly increasing inputs — a non-monotonic stop list silently produced a
+  // broken transform and the card never appeared.
+  const OUT = 0.04;
+  const inEnd = at + span;
+  const outStart = Math.max(inEnd + 1e-4, Math.min(until - OUT, until - 1e-4));
+  const useUntil = until !== undefined && until > inEnd;
+  const stops = useUntil ? [at, inEnd, outStart, until] : [at, inEnd];
+  const opacity = useTransform(progress, stops, useUntil ? [0, 1, 1, 0] : [0, 1]);
+  const y = useTransform(
+    progress,
+    stops,
+    useUntil ? [reduced ? 0 : 14, 0, 0, reduced ? 0 : -10] : [reduced ? 0 : 14, 0]
+  );
   return (
     <motion.div style={{ opacity, y }} className={className}>
       {children}
@@ -3367,14 +3635,14 @@ function StaffPrice({ id, align = "left" }) {
 
 // A chat as the customer sees it in Messenger. The time is shown once per
 // exchange, beside the bubble that opens it, never as a log under each line.
-function StaffChat({ lines, progress, at }) {
+function StaffChat({ lines, progress, at, step = 0.07, until }) {
   return (
     <ol className="flex flex-col gap-2" role="list">
       {lines.map((m, i) => {
         const mine = m.from === "staff";
         const stamp = i === 0 || m.time !== lines[i - 1].time ? m.time : null;
         return (
-          <Rise key={i} progress={progress} at={at + i * 0.07} className={["flex max-w-[94%] items-end gap-1.5", mine ? "flex-row-reverse self-end" : "self-start"].join(" ")}>
+          <Rise key={i} progress={progress} at={at + i * step} until={until} className={["flex max-w-[94%] items-end gap-1.5", mine ? "flex-row-reverse self-end" : "self-start"].join(" ")}>
             <li
               className={[
                 "rounded-[16px] px-3 py-2 text-[13px] leading-[1.42] shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[14px]",
@@ -3392,10 +3660,10 @@ function StaffChat({ lines, progress, at }) {
 }
 
 // Веда's report: the same four bars the scene draws on her screen.
-function StaffReport({ report, progress, at }) {
-  const grow = useTransform(progress, [at, at + 0.22], [0, 1]);
+function StaffReport({ report, progress, at, span = 0.22, until }) {
+  const grow = useTransform(progress, [at, at + span], [0, 1]);
   return (
-    <Rise progress={progress} at={at} className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+    <Rise progress={progress} at={at} until={until} className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
       <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-fg-dim">{report.tag}</p>
       <p className="mt-1 text-[13px] font-semibold text-fg">{report.title}</p>
       <div className="mt-3 flex h-[72px] items-end gap-2" aria-hidden>
@@ -3425,18 +3693,18 @@ function ReportBar({ value, index, count, grow, last }) {
 }
 
 // Эхо's call: incoming, answered, the first line.
-function StaffCall({ call, progress, at }) {
+function StaffCall({ call, progress, at, step = 0.09, until }) {
   const reduced = useReducedMotion();
   return (
     <div className="flex flex-col gap-2">
-      <Rise progress={progress} at={at} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+      <Rise progress={progress} at={at} until={until} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-400/15 text-sky-400" aria-hidden>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
         </span>
         <span className="min-w-0 flex-1 text-[13px] font-semibold text-fg">{call.incoming}</span>
         <span className="shrink-0 text-[11px] tabular-nums text-fg-muted">18:05</span>
       </Rise>
-      <Rise progress={progress} at={at + 0.09} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+      <Rise progress={progress} at={at + step} until={until} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
         <span className="flex h-9 w-9 shrink-0 items-end justify-center gap-[3px] rounded-full bg-sky-400/15 pb-[11px]" aria-hidden>
           {[0, 1, 2, 3].map((i) => (
             <span
@@ -3451,7 +3719,7 @@ function StaffCall({ call, progress, at }) {
           <span className="block text-[12px] text-fg-muted">{call.after}</span>
         </span>
       </Rise>
-      <Rise progress={progress} at={at + 0.18} className="self-end">
+      <Rise progress={progress} at={at + 2 * step} until={until} className="self-end">
         <p className="max-w-[92%] rounded-[16px] rounded-br-[5px] bg-brand-500 px-3 py-2 text-[13px] leading-[1.42] text-white shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[14px]">{call.line}</p>
       </Rise>
     </div>

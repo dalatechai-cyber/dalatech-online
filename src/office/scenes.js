@@ -3,7 +3,7 @@
 // stage can redraw it at any size, time and scroll progress.
 import {
   sprite, stripFrame, charFrame, sky, windowFrame, room, screenActivity, screenChart,
-  lampGlow, grade, sunPatch, screenLight, ringing, mapRange, nightAmount, rect, SPRITES,
+  lampGlow, grade, sunPatch, screenLight, ringing, mapRange, nightAmount, rect, focusDim, SPRITES,
 } from "./pixel";
 
 // Order on the hero row and the hour each chapter is set at.
@@ -43,13 +43,17 @@ function frameIndex(kit, t, seed) {
 // it stays bright at night.
 function station(ctx, img, o) {
   const { id, x, y, t, pieces, props, lights, seed = 0, chartGrow = 0, night = 0 } = o;
+  // An empty chair beside a dark monitor is the whole point of the 02:14
+  // frame, and it costs one boolean: keep the desk and its props, drop the
+  // person, the emote and everything that would light the screen.
+  const occupied = o.occupied !== false;
   const kit = KIT[id];
   const deskW = pieces.reduce((w, p) => w + SPRITES[p].w, 0);
   const cx = x + (o.personX ?? Math.floor((deskW - 32) / 2));
   // head and shoulders clear the desk; the desk hides the rest
   const cy = y - 58;
   sprite(ctx, img, "CHAIR", cx, cy + 26);
-  charFrame(ctx, img, id, kit.anim, frameIndex(kit, t, seed), cx, cy);
+  if (occupied) charFrame(ctx, img, id, kit.anim, frameIndex(kit, t, seed), cx, cy);
   let px = x;
   for (const p of pieces) {
     sprite(ctx, img, p, px, y);
@@ -58,7 +62,7 @@ function station(ctx, img, o) {
   for (const p of props) {
     const [pid, dx, dy] = p;
     sprite(ctx, img, pid, x + dx, y + dy);
-    if (SPRITES[pid].screens) {
+    if (SPRITES[pid].screens && occupied) {
       lights.push(() => {
         screenLight(ctx, pid, x + dx, y + dy, night);
         screenActivity(ctx, pid, x + dx, y + dy, t, seed + 5);
@@ -66,14 +70,18 @@ function station(ctx, img, o) {
         if (id === "veda") screenChart(ctx, pid, 0, x + dx, y + dy, REPORT, chartGrow);
       });
     }
-    if (pid === "DESK_PHONE" && id === "eho" && (t + seed) % 5 < 1.6) lights.push(() => ringing(ctx, x + dx + 20, y + dy + 6, t));
+    const ringOn = o.ring ?? ((t + seed) % 5 < 1.6);
+    if (pid === "DESK_PHONE" && id === "eho" && ringOn) lights.push(() => ringing(ctx, x + dx + 20, y + dy + 6, t));
   }
   // what floats over their head: Ара's typing dots, Нова's heart
   const cycle = (t + seed * 1.7) % (id === "ara" ? 4 : 6);
+  const bubbleOn = o.bubble ?? (cycle < 1.6);
   // frames 0-3 grow the bubble; the strips' last frame is LimeZu's sample, not used
-  if (id === "ara" && cycle < 1.6) {
+  if (id === "ara" && occupied && bubbleOn) {
     lights.push(() => {
-      const frame = Math.min(3, Math.floor(cycle * 8));
+      // when the scene forces the bubble it stays grown, but the dots still
+      // run off t so it reads as typing rather than as a frozen sprite
+      const frame = o.bubble ? 3 : Math.min(3, Math.floor(cycle * 8));
       stripFrame(ctx, img, "BUBBLE", frame, cx + 18, cy - 4);
       // LimeZu leaves the grown bubble empty for you to fill: three typing dots, one lifted at a time
       if (frame === 3) {
@@ -82,14 +90,24 @@ function station(ctx, img, o) {
       }
     });
   }
-  if (id === "nova" && cycle < 1.8) lights.push(() => stripFrame(ctx, img, "HEART", Math.min(3, Math.floor(cycle * 7)), cx + 18, cy - 4));
+  if (id === "nova" && occupied && cycle < 1.8) lights.push(() => stripFrame(ctx, img, "HEART", Math.min(3, Math.floor(cycle * 7)), cx + 18, cy - 4));
   return { cx, cy, deskW };
 }
 
-// ---------------------------------------------------------------- hero
-// Four desks along one wall of glass.
-export function drawHero(ctx, img, { W, H, t }) {
-  const hour = HERO_HOUR;
+// ------------------------------------------------------------------- room
+// Four desks along one wall of glass. Everything that varies between the
+// hero and the pinned day scene is an option; the geometry is not, so both
+// draw the same room at the same art scale and a cut between them is
+// invisible.
+function officeRoom(ctx, img, { W, H, t }, {
+  hour,
+  cast = STAFF,          // who is at a desk; the rest get an empty chair and a dark monitor
+  chartGrow = 0,
+  focus = null,          // desk index 0..3 to keep lit
+  focusAmount = 0,
+  ring = null,           // null leaves station() on its own time-based gate
+  bubble = null,
+}) {
   const night = nightAmount(hour);
   const floorY = 52;
   room(ctx, img, W, H, floorY);
@@ -130,7 +148,10 @@ export function drawHero(ctx, img, { W, H, t }) {
     station(ctx, img, {
       id, x, y: deskY, t, seed: i, props, lights, night,
       pieces: ["DESK_L", "DESK_R"],
-      chartGrow: mapRange(hour, 6.5, 9.5, 0, 1),
+      chartGrow,
+      occupied: cast.includes(id),
+      ring: id === "eho" ? ring : null,
+      bubble: id === "ara" ? bubble : null,
     });
   });
   // lamps at both ends of the row, lit once the light goes
@@ -142,6 +163,22 @@ export function drawHero(ctx, img, { W, H, t }) {
   for (const w of panes) sunPatch(ctx, w, floorY, H, hour);
   for (const draw of lights) draw();
   if (lampOn) for (const l of lamps) lampGlow(ctx, l.x + 14, l.y + 10, night);
+
+  // last, so the focused desk keeps its screen and lamp glow
+  if (focus !== null && focusAmount > 0) {
+    const x0 = ox + 4 + focus * 60 - 6;
+    focusDim(ctx, W, H, x0, x0 + 62, focusAmount);
+  }
+}
+
+// ---------------------------------------------------------------- hero
+// The hero is set in the evening: lamps lit, screens glowing, the four still
+// at work. The people animate; the hour does not move.
+export function drawHero(ctx, img, v) {
+  officeRoom(ctx, img, v, {
+    hour: HERO_HOUR,
+    chartGrow: mapRange(HERO_HOUR, 6.5, 9.5, 0, 1),
+  });
 }
 
 // ---------------------------------------------------------------- chapters
@@ -191,4 +228,65 @@ export function drawChapter(id) {
     for (const draw of lights) draw();
     if (id === "ara" && lampOn) lampGlow(ctx, right + 22, deskY - 20, night);
   };
+}
+
+// ------------------------------------------------------------ a working day
+// The pinned scene on the landing page. Scroll progress maps to an hour, and
+// both the light and who is at a desk are pure functions of that hour — so
+// the room at p = 0.35 is genuinely at 05:40, a state nobody drew and nobody
+// will ever screenshot. The holds sit where the page has something to say.
+const DAY_KEYS = [
+  [0.0, 2.23], [0.06, 2.25], [0.28, 2.3], [0.42, 8.6],
+  [0.6, 9.1], [0.74, 17.9], [0.9, 18.2], [1.0, 21.0],
+];
+const smoothstep = (t) => t * t * (3 - 2 * t);
+
+export function dayHour(p) {
+  const x = Math.min(1, Math.max(0, p));
+  for (let i = 1; i < DAY_KEYS.length; i++) {
+    const [p0, h0] = DAY_KEYS[i - 1];
+    const [p1, h1] = DAY_KEYS[i];
+    if (x <= p1) return h0 + (h1 - h0) * smoothstep((x - p0) / (p1 - p0));
+  }
+  return DAY_KEYS[DAY_KEYS.length - 1][1];
+}
+
+// Arrival is keyed to the HOUR, never to progress, so the cast can never
+// drift out of step with the light if the timeline is retuned.
+const ARRIVE = { ara: -1, veda: 8.0, eho: 17.0, nova: 20.0 };
+
+// The single source of truth for the three moments; the page reads this table
+// rather than repeating the numbers in JSX.
+export const DAY_MOMENTS = [
+  { id: "ara", time: "02:14", from: 0.06, to: 0.28 },
+  { id: "veda", time: "09:00", from: 0.42, to: 0.6 },
+  { id: "eho", time: "18:05", from: 0.74, to: 0.9 },
+];
+
+const focusDeskAt = (p) => (p < 0.35 ? 0 : p < 0.67 ? 1 : 2);
+
+// Fades the surrounding room down over the first 0.03 of a hold and back up
+// over the last 0.03; zero while travelling between them.
+export function focusAmountAt(p) {
+  for (const m of DAY_MOMENTS) {
+    if (p < m.from || p > m.to) continue;
+    return Math.min(1, Math.min((p - m.from) / 0.03, (m.to - p) / 0.03));
+  }
+  return 0;
+}
+
+// Module-level so its identity is stable: PixelStage keys an effect on `draw`,
+// and a new function each render would tear the stage down and rebuild it.
+export function drawWorkingDay(ctx, img, view) {
+  const p = view.progress ?? 0;
+  const hour = dayHour(p);
+  officeRoom(ctx, img, view, {
+    hour,
+    cast: STAFF.filter((id) => hour >= ARRIVE[id]),
+    chartGrow: mapRange(p, 0.44, 0.56, 0, 1),
+    focus: p < 0.9 ? focusDeskAt(p) : null,
+    focusAmount: focusAmountAt(p),
+    ring: p >= 0.74 && p < 0.79,
+    bubble: p > 0.07 && p < 0.2 ? 1 : null,
+  });
 }
