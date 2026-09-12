@@ -227,9 +227,13 @@ function officeRoom(ctx, img, { W, H, t }, {
     // top-down staircases — so a stairwell was being drawn on an office
     // wall. They are gone: the shelf unit and the wall chart are the real
     // office pieces, with a bin by the cooler.
+    // The right-hand pieces are pushed in from the edge rather than drawn at
+    // a fixed offset: the corner gate only guarantees room for the narrowest
+    // of them, so a wide one used to be sheared off by the frame.
+    const corner_x = (sid, dx) => Math.min(rx + dx, W - 2 - SPRITES[sid].w);
     sprite(ctx, img, "SHELF_UNIT", ox - 68, floorY - SPRITES.SHELF_UNIT.h + 6);
-    sprite(ctx, img, "AC", rx + 38, 4);
-    sprite(ctx, img, "WHITEBOARD_CHART", rx + 34, floorY + 4);
+    sprite(ctx, img, "AC", corner_x("AC", 38), 4);
+    sprite(ctx, img, "WHITEBOARD_CHART", corner_x("WHITEBOARD_CHART", 34), floorY + 4);
     sprite(ctx, img, "BIN", rx + 8, floorY + 36);
   }
 
@@ -309,7 +313,6 @@ export function drawChapter(id) {
     // quiet.x and above quiet.y. Nothing that has to be seen goes there, so
     // furniture is placed against it rather than under it.
     const quiet = { x: Math.round(W * 0.49), y: Math.round(H * 0.5) };
-    const clears = (sid, lineY) => lineY - SPRITES[sid].h + 4 >= quiet.y;
 
     room(ctx, img, W, H, floorY);
 
@@ -329,6 +332,7 @@ export function drawChapter(id) {
     const pieces = ["DESK_L", "DESK_M", "DESK_R"];
     const base = { id, x: deskX, y: deskY, t, seed: 2, lights, night, pieces };
     let s;
+    let frontLeft = 0; // the left edge of the front row, once the desk knows it
 
     if (id === "ara") {
       s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["LAPTOP", 50, 0]] });
@@ -336,11 +340,14 @@ export function drawChapter(id) {
       actAra(ctx, img, { ...s, x: deskX + 28, y: deskY }, t, lights, null);
     } else if (id === "veda") {
       s = desk(ctx, img, { ...base, personX: 8, props: [["PAPER_STACK", 0, 6], ["DUAL", 18, -4]] });
-      // her printer, on its stand in the gap beside the desk
-      const px = deskX + s.deskW + 4;
-      stand(ctx, img, "PRINTER_STAND", px, floorY);
-      const py = floorY - SPRITES.PRINTER_STAND.h + 4 - 22;
+      // Her printer stands beside the desk at the desk's own depth. Against
+      // the back wall it would be both under the page's report card and
+      // under whatever the back-wall row places next.
+      const px = deskX + s.deskW + 8;
+      stand(ctx, img, "PRINTER_STAND", px, frontY);
+      const py = frontY - SPRITES.PRINTER_STAND.h + 4 - 22;
       sprite(ctx, img, "PRINTER", px + 10, py);
+      frontLeft = px + SPRITES.PRINTER_STAND.w + 8;
       actVeda(ctx, img, { ...s, x: deskX + 8, y: deskY, printerX: px + 10, printerY: py }, t, lights, grow);
     } else if (id === "eho") {
       s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["MONITOR_KB", 48, 0]] });
@@ -368,11 +375,13 @@ export function drawChapter(id) {
     // ---- the back wall behind the panel: only what fits under it
     let bx = quiet.x + 6;
     for (const low of ["PLANT_2", "CORK"]) {
-      const w = SPRITES[low].w;
-      if (!clears(low, floorY) || bx + w > W - 6) continue;
-      if (low === "CORK") sprite(ctx, img, low, bx, floorY - SPRITES.CORK.h - 4);
-      else stand(ctx, img, low, bx, floorY);
-      bx += w + 8;
+      const sp = SPRITES[low];
+      // the cork board hangs, the plant stands, so each is tested at the y it
+      // is drawn at rather than at a shared one
+      const y = low === "CORK" ? floorY - sp.h - 4 : floorY - sp.h + 4;
+      if (y < quiet.y || bx + sp.w > W - 6) continue;
+      sprite(ctx, img, low, bx, y);
+      bx += sp.w + 8;
     }
     // the notice board in the far corner
     const nx = W - 8 - SPRITES.NOTICE.w;
@@ -384,15 +393,16 @@ export function drawChapter(id) {
     // The floor would otherwise be a bare expanse. This row is low in the
     // frame, so it can carry the tall things the back wall cannot.
     let fx = W - 6;
+    const frontStop = Math.max(deskX + s.deskW + 12, frontLeft);
     for (const tall of ["PLANT", "CHAIR_ORANGE", "COOLER"]) {
       const w = SPRITES[tall].w;
-      if (fx - w < deskX + s.deskW + 12) break;
+      if (fx - w < frontStop) break;
       fx -= w;
       stand(ctx, img, tall, fx, frontY);
       fx -= 8;
     }
     // and the bin by the desk, so the near floor is not a bare expanse
-    const binX = deskX + s.deskW + 14;
+    const binX = Math.max(deskX + s.deskW + 14, frontLeft);
     if (binX + SPRITES.BIN.w < fx - 6) stand(ctx, img, "BIN", binX, frontY);
 
     grade(ctx, W, H, hour, [glass]);

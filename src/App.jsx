@@ -992,9 +992,10 @@ function DayRing({ className = "" }) {
         shownRef.current = shown;
         setActive(shown);
       }
-      // the clock lands exactly on the moment's own time as the hand arrives
-      const near = !moving || step.to - raw < 0.25;
-      const text = near ? RING_EVENTS[si].time : ringClock(hour);
+      // The clock snaps to the moment's own time on arrival — not a moment
+      // before it, which used to put the arriving time over the previous
+      // moment's name for a third of a second.
+      const text = moving ? ringClock(hour) : RING_EVENTS[si].time;
       if (text !== clockRef.current) {
         clockRef.current = text;
         if (timeRef.current) timeRef.current.textContent = text;
