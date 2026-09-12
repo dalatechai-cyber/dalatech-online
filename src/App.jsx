@@ -3487,6 +3487,101 @@ function WorkingDay() {
   );
 }
 
+// The four, named once. Not cards: the owner's complaint was that the same
+// priced, profiled cards appeared again and again down the page. Prices live
+// on /pricing and the job descriptions on /office, so this is a type list —
+// portrait, name, role, and whether they are in service yet.
+function TheFour() {
+  const { t } = useTranslation();
+  return (
+    <section className="py-20 md:py-28">
+      <Container>
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <h2 className="font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px]">
+            {t("theFour.title")}
+          </h2>
+          <Link to="/office" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
+            {t("hero.buttons.seeWork")}
+            <span aria-hidden>&rsaquo;</span>
+          </Link>
+        </div>
+
+        <StaggerGroup className="mt-8 md:mt-10" stagger={0.06}>
+          {STAFF_ORDER.map((id) => (
+            <StaffRow key={id} id={id} />
+          ))}
+        </StaggerGroup>
+      </Container>
+    </section>
+  );
+}
+
+function StaffRow({ id }) {
+  const { t } = useTranslation();
+  const live = STAFF_LIVE[id];
+  return (
+    <StaggerItem y={12}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[88px] sm:flex-nowrap sm:py-0">
+        <span className="flex h-[44px] w-[40px] shrink-0 items-start justify-center overflow-hidden rounded-[10px] bg-white/[0.05]">
+          <StaffAvatar id={id} size={2} className="-mt-[58px]" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
+            {t(`office.agents.${id}.name`)}
+          </span>
+          <span className="block text-[13px] text-fg-muted">{t(`office.agents.${id}.role`)}</span>
+        </span>
+        {/* the live dot is this section's one accent */}
+        <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-dim">
+          <span aria-hidden className={["h-1 w-1 rounded-full", live ? "bg-sky-400" : "bg-fg-dim"].join(" ")} />
+          {t(live ? "office.status.live" : "office.status.soon")}
+        </span>
+      </div>
+    </StaggerItem>
+  );
+}
+
+// The page's one bright moment, and its only contradiction: staff by the
+// month, a website once. ink-700 and ink-600 appear nowhere else here. No
+// image — the client mock is one section above, and repeating it is exactly
+// the repetition this pass is removing. No price either; prices live on
+// /pricing. Every row below is lifted verbatim from what that page publishes.
+function WebsiteOffer() {
+  const { t } = useTranslation();
+  const bullets = t("pricing.cards.website.bullets", { returnObjects: true });
+  const rows = [...(Array.isArray(bullets) ? bullets : []), t("websiteOffer.delivery")];
+  return (
+    <section className="bg-ink-700 py-24 md:py-40">
+      <Container>
+        <div className="mx-auto max-w-[780px] rounded-[24px] bg-ink-600 px-6 py-10 sm:px-10 sm:py-14">
+          <h2 className="max-w-[20ch] font-display text-[30px] font-semibold leading-[1.12] tracking-tightest text-fg sm:text-[40px]">
+            {t("websiteOffer.title")}
+          </h2>
+          <p className="mt-5 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px]">
+            {t("websiteOffer.lead")}
+          </p>
+          <ul className="mt-10">
+            {rows.map((r) => (
+              <li key={r} className="border-t border-white/[0.09] py-4 text-[14.5px] leading-[1.5] text-fg/90">
+                {r}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+            <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_DEMO_SERVICES}>
+              {t("pricing.cards.website.cta")}
+            </MagneticButton>
+            <Link to="/pricing" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
+              {t("websiteOffer.link")}
+              <span aria-hidden>&rsaquo;</span>
+            </Link>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 function LandingPage() {
   return (
     <>
@@ -3495,9 +3590,11 @@ function LandingPage() {
       <ErrorBoundary fallback={null}>
         <WorkingDay />
       </ErrorBoundary>
+      <TheFour />
       <LiveDemo />
       <Portfolio />
       <Testimonials />
+      <WebsiteOffer />
       <StaffSteps />
       <Contact />
     </>
@@ -4107,7 +4204,7 @@ function StaffSteps() {
           {items.map((s, i) => (
             <StaggerItem key={i}>
               <div className="border-t border-white/[0.1] pt-5">
-                <p className="font-display text-[13px] font-semibold tabular-nums text-sky-400">0{i + 1}</p>
+                <p className="font-display text-[13px] font-semibold tabular-nums text-fg-dim">0{i + 1}</p>
                 <p className="mt-2 font-display text-[18px] font-semibold tracking-tight text-fg">{s.title}</p>
                 <p className="mt-1.5 text-[15px] leading-[1.5] text-fg-muted">{s.body}</p>
               </div>

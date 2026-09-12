@@ -34,6 +34,15 @@
       "eho": "The call at closing time was answered."
     }
   },
+  "theFour": {
+    "title": "Four members of staff."
+  },
+  "websiteOffer": {
+    "title": "Staff by the month. A website once.",
+    "lead": "An AI staff member is a monthly fee. A website is a one-time build: we make it and hand it over.",
+    "delivery": "Delivered in 7–10 working days",
+    "link": "Website pricing and terms"
+  },
   "howItWorks": {
     "section": "OUR PROCESS",
     "title": "Simple setup. Fast launch. Ongoing improvement.",
