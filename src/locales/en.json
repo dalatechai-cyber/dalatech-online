@@ -11,21 +11,74 @@
     "staff": "AI staff",
     "website": "Website",
     "company": "Company",
-    "createDemo": "Create a demo"
+    "requestDemo": "Request a demo"
   },
   "hero": {
     "badge": "AI staff for Mongolian businesses",
     "title": "AI staff that handle customer service 24/7.",
     "description": "Four AI staff answer customer questions in Mongolian, around the clock, on Facebook, Instagram, and your website. They add no headcount, shift, or leave costs.",
     "buttons": {
-      "createDemo": "Create a demo",
+      "requestDemo": "Request a demo",
       "seeWork": "Meet the staff"
+    },
+    "switchboard": {
+      "incoming": [
+        {
+          "text": "Hi, are you open tomorrow?",
+          "channel": "messenger",
+          "reply": "Hello. Tomorrow we are open 10:00–20:00."
+        },
+        {
+          "text": "Could I get your prices?",
+          "channel": "instagram",
+          "reply": "Of course. The price list is on its way."
+        },
+        {
+          "text": "Can I book for today?",
+          "channel": "messenger",
+          "reply": "15:30 today is free. Shall I book it?"
+        },
+        {
+          "text": "Do you deliver?",
+          "channel": "web",
+          "reply": "Yes, anywhere in the city."
+        },
+        {
+          "text": "Where are you located?",
+          "channel": "messenger",
+          "reply": "Address and map sent."
+        },
+        {
+          "text": "Can I change my booking?",
+          "channel": "instagram",
+          "reply": "Done. New time: tomorrow 12:00."
+        },
+        {
+          "text": "How do I pay?",
+          "channel": "web",
+          "reply": "QPay or cash, whichever suits you."
+        },
+        {
+          "text": "Are you open on Saturday?",
+          "channel": "messenger",
+          "reply": "Yes, Saturdays 11:00–18:00."
+        }
+      ],
+      "call": {
+        "in": "Incoming call",
+        "out": "Answered. Order recorded."
+      },
+      "nova": [
+        "Reminded Bold about tomorrow’s appointment.",
+        "Sent Saraa the feedback survey.",
+        "Invited customers who have not been in for a while."
+      ]
     }
   },
   "day": {
     "title": "Work does not stop while you sleep.",
     "lead": "Watch what reaches your phone over one day. A booking at night, a report in the morning, a call just before closing.",
-    "closing": "Four AI staff, working as one team. You can see how they would work for your business right now.",
+    "closing": "Four AI staff, working as one team. A demo shows how they would work for your business.",
     "sceneAlt": "An office from night to evening: Ara through the night, Veda in the morning, Eho in the evening.",
     "phone": {
       "alt": "The owner's phone: the notifications of one day",
@@ -54,21 +107,36 @@
       },
       "nova": {
         "from": "Nova · DalaTech",
-        "title": "Customer feedback received",
-        "body": "Bold: “Yes, thank you.” Next appointment reminder set for 12 October."
+        "items": [
+          {
+            "time": "19:30",
+            "title": "Discount notice sent",
+            "body": "Messaged 10 customers about this month’s discount. 4 have replied."
+          },
+          {
+            "time": "19:35",
+            "title": "Booking reminder sent",
+            "body": "Reminded Bold about tomorrow at 15:30. Bold confirmed."
+          },
+          {
+            "time": "19:40",
+            "title": "Customer won back",
+            "body": "Invited Saraa, who had not been in for 2 months. She booked tomorrow at 12:00."
+          }
+        ]
       },
       "summary": {
         "app": "DalaTech",
         "title": "Today",
         "rows": [
-          "2 bookings recorded",
+          "3 bookings recorded",
           "1 report ready",
           "1 call answered",
-          "1 customer followed up"
+          "10 customers notified"
         ]
       },
-      "cta": "Create a demo",
-      "ctaHint": "No sign-up. A few seconds."
+      "cta": "Request a demo",
+      "ctaHint": "A one-minute form. We call you back."
     }
   },
   "theFour": {
@@ -120,7 +188,7 @@
     "section": "WEBSITE",
     "title": "A website we built",
     "description": "A website built for a beauty salon: online booking, QPay payments, and Ara integrated.",
-    "getDemo": "Order a website",
+    "getDemo": "Get a proposal",
     "case": {
       "url": "Client website",
       "pills": {
@@ -146,13 +214,14 @@
       "buttons": {
         "requestDemo": "Get a website proposal"
       }
-    }
+    },
+    "createDemo": "Generate a demo website"
   },
   "liveDemo": {
     "section": "LIVE DEMO",
     "title": "When a customer writes, Ara answers like this.",
-    "description": "A Messenger conversation at a sample salon. Ara books the time, answers the questions, and hands the owner what she does not know. A demo like this, built on your own business, takes a few seconds.",
-    "ctaLabel": "Create the demo for your business",
+    "description": "A Messenger conversation at a sample salon. Ara books the time, answers the questions, and hands the owner what she does not know. We show Ara configured on your own business in a demo.",
+    "ctaLabel": "Set Ara up for your business",
     "widget": {
       "businessName": "Beauty salon",
       "statusOnline": "Online",
@@ -268,10 +337,10 @@
   },
   "contact": {
     "title": "A demo shaped to your business",
-    "description": "Describe your business in a few sentences and an AI staff member configured to your information starts work within seconds. No sign-up.",
-    "demoCta": "Create a demo",
-    "emailCta": "Email us",
-    "requestCta": "Contact us"
+    "description": "The form takes a minute. We call you back and show how the AI staff would work for your business. If you need a website, generate a demo site yourself in seconds.",
+    "requestCta": "Request a demo",
+    "demoCta": "Generate a demo website",
+    "emailCta": "Email us"
   },
   "location": {
     "eyebrow": "LOCATION",
@@ -309,9 +378,9 @@
     }
   },
   "demoForm": {
-    "eyebrow": "REQUEST",
-    "title": "Contact us",
-    "subtitle": "Once the form is submitted, we call you and propose the configuration that fits your business.",
+    "eyebrow": "DEMO",
+    "title": "Request a demo",
+    "subtitle": "A one-minute form. We call you back and set up the demo.",
     "close": "Close",
     "optional": "Optional",
     "fields": {
@@ -330,7 +399,7 @@
       },
       "services": {
         "label": "Services of interest",
-        "hint": "Multiple selections allowed."
+        "hint": "Pick one or several."
       },
       "note": {
         "label": "Additional details",
@@ -339,15 +408,10 @@
       "email": {
         "label": "Email",
         "placeholder": "name@example.com"
+      },
+      "sector": {
+        "label": "Line of business"
       }
-    },
-    "services": {
-      "website": "Website",
-      "unsure": "Not decided yet",
-      "ara": "Ara — receptionist",
-      "nova": "Nova — customer manager",
-      "veda": "Veda — business analyst",
-      "eho": "Eho — phone operator"
     },
     "errors": {
       "name": "Enter your name.",
@@ -355,15 +419,16 @@
       "business": "Enter your business name and sector.",
       "email": "The email address format is not valid."
     },
-    "submit": "Send request",
+    "submit": "Request the demo",
     "submitting": "Sending…",
     "retry": "Send again",
     "startOver": "Clear the form",
     "privacy": "We use your details only to contact you.",
     "success": {
       "title": "Request received.",
-      "body": "We will call you on {{phone}} shortly.",
-      "close": "Close"
+      "body": "We will call {{phone}} shortly and set up the demo.",
+      "close": "Close",
+      "meanwhile": "Meet the staff while you wait"
     },
     "failure": {
       "title": "The request was not sent.",
@@ -374,6 +439,52 @@
       "messenger": "Messenger",
       "email": "Email us",
       "reload": "Reload the page"
+    },
+    "steps": {
+      "what": "What are you interested in?",
+      "business": "Your business",
+      "contact": "How do we reach you?"
+    },
+    "stepOf": "STEP {{n}} OF {{total}}",
+    "next": "Continue",
+    "back": "Back",
+    "serviceCards": {
+      "ara": {
+        "title": "Ара",
+        "line": "Answers every message"
+      },
+      "veda": {
+        "title": "Веда",
+        "line": "The monthly report"
+      },
+      "eho": {
+        "title": "Эхо",
+        "line": "Answers the phone"
+      },
+      "nova": {
+        "title": "Нова",
+        "line": "Follows up with customers"
+      },
+      "website": {
+        "title": "Website",
+        "line": "A one-time build"
+      },
+      "unsure": {
+        "title": "Not decided yet",
+        "line": "We work it out together"
+      }
+    },
+    "sectors": {
+      "salon": "Beauty, salon",
+      "shop": "Shop, retail",
+      "clinic": "Clinic, pharmacy",
+      "food": "Restaurant, café",
+      "auto": "Auto services",
+      "education": "Education",
+      "other": "Other"
+    },
+    "summary": {
+      "noBusiness": "Business name"
     }
   },
   "office": {
@@ -429,7 +540,7 @@
       "veda": {
         "eyebrow": "Veda · Business analyst",
         "title": "See each month in numbers.",
-        "body": "On the first day of the month Veda prepares the report on sales, customers and repeat visits, and compares it with the month before. Which service grew and which customers went quiet, you decide from figures, not guesses.",
+        "body": "The report is ready on the first day of the month. Which service grew and which customers went quiet, you know from figures, not guesses.",
         "cta": "Add Veda",
         "sceneAlt": "Veda in the morning behind two screens, preparing the monthly report.",
         "report": {
@@ -466,7 +577,7 @@
       "nova": {
         "eyebrow": "Nova · Customer manager",
         "title": "A first-time customer comes back.",
-        "body": "After each visit Nova asks for feedback, sends appointment and payment reminders, and wins back customers who have stopped coming. Keeping a customer costs less than finding a new one.",
+        "body": "Asks for feedback after each visit. Reminds about appointments and payments. Calls back customers who stopped coming. Keeping a customer costs less than finding one.",
         "cta": "Pre-register",
         "sceneAlt": "Nova in the afternoon, writing to customers.",
         "chat": [
@@ -530,12 +641,12 @@
       "nova": {
         "name": "Nova",
         "role": "Customer manager",
-        "job": "Asks for feedback after each visit, sends reminders, and wins back customers who have stopped coming."
+        "job": "Asks for feedback, sends reminders, and brings back customers who went quiet."
       },
       "veda": {
         "name": "Veda",
         "role": "Business analyst",
-        "job": "Prepares the monthly sales and customer report, and sets out what to change next month."
+        "job": "Prepares the monthly report and says, in numbers, what to change."
       },
       "eho": {
         "name": "Eho",

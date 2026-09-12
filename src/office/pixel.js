@@ -340,7 +340,7 @@ export function ringing(ctx, x, y, t) {
  * `scale(cssWidth)` returns the wanted CSS pixels per art pixel and
  * `logicalH` is a height in art pixels or a function of the CSS width.
  */
-export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, reduced = false }) {
+export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, reduced = false, onResize = null }) {
   const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) throw new Error("2D canvas unavailable");
   const heightFor = typeof logicalH === "function" ? logicalH : () => logicalH;
@@ -374,6 +374,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
     canvas.style.width = `${canvas.width / dpr}px`;
     canvas.style.height = `${canvas.height / dpr}px`;
     render();
+    if (onResize) onResize({ W, H, sDev, dpr });
   };
 
   const loop = (now) => {
