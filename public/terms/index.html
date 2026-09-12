@@ -1,312 +1,424 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mn">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="index, follow" />
-    <title>Terms of Service &middot; Dalatech</title>
-    <meta
-      name="description"
-      content="Terms of Service for Dalatech — a Mongolian tech agency offering web development, AI chatbot implementation, and business automation."
-    />
+    <title>Үйлчилгээний нөхцөл · DalaTech</title>
+    <meta name="description" content="DalaTech-ийн үйлчилгээний нөхцөл. AI ажилтан болон вэбсайтын үйлчилгээний нөхцөл, төлбөр, хариуцлага. · DalaTech&#x27;s terms of service." />
+    <link rel="canonical" href="https://dalatech.online/terms/" />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap"
+    />
     <style>
-      :root { color-scheme: light; }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; }
-      body {
-        background: #fafafa;
-        color: #18181b;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        line-height: 1.65;
-      }
-      header.site {
-        border-bottom: 1px solid #e4e4e7;
-        background: #ffffffcc;
-        backdrop-filter: saturate(140%) blur(8px);
-        position: sticky;
-        top: 0;
-        z-index: 10;
-      }
-      .wrap { max-width: 768px; margin: 0 auto; padding: 0 24px; }
-      header.site .wrap {
-        display: flex; align-items: center; justify-content: space-between; height: 64px;
-      }
-      .brand {
-        display: inline-flex; align-items: center; gap: 10px;
-        text-decoration: none; color: #09090b; font-weight: 700; font-size: 16px;
-      }
-      .brand img { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; }
-      nav a {
-        color: #3f3f46; text-decoration: none; font-size: 14px; margin-left: 18px;
-      }
-      nav a:hover { color: #09090b; }
-      main { padding: 48px 0 96px; }
-      h1 {
-        font-size: 36px; line-height: 1.15; letter-spacing: -0.02em;
-        margin: 0 0 8px; color: #09090b;
-      }
-      .lede { color: #52525b; margin: 0 0 32px; }
-      h2 {
-        font-size: 20px; margin: 36px 0 8px;
-        color: #09090b; letter-spacing: -0.01em;
-      }
-      p, li { color: #27272a; }
-      ul { padding-left: 22px; }
-      a.inline { color: #09090b; text-decoration: underline; text-underline-offset: 3px; }
-      a.inline:hover { color: #2563eb; }
-      .meta { font-size: 13px; color: #71717a; margin-top: 0; }
-      .card {
-        margin-top: 32px; padding: 20px 22px;
-        background: #ffffff; border: 1px solid #e4e4e7; border-radius: 14px;
-      }
-      footer {
-        border-top: 1px solid #e4e4e7; padding: 24px 0;
-        color: #71717a; font-size: 13px;
-      }
-      footer .wrap {
-        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-      }
-      footer a { color: #3f3f46; text-decoration: none; margin-right: 16px; }
-      footer a:hover { color: #09090b; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { background: #050A18; color-scheme: dark; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: #050A18;
+      color: #F0F4FF;
+      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #7DD3FC; }
+    a:hover { color: #BAE6FD; }
+    :focus-visible { outline: 2px solid #38BDF8; outline-offset: 3px; border-radius: 4px; }
+    .wrap { width: 100%; max-width: 768px; margin: 0 auto; padding: 0 20px; }
+    header.site {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(5, 10, 24, 0.82);
+      backdrop-filter: saturate(150%) blur(14px);
+      -webkit-backdrop-filter: saturate(150%) blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    header.site .wrap {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; min-height: 62px; flex-wrap: wrap;
+    }
+    .brand {
+      font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 700; font-size: 17px; letter-spacing: -0.02em;
+      color: #F0F4FF; text-decoration: none;
+    }
+    .brand:hover { color: #FFFFFF; }
+    .lang { display: flex; gap: 4px; padding: 3px; border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; }
+    .lang button {
+      appearance: none; border: 0; cursor: pointer; background: transparent;
+      color: #8B9FC4; font: inherit; font-size: 12.5px; font-weight: 500;
+      padding: 5px 13px; border-radius: 999px; transition: background-color .18s, color .18s;
+      min-height: 30px;
+    }
+    .lang button:hover { color: #F0F4FF; }
+    .lang button[aria-pressed="true"] { background: rgba(255,255,255,0.09); color: #F0F4FF; }
+    main { padding: 48px 0 72px; }
+    article + article { margin-top: 64px; padding-top: 48px; border-top: 1px solid rgba(255,255,255,0.07); }
+    h1 {
+      font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 700; font-size: clamp(30px, 6vw, 42px); line-height: 1.1;
+      letter-spacing: -0.025em; margin: 0 0 18px;
+    }
+    h2 {
+      font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 600; font-size: 19px; line-height: 1.35; letter-spacing: -0.012em;
+      margin: 42px 0 10px; color: #F0F4FF;
+    }
+    p, li { color: #C5D2EA; margin: 0 0 14px; }
+    .summary { font-size: 17.5px; line-height: 1.65; color: #A9BBDA; margin-bottom: 16px; }
+    .updated {
+      font-size: 12.5px; color: #5A6E94; margin: 0 0 8px;
+      padding-bottom: 22px; border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    ul { margin: 0 0 16px; padding-left: 22px; }
+    li { margin-bottom: 7px; }
+    li::marker { color: #5A6E94; }
+    footer.site { border-top: 1px solid rgba(255,255,255,0.07); padding: 26px 0 44px; }
+    footer.site nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+    footer.site a { font-size: 13.5px; color: #8B9FC4; text-decoration: none; }
+    footer.site a:hover { color: #F0F4FF; }
+    footer.site p { font-size: 12.5px; color: #5A6E94; margin: 18px 0 0; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
     </style>
   </head>
   <body>
     <header class="site">
       <div class="wrap">
-        <a class="brand" href="/">
-          <img src="/Photos/dalatech-logo.png" alt="Dalatech logo" />
-          Dalatech
-        </a>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/privacy/">Privacy</a>
-          <a href="/data-deletion/">Data deletion</a>
-        </nav>
+        <a class="brand" href="/">DalaTech</a>
+        <div class="lang" role="group" aria-label="Хэл / Language">
+          <button type="button" data-lang="mn" aria-pressed="true">Монгол</button>
+          <button type="button" data-lang="en" aria-pressed="false">English</button>
+        </div>
       </div>
     </header>
 
-    <main>
-      <div class="wrap">
+    <main class="wrap">
+      <article lang="mn" data-lang="mn">
+        <h1>Үйлчилгээний нөхцөл</h1>
+        <p class="summary">Энэ баримт бичиг нь DalaTech-ийн AI ажилтан болон вэбсайтын үйлчилгээг авахад хоёр тал юу хийх үүрэгтэйг тодорхойлно. Төлбөр, эрх эзэмшил, хариуцлага, гэрээ дуусгавар болох журмыг энгийн үгээр бичсэн.</p>
+        <p class="updated">Сүүлд шинэчилсэн: 2026 оны 9 дүгээр сарын 11</p>
+        <h2>1. Бидний тухай</h2>
+        <p>DalaTech бол Улаанбаатар хотод үйл ажиллагаа явуулдаг технологийн бизнес юм. Бид Монголын жижиг, дунд бизнест зориулж AI ажилтан бэлтгэж, вэбсайт бүтээдэг. DalaTech-ийг Цэрэнцоодол Билгүүн эзэмшиж, удирдан ажиллуулдаг.</p>
+        <p>Эдгээр нөхцөлд бид, DalaTech гэдэг нь энэхүү үйлчилгээг үзүүлэгч талыг хэлнэ.</p>
+        <p>Бидэнтэй <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a> хаягаар, эсвэл манай Facebook хуудсаар дамжуулан холбогдоно. Эдгээр нь бидний албан ёсны холбоо барих суваг бөгөөд энэ гэрээний хүрээнд өгөх бичгэн мэдэгдлийг бид имэйлээр хүлээн авна.</p>
+        <h2>2. Эдгээр нөхцөл юунд хамаарах вэ</h2>
+        <p>Эдгээр нөхцөл нь <a class="inline" href="https://dalatech.online">dalatech.online</a> вэбсайт, манай Facebook хуудас, түүнчлэн бидний нийлүүлдэг AI ажилтан, вэбсайтын үйлчилгээнд хамаарна.</p>
+        <p>Та бидэнтэй ажиллаж эхэлснээр, эсвэл манай хуудсанд зурвас бичсэнээр эдгээр нөхцөлийг хүлээн зөвшөөрсөнд тооцно.</p>
+        <p>Эдгээр нөхцөлд та буюу захиалагч гэдэг нь бидний үйлчилгээг авч буй бизнесийг, харилцагч гэдэг нь танай бизнест хандаж буй хүмүүсийг хэлнэ.</p>
+        <p>Тодорхой ажлын хүрээ, үнэ, хугацааг бид танд бичгээр өгсөн үнийн санал буюу захиалгын баталгаанд заана. Хэрэв тэр баримт эдгээр нөхцөлтэй зөрчилдвөл тухайн ажлын хувьд бичгэн санал давамгайлна.</p>
+        <h2>3. Бидний үзүүлэх үйлчилгээ</h2>
+        <p>Бид хоёр төрлийн үйлчилгээ борлуулдаг.</p>
+        <ul>
+          <li>AI ажилтан — сарын тогтмол төлбөр, нэг удаагийн суурилуулалттай. Ара (хүлээн авагч) Facebook, Instagram, вэбсайтын зурвасуудад хариулна. Веда (шинжээч) сар бүр тайлан бэлдэнэ. Эхо (утасны оператор) дуудлагад хариулна. Нова (харилцагчийн үйлчилгээ) харилцагчидтай эргэн холбогдоно.</li>
+          <li>Вэбсайт — нэг удаагийн төлбөртэй бүтээн байгуулалт. Сарын хураамжгүй.</li>
+        </ul>
+        <p>AI ажилтныг бид таны өгсөн бизнесийн мэдээллээр сургана. Тэрээр монгол хэлээр хариулж, хариулж чадахгүй асуултыг танай хүн рүү шилжүүлнэ.</p>
+        <p>Одоогоор Ара, Веда хоёр ажиллаж байна. Эхо, Нова хоёр хараахан нээгдээгүй бөгөөд зөвхөн урьдчилсан бүртгэлээр санал болгож байна; урьдчилсан бүртгэлийн нөхцөлийг 5-р хэсэгт бичсэн.</p>
+        <p>Веда зөвхөн өөр ажилтантай хамт ажиллана, дангаараа авах боломжгүй.</p>
+        <p>Үнэ манай Үнэ хуудсанд нийтлэгдсэн байдаг. Хэд хэдэн ажилтан авахад хамаарах хямдрал мөн тэнд бичигдсэн байна.</p>
+        <h2>4. Хамтын ажиллагаа хэрхэн эхлэх вэ</h2>
+        <p>Бид танай бизнесийг ойлгох богино уулзалтаар эхэлнэ. Дараа нь ямар ажилтан, ямар ажил хэрэгтэйг тодорхойлж, үнийн саналаа бичгээр өгнө.</p>
+        <p>Та уг саналыг имэйлээр эсвэл бичгээр баталгаажуулснаар гэрээ эхэлнэ. Үүний дараа бид:</p>
+        <ul>
+          <li>Таны өгсөн бизнесийн мэдээллээр AI ажилтныг сургана.</li>
+          <li>Ажиллах сувагт нь холбоно: Facebook, Instagram хуудас, вэбсайт.</li>
+          <li>Нээхээс өмнө танд үзүүлж, засвар авна.</li>
+        </ul>
+        <p>Хэвийн нөхцөлд AI ажилтан 3–5 өдөрт, вэбсайт 7–10 ажлын өдөрт бэлэн болно. Энэ хугацаа нь та мэдээлэл, хандалтаа цаг тухайд нь өгсөн тохиолдолд хүчинтэй. Мэдээлэл удаан ирвэл хугацаа тэр хэрээр шилжинэ.</p>
+        <h2>5. Төлбөр, нэхэмжлэл</h2>
+        <p>Бүх үнэ монгол төгрөгөөр илэрхийлэгдэнэ. Хуулиар шаардсан татвар, хураамжийг хуулийн дагуу тооцно.</p>
+        <ul>
+          <li>Суурилуулалтын төлбөр нэг удаа, ажил эхлэхийн өмнө төлөгдөнө.</li>
+          <li>Сарын төлбөр сар бүрийн эхэнд урьдчилж төлөгдөж, тухайн сарыг бүтэн хамарна.</li>
+          <li>Вэбсайтын төлбөр: гэрээ байгуулахад 50%, хүлээлгэн өгөхөд 50%.</li>
+          <li>Нэхэмжлэхийг гарсан өдрөөс хойш 14 хоногийн дотор төлнө.</li>
+        </ul>
+        <p>Сарын төлбөрт AI ажилтныг ажиллуулах сервер, AI загварын ашиглалт, хяналт, мэдээллийн шинэчлэлт, энгийн засвар, дэмжлэг багтана. Танай бизнесийн мэдээлэл өөрчлөгдөхөд хариултыг нь шинэчлэх ажил мөн энэ дотор ордог.</p>
+        <p>Сарын төлбөрт багтахгүй зүйл: домэйн нэр, танай вэбсайтын тусдаа хостинг, төлбөртэй гуравдагч талын API, сурталчилгааны зардал — эдгээрийг тусад нь тохиролцоогүй бол. Эхогийн дуудлагыг ашигласан минутаар нь сарын төлбөр дээр нэмж тооцно; минутын үнийг үйлчилгээг асаахаас өмнө бичгэн саналд тодорхой заана.</p>
+        <p>Сарын төлбөр хугацаандаа төлөгдөөгүй бол бид сануулга илгээнэ. Төлбөр 30 хоногоос дээш хугацаагаар хоцорвол бид AI ажилтныг түр зогсоож болно — энэ үед танай харилцагчдын зурваст хариулт очихгүй. Төлбөр төлөгдмөгц ажилтан өмнөх мэдээллээ хадгалсан хэвээр эргэн ажиллана. Хоцролт 60 хоногоос хэтэрвэл бид гэрээг цуцалж, 16-р хэсэгт заасан журмаар мэдээллийг устгаж болно.</p>
+        <p>Эхо, Нова хоёрт урьдчилан бүртгүүлэх нь дараалалд орох явдал юм. Урьдчилсан бүртгэл төлбөргүй бөгөөд танд худалдан авах үүрэг үүсгэхгүй. Үйлчилгээ нээгдэхэд бид танд мэдэгдэж, үнэ, нөхцөлийг танилцуулна — шийдвэрийг та тэр үедээ гаргана. Нээх хугацааг бид баталгаажуулахгүй; хэрэв уг ажилтныг гаргахгүй болвол танд мэдэгдэж, бүртгэлийн мэдээллийг устгана.</p>
+        <p>Үнээ өөрчилвөл идэвхтэй захиалагчдад дор хаяж 30 хоногийн өмнө имэйлээр мэдэгдэнэ. Шинэ үнэ аль хэдийн төлөгдсөн сарын дундуур хүчин төгөлдөр болохгүй. Шинэ үнэ таалагдахгүй бол хүчин төгөлдөр болохоос өмнө торгуульгүйгээр цуцалж болно.</p>
+        <h2>6. Захиалагчийн үүрэг</h2>
+        <p>AI ажилтан зөвхөн таны өгсөн мэдээллээр хариулдаг. Тиймээс дараах зүйл таны хариуцлага:</p>
+        <ul>
+          <li>Үнэ, цагийн хуваарь, үйлчилгээ, нөхцөл зэрэг бизнесийн мэдээллээ үнэн зөв өгөх, өөрчлөгдөхөд нь бидэнд мэдэгдэх. Мэдээлэл буруу бол хариулт нь ч буруу гарна.</li>
+          <li>Танай нэрийн өмнөөс AI ажилтны хэлсэн зүйлийг харилцагчдынхаа өмнө хариуцах.</li>
+          <li>Бидэнд өгсөн агуулга, зураг, брэндийн материалыг ашиглах эрхтэй байх. Уг агуулгаас үүдэн гуравдагч талын нэхэмжлэл гарвал та хариуцна.</li>
+          <li>Харилцагчдынхаа өмнө хүлээх өөрийн хуулийн үүргээ биелүүлэх: хувийн мэдээллийн мэдэгдэл, хэрэглэгчийн эрх, сурталчилгаа, салбарын журам.</li>
+          <li>AI хариулж чадахгүй үед яриаг хүлээж авах хүнтэй байх. Шилжүүлэг танай хүн рүү очно, бидэн рүү биш.</li>
+          <li>Ажиллах сувгуудад шаардлагатай хандалтыг бидэнд өгөх, нэвтрэх мэдээллээ хамгаалах, өөрчлөгдөхөд мэдэгдэх.</li>
+          <li>Хянан үзэх, батлах хүсэлтэд боломжийн хугацаанд хариу өгөх. Хариу удаан ирвэл ажлын хугацаа тэр хэрээр шилжинэ.</li>
+          <li>Үйлчилгээг хууль ёсны зорилгоор ашиглах — спам, залилан, дарамт, насанд хүрээгүй хүнд хор хүргэх агуулга, эсвэл платформын журам зөрчсөн зүйлд ашиглахгүй байх.</li>
+        </ul>
+        <p>Та Facebook хуудсаа манай холболтын хуудсаар дамжуулан холбоход бид зөвхөн зурвас хүлээн авах, хариулах эрхийг авна. Уг зөвшөөрлийг та Facebook-ийн тохиргооноос хэдийд ч цуцалж болно; цуцлах үед AI ажилтан тухайн сувагт ажиллахаа болино.</p>
+        <h2>7. Юуг хэн эзэмших вэ</h2>
+        <ul>
+          <li>Вэбсайт: төлбөрийг бүрэн төлсний дараа тухайн төсөлд зориулж хийсэн дизайн, код, агуулга, зураг таных болно.</li>
+          <li>Танай агуулга ба яриа: таны өгсөн бизнесийн мэдээлэл, түүнчлэн AI ажилтны харилцагчидтай хийсэн яриа үргэлж таных. Бид үүнийг зөвхөн танай харилцагчдад үйлчлэхэд ашиглана — өөр захиалагчид ашиглахгүй, нийтлэг загвар сургахад ашиглахгүй.</li>
+          <li>AI ажилтан өөрөө: сарын төлбөр төлөгдөж байх хугацаанд ашиглах эрхийг танд олгоно. Ажилтны программ хангамж, тохиргоо, дотоод зааварчилгаа DalaTech-д үлдэнэ; та үүнийг худалдаж авахгүй.</li>
+          <li>Бидний өмнө нь бүтээсэн хэрэгсэл, сан, загвар, дахин ашиглагддаг эд анги, түүнчлэн ажлын явцад бий болсон ерөнхий мэдлэг, арга барил бидэнд үлдэнэ. Танд хүлээлгэн өгсөн вэбсайтад суулгагдсан хэлбэрээр нь ашиглах хугацаагүй, онцгой бус эрхийг бид танд олгоно.</li>
+        </ul>
+        <p>Нээлттэй эхийн сангууд өөрсдийн лицензээр зохицуулагдана.</p>
+        <h2>8. Ажлаа харуулах эрх</h2>
+        <p>Бид танай төслийн нэр, лого, сонгосон дэлгэцийн зургийг манай вэбсайт, Facebook хуудас, бусад бизнест өгөх саналдаа жишээ болгон харуулж болно.</p>
+        <p>Та үүнийг хүсэхгүй бол бидэнд имэйлээр мэдэгдэхэд хангалттай. Бид материалыг ашиглахаа болино, манай вэбсайт болон Facebook хуудсанд аль хэдийн нийтэлсэн байсан бол 14 хоногийн дотор хасна.</p>
+        <p>Танай харилцагчидтай хийсэн яриаг бид ямар ч тохиолдолд, нэрийг нь нуусан ч гэсэн, танай бичгэн зөвшөөрөлгүйгээр харуулахгүй.</p>
+        <h2>9. Нууцлал</h2>
+        <p>Таны бидэнд өгсөн нийтэд нээлттэй бус мэдээллийг — бизнесийн төлөвлөгөө, харилцагчийн мэдээлэл, нэвтрэх эрх, дотоод баримт — бид нууцад тооцож, зөвхөн тохиролцсон ажлыг гүйцэтгэхэд ашиглана.</p>
+        <p>Та ч мөн адил бидний үнэ, ажлын арга барил, бидний өгсөн дотоод материалыг нууц байлгана.</p>
+        <p>Энэ үүрэг гэрээ дууссанаас хойш 3 жил үргэлжилнэ. Дараах мэдээлэлд хамаарахгүй: нийтэд ил болсон, хүлээн авагч тал нь өмнө нь мэдэж байсан, бие даан бий болгосон, эсвэл хуулиар задруулахыг шаардсан мэдээлэл.</p>
+        <h2>10. Хувийн мэдээлэл</h2>
+        <p>Хувийн мэдээлэл цуглуулах, ашиглах, устгах журмыг манай Нууцлалын бодлогод бичсэн.</p>
+        <p>Товчхондоо: бидэн рүү шууд хандсан хүмүүсийн мэдээллийг бид өөрсдөө хариуцна. Танай харилцагчдын AI ажилтантай хийсэн яриаг бид таны даалгаврын дагуу, таны нэрийн өмнөөс боловсруулна — тэр мэдээллийн хариуцагч нь та.</p>
+        <p>Хариулт бэлдэхийн тулд харилцагчийн зурвасыг гуравдагч талын AI загварын үйлчилгээгээр боловсруулдаг бөгөөд энэ нь Монгол Улсаас гадна байрлах дэд бүтэц дээр явагдана. Ямар нийлүүлэгч оролцож байгааг Нууцлалын бодлогод бичсэн.</p>
+        <p>Тиймээс харилцагчдадаа зориулсан хувийн мэдээллийн мэдэгдлийг та өөрөө гаргах үүрэгтэй. Мөн харилцагч нь AI-тай ярьж байгаагаа ойлгож, хүсвэл хүнтэй холбогдох боломжтой байх ёстой.</p>
+        <h2>11. Гуравдагч талын платформ, нийлүүлэгч</h2>
+        <p>Бидний ажлын ихэнх нь гуравдагч талын платформ дээр ажилладаг: Meta (Facebook, Instagram, Messenger), хостингийн үйлчилгээ, AI загварын үйлчилгээ, төлбөрийн суваг. Бид эдгээрийг удирддаггүй.</p>
+        <p>Тэдгээрийн тасалдал, журмын өөрчлөлт, бүртгэл хаагдах, үнэ өөрчлөгдөхөд бид хариуцлага хүлээхгүй. Ийм зүйл гарвал бид танд мэдэгдэж, боломжит хувилбарыг санал болгоно.</p>
+        <p>Бид үйлчилгээгээ хүргэхийн тулд сонгосон нийлүүлэгчдээр ажлын нэг хэсгийг гүйцэтгүүлж болно. Бидний нэрийн өмнөөс хийсэн тэр ажлыг бид хариуцна; энэ нь дээр дурдсан платформуудын тасалдалд хамаарахгүй. Одоо ашиглаж буй нийлүүлэгчдийн жагсаалт Нууцлалын бодлогод байна.</p>
+        <h2>12. Вэбсайт болон AI ажилтныг зөв ашиглах</h2>
+        <p>Манай вэбсайт, манай чат, эсвэл захиалагчийн бизнест ажиллаж буй AI ажилтантай харилцаж буй хэн бүхэн дараах зүйлийг хийхгүй байх үүрэгтэй:</p>
+        <ul>
+          <li>Системд халдах, сканнердах, аюулгүй байдлыг эвдэхийг оролдох.</li>
+          <li>Хууль бус, гүтгэлэг агуулсан, бусдын эрхийг зөрчсөн агуулга илгээх.</li>
+          <li>Нэвтрэх мэдээлэл, системийн зааварчилгаа, сургалтын өгөгдлийг гаргаж авахыг оролдох, эсвэл AI-г зориулалтаас нь гадуур ажиллуулахыг оролдох.</li>
+          <li>Өөр хүн, бизнес, эсвэл DalaTech-ийн ажилтан мэт дүр эсгэх.</li>
+          <li>Автомат хэрэгслээр их хэмжээний зурвас илгээж системд ачаалал өгөх.</li>
+        </ul>
+        <p>Эдгээрийг зөрчсөн тохиолдолд бид хандалтыг хязгаарлаж болно.</p>
+        <h2>13. AI юу хийж чадах, юуг чадахгүй вэ</h2>
+        <p>AI ажилтан нь таны өгсөн мэдээллээс автоматаар хариулдаг. Хариулт нь буруу, дутуу эсвэл хуучирсан байх боломжтой. Хариулт бүр зөв байна гэсэн баталгааг бид өгөхгүй.</p>
+        <p>AI ажилтан заавал биелэх шийдвэр гаргахгүй. Тэр гэрээ байгуулахгүй, төлбөр авахгүй, эрх зүйн, эмнэлгийн, санхүүгийн зөвлөгөө өгөхгүй, хүнийг шалгаруулж татгалзахгүй. Түүний хэлсэн зүйл нь танай бизнес баталгаажуулах хүртэл заавал биелэх санал болохгүй.</p>
+        <p>Хариулж чадахгүй, эсвэл харилцагч хүнтэй ярихыг хүсвэл яриаг хүн рүү шилжүүлнэ.</p>
+        <p>Бид ажлаа мэргэжлийн ур чадвар, анхаарал болгоомжтойгоор гүйцэтгэнэ. Үүнээс цааш манай вэбсайт, агуулга, AI-ийн хариултыг байгаа байдлаар нь олгож байна. Манай үйлчилгээний талаар AI-ийн хэлсэн тодорхой арилжааны, эрх зүйн, техникийн мэдээлэлд найдахаасаа өмнө бидэнтэй шалгана уу.</p>
+        <h2>14. Үйлчилгээний тасралтгүй байдал, дэмжлэг</h2>
+        <p>Бид AI ажилтныг тасралтгүй ажиллуулахыг зорино, гэхдээ огт тасрахгүй гэж амлахгүй. Засвар, шинэчлэлт хийхэд богино хугацааны тасалдал гарч болно; төлөвлөсөн ажлаа урьдчилан мэдэгдэнэ.</p>
+        <p>Тасалдал гарвал бидэнд имэйлээр мэдэгдээрэй. Бид мэдэгдлийг хүлээн авсныг дараагийн ажлын өдөрт багтаан баталгаажуулж, шалтгааныг тогтоон, сэргээх ажлыг тэргүүн ээлжид гүйцэтгэнэ. Асуудал шийдэгдмэгц танд мэдэгдэнэ.</p>
+        <p>Гуравдагч талын платформоос үүдэлтэй тасалдалд энэ заалт хамаарахгүй (11-р хэсэг).</p>
+        <h2>15. Хариуцлагын хязгаар</h2>
+        <p>Монгол Улсын хуулиар зөвшөөрөгдөх дээд хэмжээгээр, DalaTech-ийн хүлээх хариуцлага нь нэхэмжлэл гарахаас өмнөх 12 сард тухайн үйлчилгээнд таны төлсөн төлбөрийн нийлбэрээр хязгаарлагдана. AI ажилтны хувьд энэ нь тухайн ажилтанд төлсөн сарын төлбөр, мөн уг хугацаанд төлсөн бол суурилуулалтын төлбөрийг хамарна.</p>
+        <p>Бид шууд бус хохирол — олох байсан ашиг, алдагдсан өгөгдөл, бизнесийн үйл ажиллагааны саатал — хариуцахгүй.</p>
+        <p>Хуулиар хязгаарлаж болохгүй хариуцлагыг энэ заалт хязгаарлахгүй.</p>
+        <h2>16. Гэрээ дуусгавар болох, дараа нь юу болох</h2>
+        <ul>
+          <li>Та сарын захиалгаа хэдийд ч имэйлээр мэдэгдэж цуцалж болно. Цуцлалт төлбөр төлөгдсөн сарын эцэст хүчин төгөлдөр болно. Дуусаагүй сарын төлбөр болон суурилуулалтын төлбөрийг буцаан олгохгүй.</li>
+          <li>Бид сарын захиалгыг 30 хоногийн өмнө бичгээр мэдэгдсэний үндсэн дээр зогсоож болно.</li>
+          <li>Аль ч тал нөгөө тал нь нөхцөлийг ноцтой зөрчсөн бөгөөд мэдэгдэл өгснөөс хойш 14 хоногт засаагүй бол гэрээг шууд цуцалж болно.</li>
+          <li>Вэбсайтын ажил дуусахаас өмнө цуцлагдвал хийгдсэн ажил, гарсан зардлыг төлнө.</li>
+        </ul>
+        <p>Гэрээ дууссаны дараа:</p>
+        <ul>
+          <li>AI ажилтан төлбөр төлөгдсөн хугацааны эцэст хариулахаа болино.</li>
+          <li>Бид танай хуудсанд байсан хандалтаа хаана. Та мөн Facebook-ийн тохиргооноос зөвшөөрлөө цуцлах боломжтой.</li>
+          <li>Яриа болон бизнесийн мэдээллээ татаж авах 30 хоногийн хугацааг танд өгнө. Хүсвэл бид уг мэдээллийг файлаар гаргаж өгнө.</li>
+          <li>Тэр хугацаа дууссанаас хойш 30 хоногийн дотор бид танай мэдээллийг системээсээ устгана. Нэхэмжлэх, төлбөрийн бүртгэл хуулийн шаардлагын дагуу үлдэнэ.</li>
+          <li>Аль хэдийн хүлээлгэн өгсөн, төлбөр нь төлөгдсөн вэбсайт танд үлдэж, сарын захиалгаас хамааралгүй ажиллана.</li>
+        </ul>
+        <p>Төлбөр, эрх эзэмшил, нууцлал, хариуцлагын заалтууд гэрээ дууссаны дараа ч хүчинтэй хэвээр байна.</p>
+        <h2>17. Хууль, маргаан шийдвэрлэх</h2>
+        <p>Эдгээр нөхцөл Монгол Улсын хуулиар зохицуулагдана.</p>
+        <p>Санал зөрөлдвөл эхлээд шууд ярилцаж шийдэхийг хоёр тал эрмэлзэнэ. Ингэж шийдэгдэхгүй бол маргааныг Улаанбаатар хотын эрх бүхий шүүхээр шийдвэрлүүлнэ.</p>
+        <h2>18. Бусад нөхцөл</h2>
+        <ul>
+          <li>Мэдэгдэл: эдгээр нөхцөлийн хүрээнд өгөх бичгэн мэдэгдлийг имэйлээр илгээнэ — бидэнд <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a> хаягаар, танд бидэнд өгсөн имэйл хаягаар. Мэдэгдэл дараагийн ажлын өдрөөс хүчин төгөлдөр болно.</li>
+          <li>Бүрэн тохиролцоо: эдгээр нөхцөл болон бидний бичгээр өгсөн үнийн санал буюу захиалгын баталгаа хоёр хамтдаа талуудын тохиролцоог бүрдүүлнэ.</li>
+          <li>Заалт хүчингүй болох: аль нэг заалт хүчингүй болсон ч бусад заалт хүчинтэй хэвээр үлдэнэ.</li>
+          <li>Шилжүүлэх: та эрх, үүргээ бидний бичгэн зөвшөөрөлгүйгээр өөр этгээдэд шилжүүлэхгүй.</li>
+          <li>Давагдашгүй хүчин зүйл: талуудын хяналтаас гадуурх нөхцөл байдлын улмаас үүргээ биелүүлэх боломжгүй болсон хугацаанд хариуцлага хүлээхгүй. Ийм байдал 30 хоногоос удвал аль ч тал гэрээг цуцалж болно.</li>
+          <li>Хэл: энэ баримт бичиг монгол, англи хоёр хэлээр нийтлэгдэнэ. Хоёрын хооронд зөрүү гарвал монгол хувилбар давамгайлна.</li>
+        </ul>
+        <h2>19. Нөхцөл өөрчлөгдөх</h2>
+        <p>Бид эдгээр нөхцөлийг үе үе шинэчилж болно. Хуудасны дээд талын Сүүлд шинэчилсэн огноо хүчин төгөлдөр хувилбарыг заана.</p>
+        <p>Идэвхтэй захиалагчдад нөлөөлөх томоохон өөрчлөлтийг хүчин төгөлдөр болохоос дор хаяж 30 хоногийн өмнө имэйлээр мэдэгдэнэ. Өөрчлөлтийг хүлээн зөвшөөрөхгүй бол тэр хугацаанд торгуульгүйгээр цуцалж болно.</p>
+        <h2>Холбоо барих</h2>
+        <p>Үнийн санал авах, асуулт тавихыг хүсвэл <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a> хаягаар бичээрэй. Бид 2 ажлын өдрийн дотор хариулна.</p>
+        <p>Хувийн мэдээлэлтэй холбоотой хүсэлтийг Нууцлалын бодлого болон Мэдээлэл устгах заавар хуудсанд бичсэн журмаар хүлээн авна.</p>
+      </article>
+      <article lang="en" data-lang="en">
         <h1>Terms of Service</h1>
-        <p class="lede">
-          These Terms of Service govern your use of Dalatech&rsquo;s website,
-          our Facebook Page, and any web development, AI chatbot, or business
-          automation services we deliver. By engaging us or messaging our Page,
-          you agree to these Terms.
-        </p>
-        <p class="meta">Last updated: 8 May 2026</p>
-
+        <p class="summary">This document sets out what each side is responsible for when you take DalaTech AI staff or a website build. It covers fees, ownership, liability and how an engagement ends, in plain language.</p>
+        <p class="updated">Last updated: 11 September 2026</p>
         <h2>1. Who we are</h2>
-        <p>
-          Dalatech (&ldquo;we&rdquo;, &ldquo;us&rdquo;) is a tech agency based
-          in Ulaanbaatar, Mongolia, owned and operated by Tserentsoodol
-          Bilguun. You can reach us at
-          <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>.
-        </p>
-
-        <h2>2. Services we offer</h2>
-        <p>
-          Dalatech provides paid professional services to businesses,
-          including:
-        </p>
+        <p>DalaTech is a technology business operating in Ulaanbaatar, Mongolia. We build AI staff and websites for small and mid-size Mongolian businesses. DalaTech is owned and operated by Tserentsoodol Bilguun.</p>
+        <p>In these Terms, we and DalaTech mean the party providing the services described here.</p>
+        <p>You can reach us at <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a> or through our Facebook Page. These are our official contact channels, and we receive written notice under this agreement by email.</p>
+        <h2>2. What these Terms cover</h2>
+        <p>These Terms apply to the <a class="inline" href="https://dalatech.online">dalatech.online</a> website, our Facebook Page, and the AI staff and website services we deliver.</p>
+        <p>By engaging us, or by messaging our Page, you accept these Terms.</p>
+        <p>In these Terms, you or the client means the business taking our services, and customer means the people who contact your business.</p>
+        <p>The exact scope, price and timeline for any work are set out in the written quote or order confirmation we give you. If that document conflicts with these Terms, the written quote prevails for that work.</p>
+        <h2>3. What we provide</h2>
+        <p>We sell two kinds of service.</p>
         <ul>
-          <li>Custom website design and development.</li>
-          <li>
-            AI chatbot implementation, including Facebook Messenger bots and
-            site-embedded chat widgets.
-          </li>
-          <li>
-            Business automation &mdash; integrating tools, lead pipelines, and
-            workflows so repeat tasks run by themselves.
-          </li>
-          <li>
-            Related advisory work: technical consulting, scoping, and ongoing
-            support of the systems we deliver.
-          </li>
+          <li>AI staff — a flat monthly fee plus a one-time setup fee. Ara (receptionist) answers messages on Facebook, Instagram and your website. Veda (analyst) prepares a monthly report. Eho (phone operator) answers calls. Nova (customer care) follows up with customers.</li>
+          <li>Websites — a one-time build fee. No monthly charge.</li>
         </ul>
-        <p>
-          The exact deliverables, timeline, and price for any project are
-          defined in a written proposal or contract agreed between you and
-          Dalatech before work begins. Those project documents prevail over
-          these Terms if anything conflicts.
-        </p>
-
-        <h2>3. Engagement and payment</h2>
-        <p>
-          Unless we agree otherwise in writing:
-        </p>
+        <p>We train an AI staff member on the business information you give us. It answers in Mongolian, and when it cannot answer a question it hands the conversation to your own people.</p>
+        <p>Ara and Veda are in service today. Eho and Nova have not launched yet and are offered by pre-registration only; the pre-registration terms are in section 5.</p>
+        <p>Veda works only alongside another staff member and cannot be taken on its own.</p>
+        <p>Prices are published on our Pricing page, including the discounts that apply when you take more than one staff member.</p>
+        <h2>4. How an engagement starts</h2>
+        <p>We start with a short meeting to understand your business. We then define which staff member and which work you need, and give you a written quote.</p>
+        <p>The engagement begins when you confirm that quote by email or in writing. After that we:</p>
         <ul>
-          <li>
-            A project deposit is required before development starts; remaining
-            milestones are invoiced as work is delivered.
-          </li>
+          <li>Train the AI staff member on the business information you provide.</li>
+          <li>Connect it to the channels it will work on: your Facebook and Instagram Pages, and your website.</li>
+          <li>Show it to you and take your corrections before it goes live.</li>
+        </ul>
+        <p>In normal conditions an AI staff member is ready in 3 to 5 days and a website in 7 to 10 working days. Those timelines assume you give us the information and access on time. If material arrives late, the timeline moves accordingly.</p>
+        <h2>5. Fees and billing</h2>
+        <p>All prices are in Mongolian tugrik. Any taxes or duties required by law are applied as required.</p>
+        <ul>
+          <li>The setup fee is paid once, before work starts.</li>
+          <li>The monthly fee is paid in advance at the start of each month and covers the whole of that month.</li>
+          <li>Websites: 50% on signing, 50% on handover.</li>
           <li>Invoices are payable within 14 days of issue.</li>
-          <li>
-            Quoted prices exclude third-party costs (domains, hosting,
-            paid APIs, advertising spend) unless explicitly bundled.
-          </li>
-          <li>
-            We may suspend work or access to systems we host for accounts that
-            are more than 30 days overdue.
-          </li>
         </ul>
-
-        <h2>4. Your responsibilities</h2>
-        <p>
-          To deliver good work on time, we rely on you to:
-        </p>
+        <p>The monthly fee includes the server that runs your AI staff member, AI model usage, monitoring, information updates, ordinary fixes and support. It also covers updating the answers when your business information changes.</p>
+        <p>The monthly fee does not include domain names, separate hosting for your own website, paid third-party APIs or advertising spend, unless we agreed otherwise. Calls handled by Eho are charged by usage on top of the monthly fee; the per-minute rate is set out in your written quote before the service is switched on.</p>
+        <p>If a monthly fee is not paid on time we send you a reminder. If payment is more than 30 days late we may pause the AI staff member — while it is paused your customers receive no replies. Once payment is made it resumes with its information intact. If payment is more than 60 days late we may end the engagement and delete the data as described in section 16.</p>
+        <p>Pre-registering for Eho or Nova places you in the queue. It is free and commits you to nothing. When the service launches we will tell you and show you the price and terms, and you decide then. We do not guarantee a launch date; if we decide not to release that staff member we will tell you and delete your pre-registration details.</p>
+        <p>If we change our prices we tell active clients by email at least 30 days in advance. A new price never takes effect in the middle of a month you have already paid for. If you do not accept a new price you may cancel before it takes effect, with no penalty.</p>
+        <h2>6. What you are responsible for</h2>
+        <p>An AI staff member answers only from the information you give it. So the following are your responsibility:</p>
         <ul>
-          <li>
-            Provide accurate brand assets, content, accounts, and any
-            credentials required to integrate the systems we agree to build.
-          </li>
-          <li>
-            Respond to review requests within a reasonable window. Sustained
-            silence may extend the project timeline or trigger a pause fee.
-          </li>
-          <li>
-            Use the deliverables lawfully and not for spam, scams, harassment,
-            adult content involving minors, or anything that violates Meta or
-            other platform policies your project relies on.
-          </li>
+          <li>Giving us accurate business information — prices, opening hours, services, conditions — and telling us when it changes. If the information is wrong, the answers will be wrong too.</li>
+          <li>Answering to your own customers for what the AI staff member says in your name.</li>
+          <li>Having the right to use the content, images and brand material you give us. If a third-party claim arises from that content, it is yours to handle.</li>
+          <li>Meeting your own legal duties towards your customers: your privacy notice, consumer rights, advertising and any rules specific to your sector.</li>
+          <li>Keeping a person available to take over when the AI cannot answer. Handovers go to your people, not to us.</li>
+          <li>Giving us the access the channels require, keeping your credentials secure, and telling us when they change.</li>
+          <li>Answering review and approval requests within a reasonable time. If answers are slow, the timeline moves accordingly.</li>
+          <li>Using the service lawfully — not for spam, scams, harassment, content that harms minors, or anything that breaks the policies of the platforms your service runs on.</li>
         </ul>
-
-        <h2>5. Intellectual property</h2>
-        <p>
-          On full payment of the agreed fee, you own the custom code,
-          configurations, copy, and visual assets we produced specifically for
-          your project. Dalatech retains ownership of:
-        </p>
+        <p>When you connect your Facebook Page through our connection page, we take only the permission needed to receive and answer messages. You can withdraw that permission at any time in your Facebook settings; when you do, the AI staff member stops working on that channel.</p>
+        <h2>7. Who owns what</h2>
         <ul>
-          <li>
-            Pre-existing tools, libraries, internal templates, and reusable
-            components we bring into the project.
-          </li>
-          <li>
-            General know-how, ideas, and techniques we develop while doing the
-            work.
-          </li>
+          <li>The website: once the fee is paid in full, the design, code, content and images we produced specifically for your project are yours.</li>
+          <li>Your content and your conversations: the business information you give us, and the conversations an AI staff member has with your customers, are always yours. We use them only to serve your customers — not for other clients, and not to train any shared or general model.</li>
+          <li>The AI staff member itself: we license it to you for as long as the monthly fee is paid. Its software, configuration and internal instructions stay with DalaTech; you are not buying them.</li>
+          <li>Tools, libraries, templates and reusable components we built before the project, and the general know-how and techniques we develop while working, stay ours. We grant you a perpetual, non-exclusive licence to use them as embedded in the website we hand over.</li>
         </ul>
-        <p>
-          We grant you a perpetual, non-exclusive license to use those
-          pre-existing components as embedded in your delivered project.
-          Open-source dependencies remain governed by their own licenses.
-        </p>
-
-        <h2>6. Showcase rights</h2>
-        <p>
-          Unless you ask us in writing not to, we may display your project name,
-          logo, and selected screenshots on our website, Facebook Page, and in
-          proposals to other prospective clients, as case study and portfolio
-          material.
-        </p>
-
-        <h2>7. Confidentiality</h2>
-        <p>
-          We treat any non-public information you share with us &mdash;
-          business plans, customer data, credentials, internal documents
-          &mdash; as confidential, and we use it only to perform the agreed
-          services. We expect the same of you regarding our pricing,
-          methodology, and any internal materials we share.
-        </p>
-
-        <h2>8. Third-party platforms</h2>
-        <p>
-          Many of our deliverables run on or integrate with third-party
-          platforms &mdash; Meta (Facebook, Messenger, Instagram), hosting
-          providers, OpenAI and other AI vendors, payment processors, etc.
-          Dalatech does not control those platforms. We are not liable for
-          downtime, policy changes, account bans, or pricing changes that
-          originate from them.
-        </p>
-
-        <h2>9. Acceptable use of our site and chatbot</h2>
-        <p>
-          When you use this website or chat with us through Facebook Messenger
-          or our embedded chat widget, you agree not to:
-        </p>
+        <p>Open-source dependencies remain governed by their own licences.</p>
+        <h2>8. Showing the work</h2>
+        <p>We may show your project name, logo and selected screenshots on our website, our Facebook Page and in proposals to other businesses, as an example of our work.</p>
+        <p>If you would rather we did not, email us and that is enough. We stop using the material, and we remove anything already published on our website or Facebook Page within 14 days.</p>
+        <p>We never show conversations with your customers, even anonymised, without your written consent.</p>
+        <h2>9. Confidentiality</h2>
+        <p>We treat the non-public information you give us — business plans, customer data, credentials, internal documents — as confidential, and use it only to perform the agreed work.</p>
+        <p>We ask the same of you regarding our prices, our methods and any internal material we share with you.</p>
+        <p>This duty lasts for 3 years after the engagement ends. It does not apply to information that is public, that the receiving side already knew, that it developed independently, or that it must disclose by law.</p>
+        <h2>10. Personal data</h2>
+        <p>How we collect, use and delete personal data is set out in our Privacy Policy.</p>
+        <p>In short: we are responsible for the data of people who contact us directly. The conversations your customers have with an AI staff member we process on your instructions and on your behalf — for that data, you are responsible.</p>
+        <p>To produce an answer, a customer's message is processed by a third-party AI model service, on infrastructure located outside Mongolia. Our Privacy Policy names the suppliers involved.</p>
+        <p>So you must publish your own privacy notice to your customers. Your customers must also be able to understand that they are talking to an AI and to reach a person if they want one.</p>
+        <h2>11. Third-party platforms and suppliers</h2>
+        <p>Most of what we deliver runs on third-party platforms: Meta (Facebook, Instagram, Messenger), hosting services, AI model services and payment channels. We do not control them.</p>
+        <p>We are not liable for their downtime, policy changes, account suspensions or price changes. If something like that happens, we tell you and propose the options available.</p>
+        <p>We may use selected suppliers to carry out part of the work. We remain responsible for the work they do on our behalf; that does not extend to outages of the platforms named above. The current list of suppliers is in our Privacy Policy.</p>
+        <h2>12. Acceptable use of our site and of an AI staff member</h2>
+        <p>Anyone who uses our website, chats with us, or talks to an AI staff member running for a client's business agrees not to:</p>
         <ul>
-          <li>
-            Probe, scan, or attempt to compromise our systems or hosting
-            infrastructure.
-          </li>
-          <li>
-            Submit content that is unlawful, defamatory, or that infringes
-            someone else&rsquo;s rights.
-          </li>
-          <li>Attempt to extract credentials, prompts, or training data.</li>
-          <li>
-            Impersonate another person, business, or Dalatech staff member.
-          </li>
+          <li>Probe, scan or attempt to compromise our systems.</li>
+          <li>Submit content that is unlawful, defamatory, or that infringes someone else's rights.</li>
+          <li>Try to extract credentials, system instructions or training data, or to make the AI act outside its purpose.</li>
+          <li>Impersonate another person, business, or someone at DalaTech.</li>
+          <li>Send bulk automated messages that load the system.</li>
         </ul>
-
-        <h2>10. Warranties and disclaimers</h2>
-        <p>
-          We deliver our services with reasonable skill and care and to the
-          standard expected of a professional Mongolian agency. Beyond that,
-          our website, content, and any AI-generated chatbot responses are
-          provided <em>as is</em>. AI assistants can make mistakes &mdash;
-          please verify any specific commercial, legal, or technical claim
-          with us directly before relying on it.
-        </p>
-
-        <h2>11. Limitation of liability</h2>
-        <p>
-          To the maximum extent allowed by Mongolian law, Dalatech&rsquo;s
-          total liability arising out of any project or use of this site is
-          limited to the amount you paid us for the specific service that gave
-          rise to the claim, in the 12 months before the claim. We are not
-          liable for indirect or consequential losses, including lost profits,
-          lost data, or business interruption.
-        </p>
-
-        <h2>12. Termination</h2>
-        <p>
-          Either party may end an engagement by written notice if the other
-          party materially breaches these Terms or the project agreement and
-          does not fix the breach within 14 days of notice. On termination,
-          you pay for work delivered and reasonably-incurred costs up to that
-          date. Sections that by their nature should survive termination
-          &mdash; payment, IP, confidentiality, liability &mdash; survive.
-        </p>
-
-        <h2>13. Governing law</h2>
-        <p>
-          These Terms are governed by the laws of Mongolia. Any dispute that
-          cannot be resolved in good-faith discussion will be brought before
-          the competent courts of Ulaanbaatar.
-        </p>
-
-        <h2>14. Changes to these Terms</h2>
-        <p>
-          We may update these Terms from time to time. The &ldquo;Last
-          updated&rdquo; date at the top of the page reflects the current
-          version. Material changes will be communicated to active clients
-          before they take effect.
-        </p>
-
-        <div class="card">
-          <strong>Questions or want a quote?</strong><br />
-          Email
-          <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>
-          and we will respond within 2 business days.
-        </div>
-      </div>
+        <p>We may restrict access where these rules are broken.</p>
+        <h2>13. What the AI can and cannot do</h2>
+        <p>An AI staff member answers automatically from the information you gave it. An answer can be wrong, incomplete or out of date. We do not guarantee that every answer is correct.</p>
+        <p>An AI staff member makes no binding decisions. It does not conclude contracts, take payments, give legal, medical or financial advice, or decide who qualifies for something. What it says is not a binding offer until your business confirms it.</p>
+        <p>When it cannot answer, or when a customer asks for a person, it hands the conversation to a person.</p>
+        <p>We carry out our work with reasonable skill and care. Beyond that, our website, our content and AI answers are provided as is. Before relying on a specific commercial, legal or technical statement an AI made about our services, check it with us directly.</p>
+        <h2>14. Availability and support</h2>
+        <p>We aim to keep an AI staff member running continuously, but we do not promise it will never be interrupted. Maintenance and updates can cause short interruptions; we announce planned work in advance.</p>
+        <p>If there is an interruption, tell us by email. We confirm we have received the report by the next working day, identify the cause, and treat restoring the service as our first priority. We tell you once it is resolved.</p>
+        <p>This does not apply to interruptions that originate with a third-party platform (section 11).</p>
+        <h2>15. Limitation of liability</h2>
+        <p>To the maximum extent allowed by Mongolian law, DalaTech's total liability is limited to what you paid us for the service in question in the 12 months before the claim. For an AI staff member this means the monthly fees paid for that staff member, plus the setup fee if it was paid in that period.</p>
+        <p>We are not liable for indirect losses — lost profits, lost data or business interruption.</p>
+        <p>Nothing here limits liability that cannot be limited by law.</p>
+        <h2>16. Ending the engagement and what happens afterwards</h2>
+        <ul>
+          <li>You may cancel a monthly subscription at any time by telling us by email. Cancellation takes effect at the end of the month you have paid for. The unused part of that month and the setup fee are not refunded.</li>
+          <li>We may end a monthly subscription on 30 days' written notice.</li>
+          <li>Either side may end the engagement immediately if the other materially breaches these Terms and does not fix it within 14 days of notice.</li>
+          <li>If a website build is cancelled before completion, you pay for the work delivered and the costs reasonably incurred.</li>
+        </ul>
+        <p>After the engagement ends:</p>
+        <ul>
+          <li>The AI staff member stops answering at the end of the paid period.</li>
+          <li>We close our access to your Pages. You can also withdraw the permission in your Facebook settings.</li>
+          <li>You have 30 days to download your conversations and business information. If you ask, we export it to a file for you.</li>
+          <li>Within 30 days after that window we delete your data from our systems. Invoices and payment records are kept as the law requires.</li>
+          <li>A website already handed over and paid for stays yours and keeps working, independently of any subscription.</li>
+        </ul>
+        <p>The sections on payment, ownership, confidentiality and liability continue to apply after the engagement ends.</p>
+        <h2>17. Governing law and disputes</h2>
+        <p>These Terms are governed by the laws of Mongolia.</p>
+        <p>If we disagree, both sides will first try to settle it in direct discussion. If that fails, the dispute goes to the competent courts of Ulaanbaatar.</p>
+        <h2>18. General terms</h2>
+        <ul>
+          <li>Notices: written notice under these Terms is given by email — to <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a> for us, and to the address you gave us for you. It takes effect on the next working day.</li>
+          <li>Entire agreement: these Terms and our written quote or order confirmation together form the agreement between us.</li>
+          <li>Severability: if one clause is invalid, the rest remain in force.</li>
+          <li>Assignment: you may not transfer your rights or obligations to anyone else without our written consent.</li>
+          <li>Force majeure: neither side is liable for the period in which circumstances beyond its control make performance impossible. If that lasts more than 30 days, either side may end the engagement.</li>
+          <li>Language: this document is published in Mongolian and English. If the two differ, the Mongolian version prevails.</li>
+        </ul>
+        <h2>19. Changes to these Terms</h2>
+        <p>We may update these Terms from time to time. The Last updated date at the top of the page shows the version in force.</p>
+        <p>We tell active clients by email at least 30 days before a material change takes effect. If you do not accept the change, you may cancel within that period with no penalty.</p>
+        <h2>Contact</h2>
+        <p>For a quote or any question, write to <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>. We reply within 2 working days.</p>
+        <p>Requests about personal data are handled through the routes set out in our Privacy Policy and Data Deletion page.</p>
+      </article>
     </main>
 
-    <footer>
+    <footer class="site">
       <div class="wrap">
-        <div>&copy; 2026 Dalatech &middot; Ulaanbaatar, Mongolia</div>
-        <div>
-          <a href="/">Home</a>
-          <a href="/privacy/">Privacy</a>
-          <a href="/terms/">Terms</a>
-          <a href="/data-deletion/">Data deletion</a>
-        </div>
+        <nav aria-label="Legal">
+          <a href="/privacy/">Нууцлалын бодлого</a>
+          <a href="/data-deletion/">Мэдээлэл устгах хүсэлт</a>
+          <a href="/">Нүүр хуудас руу буцах</a>
+        </nav>
+        <p>© 2026 DalaTech</p>
       </div>
     </footer>
+
+    <script>
+    // Both languages ship in the markup. Hide one, and remember the choice
+    // under the key the main site already uses. Wrapped because storage throws
+    // in a private window, and a legal page must still render if it does.
+    (function () {
+      var articles = document.querySelectorAll("article[data-lang]");
+      var buttons = document.querySelectorAll(".lang button");
+      function read() {
+        try { return localStorage.getItem("language"); } catch (e) { return null; }
+      }
+      function apply(lang) {
+        articles.forEach(function (a) { a.hidden = a.getAttribute("data-lang") !== lang; });
+        buttons.forEach(function (b) {
+          b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === lang));
+        });
+        document.documentElement.setAttribute("lang", lang);
+      }
+      apply(read() === "en" ? "en" : "mn");
+      buttons.forEach(function (b) {
+        b.addEventListener("click", function () {
+          var lang = b.getAttribute("data-lang");
+          try { localStorage.setItem("language", lang); } catch (e) {}
+          apply(lang);
+        });
+      });
+    })();
+    </script>
   </body>
 </html>

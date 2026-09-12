@@ -1,313 +1,414 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mn">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="index, follow" />
-    <title>Privacy Policy &middot; Dalatech</title>
-    <meta
-      name="description"
-      content="Privacy policy for Dalatech — what data we collect through Facebook Pages Messenger and the demo request form on dalatech.online, why, how long we keep it, and how to request deletion."
-    />
+    <title>Нууцлалын бодлого · DalaTech</title>
+    <meta name="description" content="DalaTech-ийн нууцлалын бодлого. Facebook Messenger болон демо хүсэлтийн маягтаар цуглуулсан мэдээлэл, түүнийг ашиглах, хадгалах, устгах журам. · DalaTech&#x27;s privacy policy." />
+    <link rel="canonical" href="https://dalatech.online/privacy/" />
     <link rel="icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap"
+    />
     <style>
-      :root {
-        color-scheme: light;
-      }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; }
-      body {
-        background: #fafafa;
-        color: #18181b;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        line-height: 1.65;
-      }
-      header.site {
-        border-bottom: 1px solid #e4e4e7;
-        background: #ffffffcc;
-        backdrop-filter: saturate(140%) blur(8px);
-        position: sticky;
-        top: 0;
-        z-index: 10;
-      }
-      .wrap {
-        max-width: 768px;
-        margin: 0 auto;
-        padding: 0 24px;
-      }
-      header.site .wrap {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        height: 64px;
-      }
-      .brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        text-decoration: none;
-        color: #09090b;
-        font-weight: 700;
-        font-size: 16px;
-      }
-      .brand img { width: 28px; height: 28px; border-radius: 6px; object-fit: contain; }
-      nav a {
-        color: #3f3f46;
-        text-decoration: none;
-        font-size: 14px;
-        margin-left: 18px;
-      }
-      nav a:hover { color: #09090b; }
-      main { padding: 48px 0 96px; }
-      h1 {
-        font-size: 36px;
-        line-height: 1.15;
-        letter-spacing: -0.02em;
-        margin: 0 0 8px;
-        color: #09090b;
-      }
-      .lede { color: #52525b; margin: 0 0 32px; }
-      h2 {
-        font-size: 20px;
-        margin: 36px 0 8px;
-        color: #09090b;
-        letter-spacing: -0.01em;
-      }
-      p, li { color: #27272a; }
-      ul { padding-left: 22px; }
-      a.inline { color: #09090b; text-decoration: underline; text-underline-offset: 3px; }
-      a.inline:hover { color: #2563eb; }
-      .meta {
-        font-size: 13px;
-        color: #71717a;
-        margin-top: 0;
-      }
-      .card {
-        margin-top: 32px;
-        padding: 20px 22px;
-        background: #ffffff;
-        border: 1px solid #e4e4e7;
-        border-radius: 14px;
-      }
-      footer {
-        border-top: 1px solid #e4e4e7;
-        padding: 24px 0;
-        color: #71717a;
-        font-size: 13px;
-      }
-      footer .wrap {
-        display: flex;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 12px;
-      }
-      footer a { color: #3f3f46; text-decoration: none; margin-right: 16px; }
-      footer a:hover { color: #09090b; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { background: #050A18; color-scheme: dark; -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: #050A18;
+      color: #F0F4FF;
+      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: #7DD3FC; }
+    a:hover { color: #BAE6FD; }
+    :focus-visible { outline: 2px solid #38BDF8; outline-offset: 3px; border-radius: 4px; }
+    .wrap { width: 100%; max-width: 768px; margin: 0 auto; padding: 0 20px; }
+    header.site {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(5, 10, 24, 0.82);
+      backdrop-filter: saturate(150%) blur(14px);
+      -webkit-backdrop-filter: saturate(150%) blur(14px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    header.site .wrap {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; min-height: 62px; flex-wrap: wrap;
+    }
+    .brand {
+      font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 700; font-size: 17px; letter-spacing: -0.02em;
+      color: #F0F4FF; text-decoration: none;
+    }
+    .brand:hover { color: #FFFFFF; }
+    .lang { display: flex; gap: 4px; padding: 3px; border: 1px solid rgba(255,255,255,0.09); border-radius: 999px; }
+    .lang button {
+      appearance: none; border: 0; cursor: pointer; background: transparent;
+      color: #8B9FC4; font: inherit; font-size: 12.5px; font-weight: 500;
+      padding: 5px 13px; border-radius: 999px; transition: background-color .18s, color .18s;
+      min-height: 30px;
+    }
+    .lang button:hover { color: #F0F4FF; }
+    .lang button[aria-pressed="true"] { background: rgba(255,255,255,0.09); color: #F0F4FF; }
+    main { padding: 48px 0 72px; }
+    article + article { margin-top: 64px; padding-top: 48px; border-top: 1px solid rgba(255,255,255,0.07); }
+    h1 {
+      font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 700; font-size: clamp(30px, 6vw, 42px); line-height: 1.1;
+      letter-spacing: -0.025em; margin: 0 0 18px;
+    }
+    h2 {
+      font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 600; font-size: 19px; line-height: 1.35; letter-spacing: -0.012em;
+      margin: 42px 0 10px; color: #F0F4FF;
+    }
+    p, li { color: #C5D2EA; margin: 0 0 14px; }
+    .summary { font-size: 17.5px; line-height: 1.65; color: #A9BBDA; margin-bottom: 16px; }
+    .updated {
+      font-size: 12.5px; color: #5A6E94; margin: 0 0 8px;
+      padding-bottom: 22px; border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    ul { margin: 0 0 16px; padding-left: 22px; }
+    li { margin-bottom: 7px; }
+    li::marker { color: #5A6E94; }
+    footer.site { border-top: 1px solid rgba(255,255,255,0.07); padding: 26px 0 44px; }
+    footer.site nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+    footer.site a { font-size: 13.5px; color: #8B9FC4; text-decoration: none; }
+    footer.site a:hover { color: #F0F4FF; }
+    footer.site p { font-size: 12.5px; color: #5A6E94; margin: 18px 0 0; }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
     </style>
   </head>
   <body>
     <header class="site">
       <div class="wrap">
-        <a class="brand" href="/">
-          <img src="/Photos/dalatech-logo.png" alt="Dalatech logo" />
-          Dalatech
-        </a>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/terms/">Terms</a>
-          <a href="/data-deletion/">Data deletion</a>
-        </nav>
+        <a class="brand" href="/">DalaTech</a>
+        <div class="lang" role="group" aria-label="Хэл / Language">
+          <button type="button" data-lang="mn" aria-pressed="true">Монгол</button>
+          <button type="button" data-lang="en" aria-pressed="false">English</button>
+        </div>
       </div>
     </header>
 
-    <main>
-      <div class="wrap">
-        <h1>Privacy Policy</h1>
-        <p class="lede">
-          This Privacy Policy explains what information Dalatech collects when
-          you contact us &mdash; through our Facebook Page on Messenger, or by
-          sending a demo request from dalatech.online &mdash; why we collect it,
-          how long we keep it, and the choices you have over your data.
-        </p>
-        <p class="meta">Last updated: 8 May 2026</p>
-
-        <h2>1. Who we are</h2>
-        <p>
-          Dalatech is a tech agency based in Ulaanbaatar, Mongolia, owned and
-          operated by Tserentsoodol Bilguun. We build websites, AI chatbots,
-          and business automation for small and mid-size businesses.
-        </p>
-        <p>
-          For any privacy question, you can reach us at
-          <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>.
-        </p>
-
-        <h2>2. What data we collect through Facebook Messenger</h2>
-        <p>
-          When you message our Facebook Page, we receive and store the
-          following information from Meta&rsquo;s Messenger Platform:
-        </p>
+    <main class="wrap">
+      <article lang="mn" data-lang="mn">
+        <h1>Нууцлалын бодлого</h1>
+        <p class="summary">DalaTech ямар мэдээлэл цуглуулдаг, юунд ашигладаг, хэр удаан хадгалдаг, хэнтэй хуваалцдаг, түүнийг хэрхэн устгуулахыг энэ бодлого тайлбарлана. Энэ нь бидэнтэй холбогдож буй хүн, манай үйлчлүүлэгч бизнес, тэдний харилцагчид гурвуулд хамаарна.</p>
+        <p class="updated">Сүүлд шинэчилсэн: 2026 оны 9 дүгээр сарын 11</p>
+        <h2>1. Бид хэн бэ, хэрхэн холбогдох вэ</h2>
+        <p>DalaTech бол Улаанбаатар хотод үйл ажиллагаа явуулдаг технологийн бизнес. Бид Монголын жижиг, дунд бизнест зориулж AI ажилтан болон вэбсайт бүтээдэг. AI ажилтнууд нь Ара (хүлээн авагч), Веда (шинжээч), Эхо (утасны оператор), Нова (харилцагчийн үйлчилгээ). Тэднийг сарын төлбөр, нэг удаагийн суурилуулалтаар авна. Вэбсайт нэг удаагийн төлбөртэй. Эхо, Нова хоёр одоогоор ажиллаж эхлээгүй, урьдчилан бүртгэлээр зарагдаж байна.</p>
+        <p>DalaTech-ийг Цэрэнцоодол Билгүүн эзэмшиж, удирдан ажиллуулдаг. Нууцлал, хувийн мэдээлэлтэй холбоотой асуулт, хүсэлтийг DalaTech-д мэдээлэл хамгаалал хариуцсан хүн шийдвэрлэнэ.</p>
+        <p>Бидэнтэй холбогдох хаяг: <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>. Мөн манай Facebook хуудсанд зурвас бичиж болно.</p>
+        <p>Энэ бодлогод бид хоёр өөр үүрэгтэй оролцдог. Нэгд, өөрсдийн зочид, сонирхогчдын мэдээллийг бид өөрсдөө хариуцаж, зорилгыг нь тодорхойлдог. Хоёрт, үйлчлүүлэгч бизнесийн хуудсан дээр AI ажилтан ажиллаж байгаа үед харилцагчдынх нь мэдээллийг бид тухайн бизнесийн даалгавраар, түүний өмнөөс боловсруулдаг. Ийм тохиолдолд өөрийн харилцагчдад нууцлалын мэдэгдэл өгөх үүргийг тухайн бизнес хүлээнэ.</p>
+        <h2>2. Facebook, Instagram, вэбсайтын зурвасаар цуглуулах мэдээлэл</h2>
+        <p>Та манай Facebook хуудсанд Мессенжерээр бичихэд Meta-гийн Messenger Platform-оос дараах мэдээлэл бидэнд ирж, хадгалагдана:</p>
         <ul>
-          <li>The content of the messages you send to us, and our replies.</li>
-          <li>Your Facebook user ID (a numeric identifier scoped to our Page).</li>
-          <li>Your public profile name and profile picture as shown on Facebook.</li>
-          <li>
-            The timestamp and language of each message, plus any attachments
-            (images, files, audio) you choose to send us.
-          </li>
+          <li>Таны илгээсэн зурвасын агуулга, бидний хариу.</li>
+          <li>Таны Facebook хэрэглэгчийн дугаар — манай хуудсанд хамаарах тоон танигч.</li>
+          <li>Facebook дээр харагдаж буй нийтийн профайлын нэр, зураг.</li>
+          <li>Зурвас бүрийн цаг, хэл, мөн таны илгээсэн хавсралт (зураг, файл, дуу).</li>
         </ul>
-        <p>
-          We do <strong>not</strong> ask for, collect, or store your password,
-          payment card numbers, government IDs, or any sensitive personal data
-          through Messenger.
-        </p>
-
-        <h2>3. What data we collect through the demo request form</h2>
-        <p>
-          When you send a demo request from
-          <a class="inline" href="https://dalatech.online">dalatech.online</a>,
-          we receive only what you type into that form:
-        </p>
+        <p>Үйлчлүүлэгч бизнесийн Facebook, Instagram хуудас эсвэл вэбсайт дээр Ара хариулж байгаа үед ижил төрлийн мэдээлэл — зурвасын агуулга, хэрэглэгчийн дугаар, нийтийн профайлын нэр, цаг, хавсралт — тухайн бизнесийн өмнөөс боловсруулагдана. Эдгээр яриа тухайн бизнесийнх бөгөөд түүний ажилтнууд уншиж чадна.</p>
+        <p>Ара захиалга, цаг товлолт бүртгэдэг. Тиймээс ярианаас нэр, утасны дугаар, товлосон цаг зэрэг мэдээлэл тухайн бизнесийн бүртгэлд үлдэж болно.</p>
+        <p>Хариулт бэлдэхийн тулд зурвасын текст хиймэл оюуны загварын нийлүүлэгч рүү илгээгддэг. Өөрөөр хэлбэл таны бичсэн зурвасыг зөвхөн бид биш, хариулт үүсгэж буй загварын үйлчилгээ ч боловсруулна. Хэн боловсруулж байгааг 8-р хэсэгт нэрлэсэн.</p>
+        <p>Ара бол хүн биш, AI ажилтан. Тэр өөрийгөө хүн мэтээр танилцуулахгүй. Асуултад хариулж чадахгүй тохиолдолд яриаг тухайн бизнесийн хүн ажилтанд шилжүүлдэг — ингэхэд тухайн ажилтан ярианы түүхийг уншина. Та хүссэн үедээ хүнтэй ярихыг хүсч болно.</p>
+        <p>Ара гэрээ байгуулах, төлбөр хүлээн авах, зээл болон эрх олгох шийдвэр гаргах эрхгүй. AI хариултдаа алдаж болно. Түүний хариулт нь тухайн бизнес баталгаажуулах хүртэл заавал биелэх амлалт болохгүй.</p>
+        <p>Веда сар бүрийн тайлангаа тухайн бизнесийн өөрийнх нь зурвас, захиалга, борлуулалтын бүртгэл дээр үндэслэн гаргадаг. Тайлан зөвхөн тухайн бизнест очно.</p>
+        <p>DalaTech-ийн дэмжлэг хариуцсан хүн зөвхөн алдаа шалгах, эсвэл тухайн бизнесийн хүсэлтээр яриаг харж болно. Бид ярианы агуулгыг сурталчилгаа, жишээ, портфолиод ашиглахгүй, өөр үйлчлүүлэгчид үзүүлэхгүй.</p>
+        <p>Манай вэбсайт дээрх чат цонх нь тусдаа хаягнаас (dalatech-chatbot.vercel.app) ачаалагддаг. Тэнд бичсэн зурвас Мессенжерийн яриатай адил боловсруулагдана.</p>
+        <p>Эхо (утасны оператор), Нова (харилцагчийн үйлчилгээ) хоёр одоогоор ажиллаж эхлээгүй. Тиймээс бид ямар ч дуудлага, дуу хураалт, ярианы бичлэг, залгасан дугаар хүлээн авдаггүй. Нова-гийн хийх эргэн холбоо барих, сануулга илгээх ажиллагаа ч хараахан явагдахгүй байна. Аль аль нь ажиллаж эхлэхээс өмнө бид энэ бодлогыг шинэчилж, дуут мэдээлэл болон эргэн холбогдох зурвасыг хэрхэн боловсруулахыг тодорхой бичнэ.</p>
+        <p>Бид нууц үг, төлбөрийн картын дугаар, иргэний үнэмлэхний мэдээлэл болон бусад эмзэг хувийн мэдээллийг зурвасаар асуудаггүй, цуглуулдаггүй, хадгалдаггүй.</p>
+        <h2>3. Демо хүсэлтийн маягтаар цуглуулах мэдээлэл</h2>
+        <p><a class="inline" href="https://dalatech.online">dalatech.online</a> дээрээс демо хүсэлт илгээхэд бид дараах мэдээллийг хүлээн авна:</p>
+        <ul>
+          <li>Таны нэр.</li>
+          <li>Утасны дугаар.</li>
+          <li>Бизнесийн нэр, чиглэл.</li>
+          <li>Сонирхож буй үйлчилгээ — AI ажилтан, вэбсайт, эсвэл «Мэдэхгүй байна». Юу ч сонгохгүй байж болно.</li>
+          <li>Нэмэлт тайлбар, мөн хүсвэл имэйл хаяг.</li>
+          <li>Хүсэлт илгээсэн хуудас, сайтын хэл, огноо, цаг — хүсэлтийн утга учрыг ойлгохын тулд автоматаар бичигдэнэ.</li>
+          <li>Хүсэлттэй хамт ирэх техникийн мэдээлэл — хөтчийн төрөл, өмнө нь үзсэн хуудас, IP хаяг. Үүнийг та бичихгүй, хүсэлт илгээх үед автоматаар бүртгэгдэнэ. IP хаягийг зөвхөн спам, давхардсан илгээлтээс хамгаалахад ашиглана.</li>
+        </ul>
+        <p>Маягт бүртгэл шаарддаггүй, зар сурталчилгааны күүки болон хянах пиксел ашигладаггүй. Бид нууц үг, картын дугаар, иргэний үнэмлэхний мэдээлэл болон бусад эмзэг хувийн мэдээллийг маягтаар асуудаггүй.</p>
+        <p>Хүсэлт бидэнд хүрэхийн тулд Telegram-ын мэдэгдэл болон Gmail-ээр дамжина. Хүргэлт бүтэлгүйтсэн тохиолдолд хүсэлтийг сэргээх боломжтой байлгах үүднээс манай хостингийн ажиллагааны бүртгэлд богино хугацаанд бичигддэг.</p>
+        <p>Эхо, Нова хоёрыг урьдчилан бүртгүүлэхэд ижил маягт ашиглагдана. Урьдчилан бүртгэх маягтаар бид төлбөр авдаггүй бөгөөд таны өгсөн мэдээллийг зөвхөн тухайн ажилтан ажиллаж эхлэхэд тантай холбогдоход ашиглана. Та бүртгэлээ хүссэн үедээ цуцлах хүсэлт илгээж болно.</p>
+        <h2>4. Танай бизнесийн мэдээлэл — AI ажилтныг сургахад</h2>
+        <p>AI ажилтан танай бизнесийн өөрийнх нь мэдээллээр хариулдаг. Суурилуулалтын үед та бидэнд ихэвчлэн дараах зүйлийг өгдөг:</p>
+        <ul>
+          <li>Үнэ, үйлчилгээ, бүтээгдэхүүний тайлбар.</li>
+          <li>Ажиллах цаг, байршил, захиалгын журам.</li>
+          <li>Түгээмэл асуулт, хариулт, дотоод бодлого, бичиг баримт.</li>
+          <li>Брэндийн материал, вэбсайтын агуулга.</li>
+          <li>Facebook, Instagram хуудсанд ирсэн зурвасыг хүлээн авч, хариулах зөвшөөрөл.</li>
+        </ul>
+        <p>Хуудсаа холбоход бид зөвхөн зурвас хүлээн авч хариулахад шаардлагатай зөвшөөрлийг хүсдэг — Facebook хуудасны хувьд энэ нь pages_messaging, Instagram-ын хувьд түүнтэй дүйцэх зурвасны зөвшөөрөл. Бид танай нэрийн өмнөөс нийтлэл тавихгүй, зурвастай холбоогүй мэдээллийг уншихгүй.</p>
+        <p>Энэ зөвшөөрлөөс үүсэх хандалтын түлхүүрийг бид зөвхөн танай AI ажилтан ажиллах хугацаанд хадгалж, зурвас хүлээн авах, хариулахад л ашиглана.</p>
+        <p>Та Facebook-ийн тохиргооны «Бизнесийн интеграц» хэсгээс энэ зөвшөөрлийг хүссэн үедээ цуцалж болно. Цуцалсан тэр мөчөөс AI ажилтан танай хуудсанд ирсэн зурвасыг хүлээн авахаа болино.</p>
+        <p>Танай өгсөн мэдээллийг зөвхөн танай харилцагчдын асуултад хариулахад ашиглана. Бид түүгээр ерөнхий буюу бусад үйлчлүүлэгчид хамтран ашиглах загвар сургадаггүй, өөр үйлчлүүлэгчийн AI ажилтанд дамжуулдаггүй.</p>
+        <p>Та бидэнд өгч буй мэдээллээ ашиглах эрхтэй гэдгээ, мөн бусдын хувийн мэдээллийг өгч байгаа бол хууль ёсны үндэслэлтэй гэдгээ баталгаажуулна.</p>
+        <h2>5. Вэбсайт ба таны хөтөч</h2>
+        <p>Манай вэбсайт хэрэглэгч хянах болон зар сурталчилгааны күүки ашигладаггүй, аналитик систем суулгаагүй.</p>
+        <p>Таны хөтөч дээр зөвхөн хоёр зүйл хадгалагдана: сонгосон хэл (language) болон илгээгээгүй демо маягтын ноорог (dalatech:demo-draft). Энэ хоёр таны төхөөрөмж дээр үлдэх бөгөөд бидэнд ирэхгүй. Хөтчийнхөө мэдээллийг цэвэрлэвэл устана.</p>
+        <p>Бусад вэбсайттай адил манай хостингийн үйлчилгээ хандалтын техникийн бүртгэл (IP хаяг, хөтчийн төрөл, нээсэн хуудас) автоматаар үүсгэж, богино хугацаанд хадгална. Үүнийг зөвхөн аюулгүй байдал хангах, эвдрэл оношлоход ашиглана.</p>
+        <h2>6. Яагаад цуглуулдаг вэ</h2>
+        <p>Мэдээлэл бүрийг тодорхой зорилгоор цуглуулдаг:</p>
+        <ul>
+          <li>Бидэнд ирсэн зурвас, демо хүсэлт: таны асуултад хариулах, үнийн санал өгөх, өгсөн дугаараар тань эргэн залгах, ярианы үргэлжлэлийг ойлгох.</li>
+          <li>Өмнө нь бидэн рүү бичсэн бол Facebook-ийн зөвшөөрсөн хугацаанд танд эргэж хариу бичих.</li>
+          <li>Үйлчлүүлэгчийн хуудсан дээрх яриа: тухайн бизнесийн харилцагчид хариулах, захиалга, цаг товлолт бүртгэх, шаардлагатай үед хүн ажилтанд шилжүүлэх.</li>
+          <li>Веда-гийн сарын тайлан: тухайн бизнест өөрийнх нь борлуулалт, харилцагчийн байдлыг харуулах.</li>
+          <li>Танай бизнесийн мэдээлэл: AI ажилтныг танай бизнест тохируулж, зөв хариулт өгөхөд.</li>
+          <li>Урьдчилан бүртгэл: Эхо, Нова ажиллаж эхлэхэд тантай холбогдоход.</li>
+          <li>Гэрээ, төлбөрийн бүртгэл: үйлчилгээний тооцоо хийх, хуулиар хүлээсэн үүргээ биелүүлэхэд.</li>
+        </ul>
+        <p>Хууль зүйн үндэслэл нь Монгол Улсын Хүний хувийн мэдээлэл хамгаалах тухай хуулийн дагуу тодорхойлогдоно: гэрээ байгуулах, гүйцэтгэх (үйлчлүүлэгчид), таны өөрийн санаачилгаар илгээсэн хүсэлтэд хариулах (зурвас, демо хүсэлт), таны зөвшөөрөл (урьдчилан бүртгэл), хуулиар хүлээсэн үүрэг (төлбөрийн бүртгэл).</p>
+        <p>Бид таныг захиалгагүй мэдээллийн жагсаалтад оруулахгүй, зар сурталчилгаанд ашиглахгүй, зан төлөвийн профайл үүсгэхгүй.</p>
+        <h2>7. Хэр удаан хадгалдаг вэ</h2>
+        <ul>
+          <li>Манай хуудсанд бичсэн Мессенжерийн яриа: сүүлийн зурвасаас хойш 24 сар.</li>
+          <li>Демо хүсэлт: илгээсэн өдрөөс хойш 24 сар.</li>
+          <li>Урьдчилан бүртгэлийн мэдээлэл: хамгийн ихдээ 24 сар, эсвэл та цуцлах хүртэл.</li>
+          <li>Үйлчлүүлэгчийн харилцагчидтай хийсэн яриа: сарын төлбөрт үйлчилгээ үргэлжлэх хугацаанд. Үйлчлүүлэгч үүнээс богино хугацаа тогтоох, эсвэл хэдийд ч устгах хүсэлт гаргаж болно.</li>
+          <li>Танай бизнесийн сургалтын мэдээлэл: үйлчилгээ үргэлжлэх хугацаанд.</li>
+          <li>Вэбсайтын хандалтын болон демо хүсэлтийн ажиллагааны техникийн бүртгэл: хостингийн үйлчилгээний тогтоосон богино хугацаанд.</li>
+          <li>Гэрээ, төлбөрийн бүртгэл: хуулиар шаардагдах хугацаанд.</li>
+        </ul>
+        <p>Сарын төлбөрт үйлчилгээ дуусахад бид ярианы түүх, сургалтын мэдээллийг буцааж авах 30 хоногийн боломж олгоно. Тэр хугацаа өнгөрсний дараа, үйлчилгээ дууссанаас хойш 60 хоногийн дотор өөрсдийн системээс устгана.</p>
+        <p>Устгах хүсэлтийг биелүүлсний дараа бид зөвхөн хүсэлтийн огноо, түүнийг гүйцэтгэсэн баримтыг дотоод бүртгэлдээ үлдээнэ. Ярианы агуулга үлдэхгүй.</p>
+        <h2>8. Хэнтэй хуваалцдаг вэ — бид мэдээллийг зардаггүй</h2>
+        <p>Бид таны хувийн мэдээллийг хэнд ч зардаггүй, түрээслүүлдэггүй, солилцдоггүй. Зар сурталчилгаанд ашиглахгүй, профайл үүсгэхгүй.</p>
+        <p>Үйлчилгээ ажиллахын тулд дараах талууд мэдээлэлтэй хүрэлцэн ажиллана:</p>
+        <ul>
+          <li>Meta Platforms — Facebook, Instagram, Мессенжерийн зурвас тэдний сүлжээгээр дамждаг, Meta-гийн өөрийнх нь нууцлалын нөхцлийн дагуу.</li>
+          <li>Google — AI ажилтны хариултыг Gemini API загвараар бэлддэг тул ярианы текст хариулт үүсгэх зорилгоор тэнд дамжина.</li>
+          <li>Vercel — манай вэбсайт болон системийг байршуулдаг хостингийн үйлчилгээ.</li>
+          <li>Telegram болон Google (Gmail) — демо хүсэлтийн мэдэгдлийг бидэнд хүргэхэд.</li>
+          <li>Таны хандсан бизнес — түүний хуудсанд бичсэн яриаг тухайн бизнесийн ажилтнууд уншина.</li>
+          <li>DalaTech-д дэмжлэг хариуцсан хүмүүс. Хандах эрхийг зөвхөн ажлын шаардлагаар олгох ба тэд нууцлал хадгалах үүрэгтэй.</li>
+        </ul>
+        <p>Эдгээр үйлчилгээний сервер Монгол Улсаас гадна байрладаг тул мэдээлэл улсын хилээр дамжин боловсруулагдана. Бид зөвхөн энэ бодлогод заасан зорилгоор, тухайн үйлчилгээтэй байгуулсан гэрээний хүрээнд ийм дамжуулалт хийнэ.</p>
+        <p>Хэрэв бид AI загварын нийлүүлэгч, хостинг зэрэг гол үйлчилгээгээ солих бол энэ хуудсыг шинэчилж, сарын төлбөрт үйлчлүүлэгчиддээ урьдчилан мэдэгдэнэ.</p>
+        <p>Үүнээс гадна бид мэдээллийг зөвхөн Монгол Улсын хууль (жишээ нь шүүхийн шийдвэр) шаардсан тохиолдолд гаргаж өгнө.</p>
+        <h2>9. Хэрхэн хамгаалдаг вэ</h2>
+        <ul>
+          <li>Мэдээлэлд хандах эрхийг зөвхөн ажлын шаардлагатай хүмүүст олгодог.</li>
+          <li>Хуудасны зурвас уншиж чадах бүртгэлүүдэд хоёр шатлалт баталгаажуулалт ашигладаг.</li>
+          <li>Систем хоорондын холболт нууцлагдсан сувгаар (HTTPS) явагдана.</li>
+          <li>Түлхүүр, нууц үг, токеныг кодонд бичихгүй, тусдаа нууц тохиргоонд хадгална.</li>
+        </ul>
+        <p>Ямар ч систем бүрэн аюулгүй байж чадахгүй. Таны мэдээлэлд хамаарах зөрчил гарвал бид мэдсэн даруйдаа, шаардлагагүй саатуулалгүйгээр холбогдох үйлчлүүлэгч болон хамаарах хүмүүст юу болсон, юу хийж байгаагаа мэдэгдэнэ.</p>
+        <h2>10. Таны эрх — үзэх, засах, устгах</h2>
+        <p>Та хүссэн үедээ биднээс дараахыг хүсэх эрхтэй:</p>
+        <ul>
+          <li>Таны тухай ямар мэдээлэл хадгалж байгааг мэдэх.</li>
+          <li>Буруу мэдээллийг засуулах.</li>
+          <li>Ярианы түүх, илгээсэн хүсэлтээ устгуулах.</li>
+          <li>Боловсруулалтыг эсэргүүцэх, өгсөн зөвшөөрлөө буцаах.</li>
+          <li>Өөрийн мэдээллийн хуулбарыг уншигдах хэлбэрээр авах.</li>
+        </ul>
+        <p>Хүсэлтээ <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a> хаяг руу илгээнэ үү. Facebook-ийн зурвасыг устгах хүсэлт бол Facebook бүртгэлдээ холбосон имэйлээсээ илгээвэл бид хурдан баталгаажуулна. Боломжгүй бол ижил Facebook бүртгэлээсээ Мессенжерээр бичиж болно.</p>
+        <p>Facebook-ийн зурвас устгах хүсэлтийн гарчигт «Мэдээлэл устгах хүсэлт — DalaTech» гэж бичээд, Facebook дээр харагддаг нэрээ болон хамгийн сүүлд бичсэн ойролцоо огноогоо оруулна уу. Ингэснээр бид зөв яриаг олно. Өөр хувийн мэдээлэл шаардлагагүй.</p>
+        <p>Бид хүсэлтийг 3 ажлын өдрийн дотор хүлээн авсныг баталж, ярианы түүх болон холбогдох тэмдэглэлийг устгаад, 30 хоногийн дотор гүйцэтгэснээ имэйлээр мэдэгдэнэ. Алхам алхмаар бичсэн дэлгэрэнгүй заавар: <a class="inline" href="https://dalatech.online">dalatech.online</a>/data-deletion/.</p>
+        <p>Устгасан мэдээллийг сэргээх боломжгүй. Устгалт нь зөвхөн DalaTech болон таны ярилцсан AI ажилтны хадгалж байгаа хуулбарт хамаарна. Таны өөрийн Facebook бүртгэл дэх ярианы хуулбарыг та Мессенжер дээрээсээ өөрөө устгана.</p>
+        <p>Хэрэв та үйлчлүүлэгч бизнесийн хуудсанд AI ажилтантай ярьсан бол хүсэлтээ тухайн бизнест шууд гаргаж болно, эсвэл бидэнд бичвэл бид тухайн бизнестэй хамтран ижил хугацаанд гүйцэтгэнэ.</p>
+        <p>Хэрэв бидний шийдвэрлэсэн байдалд сэтгэл ханамжгүй байвал та Монгол Улсад хувийн мэдээлэл хамгаалах асуудал хариуцсан эрх бүхий байгууллагад гомдол гаргах эрхтэй.</p>
+        <h2>11. Хүүхдийн мэдээлэл</h2>
+        <p>Манай үйлчилгээ бизнес болон насанд хүрэгчдэд зориулагдсан. Бид 13-аас доош насны хүүхдийн мэдээллийг зориуд цуглуулдаггүй.</p>
+        <p>Хэрэв хүүхэд манай хуудсанд эсвэл үйлчлүүлэгчийн AI ажилтантай бичсэн гэж үзвэл <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a> хаягаар мэдэгдэнэ үү. Бид тухайн яриаг устгаж, шаардлагатай бол үйлчлүүлэгч бизнест мэдэгдэнэ.</p>
+        <p>Үйлчлүүлэгч бизнес нь өөрийн суваг хүүхдэд чиглээгүй байх, хүүхдээс мэдээлэл цуглуулахгүй байх үүрэгтэй.</p>
+        <h2>12. Бодлогын өөрчлөлт ба хэлний хувилбар</h2>
+        <p>Бодлогыг шинэчлэх үед бид энэ хуудсан дээрх шинэчлэгдсэн огноог өөрчилнө. Томоохон өөрчлөлтийг манай Facebook хуудсаар зарлаж, сарын төлбөрт үйлчлүүлэгчиддээ хүчин төгөлдөр болохоос өмнө имэйлээр мэдэгдэнэ.</p>
+        <p>Энэ бодлого монгол, англи хоёр хэлээр нийтлэгдэнэ. Хоёр хувилбарын хооронд зөрүү гарвал монгол хувилбар давамгайлна.</p>
+        <p>Үйлчилгээний нөхцөлийг <a class="inline" href="https://dalatech.online">dalatech.online</a>/terms/ хаягаас, мэдээлэл устгах дэлгэрэнгүй зааврыг <a class="inline" href="https://dalatech.online">dalatech.online</a>/data-deletion/ хаягаас уншина уу.</p>
+        <h2>Холбоо барих</h2>
+        <p>Нууцлалтай холбоотой аливаа асуулт, хүсэлтийг <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a> хаягаар хүлээн авна. Мөн манай Facebook хуудсанд зурвас бичиж болно.</p>
+        <ul>
+          <li>Ерөнхий асуулт: 2 ажлын өдрийн дотор хариулна.</li>
+          <li>Мэдээлэл үзэх, засах, устгах хүсэлт: 3 ажлын өдрийн дотор хүлээн авсныг баталж, 30 хоногийн дотор гүйцэтгэнэ.</li>
+        </ul>
+      </article>
+      <article lang="en" data-lang="en">
+        <h1>Privacy Policy</h1>
+        <p class="summary">This policy explains what information DalaTech collects, what we use it for, how long we keep it, who we share it with, and how you can ask us to delete it. It covers people who contact us, the businesses we work for, and the customers of those businesses.</p>
+        <p class="updated">Last updated: 11 September 2026</p>
+        <h2>1. Who we are and how to reach us</h2>
+        <p>DalaTech is a technology business operating in Ulaanbaatar, Mongolia. We build AI staff and websites for small and medium Mongolian businesses. The AI staff are Ara (receptionist), Veda (analyst), Eho (phone operator) and Nova (customer care). They are sold on a monthly fee with a one-time setup. A website is a one-time fee. Eho and Nova are not yet in service and are sold as pre-registration.</p>
+        <p>DalaTech is owned and operated by Tserentsoodol Bilguun. Privacy questions and requests are handled by the person responsible for data protection at DalaTech.</p>
+        <p>You can reach us at <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>. You can also message our Facebook Page.</p>
+        <p>We act in two different roles. First, for our own visitors and enquirers, we decide ourselves what data is collected and why, and we are responsible for it. Second, when an AI staff member works on a client's page, we process that client's customers' data on the client's instructions and on their behalf. In that case it is the client who must give their own customers a privacy notice.</p>
+        <h2>2. Data collected through Facebook, Instagram and website messages</h2>
+        <p>When you message our Facebook Page on Messenger, we receive and store the following from Meta's Messenger Platform:</p>
+        <ul>
+          <li>The content of the messages you send us, and our replies.</li>
+          <li>Your Facebook user ID — a numeric identifier scoped to our Page.</li>
+          <li>Your public profile name and profile picture as shown on Facebook.</li>
+          <li>The timestamp and language of each message, and any attachments you send (images, files, audio).</li>
+        </ul>
+        <p>When Ara answers on a client's Facebook Page, Instagram account or website, the same kinds of data — message content, user ID, public profile name, timestamps and attachments — are processed on that client's behalf. Those conversations belong to the client and the client's staff can read them.</p>
+        <p>Ara takes bookings and appointments. Details from a conversation, such as a name, a phone number and the time booked, can therefore remain in that business's records.</p>
+        <p>To produce a reply, the text of a message is sent to an AI model provider. This means your message is processed not only by us but also by the service that generates the answer. Section 8 names who that is.</p>
+        <p>Ara is an AI staff member, not a person, and does not present itself as a human. When it cannot answer a question, it hands the conversation to a human member of the client's staff, who then reads the conversation history. You can ask to speak to a person at any time.</p>
+        <p>Ara cannot conclude contracts, take payments, or make credit or eligibility decisions. An AI can also answer wrongly. Its answers are not binding commitments until the business itself confirms them.</p>
+        <p>Veda produces its monthly report from that business's own messages, bookings and sales records. The report goes to that business only.</p>
+        <p>Support staff at DalaTech look at a conversation only to investigate a fault or at the client's request. We do not use conversation content in advertising, examples or portfolio material, and we do not show it to other clients.</p>
+        <p>The chat window on our own website is loaded from a separate address (dalatech-chatbot.vercel.app). Messages sent there are processed in the same way as Messenger conversations.</p>
+        <p>Eho (phone operator) and Nova (customer care) are not yet in service. We therefore receive no calls, recordings, transcripts or caller numbers. Nova's follow-up messages and reminders are not being sent yet. Before either goes into service we will update this policy and set out exactly how voice data and follow-up messages are handled.</p>
+        <p>We do not ask for, collect or store passwords, payment card numbers, government ID details or any other sensitive personal data through messages.</p>
+        <h2>3. Data collected through the demo request form</h2>
+        <p>When you send a demo request from <a class="inline" href="https://dalatech.online">dalatech.online</a>, we receive the following:</p>
         <ul>
           <li>Your name.</li>
           <li>Your phone number.</li>
           <li>Your business name and what your business does.</li>
-          <li>Which of our services you selected, if any.</li>
-          <li>Any note you chose to add, and your email address if you gave one.</li>
-          <li>
-            The page you sent it from, the language the site was in, and the
-            date and time &mdash; recorded automatically so we know the context
-            of your enquiry.
-          </li>
+          <li>The service you are interested in — an AI staff member, a website, or “not sure”. You can also select nothing.</li>
+          <li>Any note you add, and your email address if you choose to give one.</li>
+          <li>The page you sent it from, the language the site was in, and the date and time — recorded automatically so we understand the context of your enquiry.</li>
+          <li>Technical details that arrive with the request — browser type, the page you came from, and your IP address. You do not type these; they are recorded automatically when the request is sent. The IP address is used only to protect the form against spam and duplicate submissions.</li>
         </ul>
-        <p>
-          The form has no account, no tracking pixel and no advertising cookie.
-          We do <strong>not</strong> ask for, collect, or store your password,
-          payment card numbers, government IDs, or any sensitive personal data
-          through it.
-        </p>
-
-        <h2>4. Why we collect this data</h2>
-        <p>
-          We use the data above for one purpose only: to read and respond to
-          the enquiries you send us. Specifically, we use it to:
-        </p>
+        <p>The form requires no account and uses no tracking pixel or advertising cookie. We do not ask for passwords, card numbers, government ID details or any other sensitive personal data through it.</p>
+        <p>To reach us, the request is delivered by a Telegram notification and by Gmail. So that a request is recoverable if delivery fails, it is also written briefly to our hosting provider's runtime log.</p>
+        <p>The same form is used to pre-register for Eho and Nova. The pre-registration form takes no payment, and what you give us is used only to contact you when that staff member goes into service. You can ask us to cancel your pre-registration at any time.</p>
+        <h2>4. Your business information, used to train your AI staff member</h2>
+        <p>An AI staff member answers using your own business information. During setup you usually give us:</p>
         <ul>
-          <li>Reply to your questions about our services and pricing.</li>
-          <li>Continue an ongoing conversation across multiple messages.</li>
-          <li>
-            Call you back about a demo request you sent us, at the number you
-            gave us for that purpose.
-          </li>
-          <li>
-            Send a follow-up reply within Facebook&rsquo;s allowed messaging
-            window if you previously contacted us.
-          </li>
+          <li>Prices, and descriptions of your services and products.</li>
+          <li>Opening hours, locations and booking rules.</li>
+          <li>Frequently asked questions and answers, internal policies and documents.</li>
+          <li>Brand materials and website content.</li>
+          <li>Permission to receive and reply to messages on your Facebook Page and Instagram account.</li>
         </ul>
-        <p>
-          We do not add you to a mailing list, and we do not use these details
-          for marketing you did not ask for.
-        </p>
-
-        <h2>5. How long we keep it</h2>
-        <p>
-          We retain Messenger conversations for up to <strong>24 months</strong>
-          from the date of your last message, after which they are deleted from
-          our records. Demo requests are kept for up to <strong>24 months</strong>
-          from the date you sent them, on the same basis. You may ask us to
-          delete either sooner at any time (see Section 8).
-        </p>
-
-        <h2>6. Sharing &mdash; we do not sell your data</h2>
-        <p>
-          We do <strong>not</strong> sell, rent, or trade your personal data to
-          any third party. We do not use your Messenger data for advertising or
-          to build profiles about you.
-        </p>
-        <p>
-          The only parties with incidental access to your data are:
-        </p>
+        <p>When you connect your page we request only the permission needed to receive and answer messages — for a Facebook Page that is pages_messaging, and for Instagram the equivalent messaging permission. We do not post in your name and we do not read anything unrelated to messages.</p>
+        <p>We hold the access token that permission produces only for as long as your AI staff member runs, and we use it only to receive and answer messages.</p>
+        <p>You can withdraw that permission at any time under Business Integrations in your Facebook settings. From that moment the AI staff member stops receiving messages sent to your page.</p>
+        <p>Your information is used only to answer your own customers' questions. We do not use it to train a general or shared model, and we never pass it to another client's AI staff member.</p>
+        <p>You confirm that you are entitled to use the information you give us, and that you have a lawful basis where that information includes other people's personal data.</p>
+        <h2>5. The website and your browser</h2>
+        <p>Our website uses no tracking or advertising cookies, and we have installed no analytics system.</p>
+        <p>Only two things are stored in your browser: the language you chose (language) and an unsent draft of the demo form (dalatech:demo-draft). Both stay on your own device and never reach us. Clearing your browser data removes them.</p>
+        <p>As with any website, our hosting provider automatically creates technical access logs (IP address, browser type, pages opened) and keeps them for a short period. They are used only for security and for diagnosing faults.</p>
+        <h2>6. Why we collect each of these</h2>
+        <p>Each kind of data is collected for a stated purpose:</p>
         <ul>
-          <li>
-            <strong>Meta Platforms, Inc.</strong> &mdash; because the messages
-            travel through Facebook Messenger&rsquo;s infrastructure under
-            Meta&rsquo;s own privacy terms.
-          </li>
-          <li>
-            Authorized Dalatech staff who handle customer support, who are
-            bound by confidentiality.
-          </li>
+          <li>Messages and demo requests sent to us: to answer your questions, quote a price, call you back on the number you gave us, and follow the thread of an ongoing conversation.</li>
+          <li>To send you a follow-up reply within Facebook's allowed messaging window, if you contacted us first.</li>
+          <li>Conversations on a client's pages: to answer that business's customers, record bookings and appointments, and hand the conversation to a human when needed.</li>
+          <li>Veda's monthly report: to show that business its own sales and customer picture.</li>
+          <li>Your business information: to configure an AI staff member for your business so that it answers correctly.</li>
+          <li>Pre-registrations: to contact you when Eho or Nova goes into service.</li>
+          <li>Contract and payment records: to invoice for the service and to meet obligations imposed by law.</li>
         </ul>
-        <p>
-          We may disclose data only if compelled by valid Mongolian law (for
-          example, a court order).
-        </p>
-
-        <h2>7. How we protect it</h2>
-        <p>
-          Conversations are accessed through Facebook&rsquo;s Page Inbox and any
-          tooling we connect via the official Messenger Platform API. Access is
-          limited to authorized personnel, protected by Facebook
-          authentication, and we follow standard practices such as two-factor
-          authentication on accounts that can read Page messages.
-        </p>
-
-        <h2>8. Your rights &mdash; access, correction, deletion</h2>
-        <p>
-          You can ask us, at any time, to:
-        </p>
+        <p>The legal basis follows Mongolia's Law on Protection of Personal Data: performing a contract (clients), responding to a request you sent on your own initiative (messages and demo requests), your consent (pre-registration), and a legal obligation (payment records).</p>
+        <p>We do not add you to any mailing list you did not ask for, we do not use these details for advertising, and we do not build behavioural profiles.</p>
+        <h2>7. How long we keep it</h2>
         <ul>
-          <li>Tell you what data we hold about you from Messenger.</li>
+          <li>Messenger conversations with our own Page: 24 months from your last message.</li>
+          <li>Demo requests: 24 months from the date you sent them.</li>
+          <li>Pre-registration details: at most 24 months, or until you cancel.</li>
+          <li>Conversations with a client's customers: for as long as that client's monthly service runs. A client can set a shorter period, or ask for deletion at any time.</li>
+          <li>A client's training information: for as long as the service runs.</li>
+          <li>Technical logs from the website and from the demo request pipeline: for the short period our hosting provider keeps them.</li>
+          <li>Contract and payment records: for as long as the law requires.</li>
+        </ul>
+        <p>When a monthly service ends, we give you 30 days to take back the conversation history and the training information. After that window, and within 60 days of the service ending, we delete it from our systems.</p>
+        <p>Once a deletion request has been carried out, we keep only the date of the request and the fact that it was completed in our own records. No message content remains.</p>
+        <h2>8. Who we share it with — we do not sell your data</h2>
+        <p>We do not sell, rent or trade your personal data to anyone. We do not use it for advertising and we do not build profiles from it.</p>
+        <p>For the service to work, the following parties handle data with us:</p>
+        <ul>
+          <li>Meta Platforms — messages on Facebook, Instagram and Messenger travel through their infrastructure, under Meta's own privacy terms.</li>
+          <li>Google — an AI staff member's replies are produced with the Gemini API, so the text of a conversation is passed there in order to generate the answer.</li>
+          <li>Vercel — the hosting service that runs our website and systems.</li>
+          <li>Telegram and Google (Gmail) — used to deliver demo request notifications to us.</li>
+          <li>The business you contacted — conversations on its pages are read by that business's own staff.</li>
+          <li>The people at DalaTech who handle support. Access is given only to those who need it for their work, and they are bound by confidentiality.</li>
+        </ul>
+        <p>The servers of these services are located outside Mongolia, so data is processed across borders. We make such transfers only for the purposes set out in this policy and under our agreement with the service concerned.</p>
+        <p>If we change a core service such as the AI model provider or the hosting provider, we will update this page and tell monthly clients in advance.</p>
+        <p>Beyond this, we disclose data only where valid Mongolian law requires it — for example, a court order.</p>
+        <h2>9. How we protect it</h2>
+        <ul>
+          <li>Access is given only to the people who need it for their work.</li>
+          <li>Two-factor authentication is used on accounts that can read Page messages.</li>
+          <li>Connections between systems run over encrypted channels (HTTPS).</li>
+          <li>Keys, passwords and tokens are never written into code; they are held as separate secrets.</li>
+        </ul>
+        <p>No system is completely secure. If a breach affects your data, we will tell the client concerned and the people affected as soon as we become aware of it and without undue delay, explaining what happened and what we are doing about it.</p>
+        <h2>10. Your rights — access, correction, deletion</h2>
+        <p>At any time you can ask us to:</p>
+        <ul>
+          <li>Tell you what data we hold about you.</li>
           <li>Correct anything that is wrong.</li>
-          <li>Delete your conversation history with our Page.</li>
+          <li>Delete your conversation history or a request you sent.</li>
+          <li>Stop a particular use of your data, or withdraw a consent you gave.</li>
+          <li>Give you a copy of your data in a readable form.</li>
         </ul>
-        <p>
-          To make any of these requests, email
-          <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>
-          from the email associated with your Facebook account, or reply on
-          Messenger asking us to delete your data. We will action the request
-          within 30 days.
-        </p>
-        <p>
-          For full deletion instructions, see our
-          <a class="inline" href="/data-deletion/">Data Deletion page</a>.
-        </p>
-
-        <h2>9. Children</h2>
-        <p>
-          Our services are intended for businesses and adults. We do not
-          knowingly collect data from children under 13. If you believe a child
-          has contacted us, email us and we will delete the conversation.
-        </p>
-
-        <h2>10. Changes to this policy</h2>
-        <p>
-          If we update this policy, we will change the &ldquo;Last updated&rdquo;
-          date at the top of this page. Material changes will also be announced
-          on our Facebook Page.
-        </p>
-
-        <div class="card">
-          <strong>Questions?</strong><br />
-          Email
-          <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>
-          and we will respond within 30 days.
-        </div>
-      </div>
+        <p>Send your request to <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>. For deletion of Facebook messages, sending it from the email address linked to your Facebook account lets us verify it quickly. If that is not possible, reply to us on Messenger from the same Facebook account.</p>
+        <p>For a Facebook message deletion request, use the subject line “Data deletion request — DalaTech” and include the display name you use on Facebook and the approximate date of your last message, so we can find the right conversation. No other personal details are needed.</p>
+        <p>We acknowledge the request within 3 business days, delete the conversation and any related notes, and confirm completion to you by email within 30 days. Step-by-step instructions are at <a class="inline" href="https://dalatech.online">dalatech.online</a>/data-deletion/.</p>
+        <p>Deleted data cannot be recovered. Deletion covers only the copy held by DalaTech and by the AI staff member you were talking to. The copy in your own Facebook account is yours to delete from your Messenger app.</p>
+        <p>If you were talking to an AI staff member on a client's page, you can make your request to that business directly, or write to us and we will carry it out together with them within the same timescale.</p>
+        <p>If you are not satisfied with how we handled your request, you may raise it with the competent authority for personal data protection in Mongolia.</p>
+        <h2>11. Children's data</h2>
+        <p>Our services are intended for businesses and adults. We do not knowingly collect data from children under 13.</p>
+        <p>If you believe a child has messaged our Page or a client's AI staff member, tell us at <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>. We will delete the conversation and, where relevant, inform the client concerned.</p>
+        <p>Clients are responsible for not directing their channels at children and for not collecting data from them.</p>
+        <h2>12. Changes to this policy, and language</h2>
+        <p>When we update this policy we change the last-updated date shown on this page. Material changes are announced on our Facebook Page, and monthly clients are told by email before the changes take effect.</p>
+        <p>This policy is published in Mongolian and English. If the two versions differ, the Mongolian version prevails.</p>
+        <p>Our Terms of Service are at <a class="inline" href="https://dalatech.online">dalatech.online</a>/terms/ and the full deletion instructions are at <a class="inline" href="https://dalatech.online">dalatech.online</a>/data-deletion/.</p>
+        <h2>Contact</h2>
+        <p>Any privacy question or request goes to <a class="inline" href="mailto:dalatech.ai@gmail.com">dalatech.ai@gmail.com</a>. You can also message our Facebook Page.</p>
+        <ul>
+          <li>General questions: answered within 2 business days.</li>
+          <li>Access, correction and deletion requests: acknowledged within 3 business days and completed within 30 days.</li>
+        </ul>
+      </article>
     </main>
 
-    <footer>
+    <footer class="site">
       <div class="wrap">
-        <div>&copy; 2026 Dalatech &middot; Ulaanbaatar, Mongolia</div>
-        <div>
-          <a href="/">Home</a>
-          <a href="/privacy/">Privacy</a>
-          <a href="/terms/">Terms</a>
-          <a href="/data-deletion/">Data deletion</a>
-        </div>
+        <nav aria-label="Legal">
+          <a href="/terms/">Үйлчилгээний нөхцөл</a>
+          <a href="/data-deletion/">Мэдээлэл устгах хүсэлт</a>
+          <a href="/">Нүүр хуудас руу буцах</a>
+        </nav>
+        <p>© 2026 DalaTech</p>
       </div>
     </footer>
+
+    <script>
+    // Both languages ship in the markup. Hide one, and remember the choice
+    // under the key the main site already uses. Wrapped because storage throws
+    // in a private window, and a legal page must still render if it does.
+    (function () {
+      var articles = document.querySelectorAll("article[data-lang]");
+      var buttons = document.querySelectorAll(".lang button");
+      function read() {
+        try { return localStorage.getItem("language"); } catch (e) { return null; }
+      }
+      function apply(lang) {
+        articles.forEach(function (a) { a.hidden = a.getAttribute("data-lang") !== lang; });
+        buttons.forEach(function (b) {
+          b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === lang));
+        });
+        document.documentElement.setAttribute("lang", lang);
+      }
+      apply(read() === "en" ? "en" : "mn");
+      buttons.forEach(function (b) {
+        b.addEventListener("click", function () {
+          var lang = b.getAttribute("data-lang");
+          try { localStorage.setItem("language", lang); } catch (e) {}
+          apply(lang);
+        });
+      });
+    })();
+    </script>
   </body>
 </html>
