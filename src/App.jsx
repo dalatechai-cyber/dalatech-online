@@ -24,8 +24,8 @@ import {
 } from "framer-motion";
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
-import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawHero as drawStaffHero, drawHeroPan as drawStaffHeroPan, drawChapter as drawStaffChapter, drawWorkingDay, dayHour, heroStations, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
+import { drawChapter as drawStaffChapter, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -328,15 +328,21 @@ let bodyScrollLockCount = 0;
 let bodyScrollPrevOverflow = "";
 function lockBodyScroll() {
   if (bodyScrollLockCount === 0) {
-    bodyScrollPrevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    // html owns the viewport scroll: index.css sets overflow-x on html, so its
+    // overflow-y computes to auto and body's overflow never propagated up.
+    // Locking body therefore did not stop the page scrolling — it only turned
+    // body into a scroll container, which re-resolved the sticky scrollport
+    // inside it and relaid out the whole document, once on open and again on
+    // close, the second one landing on the first frame of the exit animation.
+    bodyScrollPrevOverflow = document.documentElement.style.overflowY;
+    document.documentElement.style.overflowY = "hidden";
   }
   bodyScrollLockCount += 1;
 }
 function unlockBodyScroll() {
   bodyScrollLockCount = Math.max(0, bodyScrollLockCount - 1);
   if (bodyScrollLockCount === 0) {
-    document.body.style.overflow = bodyScrollPrevOverflow;
+    document.documentElement.style.overflowY = bodyScrollPrevOverflow;
   }
 }
 
@@ -491,10 +497,15 @@ function Navbar() {
             <BrandLockup size={40} />
           </Link>
 
-          {/* in flow, not centred by absolute position: with eight items the
-              links would sit under the logo and the CTA on anything narrower
-              than a wide desktop, so below xl the menu button takes over */}
-          <nav className="mx-6 hidden min-w-0 flex-1 items-center justify-center gap-6 lg:flex xl:gap-7">
+          {/* justify-evenly, not justify-center: the nav is a flex-1 track
+              running from the logo's edge to the controls', and the controls
+              are 86px wider than the logo, so centring inside that track put
+              the links 43px left of the bar's centre at every width and
+              pooled the surplus into two voids. Evenly spread, the gap from
+              the logo to the first link, between the links, and from the last
+              link to the language button are all the same. No mx- or gap- here:
+              either would be added on top of the distributed space. */}
+          <nav className="hidden min-w-0 flex-1 items-center justify-evenly lg:flex">
             {NAV_ITEMS.map(({ to, labelKey, state }) => (
               <RouterNavLink
                 key={labelKey}
@@ -849,262 +860,328 @@ function SalonPreview() {
 }
 
 // ------------------------------------------------------------ the first screen
-// Over the hero room: customer messages arrive from the edges of the screen,
-// land at the desk of whoever handles them, pause while they type, and get
-// their reply. It is the product doing its job, in the first three seconds.
-// While the room pans (a phone), one exchange at a time, centred.
-const SWITCH_FALLBACK = { ara: 0.5, eho: 0.5, nova: 0.5 };
-const SWITCH_EVERY_MS = 2400;
-const SWITCH_LIFE_MS = 4800;
-const SWITCH_MAX = 3;
+// A day drawn as a ring. The hand sweeps one revolution per day and leaves a
+// lit arc behind it: the part of the day already covered. Seven real moments
+// sit at their real hour and light as the hand reaches them — and all but one
+// of them falls outside the hours a shop is open, which is the whole argument.
+//
+// One requestAnimationFrame loop writes through refs; nothing here re-renders
+// React per frame. It stops when the ring leaves the screen or the tab hides.
+const RING_R = 118;
+const RING_C = 2 * Math.PI * RING_R;
+const RING_CX = 150;
+const RING_SECONDS = 36; // one whole day per revolution
+const RING_OPEN = [10, 20]; // the hours a typical shop has someone at the counter
 
-function SwitchChannel({ channel }) {
-  if (channel === "instagram") {
-    return (
-      <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#8134AF]" aria-hidden>
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /></svg>
-      </span>
-    );
-  }
-  if (channel === "web") {
-    return (
-      <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-sky-400/25 text-sky-300" aria-hidden>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" /></svg>
-      </span>
-    );
-  }
-  return (
-    <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-[#0084FF]" aria-hidden>
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M12 2C6.5 2 2 6.1 2 11.2c0 2.9 1.4 5.5 3.7 7.2V22l3.4-1.9c.9.3 1.9.4 2.9.4 5.5 0 10-4.1 10-9.3S17.5 2 12 2zm1 12.5-2.6-2.7-5 2.7 5.5-5.8 2.6 2.7 4.9-2.7-5.4 5.8z" /></svg>
-    </span>
-  );
+const RING_EVENTS = [
+  { at: 2 + 14 / 60, time: "02:14", who: "ara" },
+  { at: 6 + 40 / 60, time: "06:40", who: "ara" },
+  { at: 9, time: "09:00", who: "veda" },
+  { at: 13 + 25 / 60, time: "13:25", who: "ara" },
+  { at: 18 + 5 / 60, time: "18:05", who: "eho" },
+  { at: 21 + 30 / 60, time: "21:30", who: "nova" },
+  { at: 23 + 50 / 60, time: "23:50", who: "ara" },
+];
+
+function ringPoint(hour, radius = RING_R) {
+  const a = ((hour / 24) * 360 - 90) * (Math.PI / 180);
+  return [RING_CX + radius * Math.cos(a), RING_CX + radius * Math.sin(a)];
 }
 
-function SwitchItem({ item, anchor, onDone }) {
-  const [phase, setPhase] = React.useState("fly");
-  // `onDone` is the stable remover from the parent, keyed by id here, so a
-  // re-render of the list never restarts an item's clock.
-  React.useEffect(() => {
-    const a = window.setTimeout(() => setPhase("typing"), item.kind === "nova" ? 10 : 1250);
-    const b = window.setTimeout(() => setPhase("reply"), item.kind === "nova" ? 400 : 2250);
-    const c = window.setTimeout(() => onDone(item.id), SWITCH_LIFE_MS);
-    return () => { window.clearTimeout(a); window.clearTimeout(b); window.clearTimeout(c); };
-  }, [item, onDone]);
-
-  const left = `${(anchor * 100).toFixed(1)}%`;
-  const fromX = item.side === "left" ? "-60vw" : "60vw";
-  const incoming = item.kind !== "nova";
-  const ease = [0.16, 1, 0.3, 1];
-
-  return (
-    <>
-      {incoming && phase === "fly" && (
-        <motion.div
-          initial={{ x: fromX, y: -10, opacity: 0 }}
-          animate={{ x: 0, y: 0, opacity: 1 }}
-          transition={{ duration: 1.2, ease }}
-          style={{ left }}
-          className="absolute top-[14%] max-w-[230px] -translate-x-1/2"
-        >
-          <div className="flex items-center gap-2 rounded-[16px] rounded-bl-[6px] bg-[#1C2547]/95 px-3 py-2 text-[12.5px] leading-[1.35] text-fg shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-[4px] sm:text-[13px]">
-            {item.kind === "eho" ? (
-              <span className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-sky-400/20 text-sky-300" aria-hidden>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
-              </span>
-            ) : (
-              <SwitchChannel channel={item.channel} />
-            )}
-            <span>{item.text}</span>
-          </div>
-        </motion.div>
-      )}
-      {incoming && phase === "typing" && (
-        <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25, ease }}
-          style={{ left }}
-          className="absolute top-[34%] -translate-x-1/2"
-        >
-          <div className="flex items-center gap-1 rounded-[14px] bg-brand-500/90 px-3 py-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
-            {[0, 1, 2].map((i) => (
-              <span key={i} className="h-1.5 w-1.5 animate-[staffWave_0.9s_ease-in-out_infinite] rounded-full bg-white/90" style={{ animationDelay: `${i * 0.15}s` }} />
-            ))}
-          </div>
-        </motion.div>
-      )}
-      {phase === "reply" && (
-        <motion.div
-          initial={{ opacity: 0, y: item.kind === "nova" ? 0 : 8, scale: 0.96 }}
-          animate={item.kind === "nova" ? { opacity: [0, 1, 1, 0], y: [0, -30, -70, -110], x: [0, 20, 44, 70] } : { opacity: [0, 1, 1, 0], y: [8, 0, -8, -22], scale: 1 }}
-          transition={{ duration: item.kind === "nova" ? 3.6 : 2.4, ease: "easeOut", times: [0, 0.12, 0.7, 1] }}
-          style={{ left }}
-          className={["absolute max-w-[250px] -translate-x-1/2", item.kind === "nova" ? "top-[30%]" : "top-[30%]"].join(" ")}
-        >
-          <div className="flex items-center gap-2 rounded-[16px] rounded-br-[6px] bg-brand-500 px-3 py-2 text-[12.5px] leading-[1.35] text-white shadow-[0_8px_24px_rgba(37,99,235,0.35)] sm:text-[13px]">
-            <span className="flex h-[18px] w-[16px] shrink-0 items-start justify-center overflow-hidden rounded-[5px] bg-white/15" aria-hidden>
-              <StaffAvatar id={item.kind} size={1} className="-mt-[29px]" />
-            </span>
-            <span>{item.reply}</span>
-          </div>
-        </motion.div>
-      )}
-    </>
-  );
+// The arc of the working day, drawn over the track.
+function ringArc(from, to, radius = RING_R) {
+  const [x0, y0] = ringPoint(from, radius);
+  const [x1, y1] = ringPoint(to, radius);
+  const large = (to - from) % 24 > 12 ? 1 : 0;
+  return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${radius} ${radius} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
 }
 
-function HeroSwitchboard({ geometry }) {
+const ringClock = (hour) => {
+  const q = Math.floor((hour % 24) * 4) / 4; // quarter hours: a clock, not a slot machine
+  const hh = Math.floor(q);
+  const mm = Math.round((q - hh) * 60);
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+};
+
+function DayRing({ className = "" }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
-  const script = t("hero.switchboard", { returnObjects: true });
-  const [items, setItems] = React.useState([]);
-  const counter = React.useRef(0);
-  const cursor = React.useRef({ msg: 0, nova: 0, side: 0, kind: 0 });
+  const captions = t("hero.ring.events", { returnObjects: true });
+  const labels = Array.isArray(captions) ? captions : [];
 
-  const stations = geometry && geometry.stations;
-  const anchors = stations || SWITCH_FALLBACK;
-  const maxItems = stations ? SWITCH_MAX : 1;
+  const hostRef = React.useRef(null);
+  const handRef = React.useRef(null);
+  const trailRef = React.useRef(null);
+  const timeRef = React.useRef(null);
+  const dotsRef = React.useRef([]);
+  // which event the centre is showing, so text is written only when it changes
+  const shownRef = React.useRef(-1);
+  const clockRef = React.useRef("");
+  const [active, setActive] = React.useState(RING_EVENTS.length - 1);
 
   React.useEffect(() => {
-    if (reduced || !script || !Array.isArray(script.incoming)) return undefined;
-    // ара, ара, эхо, ара, нова, ара, эхо, нова: every job gets its turn
-    const ORDER = ["ara", "ara", "eho", "ara", "nova", "ara", "eho", "nova"];
-    const spawn = () => {
-      setItems((current) => {
-        if (current.length >= maxItems) return current;
-        const c = cursor.current;
-        const kind = ORDER[c.kind++ % ORDER.length];
-        const side = c.side++ % 2 === 0 ? "left" : "right";
-        let item;
-        if (kind === "ara") {
-          const m = script.incoming[c.msg++ % script.incoming.length];
-          item = { kind, side, text: m.text, channel: m.channel, reply: m.reply };
-        } else if (kind === "eho") {
-          item = { kind, side, text: script.call.in, reply: script.call.out };
-        } else {
-          item = { kind, side, reply: script.nova[c.nova++ % script.nova.length] };
+    if (reduced || !hostRef.current) return undefined;
+
+    let raf = 0;
+    let running = false;
+    let visible = false;
+    let started = 0;
+
+    const frame = (now) => {
+      raf = 0;
+      if (!running) return;
+      const p = (((now - started) / (RING_SECONDS * 1000)) % 1 + 1) % 1;
+      const hour = p * 24;
+
+      if (handRef.current) handRef.current.style.transform = `rotate(${(p * 360).toFixed(2)}deg)`;
+      if (trailRef.current) trailRef.current.style.strokeDashoffset = String(RING_C * (1 - p));
+
+      // the most recent moment the hand has passed; before the first one of
+      // the day, the centre still holds last night's
+      let idx = -1;
+      for (let i = 0; i < RING_EVENTS.length; i += 1) if (hour >= RING_EVENTS[i].at) idx = i;
+      const shown = idx === -1 ? RING_EVENTS.length - 1 : idx;
+
+      for (let i = 0; i < RING_EVENTS.length; i += 1) {
+        const el = dotsRef.current[i];
+        if (!el) continue;
+        const lit = i <= idx;
+        if (el.dataset.lit !== String(lit)) {
+          el.dataset.lit = String(lit);
+          el.classList.toggle("is-lit", lit);
         }
-        return [...current, { ...item, id: counter.current++ }];
-      });
+      }
+
+      if (shown !== shownRef.current) {
+        shownRef.current = shown;
+        setActive(shown);
+      }
+      // the clock lands exactly on a moment's own time as the hand reaches it
+      const near = idx >= 0 && hour - RING_EVENTS[idx].at < 0.35;
+      const text = near ? RING_EVENTS[idx].time : ringClock(hour);
+      if (text !== clockRef.current) {
+        clockRef.current = text;
+        if (timeRef.current) timeRef.current.textContent = text;
+      }
+
+      raf = requestAnimationFrame(frame);
     };
-    const first = window.setTimeout(spawn, 900);
-    const id = window.setInterval(spawn, SWITCH_EVERY_MS);
-    return () => { window.clearTimeout(first); window.clearInterval(id); };
-  }, [reduced, script, maxItems]);
 
-  const remove = React.useCallback((id) => setItems((current) => current.filter((i) => i.id !== id)), []);
+    const update = () => {
+      const should = visible && !document.hidden;
+      if (should && !running) {
+        running = true;
+        // start the day a little before the 02:14 message so the first thing
+        // a visitor sees is a moment landing, not an empty ring
+        started = performance.now() - 1.4 * (RING_SECONDS / 24) * 1000;
+        raf = requestAnimationFrame(frame);
+      } else if (!should && running) {
+        running = false;
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
 
-  if (!script || !Array.isArray(script.incoming)) return null;
+    const io = new IntersectionObserver((entries) => {
+      visible = entries.some((e) => e.isIntersecting);
+      update();
+    }, { rootMargin: "60px" });
+    io.observe(hostRef.current);
+    document.addEventListener("visibilitychange", update);
 
-  if (reduced) {
-    // one exchange, held still
-    const m = script.incoming[0];
-    return (
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div style={{ left: `${anchors.ara * 100}%` }} className="absolute top-[12%] max-w-[230px] -translate-x-1/2">
-          <div className="flex items-center gap-2 rounded-[16px] rounded-bl-[6px] bg-[#1C2547]/95 px-3 py-2 text-[12.5px] text-fg"><SwitchChannel channel={m.channel} /><span>{m.text}</span></div>
-        </div>
-        <div style={{ left: `${anchors.ara * 100}%` }} className="absolute top-[34%] max-w-[250px] -translate-x-1/2">
-          <div className="rounded-[16px] rounded-br-[6px] bg-brand-500 px-3 py-2 text-[12.5px] text-white">{m.reply}</div>
-        </div>
-      </div>
-    );
-  }
+    return () => {
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+      io.disconnect();
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, [reduced]);
+
+  const event = RING_EVENTS[active] || RING_EVENTS[0];
+  const openArc = ringArc(RING_OPEN[0], RING_OPEN[1]);
+  const closedHours = 24 - (RING_OPEN[1] - RING_OPEN[0]);
 
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      {items.map((item) => (
-        <SwitchItem key={item.id} item={item} anchor={anchors[item.kind] ?? SWITCH_FALLBACK[item.kind]} onDone={remove} />
-      ))}
+    <div ref={hostRef} className={["relative w-full max-w-[380px]", className].join(" ")}>
+      <div className="relative">
+        <svg viewBox="0 0 300 300" className="block w-full" role="img" aria-label={t("hero.ring.alt")}>
+          {/* the whole day: what the four cover */}
+          <circle cx={RING_CX} cy={RING_CX} r={RING_R} fill="none" stroke="rgba(56,189,248,0.16)" strokeWidth="10" />
+          {/* the hours someone is at the counter */}
+          <path d={openArc} fill="none" stroke="rgba(240,244,255,0.22)" strokeWidth="10" strokeLinecap="butt" />
+          {/* hour ticks */}
+          {Array.from({ length: 24 }, (_, h) => {
+            const major = h % 6 === 0;
+            const [x0, y0] = ringPoint(h, RING_R - (major ? 14 : 9));
+            const [x1, y1] = ringPoint(h, RING_R - 6);
+            return <line key={h} x1={x0} y1={y0} x2={x1} y2={y1} stroke={major ? "rgba(240,244,255,0.45)" : "rgba(240,244,255,0.16)"} strokeWidth={major ? 1.6 : 1} strokeLinecap="round" />;
+          })}
+          {[0, 6, 12, 18].map((h) => {
+            const [x, y] = ringPoint(h, RING_R - 30);
+            return (
+              <text key={h} x={x} y={y} textAnchor="middle" dominantBaseline="central" fill="rgba(139,159,196,0.75)" fontSize="11" fontFamily="Inter, system-ui, sans-serif" letterSpacing="1">
+                {String(h).padStart(2, "0")}
+              </text>
+            );
+          })}
+          {/* the part of the day already covered */}
+          <circle
+            ref={trailRef}
+            cx={RING_CX}
+            cy={RING_CX}
+            r={RING_R}
+            fill="none"
+            stroke="#38BDF8"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray={RING_C}
+            strokeDashoffset={reduced ? RING_C * (1 - RING_EVENTS[RING_EVENTS.length - 1].at / 24) : RING_C}
+            transform={`rotate(-90 ${RING_CX} ${RING_CX})`}
+          />
+          {/* the seven moments */}
+          {RING_EVENTS.map((e, i) => {
+            const [x, y] = ringPoint(e.at);
+            return (
+              <g
+                key={e.time}
+                ref={(el) => { dotsRef.current[i] = el; }}
+                className={["ring-dot", reduced ? "is-lit" : ""].join(" ")}
+                style={{ "--ring-x": `${x}px`, "--ring-y": `${y}px` }}
+              >
+                <circle className="halo" cx={x} cy={y} r="6" fill="#38BDF8" />
+                <circle className="dot" cx={x} cy={y} r="5.5" />
+              </g>
+            );
+          })}
+          {/* the hand */}
+          <g
+            ref={handRef}
+            className="ring-hand"
+            style={{
+              transformOrigin: `${RING_CX}px ${RING_CX}px`,
+              transformBox: "view-box",
+              transform: reduced ? `rotate(${(RING_EVENTS[RING_EVENTS.length - 1].at / 24) * 360}deg)` : "rotate(0deg)",
+            }}
+          >
+            <line x1={RING_CX} y1={RING_CX - 46} x2={RING_CX} y2={RING_CX - RING_R + 4} stroke="url(#ringHand)" strokeWidth="2" strokeLinecap="round" />
+            <circle cx={RING_CX} cy={RING_CX - RING_R} r="4.5" fill="#F0F4FF" />
+            <circle cx={RING_CX} cy={RING_CX - RING_R} r="9" fill="#38BDF8" opacity="0.22" />
+          </g>
+          <defs>
+            <linearGradient id="ringHand" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stopColor="#38BDF8" stopOpacity="0" />
+              <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.9" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* the centre: what just happened, and who did it */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-[22%] text-center">
+          <span ref={timeRef} className="font-display text-[34px] font-semibold leading-none tabular-nums tracking-tight text-fg sm:text-[38px]">
+            {event.time}
+          </span>
+          <span className="mt-2.5 flex items-center gap-1.5">
+            <span className="flex h-[20px] w-[18px] shrink-0 items-start justify-center overflow-hidden rounded-[5px] bg-white/[0.07]" aria-hidden>
+              <StaffAvatar id={event.who} size={1} className="-mt-[30px]" />
+            </span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-300">
+              {t(`office.agents.${event.who}.name`)}
+            </span>
+          </span>
+          <span className="mt-2 text-[12.5px] leading-[1.4] text-fg-muted" aria-live="off">
+            {labels[active] || ""}
+          </span>
+        </div>
+      </div>
+
+      {/* the legend is the argument: ten hours open, fourteen covered anyway */}
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[12px] text-fg-muted">
+        <span className="inline-flex items-center gap-2">
+          <span aria-hidden className="h-1.5 w-5 rounded-full bg-white/25" />
+          {t("hero.ring.open", { from: "10:00", to: "20:00" })}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <span aria-hidden className="h-1.5 w-5 rounded-full bg-sky-400" />
+          {t("hero.ring.closed", { hours: closedHours })}
+        </span>
+      </div>
     </div>
   );
 }
 
 function Hero() {
   const { t } = useTranslation();
-  const reduced = useReducedMotion();
-  const heroRef = React.useRef(null);
-  const [geometry, setGeometry] = React.useState(null);
-  const onGeometry = React.useCallback((g) => setGeometry({ stations: heroStations(g.W) }), []);
-  // The text leaves as you scroll; the canvas does not move and does not fade,
-  // because the pinned scene below is the same room at the same art scale and
-  // the cut between them should be invisible.
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const textY = useTransform(scrollYProgress, [0.35, 1], [0, -56]);
-  const textOpacity = useTransform(scrollYProgress, [0.35, 1], [1, 0]);
 
   return (
-    <section id="top" ref={heroRef} className="relative pb-16 pt-24 md:pb-24 md:pt-36">
-      <Container>
-        <motion.div
-          style={reduced ? undefined : { y: textY, opacity: textOpacity }}
-          className="mx-auto max-w-[640px] text-center lg:max-w-[760px]"
-        >
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
-            className="text-[11.5px] font-medium leading-[1.5] tracking-[0.14em] text-fg-dim"
-          >
-            {t("hero.badge")}
-          </motion.p>
+    <section id="top" className="relative overflow-hidden pb-16 pt-24 md:pb-24 md:pt-32">
+      {/* one quiet pool of light behind the ring, nothing else */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute right-[-10%] top-[6%] h-[38rem] w-[38rem] rounded-full lg:right-[2%]"
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.16) 0%, rgba(37,99,235,0.06) 42%, rgba(56,189,248,0) 70%)", filter: "blur(40px)" }}
+        />
+      </div>
 
-          <h1 className="mt-4 font-display text-[36px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[48px] lg:text-[64px]">
-            <HeroWords text={t("hero.title")} delay={0.15} stagger={0.045} />
-          </h1>
+      <Container className="relative">
+        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-16">
+          <div className="text-center lg:text-left">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
+              className="text-[11.5px] font-medium leading-[1.5] tracking-[0.14em] text-fg-dim"
+            >
+              {t("hero.badge")}
+            </motion.p>
 
-          <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...SPRING_REVEAL, delay: 0.5 }}
-            className="mx-auto mt-6 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px] lg:text-[18px]"
-          >
-            {t("hero.description")}
-          </motion.p>
+            <h1 className="mt-4 font-display text-[36px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[48px] lg:text-[58px]">
+              <HeroWords text={t("hero.title")} delay={0.15} stagger={0.045} />
+            </h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.5 }}
+              className="mx-auto mt-6 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px] lg:mx-0 lg:text-[18px]"
+            >
+              {t("hero.description")}
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.65 }}
+              className="mt-9 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6 lg:justify-start"
+            >
+              <MagneticButton href="#demo" variant="primary" className="w-full sm:w-auto">
+                {t("hero.buttons.request")}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
+              </MagneticButton>
+              {/* a link, not a second button box: the hero gets one accent */}
+              <Link
+                to="/office"
+                className="inline-flex min-h-[44px] items-center gap-1.5 text-[17px] text-sky-400 transition-colors hover:text-sky-300"
+              >
+                {t("hero.buttons.seeWork")}
+                <span aria-hidden>&rsaquo;</span>
+              </Link>
+            </motion.div>
+          </div>
 
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...SPRING_REVEAL, delay: 0.65 }}
-            className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6"
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...SPRING_REVEAL, delay: 0.3 }}
+            className="flex justify-center lg:justify-end"
           >
-            <MagneticButton href="#demo" variant="primary" className="w-full sm:w-auto">
-              {t("hero.buttons.requestDemo")}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-              </svg>
-            </MagneticButton>
-            {/* a link, not a second button box: the hero gets one accent */}
-            <Link
-              to="/office"
-              className="inline-flex min-h-[44px] items-center gap-1.5 text-[17px] text-sky-400 transition-colors hover:text-sky-300"
-            >
-              {t("hero.buttons.seeWork")}
-              <span aria-hidden>&rsaquo;</span>
-            </Link>
+            <ErrorBoundary fallback={null}>
+              <DayRing />
+            </ErrorBoundary>
           </motion.div>
-        </motion.div>
+        </div>
       </Container>
-
-      {/* full-bleed: the room runs edge to edge at every width */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...SPRING_REVEAL, delay: 0.3 }}
-        className="relative mt-12 md:mt-16"
-      >
-        <PixelStage
-          draw={drawStaffHeroPan}
-          logicalH={HERO_H}
-          scale={HERO_SCALE}
-          minW={HERO_PAN_MIN_W}
-          label={t("office.hero.sceneAlt")}
-          onGeometry={onGeometry}
-        />
-        <ErrorBoundary fallback={null}>
-          <HeroSwitchboard geometry={geometry} />
-        </ErrorBoundary>
-      </motion.div>
     </section>
   );
 }
@@ -2566,6 +2643,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
 
     restoreFocusRef.current = document.activeElement;
     lockBodyScroll();
+    setStagesFrozen(true);
     document.documentElement.classList.add("demo-dialog-open");
 
     const onKeyDown = (event) => {
@@ -2596,7 +2674,10 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
       unlockBodyScroll();
       document.documentElement.classList.remove("demo-dialog-open");
       const previous = restoreFocusRef.current;
-      if (previous && typeof previous.focus === "function") previous.focus();
+      // preventScroll: restoring focus must not scroll the page under the
+      // closing sheet, which would kick every scroll-linked spring into motion
+      // just as the exit animation starts.
+      if (previous && typeof previous.focus === "function") previous.focus({ preventScroll: true });
     };
   }, [isOpen]);
 
@@ -2785,7 +2866,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
       };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={() => { if (!isOpen) setStagesFrozen(false); }}>
       {isOpen && (
         <div
           className="fixed inset-0 flex items-end justify-center sm:items-center sm:p-4"
@@ -2801,7 +2882,10 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22, ease: EASE_OUT }}
-            className="absolute inset-0 bg-ink-950/80 backdrop-blur-md"
+            /* no backdrop-filter: at this opacity over a near-black page the
+               blur is invisible, but it forced the whole viewport to be
+               re-sampled and re-blurred on every frame of the exit */
+            className="absolute inset-0 bg-ink-950/92"
             onClick={onClose}
           />
 
@@ -2812,7 +2896,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduced ? { opacity: 0 } : { opacity: 0, y: isMobile ? 40 : 8, scale: isMobile ? 1 : 0.98 }}
             transition={{ duration: 0.26, ease: EASE_OUT }}
-            className="demo-sheet relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-ink-900/95 shadow-2xl backdrop-blur-xl outline-none sm:rounded-2xl"
+            className="demo-sheet relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-white/10 bg-ink-900 shadow-2xl outline-none sm:rounded-2xl"
           >
             <div className="border-b border-white/[0.07] px-5 pt-4 sm:px-7 sm:pt-5">
               <div className="flex items-start justify-between gap-4">
@@ -3256,7 +3340,9 @@ function DemoRequestProvider({ children }) {
   }, []);
   const close = React.useCallback(() => setIsOpen(false), []);
 
-  const value = React.useMemo(() => ({ open, close, isOpen }), [open, close, isOpen]);
+  // isOpen is deliberately not in here: no consumer reads it, and including
+  // it re-rendered every MagneticButton on the page on open and on close.
+  const value = React.useMemo(() => ({ open, close }), [open, close]);
 
   return (
     <DemoRequestContext.Provider value={value}>
@@ -3322,7 +3408,7 @@ function ContactOrbField() {
 
 function Contact() {
   const { t } = useTranslation();
-  const mailtoHref = `mailto:${DEMO_EMAIL}?subject=${encodeURIComponent("Демо хүсэлт / Demo Request")}`;
+  const mailtoHref = `mailto:${DEMO_EMAIL}?subject=${encodeURIComponent("Хүсэлт / Request")}`;
 
   return (
     <section id="contact" className="relative overflow-hidden py-20 sm:py-40">
@@ -3568,11 +3654,6 @@ function LocationBadge() {
 
 // Page wrappers: each route renders only its own sections.
 // ------------------------------------------------------------ a working day
-// ζ = 1.05: critically damped, so scroll never springs past itself. restDelta
-// has to be this small because the steepest leg of the timeline covers ~94
-// scene-hours per unit of progress — framer's default would quantise the
-// clock to roughly an hour.
-const DAY_SPRING = { stiffness: 260, damping: 34, mass: 1, restDelta: 0.0002 };
 const DAY_SCALE = (w) => (w < 1024 ? 2 : w < 1280 ? 3 : 3.5);
 const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 
@@ -3814,30 +3895,82 @@ function OwnerPhone({ progress, group, className = "" }) {
   );
 }
 
+// The day plays on a clock, not on the scrollbar. It used to be a 340vh
+// sticky scene: scrolling up replayed the whole sequence backwards and a
+// visitor who had already seen it had three screens to climb before the page
+// moved on. Now the section is ordinary height, the sequence starts when it
+// comes into view, plays once, and rests on the last screen with the button
+// on it. Scrolling past is just scrolling.
+const DAY_SECONDS = 24;
+
+function useTimedProgress(ref, seconds, disabled) {
+  const progress = useMotionValue(0);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (disabled || !el) return undefined;
+
+    let raf = 0;
+    let running = false;
+    let visible = false;
+    let finished = false;
+    let startedAt = 0;
+    let elapsed = 0; // survives a pause, so leaving and returning resumes
+
+    const frame = (now) => {
+      raf = 0;
+      if (!running) return;
+      const p = Math.min(1, (elapsed + (now - startedAt)) / (seconds * 1000));
+      progress.set(p);
+      if (p >= 1) {
+        running = false;
+        finished = true;
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    };
+
+    const update = () => {
+      const should = visible && !document.hidden && !finished;
+      if (should && !running) {
+        running = true;
+        startedAt = performance.now();
+        raf = requestAnimationFrame(frame);
+      } else if (!should && running) {
+        running = false;
+        elapsed += performance.now() - startedAt;
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    // -12%: the sequence waits until the scene is properly on screen rather
+    // than starting while its first pixel row is still under the fold
+    const io = new IntersectionObserver((entries) => {
+      visible = entries.some((e) => e.isIntersecting);
+      update();
+    }, { rootMargin: "-12% 0px" });
+    io.observe(el);
+    document.addEventListener("visibilitychange", update);
+
+    return () => {
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+      io.disconnect();
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, [ref, seconds, disabled, progress]);
+  return progress;
+}
+
 function WorkingDay() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const { error } = useStaffAtlas();
   const dayRef = React.useRef(null);
-  const progress = useDampedProgress(dayRef, ["start start", "end end"], DAY_SPRING);
-
-  const settleScale = useTransform(progress, [0, 0.06], [1.03, 1]);
-  const settleOpacity = useTransform(progress, [0, 0.06], [0.35, 1]);
-
-  // The page itself lifts as the sun comes up and settles back by nightfall.
-  // It returns home at p = 1, so there is nothing to reset on the way out.
-  const pageBg = useTransform(
-    progress,
-    [0, 0.3, 0.48, 0.64, 0.86, 1],
-    ["#050A18", "#050A18", "#0D1430", "#0D1430", "#080D1E", "#050A18"]
-  );
-  useMotionValueEvent(pageBg, "change", (v) => {
-    document.documentElement.style.setProperty("--page-bg", v);
-  });
-  React.useEffect(() => () => document.documentElement.style.removeProperty("--page-bg"), []);
+  const still = useMotionValue(0.51);
+  const progress = useTimedProgress(dayRef, DAY_SECONDS, reduced || !!error);
 
   const [group, setGroup] = React.useState(() => phoneGroupAt(0));
-  const still = useMotionValue(0.51);
   useMotionValueEvent(progress, "change", (p) => {
     const g = phoneGroupAt(p);
     if (g !== group) setGroup(g);
@@ -3862,8 +3995,8 @@ function WorkingDay() {
   );
 
   // Reduced motion, or no atlas: the room held at nine in the morning and the
-  // phone at the end of its day, both in document order. Every card is in the
-  // DOM, so this reads correctly even if no canvas ever appears.
+  // whole feed at rest, in document order. Every card is in the DOM, so this
+  // reads correctly even if no canvas ever appears.
   if (reduced || error) {
     return (
       <section className="py-20 md:py-28">
@@ -3884,31 +4017,29 @@ function WorkingDay() {
   }
 
   return (
-    <section data-pin className="relative pb-20 pt-10 md:pb-28 md:pt-14">
+    <section className="relative pb-20 pt-10 md:pb-28 md:pt-14">
       {heading}
 
-      <div ref={dayRef} className="relative mt-10 h-[280vh] md:h-[340vh]">
-        <div className="day-pin flex flex-col justify-center">
-          <div className="relative">
-            <motion.div style={{ scale: settleScale, opacity: settleOpacity }} className="day-band origin-bottom">
-              <PixelStage
-                draw={drawWorkingDay}
-                logicalH={DAY_H}
-                scale={DAY_SCALE}
-                minW={STAFF_HERO_MIN_W}
-                progress={progress}
-                label={t("day.sceneAlt")}
-              />
-            </motion.div>
+      <div ref={dayRef} className="relative mt-10 lg:min-h-[640px] lg:py-10">
+        <div className="relative lg:absolute lg:inset-x-0 lg:top-1/2 lg:-translate-y-1/2">
+          <div className="day-band">
+            <PixelStage
+              draw={drawWorkingDay}
+              logicalH={DAY_H}
+              scale={DAY_SCALE}
+              minW={STAFF_HERO_MIN_W}
+              progress={progress}
+              label={t("day.sceneAlt")}
+            />
+          </div>
 
-            {/* the phone: under the room on a phone, in front of it on a desk */}
-            <div className="relative -mt-14 flex justify-center lg:absolute lg:inset-0 lg:mt-0 lg:block">
-              <Container className="lg:relative lg:h-full">
-                <div className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
-                  <OwnerPhone progress={progress} group={group} />
-                </div>
-              </Container>
-            </div>
+          {/* the phone: under the room on a phone, in front of it on a desk */}
+          <div className="relative -mt-14 flex justify-center lg:absolute lg:inset-0 lg:mt-0 lg:block">
+            <Container className="lg:relative lg:h-full">
+              <div className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
+                <OwnerPhone progress={progress} group={group} />
+              </div>
+            </Container>
           </div>
         </div>
       </div>
@@ -4098,7 +4229,7 @@ function NotFoundPage() {
   );
 }
 
-function LandingPage() {
+const LandingPage = React.memo(function LandingPage() {
   usePageMeta("/");
   return (
     <>
@@ -4113,9 +4244,9 @@ function LandingPage() {
       <Contact />
     </>
   );
-}
+});
 
-function ProcessPage() {
+const ProcessPage = React.memo(function ProcessPage() {
   usePageMeta("/process");
   return (
     <PageShell>
@@ -4123,18 +4254,18 @@ function ProcessPage() {
       <ProcessTimeline />
     </PageShell>
   );
-}
+});
 
-function LocationPage() {
+const LocationPage = React.memo(function LocationPage() {
   usePageMeta("/location");
   return (
     <PageShell>
       <LocationBadge />
     </PageShell>
   );
-}
+});
 
-function PortfolioPage() {
+const PortfolioPage = React.memo(function PortfolioPage() {
   usePageMeta("/portfolio");
   return (
     <PageShell>
@@ -4142,25 +4273,25 @@ function PortfolioPage() {
       <WebsiteOffer />
     </PageShell>
   );
-}
+});
 
-function PricingPage() {
+const PricingPage = React.memo(function PricingPage() {
   usePageMeta("/pricing");
   return (
     <PageShell>
       <Pricing />
     </PageShell>
   );
-}
+});
 
-function FAQPage() {
+const FAQPage = React.memo(function FAQPage() {
   usePageMeta("/faq");
   return (
     <PageShell>
       <FAQ />
     </PageShell>
   );
-}
+});
 
 // Pads non-landing pages so content sits below the fixed navbar.
 
@@ -4191,7 +4322,7 @@ function useStaffAtlas() {
  * (0..1) the scene may read; `scale` is CSS pixels per art pixel for a given
  * width; `minW` keeps the scene's content inside the canvas on narrow screens.
  */
-function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, className = "", onGeometry }) {
+function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, className = "" }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const { img, error } = useStaffAtlas();
@@ -4212,7 +4343,7 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
     if (!img || !canvasRef.current) return undefined;
     let stage;
     try {
-      stage = createPixelStage(canvasRef.current, { img, draw, logicalH, scale, minW, reduced: !!reduced, onResize: onGeometry });
+      stage = createPixelStage(canvasRef.current, { img, draw, logicalH, scale, minW, reduced: !!reduced });
     } catch (e) {
       console.error(e);
       return undefined;
@@ -4226,7 +4357,7 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
       if (unsubscribe) unsubscribe();
       stage.destroy();
     };
-  }, [img, draw, logicalH, scale, minW, progress, reduced, onGeometry]);
+  }, [img, draw, logicalH, scale, minW, progress, reduced]);
 
   const h = typeof logicalH === "function" ? logicalH(hostW) : logicalH;
   // Reserve exactly what the canvas will occupy. createStage clamps the device
@@ -4292,15 +4423,9 @@ function Rise({ progress, at, span = 0.08, until, className = "", children }) {
   );
 }
 
-const HERO_SCALE = (w) => (w < 640 ? 2 : w < 900 ? 2 : 3);
-// The wall band, the desks and a row of carpet in front of them.
-const HERO_H = 144;
-// On a phone the landing hero pans across the room at a readable scale, so
-// it never needs the whole row to fit; the /office hero still does.
-const HERO_PAN_MIN_W = 160;
 const CHAPTER_SCALE = (w) => (w < 640 ? 2 : 3);
 // phones get a taller room so the messages fit beside the person
-const CHAPTER_HEIGHT = (w) => (w < 640 ? 150 : 128);
+const CHAPTER_HEIGHT = (w) => (w < 640 ? 176 : 128);
 
 function StaffStatus({ live }) {
   const { t } = useTranslation();
@@ -4353,55 +4478,58 @@ function StaffCards({ onPick, className = "" }) {
 function StaffHero({ onHire, onSee, onPick }) {
   const { t } = useTranslation();
   return (
-    <section className="pb-6 pt-[96px] md:pb-10 md:pt-[128px]">
-      <Container>
-        <div className="mx-auto max-w-[760px] text-center">
-          <SectionLabel>{t("office.section")}</SectionLabel>
-          <motion.h1
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={SPRING_HEADLINE}
-            className="mt-4 font-display text-[38px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[50px] md:text-[60px]"
-          >
-            {t("office.hero.title")}
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...SPRING_REVEAL, delay: 0.08 }}
-            className="mx-auto mt-5 max-w-[600px] text-[17px] leading-[1.5] text-fg-muted"
-          >
-            {t("office.hero.lead")}
-          </motion.p>
+    <section className="relative overflow-hidden pb-6 pt-[96px] md:pb-10 md:pt-[124px]">
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute right-[-12%] top-[4%] h-[34rem] w-[34rem] rounded-full lg:right-[1%]"
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(37,99,235,0.05) 42%, rgba(56,189,248,0) 70%)", filter: "blur(40px)" }}
+        />
+      </div>
+      <Container className="relative">
+        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)] lg:gap-16">
+          <div className="text-center lg:text-left">
+            <SectionLabel>{t("office.section")}</SectionLabel>
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={SPRING_HEADLINE}
+              className="mt-4 font-display text-[38px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[50px] md:text-[56px]"
+            >
+              {t("office.hero.title")}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.08 }}
+              className="mx-auto mt-5 max-w-[600px] text-[17px] leading-[1.5] text-fg-muted lg:mx-0"
+            >
+              {t("office.hero.lead")}
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.16 }}
+              className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 lg:justify-start"
+            >
+              <MagneticButton onClick={onHire} variant="primary" className="min-h-[44px]">{t("office.hero.hire")}</MagneticButton>
+              <button type="button" onClick={onSee} data-cursor="hover" className="pressable inline-flex min-h-[44px] items-center gap-1 text-[17px] text-sky-400 hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md px-1">
+                {t("office.hero.see")} <span aria-hidden>›</span>
+              </button>
+            </motion.div>
+          </div>
+
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...SPRING_REVEAL, delay: 0.16 }}
-            className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...SPRING_REVEAL, delay: 0.22 }}
+            className="flex justify-center lg:justify-end"
           >
-            <MagneticButton onClick={onHire} variant="primary" className="min-h-[44px]">{t("office.hero.hire")}</MagneticButton>
-            <button type="button" onClick={onSee} data-cursor="hover" className="pressable inline-flex min-h-[44px] items-center gap-1 text-[17px] text-sky-400 hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md px-1">
-              {t("office.hero.see")} <span aria-hidden>›</span>
-            </button>
+            <ErrorBoundary fallback={null}>
+              <DayRing />
+            </ErrorBoundary>
           </motion.div>
         </div>
       </Container>
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...SPRING_REVEAL, delay: 0.22 }}
-        className="mt-10 w-full md:mt-12"
-      >
-        {/* full-bleed: at 1440 the room is 480 art pixels wide, enough for
-            the corners — bookshelf, whiteboard, cooler — to exist */}
-        <PixelStage
-          draw={drawStaffHero}
-          logicalH={HERO_H}
-          scale={HERO_SCALE}
-          minW={STAFF_HERO_MIN_W}
-          label={t("office.hero.sceneAlt")}
-        />
-      </motion.div>
       <Container>
         <StaffCards className="mt-6 md:mt-8" onPick={onPick} />
       </Container>
@@ -4538,16 +4666,29 @@ function StaffChapter({ id, index, onHire }) {
   return (
     <section ref={ref} id={`staff-${id}`} className="py-14 md:py-24">
       <Container>
-        <div className="grid gap-6 md:grid-cols-12 md:grid-rows-[auto_auto] md:gap-x-10 md:gap-y-4">
-          <Reveal className={["md:col-span-5 md:row-start-1 md:self-end", flip ? "md:col-start-8" : "md:col-start-1"].join(" ")}>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <SectionLabel>{t(`${base}.eyebrow`)}</SectionLabel>
-              <StaffStatus live={live} />
+        <div className="grid items-center gap-6 md:grid-cols-12 md:gap-x-10">
+          {/* one panel, not two stacked blocks: the eyebrow, the claim, the
+              reason, the price and the action are one object */}
+          <Reveal className={["md:col-span-5", flip ? "md:col-start-8" : "md:col-start-1"].join(" ")}>
+            <div className="panel-glass p-6 sm:p-7">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <SectionLabel>{t(`${base}.eyebrow`)}</SectionLabel>
+                <StaffStatus live={live} />
+              </div>
+              <h2 className="mt-4 font-display text-[30px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[36px] md:text-[40px]">{t(`${base}.title`)}</h2>
+              <p className="mt-4 text-[16px] leading-[1.5] text-fg-muted sm:text-[17px]">{t(`${base}.body`)}</p>
+              <div className="mt-6 border-t border-white/[0.08] pt-5">
+                <StaffPrice id={id} />
+                <div className="mt-5">
+                  <MagneticButton onClick={() => onHire([id])} variant={live ? "primary" : "secondary"} className="min-h-[44px]">
+                    {t(`${base}.cta`)}
+                  </MagneticButton>
+                </div>
+              </div>
             </div>
-            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[40px] md:text-[46px]">{t(`${base}.title`)}</h2>
           </Reveal>
-          <div className={["md:col-span-7 md:row-span-2 md:row-start-1 md:self-center", flip ? "md:col-start-1" : "md:col-start-6"].join(" ")}>
-            <div className="-mx-5 sm:mx-0">
+          <div className={["md:col-span-7", flip ? "md:col-start-1 md:row-start-1" : "md:col-start-6"].join(" ")}>
+            <div className="relative -mx-5 sm:mx-0">
               <PixelStage
                 draw={draw}
                 logicalH={CHAPTER_HEIGHT}
@@ -4557,21 +4698,10 @@ function StaffChapter({ id, index, onHire }) {
                 label={t(`${base}.sceneAlt`)}
                 className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
               />
+              {/* what is really on the screen, floated over the quiet half of the wall */}
+              <div className="absolute left-[49%] right-[4%] top-[4%] sm:left-[50%]">{overlay}</div>
             </div>
-            {/* what is really on the screen, under the scene */}
-            <div className={["mt-4 max-w-[400px]", flip ? "" : "md:ml-auto"].join(" ")}>{overlay}</div>
           </div>
-          <Reveal className={["md:col-span-5 md:row-start-2 md:self-start", flip ? "md:col-start-8" : "md:col-start-1"].join(" ")}>
-            <p className="max-w-[460px] text-[17px] leading-[1.47] text-fg-muted">{t(`${base}.body`)}</p>
-            <div className="mt-6 border-t border-white/[0.08] pt-5">
-              <StaffPrice id={id} />
-              <div className="mt-5">
-                <MagneticButton onClick={() => onHire([id])} variant={live ? "primary" : "secondary"} className="min-h-[44px]">
-                  {t(`${base}.cta`)}
-                </MagneticButton>
-              </div>
-            </div>
-          </Reveal>
         </div>
       </Container>
     </section>
@@ -4766,7 +4896,7 @@ function StaffLimits() {
   );
 }
 
-function OfficePage() {
+const OfficePage = React.memo(function OfficePage() {
   usePageMeta("/office");
   const { t } = useTranslation();
   const { open: openDemoRequest } = useDemoRequest();
@@ -4796,7 +4926,7 @@ function OfficePage() {
       </Container>
     </div>
   );
-}
+});
 
 function PageShell({ children }) {
   return <div className="pt-24 md:pt-28">{children}</div>;

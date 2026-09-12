@@ -31,6 +31,10 @@ body {
 
 html {
   overflow-x: hidden;
+  /* keep the gutter when a dialog locks the scroll: without it the viewport
+     widens by the scrollbar's width, which fires every ResizeObserver and
+     makes each canvas reallocate its backing store and redraw synchronously */
+  scrollbar-gutter: stable;
 }
 
 @supports (overflow-x: clip) {
@@ -385,4 +389,77 @@ html.demo-dialog-open #dt-chat-frame {
 }
 @media (prefers-reduced-motion: reduce) {
   .day-phone { animation: none; }
+}
+
+/* the first screen's day ring: a moment lights as the hand reaches it */
+.ring-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0.55);
+  transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ring-dot .dot { fill: #24325A; transition: fill 340ms ease; }
+.ring-dot .halo { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.ring-dot.is-lit { transform: scale(1); }
+.ring-dot.is-lit .dot { fill: #38BDF8; }
+.ring-dot.is-lit .halo { animation: ringHalo 1200ms cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes ringHalo {
+  0% { opacity: 0.5; transform: scale(0.6); }
+  100% { opacity: 0; transform: scale(3); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ring-dot { transition: none; }
+  .ring-dot .halo { animation: none !important; }
+}
+
+/* ---------------------------------------------------------------- glass
+   Apple's Liquid Glass stack, minus the lensing CSS cannot do. Its own rule
+   is that glass belongs to the navigation layer and content stays sharp, so
+   real backdrop-filter is spent on the bar and the mobile menu only — two
+   layers, which is the whole budget on a phone.
+
+   .panel-glass is the content-layer substitute the same reference
+   prescribes: the two cheap, legible signals (a light top edge and the inner
+   specular) without the blur. It also survives what glass cannot — the
+   chapter panels sit inside a framer-motion wrapper that animates transform,
+   and a transformed ancestor silently collapses backdrop sampling. */
+.panel-glass {
+  position: relative;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(26, 37, 87, 0.55) 0%, rgba(8, 14, 34, 0.92) 100%),
+    #080E22;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(255, 255, 255, 0.15);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 32px rgba(0, 0, 0, 0.45);
+}
+/* the specular arc: ambient light from the top left, a third of the alpha
+   Apple uses on a light ground or it reads as fog */
+.panel-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse 80% 40% at 30% 0%, rgba(255, 255, 255, 0.09) 0%, transparent 70%);
+}
+.panel-glass > * { position: relative; }
+
+@media (prefers-contrast: more) {
+  .panel-glass { background: #050A18; border-color: rgba(240, 244, 255, 0.55); }
+  .panel-glass::before { display: none; }
+}
+
+/* Nothing behind the request sheet needs to move. A running animation back
+   there keeps the compositor re-sampling the page on every frame of the
+   sheet's own open and close. */
+html.demo-dialog-open .contact-orb-glow,
+html.demo-dialog-open .contact-orbit,
+html.demo-dialog-open .mesh-blob,
+html.demo-dialog-open .marquee-track,
+html.demo-dialog-open .day-phone,
+html.demo-dialog-open .ring-dot .halo {
+  animation-play-state: paused;
 }

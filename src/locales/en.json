@@ -11,14 +11,14 @@
     "staff": "AI staff",
     "website": "Website",
     "company": "Company",
-    "requestDemo": "Request a demo"
+    "requestDemo": "Send a request"
   },
   "hero": {
     "badge": "AI staff for Mongolian businesses",
     "title": "AI staff that handle customer service 24/7.",
     "description": "Four AI staff answer customer questions in Mongolian, around the clock, on Facebook, Instagram, and your website. They add no headcount, shift, or leave costs.",
     "buttons": {
-      "requestDemo": "Request a demo",
+      "request": "Send a request",
       "seeWork": "Meet the staff"
     },
     "switchboard": {
@@ -73,12 +73,26 @@
         "Sent Saraa the feedback survey.",
         "Invited customers who have not been in for a while."
       ]
+    },
+    "ring": {
+      "alt": "A day as a ring. Seven moments, each at its own hour: a booking at night, the report in the morning, a call just before closing.",
+      "open": "Open {{from}}–{{to}}",
+      "closed": "The other {{hours}} hours are covered by the AI staff",
+      "events": [
+        "Took a booking that came in overnight",
+        "Answered a question about prices",
+        "The monthly report is ready",
+        "Moved a booking to another time",
+        "Answered a call at closing time",
+        "Reminded a customer about tomorrow",
+        "Replied to a message from Instagram"
+      ]
     }
   },
   "day": {
     "title": "Work does not stop while you sleep.",
     "lead": "Watch what reaches your phone over one day. A booking at night, a report in the morning, a call just before closing.",
-    "closing": "Four AI staff, working as one team. A demo shows how they would work for your business.",
+    "closing": "Four AI staff, working as one team. Send a request and we will show how they would work for your business.",
     "sceneAlt": "An office from night to evening: Ara through the night, Veda in the morning, Eho in the evening.",
     "phone": {
       "alt": "The owner's phone: the notifications of one day",
@@ -135,7 +149,7 @@
           "10 customers notified"
         ]
       },
-      "cta": "Request a demo",
+      "cta": "Send a request",
       "ctaHint": "A one-minute form. We call you back."
     }
   },
@@ -181,14 +195,14 @@
       "title": "Monthly support",
       "description": "Content updates, improvements, and maintenance run on a regular schedule. The monthly plan is optional."
     },
-    "cta": "A short demo shows how this runs in your business.",
-    "ctaDesc": "After the demo we set out the configuration that fits your business."
+    "cta": "A short walkthrough shows how this runs in your business.",
+    "ctaDesc": "After that we set out the configuration that fits your business."
   },
   "portfolio": {
     "section": "WEBSITE",
     "title": "A website we built",
     "description": "A website built for a beauty salon: online booking, QPay payments, and Ara integrated.",
-    "getDemo": "Get a proposal",
+    "getDemo": "Send a request",
     "case": {
       "url": "Client website",
       "pills": {
@@ -212,16 +226,16 @@
         "Booking and payment in one flow"
       ],
       "buttons": {
-        "requestDemo": "Get a website proposal"
+        "requestDemo": "Send a request"
       }
     },
     "createDemo": "Generate a demo website"
   },
   "liveDemo": {
-    "section": "LIVE DEMO",
+    "section": "LIVE EXAMPLE",
     "title": "When a customer writes, Ara answers like this.",
-    "description": "A Messenger conversation at a sample salon. Ara books the time, answers the questions, and hands the owner what she does not know. We show Ara configured on your own business in a demo.",
-    "ctaLabel": "Set Ara up for your business",
+    "description": "A Messenger conversation at a sample salon. Ara books the time, answers the questions, and hands the owner what she does not know. Send a request and we will show Ara configured on your own business.",
+    "ctaLabel": "Send a request",
     "widget": {
       "businessName": "Beauty salon",
       "statusOnline": "Online",
@@ -264,7 +278,7 @@
           "Mobile responsive",
           "Admin panel for managing content"
         ],
-        "cta": "Order the website"
+        "cta": "Send a request"
       },
       "bundle": {
         "title": "Website + Ara",
@@ -277,7 +291,7 @@
           "Ara answers on the website and on Messenger",
           "100,000₮ discount on the setup"
         ],
-        "cta": "Order the bundle",
+        "cta": "Send a request",
         "was": "900,000₮"
       }
     },
@@ -289,14 +303,14 @@
         "AI staff go live within 3–5 days"
       ],
       "note": "A tailored quote is prepared from your sector and the work you want to automate.",
-      "cta": "Contact us"
+      "cta": "Send a request"
     },
     "staff": {
       "title": "AI staff",
       "description": "Monthly fee, one-time setup. Two staff −10%, three −15%, four −20%; the discount applies to the monthly fee.",
       "teamLink": "Team composition and pricing",
-      "hire": "Hire",
-      "preorder": "Pre-register"
+      "hire": "Send a request",
+      "preorder": "Send a request"
     },
     "website": {
       "title": "Website",
@@ -333,12 +347,12 @@
     },
     "stillHaveQuestions": "More questions",
     "contactPrompt": "Send us the rest. We call back with the answers.",
-    "talkToUs": "Contact us"
+    "talkToUs": "Send a request"
   },
   "contact": {
-    "title": "A demo shaped to your business",
+    "title": "A setup shaped to your business",
     "description": "The form takes a minute. We call you back and show how the AI staff would work for your business. If you need a website, generate a demo site yourself in seconds.",
-    "requestCta": "Request a demo",
+    "requestCta": "Send a request",
     "demoCta": "Generate a demo website",
     "emailCta": "Email us"
   },
@@ -378,9 +392,9 @@
     }
   },
   "demoForm": {
-    "eyebrow": "DEMO",
-    "title": "Request a demo",
-    "subtitle": "A one-minute form. We call you back and set up the demo.",
+    "eyebrow": "REQUEST",
+    "title": "Send a request",
+    "subtitle": "A one-minute form. We call you back to agree the details.",
     "close": "Close",
     "optional": "Optional",
     "fields": {
@@ -419,14 +433,14 @@
       "business": "Enter your business name and sector.",
       "email": "The email address format is not valid."
     },
-    "submit": "Request the demo",
+    "submit": "Send a request",
     "submitting": "Sending…",
     "retry": "Send again",
     "startOver": "Clear the form",
     "privacy": "We use your details only to contact you.",
     "success": {
       "title": "Request received.",
-      "body": "We will call {{phone}} shortly and set up the demo.",
+      "body": "We will call {{phone}} shortly.",
       "close": "Close",
       "meanwhile": "Meet the staff while you wait"
     },
@@ -492,7 +506,7 @@
     "hero": {
       "title": "Four AI staff, working for your business.",
       "lead": "Ara answers every message and Eho answers every call. Veda prepares the monthly report and Nova follows up with customers. No new headcount, one fixed monthly fee.",
-      "hire": "Hire",
+      "hire": "Send a request",
       "see": "See them at work",
       "sceneAlt": "Four AI staff at their desks in an evening office, under one long window.",
       "more": "Details"
@@ -512,7 +526,7 @@
         "eyebrow": "Ara · Receptionist",
         "title": "Every message, within seconds.",
         "body": "Ara replies at once to messages on Facebook, Instagram and your website: prices, hours, services, and the booking itself. A customer left waiting goes to a competitor. Ara closes that leak.",
-        "cta": "Hire Ara",
+        "cta": "Send a request",
         "sceneAlt": "Ara at the desk at night, answering messages.",
         "chat": [
           {
@@ -541,7 +555,7 @@
         "eyebrow": "Veda · Business analyst",
         "title": "See each month in numbers.",
         "body": "The report is ready on the first day of the month. Which service grew and which customers went quiet, you know from figures, not guesses.",
-        "cta": "Add Veda",
+        "cta": "Send a request",
         "sceneAlt": "Veda in the morning behind two screens, preparing the monthly report.",
         "report": {
           "tag": "Sample",
@@ -565,7 +579,7 @@
         "eyebrow": "Eho · Phone operator",
         "title": "Every call, even at closing.",
         "body": "Eho speaks on the phone like a person, answers the questions and records the order. After hours and at peak times, no call is lost. Every missed call is a missed order.",
-        "cta": "Pre-register",
+        "cta": "Send a request",
         "sceneAlt": "Eho with a headset, answering an incoming call.",
         "call": {
           "incoming": "Incoming call",
@@ -578,7 +592,7 @@
         "eyebrow": "Nova · Customer manager",
         "title": "A first-time customer comes back.",
         "body": "Asks for feedback after each visit. Reminds about appointments and payments. Calls back customers who stopped coming. Keeping a customer costs less than finding one.",
-        "cta": "Pre-register",
+        "cta": "Send a request",
         "sceneAlt": "Nova in the afternoon, writing to customers.",
         "chat": [
           {
@@ -611,8 +625,8 @@
       "vedaAlone": "Veda works only alongside another staff member. Select one more.",
       "empty": "Select at least one staff member.",
       "soonNote": "Eho and Nova launch soon. Pre-register and we notify you at launch.",
-      "cta": "Hire",
-      "ctaPreorder": "Pre-register"
+      "cta": "Send a request",
+      "ctaPreorder": "Send a request"
     },
     "steps": {
       "title": "Three steps to launch",
