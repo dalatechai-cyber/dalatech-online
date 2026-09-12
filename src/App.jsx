@@ -870,8 +870,14 @@ function SalonPreview() {
 const RING_R = 118;
 const RING_C = 2 * Math.PI * RING_R;
 const RING_CX = 150;
-const RING_SECONDS = 36; // one whole day per revolution
 const RING_OPEN = [10, 20]; // the hours a typical shop has someone at the counter
+
+// The hand does not sweep at a constant rate. It travels from one moment to
+// the next, then stands still on the one it reached while its line is read.
+// A caption therefore survives the hold plus the following travel — five and
+// a half seconds at the tightest, which is what a Cyrillic sentence needs.
+const RING_HOLD = 4.6; // seconds the hand rests on a moment
+const RING_TRAVEL = 9; // seconds of travel, shared out across the whole day
 
 const RING_EVENTS = [
   { at: 2 + 14 / 60, time: "02:14", who: "ara" },
@@ -882,6 +888,19 @@ const RING_EVENTS = [
   { at: 21 + 30 / 60, time: "21:30", who: "nova" },
   { at: 23 + 50 / 60, time: "23:50", who: "ara" },
 ];
+
+// One step per moment: the run up to it, then the rest on it. The first step
+// starts at last night's moment, so crossing midnight is what clears the lit
+// dots and resets the trail for the new day.
+const RING_STEPS = RING_EVENTS.map((e, i) => {
+  const from = i === 0 ? RING_EVENTS[RING_EVENTS.length - 1].at - 24 : RING_EVENTS[i - 1].at;
+  const travel = (RING_TRAVEL * (e.at - from)) / 24;
+  return { from, to: e.at, travel, span: travel + RING_HOLD };
+});
+const RING_CYCLE = RING_STEPS.reduce((sum, step) => sum + step.span, 0);
+
+// eased so the hand pulls away and settles rather than stopping dead
+const ringEase = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
 function ringPoint(hour, radius = RING_R) {
   const a = ((hour / 24) * 360 - 90) * (Math.PI / 180);
@@ -917,6 +936,8 @@ function DayRing({ className = "" }) {
   // which event the centre is showing, so text is written only when it changes
   const shownRef = React.useRef(-1);
   const clockRef = React.useRef("");
+  const spinRef = React.useRef("");
+  const litRef = React.useRef(-2);
   const [active, setActive] = React.useState(RING_EVENTS.length - 1);
 
   React.useEffect(() => {
@@ -930,25 +951,47 @@ function DayRing({ className = "" }) {
     const frame = (now) => {
       raf = 0;
       if (!running) return;
-      const p = (((now - started) / (RING_SECONDS * 1000)) % 1 + 1) % 1;
-      const hour = p * 24;
+      // where in the cycle we are, and therefore which step and how far into it
+      const elapsed = ((((now - started) / 1000) % RING_CYCLE) + RING_CYCLE) % RING_CYCLE;
+      let si = 0;
+      let u = elapsed;
+      while (si < RING_STEPS.length - 1 && u >= RING_STEPS[si].span) {
+        u -= RING_STEPS[si].span;
+        si += 1;
+      }
+      const step = RING_STEPS[si];
+      const moving = u < step.travel;
+      const raw = step.from + (step.to - step.from) * (moving ? ringEase(u / step.travel) : 1);
+      // Only the first step starts before midnight, so a plain shift wraps it.
+      // A `% 24` here would not: adding 24 and taking the remainder rounds the
+      // hour a hair below the moment the hand is resting on, which used to
+      // hold each caption a whole beat too long.
+      const hour = raw < 0 ? raw + 24 : raw;
+      const p = hour / 24;
 
-      if (handRef.current) handRef.current.style.transform = `rotate(${(p * 360).toFixed(2)}deg)`;
-      if (trailRef.current) trailRef.current.style.strokeDashoffset = String(RING_C * (1 - p));
+      // The hand is motionless for four and a half of every six seconds, so
+      // the written values are usually identical to the last ones. Comparing
+      // first skips the string building, not just the style write.
+      const spin = `rotate(${(p * 360).toFixed(2)}deg)`;
+      if (spin !== spinRef.current) {
+        spinRef.current = spin;
+        if (handRef.current) handRef.current.style.transform = spin;
+        if (trailRef.current) trailRef.current.style.strokeDashoffset = String(RING_C * (1 - p));
+      }
 
-      // the most recent moment the hand has passed; before the first one of
-      // the day, the centre still holds last night's
-      let idx = -1;
-      for (let i = 0; i < RING_EVENTS.length; i += 1) if (hour >= RING_EVENTS[i].at) idx = i;
+      // The moment the hand has reached, taken from the step rather than from
+      // the hour: the step index is exact, a compared float is not. While the
+      // hand is travelling it has not arrived yet, so the previous moment
+      // still stands — and the first step crosses midnight, which is what
+      // clears the lit dots for the new day.
+      const idx = moving ? (si === 0 ? (raw < 0 ? RING_EVENTS.length - 1 : -1) : si - 1) : si;
       const shown = idx === -1 ? RING_EVENTS.length - 1 : idx;
 
-      for (let i = 0; i < RING_EVENTS.length; i += 1) {
-        const el = dotsRef.current[i];
-        if (!el) continue;
-        const lit = i <= idx;
-        if (el.dataset.lit !== String(lit)) {
-          el.dataset.lit = String(lit);
-          el.classList.toggle("is-lit", lit);
+      if (idx !== litRef.current) {
+        litRef.current = idx;
+        for (let i = 0; i < RING_EVENTS.length; i += 1) {
+          const el = dotsRef.current[i];
+          if (el) el.classList.toggle("is-lit", i <= idx);
         }
       }
 
@@ -956,9 +999,10 @@ function DayRing({ className = "" }) {
         shownRef.current = shown;
         setActive(shown);
       }
-      // the clock lands exactly on a moment's own time as the hand reaches it
-      const near = idx >= 0 && hour - RING_EVENTS[idx].at < 0.35;
-      const text = near ? RING_EVENTS[idx].time : ringClock(hour);
+      // The clock snaps to the moment's own time on arrival — not a moment
+      // before it, which used to put the arriving time over the previous
+      // moment's name for a third of a second.
+      const text = moving ? ringClock(hour) : RING_EVENTS[si].time;
       if (text !== clockRef.current) {
         clockRef.current = text;
         if (timeRef.current) timeRef.current.textContent = text;
@@ -971,9 +1015,9 @@ function DayRing({ className = "" }) {
       const should = visible && !document.hidden;
       if (should && !running) {
         running = true;
-        // start the day a little before the 02:14 message so the first thing
-        // a visitor sees is a moment landing, not an empty ring
-        started = performance.now() - 1.4 * (RING_SECONDS / 24) * 1000;
+        // open on last night's moment, lit and at rest with two seconds of its
+        // hold left: a full ring that can be read, then the new day starts
+        started = performance.now() - (RING_CYCLE - RING_HOLD + 2.6) * 1000;
         raf = requestAnimationFrame(frame);
       } else if (!should && running) {
         running = false;
@@ -1080,7 +1124,7 @@ function DayRing({ className = "" }) {
           <span ref={timeRef} className="font-display text-[34px] font-semibold leading-none tabular-nums tracking-tight text-fg sm:text-[38px]">
             {event.time}
           </span>
-          <span className="mt-2.5 flex items-center gap-1.5">
+          <span key={`who-${active}`} className="ring-caption mt-2.5 flex items-center gap-1.5">
             <span className="flex h-[20px] w-[18px] shrink-0 items-start justify-center overflow-hidden rounded-[5px] bg-white/[0.07]" aria-hidden>
               <StaffAvatar id={event.who} size={1} className="-mt-[30px]" />
             </span>
@@ -1088,7 +1132,7 @@ function DayRing({ className = "" }) {
               {t(`office.agents.${event.who}.name`)}
             </span>
           </span>
-          <span className="mt-2 text-[12.5px] leading-[1.4] text-fg-muted" aria-live="off">
+          <span key={`line-${active}`} className="ring-caption mt-2 text-[12.5px] leading-[1.4] text-fg-muted" aria-live="off">
             {labels[active] || ""}
           </span>
         </div>
@@ -4410,7 +4454,15 @@ function Rise({ progress, at, span = 0.08, until, className = "", children }) {
   const outStart = Math.max(inEnd + 1e-4, Math.min(until - OUT, until - 1e-4));
   const useUntil = until !== undefined && until > inEnd;
   const stops = useUntil ? [at, inEnd, outStart, until] : [at, inEnd];
-  const opacity = useTransform(progress, stops, useUntil ? [0, 1, 1, 0] : [0, 1]);
+  // Opacity is ramped over a third of the travel, not over all of it. A chat
+  // row is a dark plate with a light timestamp beside it: over a night scene
+  // the plate disappears at half opacity while the stamp is still perfectly
+  // legible, so a long cross-fade left bare times floating on the pixel art
+  // with nothing under them. The movement keeps the full ramp.
+  const fadeIn = at + span * 0.34;
+  const fadeOut = useUntil ? outStart + (until - outStart) * 0.66 : 0;
+  const opacityStops = useUntil ? [at, fadeIn, fadeOut, until] : [at, fadeIn];
+  const opacity = useTransform(progress, opacityStops, useUntil ? [0, 1, 1, 0] : [0, 1]);
   const y = useTransform(
     progress,
     stops,
@@ -4423,9 +4475,16 @@ function Rise({ progress, at, span = 0.08, until, className = "", children }) {
   );
 }
 
-const CHAPTER_SCALE = (w) => (w < 640 ? 2 : 3);
-// phones get a taller room so the messages fit beside the person
-const CHAPTER_HEIGHT = (w) => (w < 640 ? 176 : 128);
+// One scale and one height, deliberately not branched on width. The stage
+// measures its own frame, and the chapter frame is not monotonic in viewport
+// width: below md the scene is full width, at md it becomes seven columns of
+// twelve and shrinks. A width branch therefore made the room jump taller
+// between 696 and 767 pixels of window and snap back again.
+//
+// The room needs the height to read as a room: a wall tall enough to carry a
+// full window bay, a band under it, and a floor deep enough to stand on.
+const CHAPTER_SCALE = () => 2;
+const CHAPTER_HEIGHT = () => 214;
 
 function StaffStatus({ live }) {
   const { t } = useTranslation();
@@ -4475,6 +4534,160 @@ function StaffCards({ onPick, className = "" }) {
   );
 }
 
+// ----------------------------------------------- the office page's own opening
+// Not the landing page's clock, and not a second telling of the four chapters
+// further down. The argument here is a different one: the work a business gets
+// is four different kinds, and each of the four takes one kind. Two lanes run
+// inward — a message, a call. One never leaves the desk: the numbers. One goes
+// out on its own and comes back with an answer.
+//
+// Every element is authored at its finished position. The animation is added
+// only once the board is on screen and only when motion is welcome, and it
+// runs *from* the start state via animation-fill-mode: backwards. So the board
+// is true with the animation off, blocked, or never started — it is a diagram
+// that happens to move, not a sequence you have to catch.
+// In the same order as the cards below, the four chapters and the pricing:
+// three lists of the same four people on one page, and two of them running a
+// different order was a small cruelty. The direction is carried by the rails
+// and the chips, which is where it belongs, not by the sequence.
+const BOARD_DIR = { ara: "in", eho: "in", veda: "still", nova: "out" };
+
+// Each lane's payload, drawn small enough to sit on a 28px rail. The glyph is
+// the job: a message, a ringing call, four weeks of numbers, a note going out.
+function BoardGlyph({ kind }) {
+  if (kind === "chat") {
+    return (
+      <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden>
+        <path d="M3.2 4.6h13.6v8.2H8.4L4.6 15.8v-3h-1.4z" fill="currentColor" opacity="0.22" />
+        <path d="M3.2 4.6h13.6v8.2H8.4L4.6 15.8v-3h-1.4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "call") {
+    return (
+      <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden>
+        <path d="M6.6 3.6 8.4 7l-1.7 1.6a9 9 0 0 0 4.7 4.7L13 11.6l3.4 1.8-.5 2.6a1.4 1.4 0 0 1-1.5 1.1C8 16.6 3.4 12 2.9 5.6a1.4 1.4 0 0 1 1.1-1.5z" fill="currentColor" />
+      </svg>
+    );
+  }
+  if (kind === "send") {
+    return (
+      <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden>
+        <path d="M17 3 2.6 8.6l5.5 2.1 2.1 5.5z" fill="currentColor" opacity="0.28" />
+        <path d="M17 3 2.6 8.6l5.5 2.1 2.1 5.5zM17 3l-8.9 7.7" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  // the answer that comes back
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden>
+      <path d="M3.6 10.6 7.6 14.4 16.4 5.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+const BOARD_BARS = [0.46, 0.64, 0.5, 1]; // four weeks; the last one is the point
+
+function BoardLane({ id, dir, step }) {
+  const { t } = useTranslation();
+  const live = STAFF_LIVE[id];
+  return (
+    <li
+      className="board-lane"
+      data-dir={dir}
+      data-soon={live ? undefined : "true"}
+      style={{ "--d": `${240 + step * 260}ms` }}
+    >
+      <div className="board-who">
+        {/* the same pixel face as the cards and the scenes: four people, not four bars */}
+        <span className="board-face">
+          <StaffAvatar id={id} size={2} className="-mt-[60px]" />
+        </span>
+        <span className="min-w-0">
+          <span className="board-name">
+            {t(`office.agents.${id}.name`)}
+            {!live && <span className="board-soon">{t("office.status.soon")}</span>}
+          </span>
+          <span className="board-role">{t(`office.agents.${id}.role`)}</span>
+          {/* everything that carries the direction is drawn, so a screen
+              reader would otherwise hear a name and a channel and no verb */}
+          <span className="sr-only">{t(`office.board.lanes.${id}.dir`)}</span>
+        </span>
+      </div>
+
+      <div className="board-rail">
+        <span className="board-track" aria-hidden />
+        {dir !== "still" && <span className="board-arrow" aria-hidden />}
+        {/* the outbound lane is the only round trip: out, then back */}
+        {dir === "out" && <span className="board-arrow board-arrow--back" aria-hidden />}
+
+        {dir === "in" && (
+          <span className="board-slide board-slide--in" aria-hidden>
+            <span className="board-token">
+              <BoardGlyph kind={id === "eho" ? "call" : "chat"} />
+              {id === "eho" && <span className="board-ripple" />}
+            </span>
+          </span>
+        )}
+
+        {dir === "still" && (
+          <span className="board-bars" aria-hidden>
+            {BOARD_BARS.map((h, i) => (
+              <span key={i} className="board-bar" style={{ "--h": `${Math.round(h * 100)}%`, "--i": i }} />
+            ))}
+          </span>
+        )}
+
+        {dir === "out" && (
+          <>
+            <span className="board-slide board-slide--out" aria-hidden>
+              <span className="board-token board-token--ghost"><BoardGlyph kind="send" /></span>
+            </span>
+            <span className="board-slide board-slide--back" aria-hidden>
+              <span className="board-token board-token--reply"><BoardGlyph kind="tick" /></span>
+            </span>
+          </>
+        )}
+      </div>
+
+      <div className="board-end">
+        <span className="board-chip">{t(`office.board.lanes.${id}.end`)}</span>
+      </div>
+    </li>
+  );
+}
+
+function ShiftBoard({ className = "" }) {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const ref = React.useRef(null);
+  const [play, setPlay] = React.useState(false);
+
+  React.useEffect(() => {
+    if (reduced || !ref.current) return undefined;
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      setPlay(true);
+      io.disconnect(); // it plays once; nothing here loops
+    }, { rootMargin: "0px 0px -8% 0px" });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, [reduced]);
+
+  return (
+    <div ref={ref} data-board={play ? "on" : undefined} className={["w-full", className].join(" ")}>
+      <ul role="list" className="board-lanes" aria-label={t("office.board.label")}>
+        {STAFF_ORDER.map((id, i) => (
+          <BoardLane key={id} id={id} dir={BOARD_DIR[id]} step={i} />
+        ))}
+      </ul>
+      <p className="mx-auto mt-5 max-w-[540px] text-center text-[13px] leading-[1.5] text-fg-muted">
+        {t("office.board.caption")}
+      </p>
+    </div>
+  );
+}
+
 function StaffHero({ onHire, onSee, onPick }) {
   const { t } = useTranslation();
   return (
@@ -4486,8 +4699,8 @@ function StaffHero({ onHire, onSee, onPick }) {
         />
       </div>
       <Container className="relative">
-        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)] lg:gap-16">
-          <div className="text-center lg:text-left">
+        <div className="mx-auto max-w-[760px] text-center">
+          <div>
             <SectionLabel>{t("office.section")}</SectionLabel>
             <motion.h1
               initial={{ opacity: 0, y: 18 }}
@@ -4501,7 +4714,7 @@ function StaffHero({ onHire, onSee, onPick }) {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...SPRING_REVEAL, delay: 0.08 }}
-              className="mx-auto mt-5 max-w-[600px] text-[17px] leading-[1.5] text-fg-muted lg:mx-0"
+              className="mx-auto mt-5 max-w-[620px] text-[17px] leading-[1.5] text-fg-muted"
             >
               {t("office.hero.lead")}
             </motion.p>
@@ -4509,7 +4722,7 @@ function StaffHero({ onHire, onSee, onPick }) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...SPRING_REVEAL, delay: 0.16 }}
-              className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 lg:justify-start"
+              className="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
             >
               <MagneticButton onClick={onHire} variant="primary" className="min-h-[44px]">{t("office.hero.hire")}</MagneticButton>
               <button type="button" onClick={onSee} data-cursor="hover" className="pressable inline-flex min-h-[44px] items-center gap-1 text-[17px] text-sky-400 hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md px-1">
@@ -4518,20 +4731,20 @@ function StaffHero({ onHire, onSee, onPick }) {
             </motion.div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ ...SPRING_REVEAL, delay: 0.22 }}
-            className="flex justify-center lg:justify-end"
-          >
-            <ErrorBoundary fallback={null}>
-              <DayRing />
-            </ErrorBoundary>
-          </motion.div>
         </div>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING_REVEAL, delay: 0.22 }}
+          className="mx-auto mt-10 max-w-[740px] md:mt-12"
+        >
+          <ErrorBoundary fallback={null}>
+            <ShiftBoard />
+          </ErrorBoundary>
+        </motion.div>
       </Container>
       <Container>
-        <StaffCards className="mt-6 md:mt-8" onPick={onPick} />
+        <StaffCards className="mt-12 md:mt-16" onPick={onPick} />
       </Container>
     </section>
   );
@@ -4666,28 +4879,19 @@ function StaffChapter({ id, index, onHire }) {
   return (
     <section ref={ref} id={`staff-${id}`} className="py-14 md:py-24">
       <Container>
-        <div className="grid items-center gap-6 md:grid-cols-12 md:gap-x-10">
-          {/* one panel, not two stacked blocks: the eyebrow, the claim, the
-              reason, the price and the action are one object */}
-          <Reveal className={["md:col-span-5", flip ? "md:col-start-8" : "md:col-start-1"].join(" ")}>
-            <div className="panel-glass p-6 sm:p-7">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <SectionLabel>{t(`${base}.eyebrow`)}</SectionLabel>
-                <StaffStatus live={live} />
-              </div>
-              <h2 className="mt-4 font-display text-[30px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[36px] md:text-[40px]">{t(`${base}.title`)}</h2>
-              <p className="mt-4 text-[16px] leading-[1.5] text-fg-muted sm:text-[17px]">{t(`${base}.body`)}</p>
-              <div className="mt-6 border-t border-white/[0.08] pt-5">
-                <StaffPrice id={id} />
-                <div className="mt-5">
-                  <MagneticButton onClick={() => onHire([id])} variant={live ? "primary" : "secondary"} className="min-h-[44px]">
-                    {t(`${base}.cta`)}
-                  </MagneticButton>
-                </div>
-              </div>
+        {/* The copy sits on the page, not in a container of its own: the claim
+            above the scene's eye line, the reason and the price below it. The
+            only thing that belongs inside the room is what the person in it is
+            sending. */}
+        <div className="grid gap-6 md:grid-cols-12 md:grid-rows-[auto_auto] md:gap-x-10 md:gap-y-4">
+          <Reveal className={["md:col-span-5 md:row-start-1 md:self-end", flip ? "md:col-start-8" : "md:col-start-1"].join(" ")}>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <SectionLabel>{t(`${base}.eyebrow`)}</SectionLabel>
+              <StaffStatus live={live} />
             </div>
+            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[40px] md:text-[46px]">{t(`${base}.title`)}</h2>
           </Reveal>
-          <div className={["md:col-span-7", flip ? "md:col-start-1 md:row-start-1" : "md:col-start-6"].join(" ")}>
+          <div className={["md:col-span-7 md:row-span-2 md:row-start-1 md:self-center", flip ? "md:col-start-1" : "md:col-start-6"].join(" ")}>
             <div className="relative -mx-5 sm:mx-0">
               <PixelStage
                 draw={draw}
@@ -4702,6 +4906,17 @@ function StaffChapter({ id, index, onHire }) {
               <div className="absolute left-[49%] right-[4%] top-[4%] sm:left-[50%]">{overlay}</div>
             </div>
           </div>
+          <Reveal className={["md:col-span-5 md:row-start-2 md:self-start", flip ? "md:col-start-8" : "md:col-start-1"].join(" ")}>
+            <p className="max-w-[460px] text-[17px] leading-[1.47] text-fg-muted">{t(`${base}.body`)}</p>
+            <div className="mt-6 border-t border-white/[0.08] pt-5">
+              <StaffPrice id={id} />
+              <div className="mt-5">
+                <MagneticButton onClick={() => onHire([id])} variant={live ? "primary" : "secondary"} className="min-h-[44px]">
+                  {t(`${base}.cta`)}
+                </MagneticButton>
+              </div>
+            </div>
+          </Reveal>
         </div>
       </Container>
     </section>

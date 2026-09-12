@@ -37,9 +37,12 @@ KITCHEN = THEMES / "12_Kitchen_Singles_32x32" / "Kitchen_Singles_32x32_{}.png"
 BEDROOM = THEMES / "4_Bedroom_Singles_32x32" / "Bedroom_Singles_32x32_{}.png"
 CONDO = THEMES / "26_Condominium_Singles_32x32" / "Condominium_Singles_32x32_{}.png"
 ROOM_OFFICE = LZ / "Modern_Office_Revamped_v1.2" / "1_Room_Builder_Office" / "Room_Builder_Office_32x32.png"
+# The combined office sheet. The dressed two-bay shelf that anchors the back
+# wall of LimeZu's own office layouts is only here — it is not one of the 339
+# singles.
+OFFICE_SHEET = LZ / "Modern_Office_Revamped_v1.2" / "Modern_Office_32x32.png"
 ROOM_GENERIC = LZ / "moderninteriors-win" / "1_Interiors" / "32x32" / "Room_Builder_32x32.png"
 GEN = LZ / "moderninteriors-win" / "2_Characters" / "Character_Generator"
-EMOTES = LZ / "moderninteriors-win" / "4_User_Interface_Elements" / "UI_thinking_emotes_animation_32x32.png"
 
 # ---------------------------------------------------------------- palette
 BRAND = {"light": "#5E9BFF", "base": "#3B82F6", "shade": "#2456B8", "dark": "#1A3F8F"}
@@ -235,12 +238,10 @@ def props():
         "PLANT_2": single(O(99)),
         "PLANT_3": single(O(100)),
         "CABINET": single(O(180)),
-        "WHITEBOARD": single(O(171)),
+        "WHITEBOARD": single(O(170)),
         "COFFEE": single(O(317)),
         "MUG": single(K(182)),
         "STICKY": single(B(452)),
-        "BOOKSHELF": single(C(29)),
-        "CLOCK": single(C(9)),
         # the office around the desks: what makes the room read as one
         "WHITEBOARD_CHART": single(O(172)),
         "WHITEBOARD_LINE": single(O(171)),
@@ -249,46 +250,45 @@ def props():
         "COOLER": single(O(173)),
         "PRINTER_STAND": single(O(177)),
         "CERT": single(O(113)),
+        "CORK": single(O(97)),
         "NOTICE": single(O(116)),
-        "BUSH": single(O(337)),
-        "BIN": single(O(329)),
+        "BIN": single(O(333)),
         "CHAIR_ORANGE": single(O(107), rule=surface_rule),
+        # LimeZu's own office layouts hang an air conditioner high in a
+        # corner; it says "office" on sight and the wall above the glass is
+        # the one place in the room nothing else can go.
+        "AC": single(O(165)),
     }
+    # the dressed shelf — plant on top, books, boxes, files — from the
+    # combined sheet, where it is a composed unit rather than a single
+    sheet = Image.open(OFFICE_SHEET).convert("RGBA")
+    S["SHELF_UNIT"] = (rule_colours(crop_alpha(sheet.crop((226, 400, 286, 460))), furniture_rule), {})
     # the coffee machine's steam: six 32x64 frames (steam row over mug row)
     cf = Image.open(LZ / "moderninteriors-win" / "3_Animated_objects" / "32x32" / "spritesheets" / "animated_coffee_32x32.png").convert("RGBA")
     strip = Image.new("RGBA", (6 * 32, 64))
     for c in range(6):
         strip.paste(cf.crop((c * 32, 0, (c + 1) * 32, 64)), (c * 32, 0))
     S["COFFEE_STEAM"] = (strip, {"n": 6})
-    # walls from the generic room builder; floor carpet from the office builder
-    gb = Image.open(ROOM_GENERIC).convert("RGBA")
-    tile = lambda c, r: gb.crop((c * 32, r * 32, (c + 1) * 32, (r + 1) * 32))
-    wall_top = tile(22, 15)
-    wall_bottom = tile(22, 16)
-    face = wall_bottom.crop((0, 0, 32, 16))
-    wall_mid = Image.new("RGBA", (32, 32))
-    wall_mid.paste(face, (0, 0))
-    wall_mid.paste(face, (0, 16))
-    # the bottom tile's last 12 rows: a strip of face over the skirting board
-    skirt = wall_bottom.crop((0, 20, 32, 32))
-    for sid, im in (("WALL_TOP", wall_top), ("WALL_MID", wall_mid), ("WALL_BOTTOM", wall_bottom), ("SKIRT", skirt)):
-        S[sid] = (rule_colours(im, wall_rule), {})
+    # The wall and the floor both come from the office room builder now. The
+    # wall used to be a flat painted tile off the generic sheet: no cornice,
+    # no floor line, and a seam every 32 pixels that read as bathroom tiling.
+    # These three are the plaster office wall LimeZu's own office layouts use.
+    #   (8,11) the top course: a cornice, then face
+    #   (5,11) a course of plain face, for a wall taller than two tiles
+    #   (8,12) the bottom course: face ending on the dark floor line
+    # Each block on that sheet is three tiles wide and the outer two carry the
+    # wall's own dark end edge. Only the middle tile of a block tiles without
+    # a seam, which is why these are columns 8 and 5 and not 7 and 4.
     rb = Image.open(ROOM_OFFICE).convert("RGBA")
-    S["FLOOR"] = (rule_colours(rb.crop((320, 160, 384, 224)), floor_rule), {})
-    # speech bubbles: the "..." thinking emote and the heart one, five growing frames each
-    em = Image.open(EMOTES).convert("RGBA")
-    def emote(row, col0, n):
-        strip = Image.new("RGBA", (n * 32, 32))
-        for i in range(n):
-            strip.paste(em.crop(((col0 + i) * 32, row * 32, (col0 + i + 1) * 32, (row + 1) * 32)), (i * 32, 0))
-        return (strip, {"n": n})
-    S["BUBBLE"] = emote(0, 0, 5)   # the "..." thought bubble growing
-    S["HEART"] = emote(2, 0, 5)    # the bubble growing into a heart (row 1 was the sheet's sample dots)
-    S["MSG"] = emote(6, 8, 2)      # a message box: Ара receives one, Нова sends them
-    S["TYPING"] = emote(9, 2, 2)   # the "..." dots
-    S["STAR"] = emote(6, 4, 2)     # a sparkle, for a satisfied customer
-    S["ALERT"] = emote(4, 0, 2)    # "!" — an incoming call
-    S["DOLLAR"] = emote(4, 2, 2)   # a sale, for Веда's report
+    tile = lambda c, r: rb.crop((c * 32, r * 32, (c + 1) * 32, (r + 1) * 32))
+    for sid, im in (("WALL_TOP", tile(8, 11)), ("WALL_MID", tile(5, 11)), ("SKIRT", tile(8, 12))):
+        S[sid] = (rule_colours(im, wall_rule), {})
+    # the floor is a 96x64 pattern, not the 64x64 corner of one it used to be,
+    # so the tiling varies instead of repeating every two tiles
+    S["FLOOR"] = (rule_colours(rb.crop((320, 160, 416, 224)), floor_rule), {})
+    # The thinking emotes used to be packed here — a bubble, a heart, a "!",
+    # a message box. Nothing draws them any more: a cartoon emote over a
+    # person in a room reads as a game, and the page shows the real messages.
     return S
 
 

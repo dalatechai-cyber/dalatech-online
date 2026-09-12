@@ -53,7 +53,7 @@ function frameIndex(kit, t, seed) {
 // A person seated behind a desk. `pieces` are desk sprites laid left to
 // right; props are placed relative to the desk's top-left corner. Drawn in
 // the order the eye expects: chair, person, desk, things on the desk.
-// Anything that gives off light (screens, emotes, the lamp) is pushed to
+// Anything that gives off light (screens, the lamp) is pushed to
 // `lights` and drawn by the scene after the room is graded, so it stays
 // bright at night.
 function desk(ctx, img, o) {
@@ -85,55 +85,40 @@ function desk(ctx, img, o) {
 
 // A desk lamp standing on a desk. Lit once the light goes; the glow is
 // drawn after the grade so it reads as light, not as a yellow sprite.
-function deskLamp(ctx, img, x, y, night, lights) {
-  const on = night > 0.35;
-  if (!on) { sprite(ctx, img, "LAMP_OFF", x, y); return; }
+function deskLamp(ctx, img, x, y, night, lights, showSprite = true) {
+  // Lit from dusk. The unlit sprite is a dark hook against a dark wall, so
+  // the threshold sits below the dimmest hour any chapter is set at.
+  //
+  // `showSprite` exists because the lamp is 30 art pixels wide and the
+  // landing row gives each person a 50-pixel desk they already share with a
+  // laptop. There the sprite landed across the character's chest and read,
+  // unmistakably, as a brass instrument being played. That row keeps the
+  // pool of light and drops the object.
+  const on = night > 0.25;
+  if (!on) { if (showSprite) sprite(ctx, img, "LAMP_OFF", x, y); return; }
   lights.push(() => {
     lampGlow(ctx, x + 15, y + 12, night);
-    sprite(ctx, img, "LAMP", x, y);
+    if (showSprite) sprite(ctx, img, "LAMP", x, y);
   });
-}
-
-// A message, small enough to sit in a scene at art scale: a 9x6 envelope.
-// The 32px emote reads as a cloud at this size.
-function envelope(ctx, x, y, alpha = 1) {
-  ctx.globalAlpha = alpha;
-  rect(ctx, x, y, 9, 6, "#F0F4FF");
-  rect(ctx, x, y, 9, 1, "#8B9FC4");
-  rect(ctx, x, y + 5, 9, 1, "#8B9FC4");
-  rect(ctx, x, y, 1, 6, "#8B9FC4");
-  rect(ctx, x + 8, y, 1, 6, "#8B9FC4");
-  rect(ctx, x + 1, y + 1, 1, 1, "#3B82F6"); rect(ctx, x + 2, y + 2, 1, 1, "#3B82F6");
-  rect(ctx, x + 3, y + 3, 3, 1, "#3B82F6");
-  rect(ctx, x + 6, y + 2, 1, 1, "#3B82F6"); rect(ctx, x + 7, y + 1, 1, 1, "#3B82F6");
-  ctx.globalAlpha = 1;
 }
 
 // ------------------------------------------------------- what each one does
 // Each job is a small loop on `t`, seeded so the four never fire together.
 // The phases are named so the chapters can pin one (see drawChapter).
 
-// Ара: a message arrives, she types, the reply lands on her laptop.
-//   0.0–1.0 s  a message box slides in over the laptop
-//   1.0–2.6 s  the typing dots over her head
-//   2.6–4.4 s  her laptop shows the exchange; the reply is the last bubble
+// Ара: a message arrives and she answers it. It plays on her screen — the
+// question in, her reply out — because that is where it really happens.
 function actAra(ctx, img, s, t, lights, force) {
-  const { x, y, cx, cy } = s;
+  const { x, y } = s;
   const lap = SPRITES.LAPTOP;
   const lx = x + 22, ly = y;
   const cycle = force ?? ((t + 1.3) % 5.2);
   lights.push(() => {
-    if (cycle < 1.0) {
-      const k = cycle / 1.0;
-      const mx = Math.round(cx - 26 + k * 40);
-      envelope(ctx, mx, cy - 2 - Math.round(Math.sin(k * Math.PI) * 6), Math.min(1, k * 3));
-    } else if (cycle < 2.6) {
-      stripFrame(ctx, img, "BUBBLE", 3, cx + 18, cy - 6);
-      const lifted = Math.floor(t * 6) % 3;
-      for (let d = 0; d < 3; d++) rect(ctx, cx + 18 + 10 + d * 5, cy - 6 + 18 - (d === lifted ? 1 : 0), 2, 2, "#3A3A50");
-    }
-    // the laptop screen: two bubbles, theirs then hers, the reply arriving
-    // as the typing ends
+    // The thought bubble and the envelope that used to float over her head
+    // are gone: the page shows the real conversation beside the scene, and a
+    // cartoon emote over a person in a room reads as a game, not an office.
+    // What is left is what a person at a desk actually does — the exchange
+    // appears on her screen.
     const sc = lap.screens[0];
     const sx = lx + sc.x, sy = ly + sc.y;
     rect(ctx, sx, sy, sc.w, sc.h, "#1E3F8A");
@@ -163,18 +148,16 @@ function actVeda(ctx, img, s, t, lights, chartGrow) {
 }
 
 // Эхо: the phone rings, he answers, the call runs on his screen as a
-// waveform. Ringing is the "!" over the desk phone plus the sound rings.
+// waveform. Ringing is the sound rings around the desk phone.
 function actEho(ctx, img, s, t, lights, ringForce) {
-  const { x, y, cx, cy } = s;
+  const { x, y } = s;
   const cycle = (t + 2.1) % 6.5;
   const ring = ringForce ?? (cycle < 1.5);
   const mon = SPRITES.MONITOR_KB;
   const mx = x + 20, my = y;
   lights.push(() => {
-    if (ring) {
-      ringing(ctx, x - 2 + 20, y + 8 + 6, t);
-      stripFrame(ctx, img, "ALERT", Math.floor(t * 4) % 2, cx + 18, cy - 8);
-    }
+    // the sound rings around the phone itself; the floating "!" is gone
+    if (ring) ringing(ctx, x - 2 + 20, y + 8 + 6, t);
     const sc = mon.screens[0];
     const sx = mx + sc.x, sy = my + sc.y;
     rect(ctx, sx, sy, sc.w, sc.h, "#1E3F8A");
@@ -190,10 +173,10 @@ function actEho(ctx, img, s, t, lights, ringForce) {
   });
 }
 
-// Нова: reaching out. Messages leave her laptop and drift up and away;
-// now and then a heart comes back from the customer.
+// Нова: reaching out. The thread on her screen advances a line at a time as
+// each message goes out.
 function actNova(ctx, img, s, t, lights) {
-  const { x, y, cx, cy } = s;
+  const { x, y } = s;
   const lap = SPRITES.LAPTOP;
   const lx = x + 12, ly = y;
   lights.push(() => {
@@ -201,17 +184,10 @@ function actNova(ctx, img, s, t, lights) {
     const sx = lx + sc.x, sy = ly + sc.y;
     rect(ctx, sx, sy, sc.w, sc.h, "#1E3F8A");
     for (let r = 0; r < 3; r++) rect(ctx, sx + 1, sy + 1 + r * 3, 6 + ((Math.floor(t) + r) % 3) * 3, 2, "#5E9BFF");
-    // three messages in flight at once, each on its own 3.6 s arc
-    for (let k = 0; k < 3; k++) {
-      const p = ((t + k * 1.2) % 3.6) / 3.6;
-      if (p > 0.85) continue;
-      const mx = Math.round(cx + 28 + p * 22);
-      const my = Math.round(cy + 6 - p * 30);
-      envelope(ctx, mx, my, p < 0.1 ? p * 10 : 1 - Math.max(0, (p - 0.6) / 0.25));
-    }
-    // a heart back, once every ten seconds
-    const hc = (t + 4) % 10;
-    if (hc < 1.6) stripFrame(ctx, img, "HEART", Math.min(4, Math.floor(hc * 4)), cx + 20, cy - 20);
+    // a line on her screen lights as each message goes out; the envelopes
+    // and the heart that used to drift over her head are gone
+    const sent = Math.floor(t / 1.2) % 3;
+    rect(ctx, sx + 1, sy + 1 + sent * 3, 10, 2, "#9CC5FF");
   });
 }
 
@@ -252,11 +228,18 @@ function officeRoom(ctx, img, { W, H, t }, {
     sprite(ctx, img, "COOLER", rx + 4, floorY - 8);
   }
   if (corner) {
-    // a real corner each end: bookshelf and clock on the wall, the standing
-    // whiteboard with the month's chart, a bin by the cooler
-    sprite(ctx, img, "BOOKSHELF", ox - 66, floorY - 50);
-    sprite(ctx, img, "CLOCK", rx + 40, 4);
-    sprite(ctx, img, "WHITEBOARD_CHART", rx + 34, floorY + 4);
+    // A real corner at each end. What used to stand here was a "bookshelf"
+    // and a "clock" that were, on inspection of the source pack, two
+    // top-down staircases — so a stairwell was being drawn on an office
+    // wall. They are gone: the shelf unit and the wall chart are the real
+    // office pieces, with a bin by the cooler.
+    // The right-hand pieces are pushed in from the edge rather than drawn at
+    // a fixed offset: the corner gate only guarantees room for the narrowest
+    // of them, so a wide one used to be sheared off by the frame.
+    const corner_x = (sid, dx) => Math.min(rx + dx, W - 2 - SPRITES[sid].w);
+    sprite(ctx, img, "SHELF_UNIT", ox - 68, floorY - SPRITES.SHELF_UNIT.h + 6);
+    sprite(ctx, img, "AC", corner_x("AC", 38), 4);
+    sprite(ctx, img, "WHITEBOARD_CHART", corner_x("WHITEBOARD_CHART", 34), floorY + 4);
     sprite(ctx, img, "BIN", rx + 8, floorY + 36);
   }
 
@@ -268,7 +251,7 @@ function officeRoom(ctx, img, { W, H, t }, {
     let s;
     if (id === "ara") {
       s = desk(ctx, img, { ...base, props: [["LAPTOP", 22, 0]] });
-      deskLamp(ctx, img, base.x - 2, deskY - 14, night, lights);
+      deskLamp(ctx, img, base.x - 2, deskY - 14, night, lights, false);
       if (occupied) actAra(ctx, img, { ...s, x: base.x, y: deskY }, t, lights, araPhase);
     } else if (id === "veda") {
       s = desk(ctx, img, { ...base, pieces: ["DESK_L", "DESK_M", "DESK_R"], personX: 24, props: [["PAPER_STACK", -2, 4], ["DUAL", 10, -4]] });
@@ -307,51 +290,145 @@ export function drawHero(ctx, img, v) {
 }
 
 // --------------------------------------------------------------- chapters
-// One person, close up, at the hour their chapter is set, doing the same
-// job they do in the room. The right side of the wall stays plain: the page
-// floats the real messages over it.
+// One person, close up, at the hour their chapter is set. The room around
+// them has to read as an office at a glance, so it is built the way an
+// office is: a long mullioned window across the top of the wall, a wall band
+// under it with something hung on it, and a floor with the things an office
+// keeps near the desks — a shelf of files, the printer, the water cooler, a
+// plant, a spare chair for whoever comes over.
+//
+// The page floats this agent's real messages over the top right of the
+// frame. That strip is the one place nothing may be: `quiet` below is its
+// boundary, and every piece of furniture is placed against it, so the room
+// can be filled everywhere else without anything being half hidden.
+
+// What each room keeps. Without this the four chapters ran one placement
+// path and came out as the same photograph four times, differing only in the
+// hour of the sky and the colour of the hair. The pack has few pieces short
+// enough for the back wall — everything there has to clear the panel the
+// page floats over it — so the character of each room is carried by its
+// front row, which sits low in the frame and can hold the tall things.
+const CHAPTER_KIT = {
+  // reception: somewhere for whoever walks in to sit
+  ara: { left: ["SHELF_UNIT", "stand"], wall: "CERT", plant: true, front: ["CHAIR_ORANGE", "PLANT", "PLANT_3"] },
+  // the analyst: the month on the wall, the printer, the files
+  veda: { left: ["WHITEBOARD_CHART", "hang"], wall: "CORK", plant: true, front: ["CABINET", "PLANT_3"] },
+  // the phone desk: the corner people actually stand in between calls
+  eho: { left: ["SHELF_UNIT", "stand"], wall: "NOTICE", plant: false, front: ["COFFEE", "COOLER", "PLANT"] },
+  // customer manager: the board of who has not been back, and a seat for them
+  nova: { left: ["CABINET", "stand"], wall: "CORK", plant: true, front: ["PLANT", "CHAIR_ORANGE", "PLANT_3"] },
+};
+
+// Where a sprite stands on a floor line: its feet sink four pixels into the
+// carpet, which is what stops furniture looking like it floats.
+function stand(ctx, img, id, x, lineY, lift = 0) {
+  sprite(ctx, img, id, x, lineY - SPRITES[id].h + 4 - lift);
+}
+
 export function drawChapter(id) {
   const hour = CHAPTER_HOUR[id];
   const night = nightAmount(hour);
   return (ctx, img, { W, H, t, progress }) => {
-    const floorY = H - 56;
+    const floorY = H - Math.round(H * 0.34); // where the wall meets the carpet
+    const deskY = floorY + 8;
+    const frontY = deskY + SPRITES.DESK_L.h - 4; // the depth the desk stands at
+    // The strip the page floats this agent's real messages over: right of
+    // quiet.x and above quiet.y. Nothing that has to be seen goes there, so
+    // furniture is placed against it rather than under it.
+    const quiet = { x: Math.round(W * 0.49), y: Math.round(H * 0.5) };
+
     room(ctx, img, W, H, floorY);
-    const win = { x: 8, y: 6, w: Math.max(70, Math.min(100, Math.floor(W * 0.42))), h: Math.min(50, floorY - 24) };
-    sky(ctx, win.x, win.y, win.w, win.h, hour, STAFF.indexOf(id) + 11);
-    windowFrame(ctx, win.x, win.y, win.w, win.h);
-    const deskY = floorY + 6;
+
+    // The window: one bay running the whole wall, mullioned about every 44
+    // art pixels, from just under the ceiling down to head height. It is the
+    // fastest thing in the frame to say "office".
+    const glass = { x: 5, y: 7, w: W - 10, h: Math.max(30, floorY - 7 - 46) };
+    sky(ctx, glass.x, glass.y, glass.w, glass.h, hour, STAFF.indexOf(id) + 11);
+    const bays = Math.max(2, Math.round(glass.w / 44));
+    const posts = [];
+    for (let k = 1; k < bays; k += 1) posts.push(Math.round(glass.x + (k * glass.w) / bays) - 1);
+    windowFrame(ctx, glass.x, glass.y, glass.w, glass.h, posts);
+
     const lights = [];
-    const x = 8;
+    const deskX = 6;
     const grow = mapRange(progress, 0.2, 0.62, 0, 1);
-    const base = { id, x, y: deskY, t, seed: 2, lights, night, pieces: ["DESK_L", "DESK_M", "DESK_R"] };
+    const pieces = ["DESK_L", "DESK_M", "DESK_R"];
+    const base = { id, x: deskX, y: deskY, t, seed: 2, lights, night, pieces };
+    let s;
+    let frontLeft = 0; // the left edge of the front row, once the desk knows it
+
     if (id === "ara") {
-      const s = desk(ctx, img, { ...base, personX: 12, props: [["DESK_PHONE", 2, 8], ["LAPTOP", 50, 0]] });
-      sprite(ctx, img, "CABINET", x + s.deskW + 8, deskY - 2);
-      deskLamp(ctx, img, x + s.deskW + 9, deskY - 36, night, lights);
-      actAra(ctx, img, { ...s, x: x + 36, y: deskY }, t, lights, null);
+      s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["LAPTOP", 50, 0]] });
+      deskLamp(ctx, img, deskX + s.deskW - 32, deskY - 36, night, lights);
+      actAra(ctx, img, { ...s, x: deskX + 28, y: deskY }, t, lights, null);
     } else if (id === "veda") {
-      const s = desk(ctx, img, { ...base, personX: 10, props: [["PAPER_STACK", 2, 6], ["DUAL", 30, -4]] });
-      const printerX = x + s.deskW + 4, printerY = deskY + 2;
-      sprite(ctx, img, "PRINTER", printerX, printerY);
-      actVeda(ctx, img, { ...s, x: x + 20, y: deskY, printerX, printerY }, t, lights, grow);
+      s = desk(ctx, img, { ...base, personX: 8, props: [["PAPER_STACK", 0, 6], ["DUAL", 18, -4]] });
+      // Her printer stands beside the desk at the desk's own depth. Against
+      // the back wall it would be both under the page's report card and
+      // under whatever the back-wall row places next.
+      const px = deskX + s.deskW + 8;
+      stand(ctx, img, "PRINTER_STAND", px, frontY);
+      const py = frontY - SPRITES.PRINTER_STAND.h + 4 - 22;
+      sprite(ctx, img, "PRINTER", px + 10, py);
+      frontLeft = px + SPRITES.PRINTER_STAND.w + 8;
+      actVeda(ctx, img, { ...s, x: deskX + 8, y: deskY, printerX: px + 10, printerY: py }, t, lights, grow);
     } else if (id === "eho") {
-      const s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 8], ["MONITOR_KB", 50, 0]] });
-      sprite(ctx, img, "PLANT", x + s.deskW + 8, deskY - 16);
-      actEho(ctx, img, { ...s, x: x + 36, y: deskY }, t, lights, null);
+      s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["MONITOR_KB", 48, 0]] });
+      deskLamp(ctx, img, deskX + s.deskW - 32, deskY - 36, night, lights);
+      actEho(ctx, img, { ...s, x: deskX + 24, y: deskY }, t, lights, null);
     } else {
-      const s = desk(ctx, img, { ...base, personX: 12, props: [["LAPTOP", 50, 0]] });
-      sprite(ctx, img, "PLANT", x + s.deskW + 8, deskY - 16);
-      lights.push(() => stripFrame(ctx, img, "COFFEE_STEAM", Math.floor(t * 5) % 6, x + 8, deskY - 26));
-      actNova(ctx, img, { ...s, x: x + 38, y: deskY }, t, lights);
+      s = desk(ctx, img, { ...base, personX: 10, props: [["MUG", 6, 12], ["LAPTOP", 50, 0]] });
+      lights.push(() => stripFrame(ctx, img, "COFFEE_STEAM", Math.floor(t * 5) % 6, deskX + 2, deskY - 26));
+      actNova(ctx, img, { ...s, x: deskX + 38, y: deskY }, t, lights);
     }
-    // On a wide frame the far right is otherwise bare wall; the overlay the
-    // page floats there covers the top half only.
-    if (W >= 250) {
-      sprite(ctx, img, "COOLER", W - 30, deskY - 30);
-      sprite(ctx, img, "BIN", W - 44, deskY + 8);
+
+    const kit = CHAPTER_KIT[id];
+
+    // ---- the back wall left of the panel, where height is unconstrained
+    const gapX = deskX + s.deskW + 2;
+    const gap = quiet.x - gapX;
+    if (kit.left) {
+      const [lid, mode] = kit.left;
+      const lw = SPRITES[lid].w;
+      if (gap >= lw) {
+        if (mode === "stand") stand(ctx, img, lid, gapX, floorY);
+        else sprite(ctx, img, lid, gapX, floorY - SPRITES[lid].h - 6);
+      }
     }
-    grade(ctx, W, H, hour, [win]);
-    sunPatch(ctx, win, floorY, H, hour);
+
+    // ---- the back wall behind the panel: only what fits under it
+    let bx = quiet.x + 6;
+    if (kit.plant) {
+      const sp = SPRITES.PLANT_2;
+      const y = floorY - sp.h + 4;
+      if (y >= quiet.y && bx + sp.w <= W - 6) { sprite(ctx, img, "PLANT_2", bx, y); bx += sp.w + 8; }
+    }
+    // and one thing hung in the far corner, under the panel's bottom edge
+    if (kit.wall) {
+      const sp = SPRITES[kit.wall];
+      const wx = W - 8 - sp.w;
+      const wy = floorY - sp.h - 4;
+      if (wy >= quiet.y && wx > bx - 6) sprite(ctx, img, kit.wall, wx, wy);
+    }
+
+    // ---- the front of the room, at the depth the desk stands at
+    // The floor would otherwise be a bare expanse, and this row is low in
+    // the frame, so it carries the tall pieces the back wall cannot.
+    let fx = W - 6;
+    const frontStop = Math.max(deskX + s.deskW + 12, frontLeft);
+    for (const tall of kit.front) {
+      const w = SPRITES[tall].w;
+      if (fx - w < frontStop) break;
+      fx -= w;
+      stand(ctx, img, tall, fx, frontY);
+      fx -= 8;
+    }
+    // and the bin by the desk, so the near floor is not a bare expanse
+    const binX = Math.max(deskX + s.deskW + 14, frontLeft);
+    if (binX + SPRITES.BIN.w < fx - 6) stand(ctx, img, "BIN", binX, frontY);
+
+    grade(ctx, W, H, hour, [glass]);
+    sunPatch(ctx, glass, floorY, H, hour);
     for (const draw of lights) draw();
   };
 }
