@@ -2,107 +2,107 @@
   "nav": {
     "brand": "DalaTech",
     "process": "Process",
-    "stack": "Stack",
+    "stack": "Technology",
     "location": "Location",
     "portfolio": "Portfolio",
     "pricing": "Pricing",
     "faq": "FAQ",
-    "contact": "Contact",
+    "contact": "Contact us",
     "features": "Services",
     "howItWorks": "How it works",
-    "getDemo": "Get a free demo",
+    "getDemo": "Request a demo",
     "staff": "AI staff",
     "website": "Website"
   },
   "hero": {
     "badge": "AI staff for Mongolian businesses",
-    "title": "AI staff that work day and night.",
-    "description": "Ara answers every message, Veda prepares the monthly report, Eho answers the phone, Nova keeps in touch with your customers. On Facebook, Instagram and your website, in Mongolian, within seconds. If you need the website too, we build it.",
+    "title": "AI staff that handle customer service 24/7.",
+    "description": "Four AI staff answer customer questions in Mongolian, around the clock, on Facebook, Instagram, and your website. They add no headcount, shift, or leave costs.",
     "buttons": {
-      "getDemo": "Get a free demo",
+      "getDemo": "Request a demo",
       "seeWork": "Meet the staff"
     },
     "facts": [
-      "Answer in Mongolian",
-      "24/7, no days off",
-      "Start within 3 to 5 days"
+      "Replies in Mongolian",
+      "24/7 coverage",
+      "Live within 3–5 days"
     ]
   },
   "howItWorks": {
-    "section": "HOW IT WORKS",
-    "title": "Simple setup. Fast launch. Ongoing optimization.",
-    "description": "A straightforward process so you can see results quickly, without the technical headaches.",
+    "section": "OUR PROCESS",
+    "title": "Simple setup. Fast launch. Ongoing improvement.",
+    "description": "The project runs in three stages. The output of each stage is agreed in advance. No technical work is required on your side.",
     "discovery": {
       "step": "1",
       "title": "Discovery",
-      "description": "We learn about your business, products/services, and common customer questions. Then we decide whether you need a chatbot, voice agent, or both."
+      "description": "We study your products, services, and the questions your customers ask most often. We then determine whether the fit is a chatbot, a voice agent, or both."
     },
     "buildTrain": {
       "step": "2",
-      "title": "Build & Train",
-      "description": "We build your website and configure the AI using your content (product lists, FAQs, policies). You review and we refine."
+      "title": "Build and train",
+      "description": "We build your website and train the AI on your own content: product lists, FAQs, and policies. We then refine the configuration on your feedback."
     },
     "launchImprove": {
       "step": "3",
-      "title": "Launch & Improve",
-      "description": "We launch and monitor performance. With the monthly plan, we update content, improve responses, and keep everything running smoothly."
+      "title": "Launch and improve",
+      "description": "We launch and monitor performance. With the monthly plan, we improve content, responses, and system stability on a regular schedule."
     },
-    "deliverables": "What you get",
-    "deliverablesDesc": "Deliverables may vary by package — placeholders below for now.",
+    "deliverables": "Deliverables",
+    "deliverablesDesc": "Packages are built from the three components below. Scope depends on the package selected.",
     "website": {
-      "title": "Modern Website",
-      "description": "A clean, mobile-friendly website designed to convert visitors into customers."
+      "title": "Modern website",
+      "description": "We build a clean, mobile-friendly website designed to turn visitors into customers."
     },
     "aiAssistant": {
-      "title": "AI Assistant Setup",
-      "description": "Chatbot and/or voice agent configured for your most common customer questions."
+      "title": "AI staff setup",
+      "description": "We configure a chatbot, a voice agent, or both for your most common customer questions."
     },
     "monthlySupport": {
-      "title": "Monthly Support",
-      "description": "Ongoing updates, improvements, and maintenance (optional but recommended)."
+      "title": "Monthly support",
+      "description": "Content updates, improvements, and maintenance run on a regular schedule. The monthly plan is optional."
     },
-    "cta": "Want to see how this would work for your business?",
-    "ctaDesc": "We'll show a quick demo and recommend the best setup."
+    "cta": "A short demo shows how this runs in your business.",
+    "ctaDesc": "After the demo we set out the configuration that fits your business."
   },
   "portfolio": {
     "section": "PORTFOLIO",
     "title": "Featured project",
-    "description": "A real business website with Ara answering on it.",
-    "visitWebsite": "Visit website",
-    "getDemo": "Get a free demo",
+    "description": "A live client website with Ara answering on it.",
+    "visitWebsite": "Visit the site",
+    "getDemo": "Request a demo",
     "japantok": {
       "pills": {
         "website": "Website",
         "chatbot": "Ara",
         "productQA": "QPay",
-        "availability": "Online Booking"
+        "availability": "Online booking"
       },
       "link": "Link:",
-      "title": "Matrix Eco Salon, modern eco salon experience",
-      "description": "We built a modern website for Matrix Eco Salon that matches their eco-friendly brand, with online booking, QPay payment integration, and an AI chatbot. Clients now book appointments anytime, and the team spends less time answering repeat questions on the phone.",
-      "whatWeBuilt": "What we built",
+      "title": "Matrix Eco Salon — a modern eco salon",
+      "description": "We built a modern website for Matrix Eco Salon, matched to its eco-friendly brand. Online booking, QPay payments, and Ara are integrated into the site. Customers now book at any hour, and the team answers fewer repeat questions by phone.",
+      "whatWeBuilt": "Work delivered",
       "features": [
-        "Modern eco salon website",
-        "Online appointment booking",
-        "QPay integration with AI chatbot"
+        "Modern salon website",
+        "Online booking system",
+        "QPay payment and Ara integration"
       ],
-      "idealOutcomes": "Ideal outcomes",
+      "idealOutcomes": "Outcomes",
       "outcomes": [
-        "24/7 online appointment booking",
-        "Less repetitive phone calls for staff",
+        "Online bookings 24/7",
+        "Automated answers to repeat questions",
         "Booking and payment in one flow"
       ],
       "buttons": {
         "requestDemo": "Request a demo",
-        "viewLive": "View live site"
+        "viewLive": "Visit the site"
       }
     }
   },
   "liveDemo": {
     "section": "LIVE DEMO",
-    "title": "This is exactly how Ara answers.",
-    "description": "This is how Ara behaves with your customers, on a real client site. No clicks, no signup, the conversation runs on its own.",
-    "ctaLabel": "Put Ara to work for your business",
+    "title": "This is how Ara talks to your customers.",
+    "description": "Ara is live on a real client site. No sign-up required; the conversation runs on its own.",
+    "ctaLabel": "Launch Ara in your business",
     "widget": {
       "businessName": "Matrix Eco Salon",
       "statusOnline": "Online",
@@ -111,20 +111,20 @@
       "agentRole": "Receptionist",
       "inputPlaceholder": "Type a message…",
       "typing": "Ara is typing",
-      "footnote": "Ara by DalaTech"
+      "footnote": "Ara · DalaTech"
     },
     "messages": {
       "user1": "Hi, are you open tomorrow?",
-      "ai1": "Hi there 👋 Yes, we're open tomorrow from 10:00 to 20:00.",
-      "user2": "Could I book an appointment for two at 4pm?",
-      "ai2": "All set. Two seats reserved under your name for 16:00 tomorrow. A confirmation message is on its way.",
-      "ai3": "If you'd like to talk to a person, I can connect you with our team right now."
+      "ai1": "Hello. We are open tomorrow, 10:00–20:00.",
+      "user2": "Can I book for two at 16:00?",
+      "ai2": "The booking for two at 16:00 tomorrow is confirmed. A confirmation message will arrive shortly.",
+      "ai3": "If you would like to speak with a person, I will connect you now."
     }
   },
   "testimonials": {
-    "section": "CLIENT STORIES",
-    "title": "What operators say after launch.",
-    "description": "Three Mongolian businesses tell us what changed once their AI went live.",
+    "section": "TESTIMONIALS",
+    "title": "Three businesses, in their own words",
+    "description": "Owners describe what changed after their AI staff went live.",
     "items": {
       "0": {
         "name": "Munkhzaya",
@@ -144,53 +144,53 @@
     }
   },
   "pricing": {
-    "section": "PRICE QUOTE",
-    "title": "Simple pricing, clear value",
-    "description": "Each AI staff member has a flat monthly fee and a one-time setup. The website is a one-time build. No hidden costs.",
+    "section": "PRICING",
+    "title": "Clear prices, clear terms",
+    "description": "Each AI staff member carries a flat monthly fee and a one-time setup. The website is a one-time build. No hidden fees.",
     "cards": {
       "website": {
-        "title": "Smart Website",
+        "title": "Smart website",
         "badge": "One-time",
         "price": "750,000₮",
         "subLine": "Modern design • 5 pages • Mobile responsive • Admin panel",
-        "description": "A clean, modern website for your business.",
+        "description": "A five-page website, built for mobile, with an admin panel.",
         "bullets": [
           "Modern design (UI/UX)",
-          "5 core pages (Home, About, Contact, etc.)",
+          "5 core pages (Home, About, Contact, and others)",
           "Mobile responsive",
-          "Admin section to manage content"
+          "Admin panel for managing content"
         ],
-        "cta": "Get started"
+        "cta": "Order the website"
       },
       "bundle": {
         "title": "Website + Ara",
-        "badge": "Save 100,000₮",
+        "badge": "100,000₮ discount",
         "price": "800,000₮",
         "subLine": "Separately 900,000₮ (website 750,000₮ + Ara setup 150,000₮). Together 800,000₮ · then Ara 250,000₮/month",
-        "description": "Launch your new website with its receptionist already answering.",
+        "description": "Your new website launches with Ara already answering.",
         "bullets": [
           "Smart website included",
-          "Ara answers on the site and on Messenger",
-          "100,000₮ off the setup"
+          "Ara answers on the website and on Messenger",
+          "100,000₮ discount on the setup"
         ],
-        "cta": "Start together",
+        "cta": "Order the bundle",
         "was": "900,000₮"
       }
     },
     "paymentTerms": {
       "title": "Payment terms",
       "terms": [
-        "Website: 50% on signing, 50% on handover; 7 to 10 working days",
+        "Website: 50% on signing, 50% on handover; delivery in 7–10 working days",
         "AI staff: setup once, monthly fee at the start of each month",
-        "AI staff start within 3 to 5 days"
+        "AI staff go live within 3–5 days"
       ],
-      "note": "Want a tailored quote? Tell us your business type and what you want to automate.",
-      "cta": "Get a free demo"
+      "note": "A tailored quote is prepared from your sector and the work you want to automate.",
+      "cta": "Request a demo"
     },
     "staff": {
       "title": "AI staff",
       "description": "Monthly fee, one-time setup. Two staff −10%, three −15%, four −20%; the discount applies to the monthly fee.",
-      "teamLink": "Build your team and see the total",
+      "teamLink": "Team composition and pricing",
       "hire": "Hire",
       "preorder": "Pre-register"
     },
@@ -202,110 +202,109 @@
   "faq": {
     "section": "FAQ",
     "title": "Common questions",
-    "description": "Answers to the most common questions about our AI staff and websites.",
+    "description": "Below are answers to the questions asked most often about our AI staff and websites.",
     "q1": {
-      "question": "What type of businesses is this for?",
-      "answer": "Small and medium businesses, stores, service centers, auto parts shops, clinics, and organizations that frequently receive customer inquiries."
+      "question": "Which businesses is this service for?",
+      "answer": "The service is built for small and medium businesses that take customer inquiries regularly. Stores, service centers, auto parts shops, and clinics are a typical fit."
     },
     "q2": {
-      "question": "Do I need technical knowledge?",
-      "answer": "No. We handle all configuration and installation. You only need simple admin access to edit your content."
+      "question": "Is technical knowledge required?",
+      "answer": "It is not required. We handle configuration and rollout end to end. You edit your content through a simple admin panel."
     },
     "q3": {
       "question": "What does the monthly fee cover?",
-      "answer": "Servers, model usage, monitoring, knowledge updates and support are all included. The only extra is Eho's call minutes."
+      "answer": "Servers, model usage, monitoring, knowledge updates, and support are covered by the monthly fee. Call minutes for Eho are the only extra charge."
     },
     "q4": {
-      "question": "Will an AI staff member replace my staff?",
-      "answer": "They take the daily load: repeat questions, bookings, reminders, reports. Anything delicate or unusual is handed to you. They do not replace people; they take the volume."
+      "question": "Will AI staff replace employees?",
+      "answer": "They do not. AI staff handle the daily load: repeat questions, bookings, reminders, and reports. Anything sensitive or unusual is passed to your team."
     },
     "q5": {
-      "question": "What does Ara know, and what does she not?",
-      "answer": "Ara answers only from what you give her: prices, hours, services, terms. She never guesses; anything she does not know goes to you."
+      "question": "What does Ara base its answers on?",
+      "answer": "Ara answers only from the information you supply: prices, hours, services, and terms. Anything outside that scope is passed to your team rather than guessed."
     },
     "q6": {
-      "question": "How fast do they start?",
-      "answer": "AI staff within 3 to 5 days. A website within 7 to 10 working days."
+      "question": "How long does rollout take?",
+      "answer": "AI staff go live within 3–5 days. A website is delivered within 7–10 working days."
     },
-    "stillHaveQuestions": "Still have questions?",
-    "contactPrompt": "We're happy to explain everything in a short call or demo.",
-    "talkToUs": "Talk to us"
+    "stillHaveQuestions": "More questions",
+    "contactPrompt": "A short call or a demo covers the remaining detail.",
+    "talkToUs": "Contact us"
   },
   "contact": {
-    "title": "Your automated demo is waiting.",
-    "description": "Drop in a few sentences about your business. Within seconds, your own AI agent comes alive, shaped around what you give it.",
-    "demoCta": "Get automated demo",
+    "title": "A demo shaped to your business",
+    "description": "Describe your business in a few sentences. Within seconds, an AI staff member configured to your information starts work.",
+    "demoCta": "Generate the demo",
     "emailCta": "Email us",
     "requestCta": "Request a demo"
   },
   "techStack": {
-    "section": "TOOLKIT",
-    "title": "What we build with",
-    "description": "The same modern stack the world's best product teams use, applied to every client we ship for."
+    "section": "TECHNOLOGY",
+    "title": "Our technology stack",
+    "description": "Every project is built on the stack used in international product engineering."
   },
   "location": {
-    "eyebrow": "Based in",
+    "eyebrow": "LOCATION",
     "city": "Ulaanbaatar",
     "country": "Mongolia",
-    "tagline": "Serving Mongolian businesses with technology built to a global standard."
+    "tagline": "We roll out technology built to a global standard for Mongolian businesses."
   },
   "footer": {
-    "tagline": "AI staff and websites, built in Mongolia to a global standard.",
+    "tagline": "We build AI staff and websites in Mongolia to a global standard.",
     "services": "Services",
     "company": "Company",
     "legal": "Legal",
-    "privacy": "Privacy & Terms",
     "rightsReserved": "All rights reserved.",
-    "builtIn": "Made in Ulaanbaatar",
-    "artCredit": "Office pixel art:"
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms of Service"
   },
   "process": {
-    "section": "PROCESS",
-    "title": "From idea to launch in three deliberate steps.",
-    "description": "A predictable path. The same one every time. So you always know where we are and what comes next.",
+    "section": "PROJECT STAGES",
+    "title": "From idea to launch in three clear steps.",
+    "description": "Every project runs the same three stages. Each stage has an agreed output and date.",
     "step1": {
       "label": "01",
       "title": "Discovery",
-      "description": "We learn your business and your goals, then agree on a clear scope you can hold us to."
+      "description": "We study your business and your goals, then agree on a clear scope of work."
     },
     "step2": {
       "label": "02",
       "title": "Build",
-      "description": "Design and engineering happen in parallel, with progress you can see week by week."
+      "description": "Design and development run in parallel, with progress shown every week."
     },
     "step3": {
       "label": "03",
       "title": "Launch",
-      "description": "We ship, monitor, and stay on call. Your first week is our priority, not an afterthought."
+      "description": "We launch and monitor performance. Daily support through the first week in production."
     }
   },
   "demoForm": {
     "eyebrow": "FREE DEMO",
     "title": "Request a demo",
-    "subtitle": "A short form. We'll call you back and talk through what would work for your business.",
+    "subtitle": "Once the form is submitted, we call you to determine the configuration that fits your business.",
     "close": "Close",
     "optional": "Optional",
     "fields": {
       "name": {
-        "label": "Your name",
+        "label": "Name",
         "placeholder": "e.g. Bold"
       },
       "phone": {
         "label": "Phone number",
         "placeholder": "9911 2233",
-        "hint": "This is the number we'll call."
+        "hint": "This is the number we call."
       },
       "business": {
-        "label": "Business name and what you do",
-        "placeholder": "e.g. Matrix Salon"
+        "label": "Business name and sector",
+        "placeholder": "e.g. Matrix Eco Salon"
       },
       "services": {
-        "label": "What are you interested in?",
-        "hint": "Pick as many as you like."
+        "label": "Services of interest",
+        "hint": "Multiple selections allowed."
       },
       "note": {
-        "label": "Anything else",
-        "placeholder": "What would you like to automate? What is slowing you down?"
+        "label": "Additional details",
+        "placeholder": "Work to automate, current bottlenecks"
       },
       "email": {
         "label": "Email",
@@ -314,34 +313,34 @@
     },
     "services": {
       "website": "Website",
-      "unsure": "Not sure yet",
+      "unsure": "Not decided yet",
       "ara": "Ara — receptionist",
       "nova": "Nova — customer care",
       "veda": "Veda — analyst",
       "eho": "Eho — phone operator"
     },
     "errors": {
-      "name": "Please enter your name.",
-      "phone": "Please enter your 8-digit phone number.",
-      "business": "Please tell us your business name and what you do.",
-      "email": "That email address does not look right."
+      "name": "Enter your name.",
+      "phone": "Enter your 8-digit phone number.",
+      "business": "Enter your business name and sector.",
+      "email": "The email address format is not valid."
     },
     "submit": "Send request",
     "submitting": "Sending…",
     "retry": "Send again",
     "startOver": "Clear the form",
-    "privacy": "We use your details only to get in touch with you.",
+    "privacy": "We use your details only to contact you.",
     "success": {
       "title": "Request received.",
-      "body": "We'll call you on {{phone}} shortly.",
-      "close": "Thanks"
+      "body": "We will call you on {{phone}} shortly.",
+      "close": "Close"
     },
     "failure": {
-      "title": "That didn't send.",
-      "body": "Everything you typed is still here. Try again, or reach us directly.",
-      "rejectedTitle": "Something's missing.",
-      "rejectedBody": "Please check the fields and send again.",
-      "crashBody": "The form failed to open. Please reach us directly.",
+      "title": "The request was not sent.",
+      "body": "Your entries have been kept. Send again or contact us directly.",
+      "rejectedTitle": "Information is missing.",
+      "rejectedBody": "Check the fields and send again.",
+      "crashBody": "The form did not open. Contact us directly.",
       "messenger": "Messenger",
       "email": "Email us",
       "reload": "Reload the page"
@@ -350,30 +349,30 @@
   "office": {
     "section": "AI STAFF",
     "hero": {
-      "title": "Four AI staff, working for your business.",
-      "lead": "Ara answers the messages. Veda prepares the monthly report. Eho answers the phone. Nova keeps in touch with customers. No hiring, no days off, one flat monthly fee.",
+      "title": "Four AI staff working for your business",
+      "lead": "Ara answers every message and Eho answers the phone. Veda prepares the monthly report and Nova follows up with customers. No additional hiring is required. The monthly fee is fixed.",
       "hire": "Hire",
-      "see": "See them work",
+      "see": "See them at work",
       "sceneAlt": "Four AI staff at their desks in an evening office, under one long window.",
       "more": "Details"
     },
     "status": {
-      "live": "Working now",
+      "live": "Active",
       "soon": "Coming soon"
     },
     "price": {
       "perMonth": "/month",
       "setup": "{{price}} setup",
       "plusPerMinute": "+ per call minute",
-      "addOnOnly": "Only alongside another hire."
+      "addOnOnly": "Only alongside another staff member."
     },
     "chapters": {
       "ara": {
         "eyebrow": "Ara · Receptionist",
         "title": "Every message answered.",
-        "body": "Replies to Facebook, Instagram and website messages within seconds. Takes bookings and sets appointments. A customer writing at two in the morning still gets an answer.",
+        "body": "Replies to Facebook, Instagram, and website messages within seconds. Takes bookings and sets appointments. A customer who writes at two in the morning still receives a reply.",
         "cta": "Hire Ara",
-        "sceneAlt": "Ara at her desk at night, answering messages.",
+        "sceneAlt": "Ara at the desk at night, answering messages.",
         "chat": [
           {
             "from": "customer",
@@ -392,15 +391,15 @@
           },
           {
             "from": "staff",
-            "text": "Done, you are booked for 15:30. See you tomorrow.",
+            "text": "You are booked for tomorrow at 15:30. A confirmation message has been sent.",
             "time": "02:15"
           }
         ]
       },
       "veda": {
         "eyebrow": "Veda · Analyst",
-        "title": "A report every month.",
-        "body": "On the first morning of the month your sales, customer and return report is ready. Not just the numbers: what to do next.",
+        "title": "A report arrives every month.",
+        "body": "On the first morning of the month, a report on your sales, customers, and repeat visits is ready. It carries next month's recommendation alongside the figures.",
         "cta": "Add Veda",
         "sceneAlt": "Veda in the morning behind two screens, preparing the monthly report.",
         "report": {
@@ -424,20 +423,20 @@
       "eho": {
         "eyebrow": "Eho · Phone operator",
         "title": "Every call answered.",
-        "body": "When the phone rings, Eho talks like a person, answers questions and takes orders. While you are busy, and after hours.",
+        "body": "When the phone rings, Eho speaks like a person, answers questions, and takes orders. It works the same after hours and at peak times.",
         "cta": "Pre-register",
         "sceneAlt": "Eho with a headset, answering an incoming call.",
         "call": {
           "incoming": "Incoming call",
           "answered": "Eho answered",
           "after": "after 2 seconds",
-          "line": "Hello, Dala Store. How can I help?"
+          "line": "Hello, this is Dala Store. How can I help?"
         }
       },
       "nova": {
         "eyebrow": "Nova · Customer care",
         "title": "No customer forgotten.",
-        "body": "Asks how it went after a visit. Sends appointment and payment reminders. Brings back customers who have not been in for a while.",
+        "body": "Asks for feedback after each visit. Sends appointment and payment reminders. Re-engages customers who have not returned for some time.",
         "cta": "Pre-register",
         "sceneAlt": "Nova in the afternoon, writing to customers.",
         "chat": [
@@ -453,66 +452,67 @@
           },
           {
             "from": "staff",
-            "text": "Thank you. I will remind you of your next appointment on 12 October.",
+            "text": "Thank you. You will receive a reminder for your next appointment on 12 October.",
             "time": "19:41"
           }
         ]
       }
     },
     "team": {
-      "eyebrow": "BUILD YOUR TEAM",
-      "title": "More hires, lower price.",
+      "eyebrow": "TEAM PRICING",
+      "title": "The monthly fee falls as the team grows.",
       "description": "Two staff −10%, three −15%, four −20%. The discount applies to the monthly fee.",
-      "pick": "Choose your staff",
-      "monthly": "Monthly",
+      "pick": "Choose staff",
+      "monthly": "Monthly fee",
       "setup": "Setup, one time",
-      "discount": "{{percent}}% off",
-      "perMinuteNote": "Eho: call minutes are billed on top.",
-      "vedaAlone": "Veda only works alongside another hire. Pick one more.",
-      "empty": "Pick at least one.",
-      "soonNote": "Nova and Eho are coming soon. Pre-register and we will tell you the day they start.",
-      "cta": "Hire this team",
+      "discount": "{{percent}}% discount",
+      "perMinuteNote": "Eho call minutes carry an additional charge.",
+      "vedaAlone": "Veda works only alongside another staff member. Select one more.",
+      "empty": "Select at least one staff member.",
+      "soonNote": "Eho and Nova launch soon. Pre-register and we notify you at launch.",
+      "cta": "Hire",
       "ctaPreorder": "Pre-register"
     },
     "steps": {
-      "title": "Three steps.",
+      "title": "Three steps to launch",
       "items": [
         {
-          "title": "A call, 30 minutes",
-          "body": "We talk through what you do and what messages come in."
+          "title": "Call, 30 minutes",
+          "body": "We review your operations and the types of messages you receive."
         },
         {
           "title": "Setup, 3–5 days",
-          "body": "We train them on your pages and your information."
+          "body": "We train the AI staff on your pages and your information."
         },
         {
-          "title": "They start",
-          "body": "Answering from day one. You only pay the monthly fee."
+          "title": "AI staff go live",
+          "body": "AI staff answer your customers from the first day. You pay only the monthly fee."
         }
       ]
     },
-    "unavailable": "The picture could not be loaded.",
+    "unavailable": "This image could not be loaded.",
     "agents": {
       "ara": {
         "name": "Ara",
         "role": "Receptionist",
-        "job": "Answers Facebook, Instagram and website messages 24/7. Takes bookings and appointments."
+        "job": "Answers Facebook, Instagram, and website messages around the clock. Records bookings and appointments."
       },
       "nova": {
         "name": "Nova",
         "role": "Customer care",
-        "job": "Follows up with customers, sends reminders and asks how it went."
+        "job": "Follows up with customers, sends reminders, and checks satisfaction."
       },
       "veda": {
         "name": "Veda",
         "role": "Analyst",
-        "job": "Prepares monthly sales and customer reports and says what to improve."
+        "job": "Prepares monthly sales and customer reports, then identifies areas to improve."
       },
       "eho": {
         "name": "Eho",
         "role": "Phone operator",
-        "job": "Answers the phone, handles questions and takes orders."
+        "job": "Answers incoming calls, handles questions, and records orders."
       }
-    }
+    },
+    "artCredit": "Pixel art on this page by"
   }
 }
