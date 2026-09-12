@@ -237,6 +237,7 @@ def props():
         "CABINET": single(O(180)),
         "WHITEBOARD": single(O(171)),
         "COFFEE": single(O(317)),
+        "MUG": single(K(182)),
         "STICKY": single(B(452)),
         "BOOKSHELF": single(C(29)),
         "CLOCK": single(C(9)),
@@ -253,6 +254,12 @@ def props():
         "BIN": single(O(329)),
         "CHAIR_ORANGE": single(O(107), rule=surface_rule),
     }
+    # the coffee machine's steam: six 32x64 frames (steam row over mug row)
+    cf = Image.open(LZ / "moderninteriors-win" / "3_Animated_objects" / "32x32" / "spritesheets" / "animated_coffee_32x32.png").convert("RGBA")
+    strip = Image.new("RGBA", (6 * 32, 64))
+    for c in range(6):
+        strip.paste(cf.crop((c * 32, 0, (c + 1) * 32, 64)), (c * 32, 0))
+    S["COFFEE_STEAM"] = (strip, {"n": 6})
     # walls from the generic room builder; floor carpet from the office builder
     gb = Image.open(ROOM_GENERIC).convert("RGBA")
     tile = lambda c, r: gb.crop((c * 32, r * 32, (c + 1) * 32, (r + 1) * 32))

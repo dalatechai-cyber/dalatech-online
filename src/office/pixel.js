@@ -340,7 +340,20 @@ export function ringing(ctx, x, y, t) {
  * `scale(cssWidth)` returns the wanted CSS pixels per art pixel and
  * `logicalH` is a height in art pixels or a function of the CSS width.
  */
-export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, reduced = false, onResize = null }) {
+// A global freeze. While a full-screen overlay is up, nothing behind it needs
+// to repaint — and a canvas running at 60fps under a translucent layer keeps
+// the compositor re-sampling the page on every frame of the overlay's own
+// animation, which is what made closing the request sheet stutter.
+let stagesFrozen = false;
+const freezeSubscribers = new Set();
+
+export function setStagesFrozen(next) {
+  if (stagesFrozen === next) return;
+  stagesFrozen = next;
+  for (const fn of freezeSubscribers) fn();
+}
+
+export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, reduced = false }) {
   const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx) throw new Error("2D canvas unavailable");
   const heightFor = typeof logicalH === "function" ? logicalH : () => logicalH;
@@ -374,7 +387,6 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
     canvas.style.width = `${canvas.width / dpr}px`;
     canvas.style.height = `${canvas.height / dpr}px`;
     render();
-    if (onResize) onResize({ W, H, sDev, dpr });
   };
 
   const loop = (now) => {
@@ -388,7 +400,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
   };
 
   const update = () => {
-    const should = visible && !reduced && !document.hidden;
+    const should = visible && !reduced && !document.hidden && !stagesFrozen;
     if (should && !running) {
       running = true;
       last = 0;
@@ -408,6 +420,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
   const ro = new ResizeObserver(resize);
   ro.observe(canvas.parentElement || canvas);
   document.addEventListener("visibilitychange", update);
+  freezeSubscribers.add(update);
   resize();
 
   return {
@@ -421,6 +434,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
       io.disconnect();
       ro.disconnect();
       document.removeEventListener("visibilitychange", update);
+      freezeSubscribers.delete(update);
     },
   };
 }
