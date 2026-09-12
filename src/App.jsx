@@ -1986,7 +1986,6 @@ function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, prima
 // office page, in the pricing page's own frame.
 function StaffPriceCard({ id }) {
   const { t } = useTranslation();
-  const a = OFFICE_AGENTS[id];
   const live = STAFF_LIVE[id];
   return (
     <StaggerItem className="h-full">

@@ -19,11 +19,39 @@ in this repo and no build step that would typecheck it.
 ## Commands
     npm ci          # install
     npm run dev     # vite dev server
-    npm run build   # vite build -> dist/
+    npm run lint    # eslint src (runs as part of build)
+    npm run build   # npm run lint && vite build -> dist/
     npm run preview # serve the built output
 
-There is no lint, test, or typecheck script. `npm run build` is the only
-gate — run it before committing and treat a build failure as blocking.
+There is no test or typecheck script. `npm run build` is the gate — run it
+before committing and treat a failure as blocking. It runs `npm run lint`
+first, so a lint error fails the build and the Vercel deploy.
+
+**Why the lint step exists.** Vite/Rollup will happily bundle code that
+throws the moment a browser runs it, and both failures below reached
+production:
+
+- `App.jsx` imported `heroHour` from `./office/scenes`, which has never
+  exported it. Rollup emits a warning and carries on; the dev server
+  resolves the same import strictly and threw, so `npm run dev` was dead
+  while `npm run build` stayed green.
+- `TECH_STACK` was deleted along with the component above it but was still
+  referenced. Rollup treats an unknown identifier as a global and says
+  nothing at all, so `/technology` threw `ReferenceError` at render, the
+  `ErrorBoundary` swallowed it, and the route shipped as a bare shell.
+
+So there are two independent layers, and either alone stops both:
+
+- `vite.config.js` turns `MISSING_EXPORT`, `UNRESOLVED_IMPORT`,
+  `MISSING_GLOBAL_NAME` and `CIRCULAR_DEPENDENCY` from warnings into build
+  errors.
+- `eslint.config.js` runs `no-undef`, `react/jsx-no-undef` (a JSX element
+  name is a `JSXIdentifier`, which plain `no-undef` does not resolve) and
+  `no-unused-vars`.
+
+The rule set is deliberately semantic, not stylistic: it sits inside the
+build, so a rule that fires on formatting would block a deploy for no
+safety gain. Keep it that way when adding rules.
 
 ## Layout
     index.html            document head: title, OG/Twitter tags, chatbot widget
@@ -34,6 +62,7 @@ gate — run it before committing and treat a build failure as blocking.
                           sprite helpers), scenes.js (the hero row and the four
                           chapters), agents.js (prices), staff.json (atlas manifest)
     src/Setup.jsx         Facebook SDK page-connect flow, lazy-loaded at /setup
+    eslint.config.js      the build's lint gate (see Commands)
     src/i18n.js           i18next init
     src/locales/          en.json, mn.json, zh-TW.json
     public/               static assets, plus standalone pages (below)
