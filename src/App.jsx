@@ -305,16 +305,24 @@ const LANGUAGES = [
   { code: "en", label: "English" },
 ];
 
-// Buying decisions only. Process, technology and location are trust pages
-// and live in the footer, which keeps the bar narrow enough for a laptop.
-// The website entry points into the pricing page's website block, so it
-// never shows as the active page; the pricing entry does.
+// Buying decisions in the bar itself. The website entry points into the
+// pricing page's website block, so it never shows as the active page; the
+// pricing entry does.
 const NAV_ITEMS = [
   { to: "/office", labelKey: "staff" },
   { to: "/pricing", labelKey: "website", state: { scrollTo: "website" } },
   { to: "/pricing", labelKey: "pricing" },
   { to: "/portfolio", labelKey: "portfolio" },
   { to: "/faq", labelKey: "faq" },
+];
+
+// The trust pages were reachable only from the footer, which is most of the
+// way down a very long page. They get a menu instead: one more bar item, four
+// more destinations, and the bar still fits a laptop.
+const COMPANY_ITEMS = [
+  { to: "/process", labelKey: "process" },
+  { to: "/technology", labelKey: "stack" },
+  { to: "/location", labelKey: "location" },
 ];
 
 let bodyScrollLockCount = 0;
@@ -331,6 +339,79 @@ function unlockBodyScroll() {
   if (bodyScrollLockCount === 0) {
     document.body.style.overflow = bodyScrollPrevOverflow;
   }
+}
+
+function CompanyMenu({ navLabel }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = React.useState(false);
+  const wrapRef = React.useRef(null);
+  const location = useLocation();
+  const isActive = COMPANY_ITEMS.some((i) => i.to === location.pathname);
+
+  // Close on a click anywhere else and on Escape; without both, a menu opened
+  // by keyboard can be left hanging over the page with no way back.
+  React.useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  React.useEffect(() => setOpen(false), [location.pathname]);
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="true"
+        onClick={() => setOpen((v) => !v)}
+        className={[
+          "relative inline-flex items-center gap-1 whitespace-nowrap text-[13.5px] font-medium tracking-[-0.005em] transition-colors duration-200",
+          isActive || open ? "text-fg" : "text-fg-muted hover:text-fg",
+        ].join(" ")}
+      >
+        {t("nav.company")}
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden
+             style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform .18s ease-out" }}>
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+        {isActive && (
+          <motion.span
+            layoutId="nav-active-underline"
+            className="absolute -bottom-1.5 left-0 right-0 h-px bg-sky-400/70"
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          />
+        )}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4, transition: { duration: 0.12 } }}
+            transition={{ duration: 0.16, ease: EASE_OUT }}
+            className="absolute right-0 top-[calc(100%+14px)] z-50 min-w-[190px] rounded-xl border border-white/[0.09] bg-ink-900/95 p-1.5 shadow-[0_28px_60px_-24px_rgba(3,6,16,0.95)] backdrop-blur"
+          >
+            {COMPANY_ITEMS.map((i) => (
+              <Link
+                key={i.labelKey}
+                to={i.to}
+                className="block rounded-lg px-3 py-2.5 text-[13.5px] text-fg/85 transition-colors hover:bg-white/[0.06] hover:text-fg"
+              >
+                {navLabel(i.labelKey)}
+              </Link>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 function Navbar() {
@@ -448,6 +529,7 @@ function Navbar() {
                 )}
               </RouterNavLink>
             ))}
+            <CompanyMenu navLabel={navLabel} />
           </nav>
 
           <div className="flex items-center gap-2.5">
@@ -585,6 +667,27 @@ function Navbar() {
                   </motion.div>
                 );
               })}
+
+              {/* the trust pages, at a size that does not compete with the
+                  five buying decisions above and still fits one screen */}
+              <motion.div
+                variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: SPRING_REVEAL } }}
+                className="mt-6 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/[0.08] pt-6"
+              >
+                {COMPANY_ITEMS.map(({ to, labelKey }) => (
+                  <Link
+                    key={labelKey}
+                    to={to}
+                    onClick={() => setMobileOpen(false)}
+                    className={[
+                      "py-1 text-[16px] font-medium transition-colors",
+                      location.pathname === to ? "text-[#38BDF8]" : "text-fg-muted hover:text-fg",
+                    ].join(" ")}
+                  >
+                    {navLabel(labelKey)}
+                  </Link>
+                ))}
+              </motion.div>
             </motion.nav>
 
             <motion.div
@@ -3196,19 +3299,6 @@ function LocationBadge() {
       aria-label={t("location.eyebrow")}
       className="relative py-16 md:py-28"
     >
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div
-          className="mesh-blob animate-meshShift opacity-40"
-          style={{
-            top: "10%",
-            left: "-6%",
-            width: "30rem",
-            height: "30rem",
-            background:
-              "radial-gradient(circle at 50% 50%, rgba(56,189,248,0.16), transparent 70%)",
-          }}
-        />
-      </div>
       <Container className="relative">
         <motion.div
           initial={reduced ? false : { opacity: 0, y: 24 }}
@@ -3233,10 +3323,7 @@ function LocationBadge() {
               {t("location.tagline")}
             </p>
             <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.022] px-3.5 py-1.5 ring-1 ring-inset ring-white/[0.04]">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400/60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
-              </span>
+              <span className="inline-flex h-1.5 w-1.5 rounded-full bg-sky-400" />
               <span className="text-[11px] font-medium tracking-wide text-fg-muted">
                 47.91°N · 106.88°E
               </span>
@@ -3248,9 +3335,7 @@ function LocationBadge() {
   );
 }
 
-// Page wrappers: each route renders only its own sections. The bento grid
-// repeats on the landing page and /products by design — landing surfaces it
-// as a teaser, /products treats it as part of a deeper product story.
+// Page wrappers: each route renders only its own sections.
 // ------------------------------------------------------------ a working day
 // ζ = 1.05: critically damped, so scroll never springs past itself. restDelta
 // has to be this small because the steepest leg of the timeline covers ~94
@@ -3582,6 +3667,40 @@ function WebsiteOffer() {
   );
 }
 
+function LocationBand() {
+  const { t } = useTranslation();
+  return (
+    <section id="location" aria-label={t("location.eyebrow")} className="py-16 md:py-20">
+      <Container>
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 border-t border-white/[0.07] pt-10">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-dim">
+              {t("location.eyebrow")}
+            </p>
+            <p className="mt-2.5 font-display text-[26px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[30px]">
+              {t("location.city")}, {t("location.country")}
+            </p>
+            <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">
+              {t("location.tagline")}
+            </p>
+          </div>
+          <a
+            href="https://www.facebook.com/profile.php?id=61586065058744"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-[44px] items-center gap-2 text-[15.5px] text-fg transition-colors hover:text-white"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.5 2.9h-2.3v7A10 10 0 0 0 22 12z" />
+            </svg>
+            {t("nav.contact")}
+          </a>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 function LandingPage() {
   return (
     <>
@@ -3596,6 +3715,7 @@ function LandingPage() {
       <Testimonials />
       <WebsiteOffer />
       <StaffSteps />
+      <LocationBand />
       <Contact />
     </>
   );
