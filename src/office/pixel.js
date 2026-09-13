@@ -167,8 +167,21 @@ export function windowFrame(ctx, x, y, w, h, posts = [x + ((w / 2) | 0) - 1]) {
   rect(ctx, x - 2, y, 2, h, f);
   rect(ctx, x + w, y, 2, h, f);
   for (const px of posts) rect(ctx, px, y, 2, h, f);
-  rect(ctx, x - 4, y + h + 2, w + 8, 3, hi);
-  rect(ctx, x - 4, y + h + 5, w + 8, 1, "#1A2148");
+
+  // The sill. The glass used to stop on a single flat line, so the city met
+  // the wall on a hard edge and the whole window read as a poster hung on the
+  // wall rather than as a hole in it. A ledge needs three tones to be a ledge:
+  // a top face the light lands on, a front face for its thickness, and the
+  // dark under-edge where it leaves the wall.
+  const sy = y + h + 2;
+  rect(ctx, x - 5, sy, w + 10, 2, "#5566AD");
+  rect(ctx, x - 5, sy + 2, w + 10, 3, hi);
+  rect(ctx, x - 5, sy + 5, w + 10, 1, "#1A2148");
+  // and the shadow it throws down the wall, which is also what stops that
+  // wall from being one flat band
+  rect(ctx, x - 3, sy + 6, w + 6, 1, "rgba(9,12,34,0.34)");
+  rect(ctx, x - 3, sy + 7, w + 6, 1, "rgba(9,12,34,0.21)");
+  rect(ctx, x - 3, sy + 8, w + 6, 1, "rgba(9,12,34,0.11)");
 }
 
 // The wall down to `floorY`, then the floor. The wall is three courses of
@@ -183,9 +196,27 @@ export function room(ctx, img, W, H, floorY = 44) {
     for (let y = TILE; y < skirtY; y += TILE) sprite(ctx, img, "WALL_MID", x, y);
     sprite(ctx, img, "SKIRT", x, skirtY);
   }
+  // Every course of this wall is one flat colour — the pack's face has no
+  // texture at all, which is fine behind furniture and reads as a painted
+  // band wherever a long run of it is left bare, as it is under the chapter
+  // windows. Light falling off toward the floor is enough to make it a
+  // surface. Drawn before the glass, so the window is never dimmed by it.
+  const wallH = Math.max(1, floorY);
+  for (let y = 0; y < wallH; y += 1) {
+    const a = 0.24 * (y / wallH) ** 1.7;
+    if (a > 0.004) rect(ctx, 0, y, W, 1, `rgba(8,11,32,${a.toFixed(3)})`);
+  }
   const f = SPRITES.FLOOR;
   for (let y = floorY; y < H; y += f.h) {
     for (let x = 0; x < W; x += f.w) sprite(ctx, img, "FLOOR", x, y);
+  }
+  // What the wall throws onto the carpet at its foot. Without it the floor
+  // meets the wall on a drawn line and reads as a second flat band rather
+  // than as a plane going away from the viewer — which is most of why the
+  // things standing on it looked like they belonged to nothing.
+  for (let i = 0; i < 9; i += 1) {
+    const a = 0.30 * (1 - i / 9) ** 1.5;
+    if (a > 0.004) rect(ctx, 0, floorY + i, W, 1, `rgba(7,10,30,${a.toFixed(3)})`);
   }
 }
 

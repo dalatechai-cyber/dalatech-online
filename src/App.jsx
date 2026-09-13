@@ -5187,13 +5187,7 @@ function Shell() {
   const location = useLocation();
 
   return (
-    <div className="site-shell relative min-h-screen bg-ink-950 text-fg">
-      {/* behind every page; see .site-bg */}
-      <div aria-hidden className="site-bg">
-        <span className="ob-1" />
-        <span className="ob-2" />
-        <span className="ob-3" />
-      </div>
+    <div className="relative min-h-screen bg-ink-950 text-fg">
       <ErrorBoundary>
       </ErrorBoundary>
       <ErrorBoundary>
