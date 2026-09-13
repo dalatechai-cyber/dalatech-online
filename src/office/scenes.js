@@ -297,10 +297,11 @@ export function drawHero(ctx, img, v) {
 // keeps near the desks — a shelf of files, the printer, the water cooler, a
 // plant, a spare chair for whoever comes over.
 //
-// The page floats this agent's real messages over the top right of the
-// frame. That strip is the one place nothing may be: `quiet` below is its
-// boundary, and every piece of furniture is placed against it, so the room
-// can be filled everywhere else without anything being half hidden.
+// The page floats this agent's real messages over the right of the frame,
+// from just below the top to somewhere between half and nine tenths of the
+// way down depending on the chapter and the width. So the room is furnished
+// in the two places the panel never covers: the gap beside the desk, and the
+// front row along the bottom.
 
 // What each room keeps. Without this the four chapters ran one placement
 // path and came out as the same photograph four times, differing only in the
@@ -310,13 +311,13 @@ export function drawHero(ctx, img, v) {
 // front row, which sits low in the frame and can hold the tall things.
 const CHAPTER_KIT = {
   // reception: somewhere for whoever walks in to sit
-  ara: { left: ["SHELF_UNIT", "stand"], wall: "CERT", plant: true, front: ["CHAIR_ORANGE", "PLANT", "PLANT_3"] },
+  ara: { left: ["SHELF_UNIT", "stand"], front: ["CHAIR_ORANGE", "PLANT", "PLANT_3"] },
   // the analyst: the month on the wall, the printer, the files
-  veda: { left: ["WHITEBOARD_CHART", "hang"], wall: "CORK", plant: true, front: ["CABINET", "PLANT_3"] },
+  veda: { left: ["WHITEBOARD_CHART", "hang"], front: ["CABINET", "PLANT_3", "PLANT"] },
   // the phone desk: the corner people actually stand in between calls
-  eho: { left: ["SHELF_UNIT", "stand"], wall: "NOTICE", plant: false, front: ["COFFEE", "COOLER", "PLANT"] },
-  // customer manager: the board of who has not been back, and a seat for them
-  nova: { left: ["CABINET", "stand"], wall: "CORK", plant: true, front: ["PLANT", "CHAIR_ORANGE", "PLANT_3"] },
+  eho: { left: ["SHELF_UNIT", "stand"], front: ["COFFEE", "COOLER", "PLANT", "PLANT_3"] },
+  // customer manager: a seat for whoever comes back, and something growing
+  nova: { left: ["CABINET", "stand"], front: ["PLANT", "CHAIR_ORANGE", "PLANT_3", "COOLER"] },
 };
 
 // Where a sprite stands on a floor line: its feet sink four pixels into the
@@ -332,10 +333,13 @@ export function drawChapter(id) {
     const floorY = H - Math.round(H * 0.34); // where the wall meets the carpet
     const deskY = floorY + 8;
     const frontY = deskY + SPRITES.DESK_L.h - 4; // the depth the desk stands at
-    // The strip the page floats this agent's real messages over: right of
-    // quiet.x and above quiet.y. Nothing that has to be seen goes there, so
-    // furniture is placed against it rather than under it.
-    const quiet = { x: Math.round(W * 0.49), y: Math.round(H * 0.5) };
+    // Where the page's message panel starts. Measured across the four
+    // chapters from 320 to 1920 pixels of viewport it always begins at 49-50%
+    // of the frame's width, and ends anywhere between 47% and 89% of its
+    // height — which is why only the horizontal half of it is a usable
+    // contract. Furniture goes left of this line or below the panel, never
+    // between.
+    const panelX = Math.round(W * 0.49);
 
     room(ctx, img, W, H, floorY);
 
@@ -356,6 +360,7 @@ export function drawChapter(id) {
     const base = { id, x: deskX, y: deskY, t, seed: 2, lights, night, pieces };
     let s;
     let frontLeft = 0; // the left edge of the front row, once the desk knows it
+    let printer = null; // Веда's, deferred so the wall is painted behind it
 
     if (id === "ara") {
       s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["LAPTOP", 50, 0]] });
@@ -364,12 +369,11 @@ export function drawChapter(id) {
     } else if (id === "veda") {
       s = desk(ctx, img, { ...base, personX: 8, props: [["PAPER_STACK", 0, 6], ["DUAL", 18, -4]] });
       // Her printer stands beside the desk at the desk's own depth. Against
-      // the back wall it would be both under the page's report card and
-      // under whatever the back-wall row places next.
+      // the back wall it would be under the page's report card. It is drawn
+      // after the wall piece, below, so the wall cannot paint over it.
       const px = deskX + s.deskW + 8;
-      stand(ctx, img, "PRINTER_STAND", px, frontY);
       const py = frontY - SPRITES.PRINTER_STAND.h + 4 - 22;
-      sprite(ctx, img, "PRINTER", px + 10, py);
+      printer = { x: px, y: py };
       frontLeft = px + SPRITES.PRINTER_STAND.w + 8;
       actVeda(ctx, img, { ...s, x: deskX + 8, y: deskY, printerX: px + 10, printerY: py }, t, lights, grow);
     } else if (id === "eho") {
@@ -386,7 +390,7 @@ export function drawChapter(id) {
 
     // ---- the back wall left of the panel, where height is unconstrained
     const gapX = deskX + s.deskW + 2;
-    const gap = quiet.x - gapX;
+    const gap = panelX - gapX;
     if (kit.left) {
       const [lid, mode] = kit.left;
       const lw = SPRITES[lid].w;
@@ -396,29 +400,29 @@ export function drawChapter(id) {
       }
     }
 
-    // ---- the back wall behind the panel: only what fits under it
-    let bx = quiet.x + 6;
-    if (kit.plant) {
-      const sp = SPRITES.PLANT_2;
-      const y = floorY - sp.h + 4;
-      if (y >= quiet.y && bx + sp.w <= W - 6) { sprite(ctx, img, "PLANT_2", bx, y); bx += sp.w + 8; }
-    }
-    // and one thing hung in the far corner, under the panel's bottom edge
-    if (kit.wall) {
-      const sp = SPRITES[kit.wall];
-      const wx = W - 8 - sp.w;
-      const wy = floorY - sp.h - 4;
-      if (wy >= quiet.y && wx > bx - 6) sprite(ctx, img, kit.wall, wx, wy);
+    // Nothing goes on the wall to the right of the desk. Measured across the
+    // four chapters at every width from 320 to 1920, the page's message panel
+    // ends between 0.47 and 0.89 of the frame's height, so that whole band is
+    // behind it — a cork board or a plant placed there is never once seen.
+    // The room's character is carried by the piece beside the desk, which the
+    // panel never reaches, and by the front row, which sits below it.
+
+    // Веда's printer, now that the wall behind it is painted
+    if (printer) {
+      stand(ctx, img, "PRINTER_STAND", printer.x, frontY);
+      sprite(ctx, img, "PRINTER", printer.x + 10, printer.y);
     }
 
     // ---- the front of the room, at the depth the desk stands at
     // The floor would otherwise be a bare expanse, and this row is low in
     // the frame, so it carries the tall pieces the back wall cannot.
     let fx = W - 6;
-    const frontStop = Math.max(deskX + s.deskW + 12, frontLeft);
+    const frontStop = Math.max(deskX + s.deskW + 2, frontLeft);
     for (const tall of kit.front) {
       const w = SPRITES[tall].w;
-      if (fx - w < frontStop) break;
+      // `continue`, not `break`: one wide piece that will not fit used to end
+      // the row, which left the narrowest frames with two things in the room
+      if (fx - w < frontStop) continue;
       fx -= w;
       stand(ctx, img, tall, fx, frontY);
       fx -= 8;
@@ -437,10 +441,13 @@ export function drawChapter(id) {
 // Scroll progress maps to an hour; the light and the cast are pure functions
 // of that hour. Kept for the landing scene, which runs the room from night
 // to day and back behind the phone.
+// The hour holds while a group of notifications is being read and moves in
+// the gap between groups. It is keyed to PHONE_FEED in App.jsx: change one
+// and the room and the phone stop agreeing about what time it is.
 const DAY_KEYS = [
-  [0.0, 2.23], [0.06, 2.25], [0.28, 2.3], [0.42, 8.6],
-  [0.6, 9.1], [0.74, 17.9], [0.86, 18.2], [0.905, 19.5],
-  [0.95, 21.0], [1.0, 21.0],
+  [0.0, 2.23], [0.06, 2.25], [0.29, 2.3], [0.33, 8.6],
+  [0.45, 9.1], [0.49, 17.9], [0.69, 18.2], [0.73, 19.5],
+  [0.9, 20.5], [1.0, 21.0],
 ];
 const smoothstep = (t) => t * t * (3 - 2 * t);
 
@@ -459,12 +466,13 @@ export function dayHour(p) {
 const ARRIVE = { ara: -1, veda: 8.0, eho: 17.0, nova: 19.0 };
 
 export const DAY_MOMENTS = [
-  { id: "ara", time: "02:14", from: 0.06, to: 0.28 },
-  { id: "veda", time: "09:00", from: 0.42, to: 0.6 },
-  { id: "eho", time: "18:05", from: 0.74, to: 0.86 },
+  { id: "ara", time: "02:14", from: 0.06, to: 0.27 },
+  { id: "veda", time: "09:00", from: 0.34, to: 0.44 },
+  { id: "eho", time: "18:05", from: 0.5, to: 0.68 },
 ];
 
-const focusDeskAt = (p) => (p < 0.35 ? 0 : p < 0.67 ? 1 : 2);
+// which desk the room keeps lit, following the same group boundaries
+const focusDeskAt = (p) => (p < 0.31 ? 0 : p < 0.47 ? 1 : p < 0.71 ? 2 : 3);
 
 export function focusAmountAt(p) {
   for (const m of DAY_MOMENTS) {
@@ -481,10 +489,11 @@ export function drawWorkingDay(ctx, img, view) {
   officeRoom(ctx, img, view, {
     hour,
     cast: STAFF.filter((id) => hour >= ARRIVE[id]),
-    chartGrow: mapRange(p, 0.44, 0.56, 0, 1),
-    focus: p < 0.88 ? focusDeskAt(p) : null,
+    chartGrow: mapRange(p, 0.34, 0.44, 0, 1),
+    focus: p < 0.9 ? focusDeskAt(p) : null,
     focusAmount: focusAmountAt(p),
-    ring: p >= 0.74 && p < 0.79 ? true : p >= 0.79 && p < 0.86 ? false : null,
-    araPhase: p > 0.07 && p < 0.2 ? 1.8 : null,
+    // the phone stops ringing as the "answered" card lands, not after it
+    ring: p >= 0.49 && p < 0.53 ? true : p >= 0.53 && p < 0.69 ? false : null,
+    araPhase: p > 0.07 && p < 0.22 ? 1.8 : null,
   });
 }
