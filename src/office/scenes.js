@@ -364,7 +364,11 @@ export function drawChapter(id) {
 
     if (id === "ara") {
       s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["LAPTOP", 50, 0]] });
-      deskLamp(ctx, img, deskX + s.deskW - 32, deskY - 36, night, lights);
+      // Light, not object: see deskLamp. The chapter desk is 82 art px and
+      // already carries a phone and a laptop, so the lamp had nowhere on the
+      // surface to stand and was drawn above it — reading as a brass shape
+      // hanging in the gap between the desk and the back wall.
+      deskLamp(ctx, img, deskX + s.deskW - 32, deskY - 36, night, lights, false);
       actAra(ctx, img, { ...s, x: deskX + 28, y: deskY }, t, lights, null);
     } else if (id === "veda") {
       s = desk(ctx, img, { ...base, personX: 8, props: [["PAPER_STACK", 0, 6], ["DUAL", 18, -4]] });
@@ -378,7 +382,7 @@ export function drawChapter(id) {
       actVeda(ctx, img, { ...s, x: deskX + 8, y: deskY, printerX: px + 10, printerY: py }, t, lights, grow);
     } else if (id === "eho") {
       s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["MONITOR_KB", 48, 0]] });
-      deskLamp(ctx, img, deskX + s.deskW - 32, deskY - 36, night, lights);
+      deskLamp(ctx, img, deskX + s.deskW - 32, deskY - 36, night, lights, false);
       actEho(ctx, img, { ...s, x: deskX + 24, y: deskY }, t, lights, null);
     } else {
       s = desk(ctx, img, { ...base, personX: 10, props: [["MUG", 6, 12], ["LAPTOP", 50, 0]] });
@@ -445,9 +449,9 @@ export function drawChapter(id) {
 // the gap between groups. It is keyed to PHONE_FEED in App.jsx: change one
 // and the room and the phone stop agreeing about what time it is.
 const DAY_KEYS = [
-  [0.0, 2.23], [0.06, 2.25], [0.29, 2.3], [0.33, 8.6],
-  [0.45, 9.1], [0.49, 17.9], [0.69, 18.2], [0.73, 19.5],
-  [0.9, 20.5], [1.0, 21.0],
+  [0.0, 2.23], [0.05, 2.25], [0.27, 2.3], [0.31, 8.6],
+  [0.52, 9.1], [0.56, 17.9], [0.74, 18.2], [0.76, 19.5],
+  [0.91, 20.5], [1.0, 21.0],
 ];
 const smoothstep = (t) => t * t * (3 - 2 * t);
 
@@ -466,13 +470,13 @@ export function dayHour(p) {
 const ARRIVE = { ara: -1, veda: 8.0, eho: 17.0, nova: 19.0 };
 
 export const DAY_MOMENTS = [
-  { id: "ara", time: "02:14", from: 0.06, to: 0.27 },
-  { id: "veda", time: "09:00", from: 0.34, to: 0.44 },
-  { id: "eho", time: "18:05", from: 0.5, to: 0.68 },
+  { id: "ara", time: "02:14", from: 0.06, to: 0.26 },
+  { id: "veda", time: "09:00", from: 0.32, to: 0.51 },
+  { id: "eho", time: "18:05", from: 0.57, to: 0.73 },
 ];
 
 // which desk the room keeps lit, following the same group boundaries
-const focusDeskAt = (p) => (p < 0.31 ? 0 : p < 0.47 ? 1 : p < 0.71 ? 2 : 3);
+const focusDeskAt = (p) => (p < 0.29 ? 0 : p < 0.54 ? 1 : p < 0.75 ? 2 : 3);
 
 export function focusAmountAt(p) {
   for (const m of DAY_MOMENTS) {
@@ -489,11 +493,11 @@ export function drawWorkingDay(ctx, img, view) {
   officeRoom(ctx, img, view, {
     hour,
     cast: STAFF.filter((id) => hour >= ARRIVE[id]),
-    chartGrow: mapRange(p, 0.34, 0.44, 0, 1),
-    focus: p < 0.9 ? focusDeskAt(p) : null,
+    chartGrow: mapRange(p, 0.32, 0.50, 0, 1),
+    focus: p < 0.91 ? focusDeskAt(p) : null,
     focusAmount: focusAmountAt(p),
     // the phone stops ringing as the "answered" card lands, not after it
-    ring: p >= 0.49 && p < 0.53 ? true : p >= 0.53 && p < 0.69 ? false : null,
-    araPhase: p > 0.07 && p < 0.22 ? 1.8 : null,
+    ring: p >= 0.56 && p < 0.60 ? true : p >= 0.60 && p < 0.74 ? false : null,
+    araPhase: p > 0.06 && p < 0.21 ? 1.8 : null,
   });
 }

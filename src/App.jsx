@@ -24,7 +24,7 @@ import {
 } from "framer-motion";
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
-import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
+import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
 import { drawChapter as drawStaffChapter, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
@@ -493,7 +493,7 @@ function Navbar() {
     >
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-7 lg:px-10">
         <div className={["flex items-center justify-between md:transition-all md:duration-300", scrolled ? "h-14" : "h-20"].join(" ")}>
-          <Link to="/" className="flex shrink-0 items-center" data-cursor="hover" aria-label="DalaTech home">
+          <Link to="/" className="flex min-h-[44px] shrink-0 items-center" data-cursor="hover" aria-label="DalaTech home">
             <BrandLockup size={40} />
           </Link>
 
@@ -583,7 +583,7 @@ function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="pressable flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-fg lg:hidden"
+              className="pressable flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-fg lg:hidden"
               aria-label="Open menu"
               aria-expanded={mobileOpen}
             >
@@ -872,12 +872,7 @@ const RING_C = 2 * Math.PI * RING_R;
 const RING_CX = 150;
 const RING_OPEN = [10, 20]; // the hours a typical shop has someone at the counter
 
-// The hand does not sweep at a constant rate. It travels from one moment to
-// the next, then stands still on the one it reached while its line is read.
-// A caption therefore survives the hold plus the following travel — five and
-// a half seconds at the tightest, which is what a Cyrillic sentence needs.
-const RING_HOLD = 4.6; // seconds the hand rests on a moment
-const RING_TRAVEL = 9; // seconds of travel, shared out across the whole day
+const RING_SECONDS = 36; // one whole day per revolution, at a constant rate
 
 const RING_EVENTS = [
   { at: 2 + 14 / 60, time: "02:14", who: "ara" },
@@ -888,19 +883,6 @@ const RING_EVENTS = [
   { at: 21 + 30 / 60, time: "21:30", who: "nova" },
   { at: 23 + 50 / 60, time: "23:50", who: "ara" },
 ];
-
-// One step per moment: the run up to it, then the rest on it. The first step
-// starts at last night's moment, so crossing midnight is what clears the lit
-// dots and resets the trail for the new day.
-const RING_STEPS = RING_EVENTS.map((e, i) => {
-  const from = i === 0 ? RING_EVENTS[RING_EVENTS.length - 1].at - 24 : RING_EVENTS[i - 1].at;
-  const travel = (RING_TRAVEL * (e.at - from)) / 24;
-  return { from, to: e.at, travel, span: travel + RING_HOLD };
-});
-const RING_CYCLE = RING_STEPS.reduce((sum, step) => sum + step.span, 0);
-
-// eased so the hand pulls away and settles rather than stopping dead
-const ringEase = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
 function ringPoint(hour, radius = RING_R) {
   const a = ((hour / 24) * 360 - 90) * (Math.PI / 180);
@@ -952,26 +934,11 @@ function DayRing({ className = "" }) {
     const frame = (now) => {
       raf = 0;
       if (!running) return;
-      // where in the cycle we are, and therefore which step and how far into it
-      const elapsed = ((((now - started) / 1000) % RING_CYCLE) + RING_CYCLE) % RING_CYCLE;
-      let si = 0;
-      let u = elapsed;
-      while (si < RING_STEPS.length - 1 && u >= RING_STEPS[si].span) {
-        u -= RING_STEPS[si].span;
-        si += 1;
-      }
-      const step = RING_STEPS[si];
-      const moving = u < step.travel;
-      const raw = step.from + (step.to - step.from) * (moving ? ringEase(u / step.travel) : 1);
-      // Only the first step starts before midnight, so a plain shift wraps it.
-      // A `% 24` here would not: adding 24 and taking the remainder rounds the
-      // hour a hair below the moment the hand is resting on, which used to
-      // hold each caption a whole beat too long.
-      const hour = raw < 0 ? raw + 24 : raw;
-      const p = hour / 24;
+      // A constant sweep: one revolution is one day.
+      const p = ((now - started) / (RING_SECONDS * 1000)) % 1;
+      const hour = p * 24;
 
-      // The hand is motionless for four and a half of every six seconds, so
-      // the written values are usually identical to the last ones. Comparing
+      // The written values are often identical to the last ones, so comparing
       // first skips the string building, not just the style write.
       const spin = `rotate(${(p * 360).toFixed(2)}deg)`;
       if (spin !== spinRef.current) {
@@ -980,12 +947,10 @@ function DayRing({ className = "" }) {
         if (trailRef.current) trailRef.current.style.strokeDashoffset = String(RING_C * (1 - p));
       }
 
-      // The moment the hand has reached, taken from the step rather than from
-      // the hour: the step index is exact, a compared float is not. While the
-      // hand is travelling it has not arrived yet, so the previous moment
-      // still stands — and the first step crosses midnight, which is what
-      // clears the lit dots for the new day.
-      const idx = moving ? (si === 0 ? (raw < 0 ? RING_EVENTS.length - 1 : -1) : si - 1) : si;
+      // the most recent moment the hand has passed; before the first one of
+      // the day, the centre still holds last night's
+      let idx = -1;
+      for (let i = 0; i < RING_EVENTS.length; i += 1) if (hour >= RING_EVENTS[i].at) idx = i;
       const shown = idx === -1 ? RING_EVENTS.length - 1 : idx;
 
       if (idx !== litRef.current) {
@@ -1000,10 +965,9 @@ function DayRing({ className = "" }) {
         shownRef.current = shown;
         setActive(shown);
       }
-      // The clock snaps to the moment's own time on arrival — not a moment
-      // before it, which used to put the arriving time over the previous
-      // moment's name for a third of a second.
-      const text = moving ? ringClock(hour) : RING_EVENTS[si].time;
+      // the clock lands exactly on a moment's own time as the hand reaches it
+      const near = idx >= 0 && hour - RING_EVENTS[idx].at < 0.35;
+      const text = near ? RING_EVENTS[idx].time : ringClock(hour);
       if (text !== clockRef.current) {
         clockRef.current = text;
         if (timeRef.current) timeRef.current.textContent = text;
@@ -1017,9 +981,9 @@ function DayRing({ className = "" }) {
       if (should && !running) {
         running = true;
         if (!started) {
-          // open on last night's moment, lit and at rest with two seconds of
-          // its hold left: a full ring that can be read, then the day starts
-          started = performance.now() - (RING_CYCLE - RING_HOLD + 2.6) * 1000;
+          // start the day a little before the 02:14 message so the first thing
+          // a visitor sees is a moment landing, not an empty ring
+          started = performance.now() - 1.4 * (RING_SECONDS / 24) * 1000;
         } else {
           // coming back: carry the origin forward past the time spent away,
           // so scrolling off and back does not teleport the day to midnight
@@ -3628,7 +3592,7 @@ function Footer() {
                   rel="noopener noreferrer"
                   aria-label="DalaTech on Facebook"
                   data-cursor="hover"
-                  className="pressable flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.02] text-fg-muted transition-[border-color,color,background-color] duration-200 hover:border-sky-400/40 hover:bg-sky-400/[0.06] hover:text-sky-300"
+                  className="pressable flex h-11 w-11 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.02] text-fg-muted transition-[border-color,color,background-color] duration-200 hover:border-sky-400/40 hover:bg-sky-400/[0.06] hover:text-sky-300"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                     <path d="M22 12a10 10 0 1 0-11.6 9.9V14.9H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3V22A10 10 0 0 0 22 12z" />
@@ -3638,7 +3602,7 @@ function Footer() {
                   href="mailto:dalatech.ai@gmail.com"
                   aria-label="Email DalaTech"
                   data-cursor="hover"
-                  className="pressable inline-flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-[12.5px] font-medium text-fg/85 transition-[border-color,color,background-color] duration-200 hover:border-sky-400/40 hover:bg-sky-400/[0.06] hover:text-sky-300"
+                  className="pressable inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-[12.5px] font-medium text-fg/85 transition-[border-color,color,background-color] duration-200 hover:border-sky-400/40 hover:bg-sky-400/[0.06] hover:text-sky-300"
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -3713,19 +3677,25 @@ const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 // stack never holds two moments at once. Progress units; the times are the
 // scene's own timestamps.
 // Each group needs (n-1) steps to stack its cards, then enough left over for
-// the last one to be read. The old split gave Ара 8.4 seconds for four cards
-// and Нова 1.9 for three, so Эхо's confirmation and Нова's reminder were on
-// screen for seven tenths of a second each while Ара's opening line got
-// nearly eight. These windows are sized from the card counts instead, and
-// scenes.js moves the room's own hours with them.
+// the last one to be read. Sized by how long the group takes to READ, which is
+// not the same as how many cards it has: Веда gets the widest window of the
+// four while sending the fewest, because hers is one report with a chart in it
+// and that takes longer to take in than three short notifications do.
+// Any change here has to be mirrored in scenes.js — the room behind the phone
+// runs off the same p, and the two disagreeing about the time is the one bug
+// this whole section can have.
 const PHONE_FEED = {
-  ara: { from: 0.05, until: 0.29 },
-  veda: { from: 0.33, until: 0.45 },
-  eho: { from: 0.49, until: 0.69 },
-  nova: { from: 0.73, until: 0.9 },
+  ara: { from: 0.05, until: 0.27 },
+  veda: { from: 0.31, until: 0.52 },
+  eho: { from: 0.56, until: 0.74 },
+  nova: { from: 0.76, until: 0.91 },
   done: { from: 0.93 },
 };
-const PHONE_STEP = 0.035;
+// How close together cards in one group arrive. Tighter than it looks like it
+// should be on purpose: every card in a group fades out together, so the last
+// one to arrive is always the one with least time on screen, and buying it a
+// beat costs the earlier cards nothing they need.
+const PHONE_STEP = 0.03;
 // The last screen has less runway than the others: the summary and the door
 // in must both be fully up before the pin lets go at p = 1.
 const PHONE_DONE_STEP = 0.02;
@@ -3886,7 +3856,7 @@ function PhoneFeed({ progress, group }) {
 
       <div className={groupCls} aria-hidden={!show("nova")} style={progress ? { pointerEvents: "none" } : undefined}>
         {feed.nova.items.map((n, i) => (
-          <PhoneCard key={n.title} progress={progress} at={g("nova").from + i * 0.025} span={0.025} until={g("nova").until} who="nova" name={feed.nova.from} time={n.time} title={n.title} className={i === feed.nova.items.length - 1 ? "border-sky-400/30" : ""}>
+          <PhoneCard key={n.title} progress={progress} at={g("nova").from + i * 0.022} span={0.025} until={g("nova").until} who="nova" name={feed.nova.from} time={n.time} title={n.title} className={i === feed.nova.items.length - 1 ? "border-sky-400/30" : ""}>
             <p className={phoneText}>{n.body}</p>
           </PhoneCard>
         ))}
@@ -3958,7 +3928,7 @@ function OwnerPhone({ progress, group, className = "" }) {
 // moved on. Now the section is ordinary height, the sequence starts when it
 // comes into view, plays once, and rests on the last screen with the button
 // on it. Scrolling past is just scrolling.
-const DAY_SECONDS = 24;
+const DAY_SECONDS = 34; // the whole day; every card holds proportionally longer
 
 function useTimedProgress(ref, seconds, disabled) {
   const progress = useMotionValue(0);
@@ -4424,7 +4394,7 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
   // ink-900 under the hero on a phone.
   const reserved = React.useMemo(() => {
     if (!hostW) return undefined;
-    const dpr = Math.min(3, (typeof window !== "undefined" && window.devicePixelRatio) || 1);
+    const dpr = stageDpr(); // must match createStage, or the reserved height is wrong
     const sDev = Math.max(1, Math.min(Math.round(scale(hostW) * dpr), Math.floor((hostW * dpr) / minW)));
     return (h * sDev) / dpr;
   }, [hostW, h, scale, minW]);
@@ -4657,21 +4627,41 @@ function ShiftBoard({ onPick, className = "" }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const ref = React.useRef(null);
-  const [play, setPlay] = React.useState(false);
+
+  // Restarting a CSS animation means taking the attribute away, letting the
+  // browser settle, and putting it back — done on the node rather than through
+  // state so a replay never re-renders four lanes mid-flight.
+  const run = React.useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.removeAttribute("data-board");
+    void el.offsetWidth; // forces the cancelled animations to be committed
+    el.setAttribute("data-board", "on");
+  }, []);
 
   React.useEffect(() => {
     if (reduced || !ref.current) return undefined;
+    // Not disconnected after the first run: on a touch screen the tap is
+    // already spent on opening the agent's chapter, so coming back to the
+    // board is the gesture that replays it.
     const io = new IntersectionObserver((entries) => {
-      if (!entries.some((e) => e.isIntersecting)) return;
-      setPlay(true);
-      io.disconnect(); // it plays once; nothing here loops
+      if (entries.some((e) => e.isIntersecting)) run();
     }, { rootMargin: "0px 0px -8% 0px" });
     io.observe(ref.current);
     return () => io.disconnect();
-  }, [reduced]);
+  }, [reduced, run]);
+
+  // Only where a pointer can actually hover: on a touch screen the browser
+  // synthesises mouseenter on tap, which would replay the board on the way
+  // out to the chapter.
+  const onEnter = React.useCallback(() => {
+    if (reduced) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    run();
+  }, [reduced, run]);
 
   return (
-    <div ref={ref} data-board={play ? "on" : undefined} className={["w-full", className].join(" ")}>
+    <div ref={ref} onMouseEnter={onEnter} className={["w-full", className].join(" ")}>
       <ul role="list" className="board-lanes" aria-label={t("office.board.label")}>
         {STAFF_ORDER.map((id, i) => (
           <BoardLane key={id} id={id} dir={BOARD_DIR[id]} step={i} onPick={onPick} />
@@ -5116,7 +5106,13 @@ const OfficePage = React.memo(function OfficePage() {
     el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
   };
   return (
-    <div id="office">
+    <div id="office" className="relative">
+      {/* behind everything on the page; see .office-bg */}
+      <div aria-hidden className="office-bg">
+        <span className="ob-1" />
+        <span className="ob-2" />
+        <span className="ob-3" />
+      </div>
       <StaffHero onHire={() => scrollTo("team")} onSee={() => scrollTo("staff-ara")} onPick={(id) => scrollTo(`staff-${id}`)} />
       {STAFF_ORDER.map((id, i) => (
         <StaffChapter key={id} id={id} index={i} onHire={hire} />
