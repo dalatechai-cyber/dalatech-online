@@ -7,10 +7,11 @@ const ACCENT_HEX = 0x38bdf8;
 const ACCENT_HALO = 0x4ea7ff;
 const GLOBE_RADIUS = 1.0;
 
-const EARTH_MAP_URL =
-  "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg";
-const EARTH_BUMP_URL =
-  "https://unpkg.com/three-globe/example/img/earth-topology.png";
+// Served from our own origin. These were loaded from a public CDN at runtime
+// until an outage was found to render the globe as a featureless sphere; see
+// public/globe/SOURCE.md for provenance, licence and how the sizes were chosen.
+const EARTH_MAP_URL = "/globe/earth-map.jpg";
+const EARTH_BUMP_URL = "/globe/earth-topology.jpg";
 
 function latLngToVector3(lat, lng, radius) {
   const phi = (90 - lat) * (Math.PI / 180);
@@ -98,7 +99,6 @@ export default function Globe({ className = "", reducedMotion = false }) {
     globeGroup.add(earth);
 
     const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin("anonymous");
     loader.load(
       EARTH_MAP_URL,
       (tex) => {

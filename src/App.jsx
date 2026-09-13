@@ -4515,44 +4515,6 @@ function StaffStatus({ live }) {
   );
 }
 
-// The four, at a glance: name, role, job, monthly price and whether they are
-// live. Each card jumps to that person's chapter on the office page.
-function StaffCards({ onPick, className = "" }) {
-  const { t } = useTranslation();
-  return (
-    <StaggerGroup className={["mx-auto grid max-w-[1040px] auto-rows-fr grid-cols-2 gap-3 md:grid-cols-4", className].join(" ")}>
-      {STAFF_ORDER.map((id) => (
-        <StaggerItem key={id} className="h-full">
-          <button
-            type="button"
-            onClick={() => onPick(id)}
-            data-cursor="hover"
-            className="pressable group flex h-full w-full flex-col rounded-[18px] border border-white/[0.08] bg-white/[0.03] p-3.5 text-left transition-colors hover:border-white/[0.2] focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:p-4"
-          >
-            <span className="flex items-center gap-3">
-              {/* the face, not the hair: the head sits on rows 20-53 of the frame; at 3x, 90px down puts the eyes in the box */}
-              <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-                <StaffAvatar id={id} size={3} className="-mt-[90px]" />
-              </span>
-              <span className="min-w-0">
-                <span className="block font-display text-[17px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</span>
-                <span className="block text-[12px] leading-[1.3] text-fg-muted">{t(`office.agents.${id}.role`)}</span>
-              </span>
-            </span>
-            <span className="mt-3 block flex-1 text-[13px] leading-[1.45] text-fg-muted">{t(`office.agents.${id}.job`)}</span>
-            <span className="mt-3 flex flex-col gap-1.5 border-t border-white/[0.08] pt-3 sm:flex-row sm:items-end sm:justify-between sm:gap-2">
-              <span className="whitespace-nowrap font-display text-[15px] font-semibold tabular-nums tracking-tight text-fg">
-                {formatTugrik(OFFICE_AGENTS[id].monthly)}<span className="text-[12px] font-normal text-fg-muted">{t("office.price.perMonth")}</span>
-              </span>
-              <StaffStatus live={STAFF_LIVE[id]} />
-            </span>
-          </button>
-        </StaggerItem>
-      ))}
-    </StaggerGroup>
-  );
-}
-
 // ----------------------------------------------- the office page's own opening
 // Not the landing page's clock, and not a second telling of the four chapters
 // further down. The argument here is a different one: the work a business gets
@@ -4565,10 +4527,12 @@ function StaffCards({ onPick, className = "" }) {
 // runs *from* the start state via animation-fill-mode: backwards. So the board
 // is true with the animation off, blocked, or never started — it is a diagram
 // that happens to move, not a sequence you have to catch.
-// In the same order as the cards below, the four chapters and the pricing:
-// three lists of the same four people on one page, and two of them running a
-// different order was a small cruelty. The direction is carried by the rails
-// and the chips, which is where it belongs, not by the sequence.
+// The lanes are also the way in to the chapters, so this board and the four
+// chapters are now the only two tellings of the four on the page — a separate
+// grid of cards used to sit directly beneath it saying the same four names,
+// which is the one thing a reader could not unsee. Same order as the chapters
+// and the pricing page. The direction is carried by the rails and the chips,
+// which is where it belongs, not by the sequence.
 const BOARD_DIR = { ara: "in", eho: "in", veda: "still", nova: "out" };
 
 // Each lane's payload, drawn small enough to sit on a 28px rail. The glyph is
@@ -4607,76 +4571,89 @@ function BoardGlyph({ kind }) {
 
 const BOARD_BARS = [0.46, 0.64, 0.5, 1]; // four weeks; the last one is the point
 
-function BoardLane({ id, dir, step }) {
+function BoardLane({ id, dir, step, onPick }) {
   const { t } = useTranslation();
   const live = STAFF_LIVE[id];
   return (
-    <li
-      className="board-lane"
-      data-dir={dir}
-      data-soon={live ? undefined : "true"}
-      style={{ "--d": `${240 + step * 260}ms` }}
-    >
-      <div className="board-who">
-        {/* the same pixel face as the cards and the scenes: four people, not four bars */}
-        <span className="board-face">
-          <StaffAvatar id={id} size={2} className="-mt-[60px]" />
-        </span>
-        <span className="min-w-0">
-          <span className="board-name">
-            {t(`office.agents.${id}.name`)}
-            {!live && <span className="board-soon">{t("office.status.soon")}</span>}
+    <li className="board-cell">
+      {/* The lane is the way in to this agent's chapter. It used to be an inert
+          diagram sitting directly above a grid of four cards that said the same
+          four names — one of the two had to carry both jobs, and the lane is
+          the one that also makes an argument. */}
+      <button
+        type="button"
+        onClick={() => onPick(id)}
+        data-cursor="hover"
+        className="board-lane pressable"
+        data-dir={dir}
+        data-soon={live ? undefined : "true"}
+        style={{ "--d": `${240 + step * 260}ms` }}
+      >
+        <div className="board-who">
+          {/* the same pixel face as the scenes below: four people, not four bars */}
+          <span className="board-face">
+            <StaffAvatar id={id} size={2} className="-mt-[60px]" />
           </span>
-          <span className="board-role">{t(`office.agents.${id}.role`)}</span>
-          {/* everything that carries the direction is drawn, so a screen
-              reader would otherwise hear a name and a channel and no verb */}
-          <span className="sr-only">{t(`office.board.lanes.${id}.dir`)}</span>
-        </span>
-      </div>
-
-      <div className="board-rail">
-        <span className="board-track" aria-hidden />
-        {dir !== "still" && <span className="board-arrow" aria-hidden />}
-        {/* the outbound lane is the only round trip: out, then back */}
-        {dir === "out" && <span className="board-arrow board-arrow--back" aria-hidden />}
-
-        {dir === "in" && (
-          <span className="board-slide board-slide--in" aria-hidden>
-            <span className="board-token">
-              <BoardGlyph kind={id === "eho" ? "call" : "chat"} />
-              {id === "eho" && <span className="board-ripple" />}
+          <span className="min-w-0">
+            <span className="board-name">
+              {t(`office.agents.${id}.name`)}
+              {!live && <span className="board-soon">{t("office.status.soon")}</span>}
             </span>
+            <span className="board-role">{t(`office.agents.${id}.role`)}</span>
+            {/* everything that carries the direction is drawn, so a screen
+                reader would otherwise hear a name and a channel and no verb */}
+            <span className="sr-only">{t(`office.board.lanes.${id}.dir`)}</span>
           </span>
-        )}
+        </div>
 
-        {dir === "still" && (
-          <span className="board-bars" aria-hidden>
-            {BOARD_BARS.map((h, i) => (
-              <span key={i} className="board-bar" style={{ "--h": `${Math.round(h * 100)}%`, "--i": i }} />
-            ))}
+        <div className="board-rail">
+          <span className="board-track" aria-hidden />
+          {dir !== "still" && <span className="board-arrow" aria-hidden />}
+          {/* the outbound lane is the only round trip: out, then back */}
+          {dir === "out" && <span className="board-arrow board-arrow--back" aria-hidden />}
+
+          {dir === "in" && (
+            <span className="board-slide board-slide--in" aria-hidden>
+              <span className="board-token">
+                <BoardGlyph kind={id === "eho" ? "call" : "chat"} />
+                {id === "eho" && <span className="board-ripple" />}
+              </span>
+            </span>
+          )}
+
+          {dir === "still" && (
+            <span className="board-bars" aria-hidden>
+              {BOARD_BARS.map((h, i) => (
+                <span key={i} className="board-bar" style={{ "--h": `${Math.round(h * 100)}%`, "--i": i }} />
+              ))}
+            </span>
+          )}
+
+          {dir === "out" && (
+            <>
+              <span className="board-slide board-slide--out" aria-hidden>
+                <span className="board-token board-token--ghost"><BoardGlyph kind="send" /></span>
+              </span>
+              <span className="board-slide board-slide--back" aria-hidden>
+                <span className="board-token board-token--reply"><BoardGlyph kind="tick" /></span>
+              </span>
+            </>
+          )}
+        </div>
+
+        <div className="board-end">
+          <span className="board-chip">{t(`office.board.lanes.${id}.end`)}</span>
+          <span className="board-price">
+            {formatTugrik(OFFICE_AGENTS[id].monthly)}
+            <span className="board-per">{t("office.price.perMonth")}</span>
           </span>
-        )}
-
-        {dir === "out" && (
-          <>
-            <span className="board-slide board-slide--out" aria-hidden>
-              <span className="board-token board-token--ghost"><BoardGlyph kind="send" /></span>
-            </span>
-            <span className="board-slide board-slide--back" aria-hidden>
-              <span className="board-token board-token--reply"><BoardGlyph kind="tick" /></span>
-            </span>
-          </>
-        )}
-      </div>
-
-      <div className="board-end">
-        <span className="board-chip">{t(`office.board.lanes.${id}.end`)}</span>
-      </div>
+        </div>
+      </button>
     </li>
   );
 }
 
-function ShiftBoard({ className = "" }) {
+function ShiftBoard({ onPick, className = "" }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const ref = React.useRef(null);
@@ -4697,7 +4674,7 @@ function ShiftBoard({ className = "" }) {
     <div ref={ref} data-board={play ? "on" : undefined} className={["w-full", className].join(" ")}>
       <ul role="list" className="board-lanes" aria-label={t("office.board.label")}>
         {STAFF_ORDER.map((id, i) => (
-          <BoardLane key={id} id={id} dir={BOARD_DIR[id]} step={i} />
+          <BoardLane key={id} id={id} dir={BOARD_DIR[id]} step={i} onPick={onPick} />
         ))}
       </ul>
       <p className="mx-auto mt-5 max-w-[540px] text-center text-[13px] leading-[1.5] text-fg-muted">
@@ -4758,12 +4735,9 @@ function StaffHero({ onHire, onSee, onPick }) {
           className="mx-auto mt-10 max-w-[740px] md:mt-12"
         >
           <ErrorBoundary fallback={null}>
-            <ShiftBoard />
+            <ShiftBoard onPick={onPick} />
           </ErrorBoundary>
         </motion.div>
-      </Container>
-      <Container>
-        <StaffCards className="mt-12 md:mt-16" onPick={onPick} />
       </Container>
     </section>
   );
