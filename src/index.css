@@ -416,9 +416,10 @@ html.demo-dialog-open #dt-chat-frame {
    run inward, one stays put, one goes out and comes back.
 
    The resting styles below ARE the finished board. Nothing is hidden waiting
-   for a trigger: the animations are attached only under [data-board="on"] and
-   use animation-fill-mode: backwards, so with motion off the diagram still
-   reads. Everything animated is transform or opacity. It runs once. */
+   for a trigger: the animations are attached only under [data-run="on"], set
+   per lane so one can replay on its own, and use animation-fill-mode:
+   backwards, so with motion off the diagram still reads. Everything animated
+   is transform or opacity. */
 .board-lanes {
   display: grid;
   gap: 10px;
@@ -562,6 +563,19 @@ html.demo-dialog-open #dt-chat-frame {
 .board-lane[data-dir="in"] .board-arrow { transform: rotate(-135deg); }
 .board-lane[data-dir="out"] .board-arrow { left: 38%; transform: rotate(45deg); }
 .board-lane[data-dir="out"] .board-arrow--back { left: 64%; transform: rotate(-135deg); }
+
+/* An arrowhead is how the lane states its direction when nothing is going to
+   move: before it has played, and under prefers-reduced-motion. It is not
+   furniture to leave on the track. It used to be, and the track then carried
+   two marks at once — a bare chevron sitting beside the payload on the inbound
+   lanes, and on Нова's both legs of a round trip drawn at the same time,
+   pointing opposite ways, which is a diagram of a journey rather than one.
+   Once a lane plays, the travel itself says which way the work goes. */
+.board-arrow { transition: opacity 260ms linear; }
+/* Нова's outbound leg has already happened in the resting reading — the same
+   reason the note she sent is authored invisible. Only the answer is shown. */
+.board-lane[data-dir="out"] .board-arrow:not(.board-arrow--back) { opacity: 0; }
+.board-lane[data-run="on"][data-dir] .board-arrow { opacity: 0; }
 /* nothing travels on the analyst's lane, so the route starts past her bars */
 .board-lane[data-dir="still"] .board-track { left: 44px; }
 
@@ -638,28 +652,28 @@ html.demo-dialog-open #dt-chat-frame {
   .board-end { text-align: right; }
 }
 
-/* --- the one pass, attached only when the board is on screen --- */
-[data-board="on"] .board-slide--in {
+/* --- one pass per lane, attached when that lane is on screen or hovered --- */
+.board-lane[data-run="on"] .board-slide--in {
   animation: boardIn 820ms cubic-bezier(0.22, 0.61, 0.36, 1) var(--d) backwards;
 }
 /* the only one without `backwards`: it is authored invisible and its first
    keyframe is not, so filling the delay would paint a static ring for a second */
-[data-board="on"] .board-ripple {
+.board-lane[data-run="on"] .board-ripple {
   animation: boardRipple 900ms ease-out calc(var(--d) + 700ms) 2;
 }
-[data-board="on"] .board-bar {
+.board-lane[data-run="on"] .board-bar {
   animation: boardBar 620ms cubic-bezier(0.16, 1, 0.3, 1) calc(var(--d) + var(--i) * 110ms) backwards;
 }
-[data-board="on"] .board-slide--out {
+.board-lane[data-run="on"] .board-slide--out {
   animation: boardOut 1500ms cubic-bezier(0.5, 0, 0.5, 1) var(--d) backwards;
 }
-[data-board="on"] .board-token--ghost {
+.board-lane[data-run="on"] .board-token--ghost {
   animation: boardGhost 1500ms linear var(--d) backwards;
 }
-[data-board="on"] .board-slide--back {
+.board-lane[data-run="on"] .board-slide--back {
   animation: boardBack 1500ms cubic-bezier(0.5, 0, 0.5, 1) var(--d) backwards;
 }
-[data-board="on"] .board-token--reply {
+.board-lane[data-run="on"] .board-token--reply {
   animation: boardReply 1500ms linear var(--d) backwards;
 }
 
@@ -699,10 +713,10 @@ html.demo-dialog-open #dt-chat-frame {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-board] .board-slide,
-  [data-board] .board-bar,
-  [data-board] .board-token,
-  [data-board] .board-ripple { animation: none !important; }
+  .board-lane .board-slide,
+  .board-lane .board-bar,
+  .board-lane .board-token,
+  .board-lane .board-ripple { animation: none !important; }
 }
 
 /* Every edge on the board is a low-alpha white or cyan, which is what the
@@ -737,14 +751,14 @@ html.demo-dialog-open .ring-dot .halo {
   animation-play-state: paused;
 }
 
-/* ---------------------------------------------------------- office backdrop
-   A slow field behind the whole staff page so it is not flat ink under the
-   scenes. Deliberately built from radial gradients rather than blurred boxes:
+/* ------------------------------------------------------------ site backdrop
+   A slow field behind every page, so no route is flat ink.
+   Deliberately built from radial gradients rather than blurred boxes:
    a gradient is already soft, while filter: blur() on a 40rem element is one
    of the most expensive things a phone GPU can be asked to do every frame,
-   and this page is already running four pixel canvases. Only transforms are
-   animated, so it never touches layout or paint. */
-.office-bg {
+   and /office is already running four pixel canvases under it. Only transforms
+   are animated, so it never touches layout or paint. */
+.site-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -752,25 +766,25 @@ html.demo-dialog-open .ring-dot .halo {
   pointer-events: none;
   contain: strict;
 }
-.office-bg span {
+.site-bg span {
   position: absolute;
   display: block;
   border-radius: 50%;
   will-change: transform;
 }
-.office-bg .ob-1 {
+.site-bg .ob-1 {
   top: -18%; left: -12%;
   width: 46rem; height: 46rem;
   background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.17), rgba(56, 189, 248, 0.05) 38%, transparent 68%);
   animation: obDriftA 46s ease-in-out infinite;
 }
-.office-bg .ob-2 {
+.site-bg .ob-2 {
   top: 26%; right: -20%;
   width: 40rem; height: 40rem;
   background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.20), rgba(37, 99, 235, 0.05) 40%, transparent 70%);
   animation: obDriftB 58s ease-in-out infinite;
 }
-.office-bg .ob-3 {
+.site-bg .ob-3 {
   bottom: -22%; left: 22%;
   width: 38rem; height: 38rem;
   background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.12), transparent 65%);
@@ -791,7 +805,7 @@ html.demo-dialog-open .ring-dot .halo {
 /* A ruled field under the glow. Fixed and static: it gives the page structure
    that a gradient alone cannot, and costs one composited layer. Masked so it
    fades out top and bottom rather than ending on a hard line. */
-.office-bg::before {
+.site-bg::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -803,9 +817,14 @@ html.demo-dialog-open .ring-dot .halo {
           mask-image: radial-gradient(ellipse 90% 70% at 50% 40%, black, transparent 78%);
 }
 
-/* Everything the page draws sits above the field. */
-#office > * { position: relative; z-index: 1; }
+/* Everything the site draws sits above the field. The backdrop is fixed, and
+   a fixed element paints above ordinary block content however early it comes
+   in the markup, so the content has to be lifted rather than the field pushed
+   down. The chat widget carries its own very high z-index and is unaffected. */
+.site-shell > header,
+.site-shell > main,
+.site-shell > footer { position: relative; z-index: 1; }
 
 @media (prefers-reduced-motion: reduce) {
-  .office-bg span { animation: none; }
+  .site-bg span { animation: none; }
 }

@@ -4541,7 +4541,7 @@ function BoardGlyph({ kind }) {
 
 const BOARD_BARS = [0.46, 0.64, 0.5, 1]; // four weeks; the last one is the point
 
-function BoardLane({ id, dir, step, onPick }) {
+function BoardLane({ id, dir, step, onPick, onEnter }) {
   const { t } = useTranslation();
   const live = STAFF_LIVE[id];
   return (
@@ -4549,14 +4549,19 @@ function BoardLane({ id, dir, step, onPick }) {
       {/* The lane is the way in to this agent's chapter. It used to be an inert
           diagram sitting directly above a grid of four cards that said the same
           four names — one of the two had to carry both jobs, and the lane is
-          the one that also makes an argument. */}
+          the one that also makes an argument.
+          data-d carries the lane's place in the opening cascade, so a replay of
+          this lane on its own can set --d to zero and answer the pointer at
+          once instead of a beat later. */}
       <button
         type="button"
         onClick={() => onPick(id)}
+        onMouseEnter={onEnter}
         data-cursor="hover"
         className="board-lane pressable"
         data-dir={dir}
         data-soon={live ? undefined : "true"}
+        data-d={`${240 + step * 260}ms`}
         style={{ "--d": `${240 + step * 260}ms` }}
       >
         <div className="board-who">
@@ -4630,41 +4635,51 @@ function ShiftBoard({ onPick, className = "" }) {
 
   // Restarting a CSS animation means taking the attribute away, letting the
   // browser settle, and putting it back — done on the node rather than through
-  // state so a replay never re-renders four lanes mid-flight.
-  const run = React.useCallback(() => {
-    const el = ref.current;
+  // state so a replay never re-renders a lane mid-flight. The attribute is on
+  // the lane, not on the board, so one lane runs without disturbing the other
+  // three. `solo` drops the cascade delay: a replay asked for by a pointer
+  // should start under it, not a beat later.
+  const run = React.useCallback((el, solo) => {
     if (!el) return;
-    el.removeAttribute("data-board");
+    el.style.setProperty("--d", solo ? "0ms" : el.dataset.d || "0ms");
+    el.removeAttribute("data-run");
     void el.offsetWidth; // forces the cancelled animations to be committed
-    el.setAttribute("data-board", "on");
+    el.setAttribute("data-run", "on");
   }, []);
 
   React.useEffect(() => {
     if (reduced || !ref.current) return undefined;
-    // Not disconnected after the first run: on a touch screen the tap is
-    // already spent on opening the agent's chapter, so coming back to the
-    // board is the gesture that replays it.
+    // One observer entry per lane. On a phone there is no hover and the tap is
+    // already spent opening the agent's chapter, so a lane arriving on screen
+    // is the per-lane trigger there — the board is taller than the fold, so
+    // they do arrive one at a time. The first time a lane appears it keeps its
+    // place in the cascade; coming back it runs on its own.
+    const played = new WeakSet();
     const io = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting)) run();
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        run(e.target, played.has(e.target));
+        played.add(e.target);
+      }
     }, { rootMargin: "0px 0px -8% 0px" });
-    io.observe(ref.current);
+    ref.current.querySelectorAll(".board-lane").forEach((l) => io.observe(l));
     return () => io.disconnect();
   }, [reduced, run]);
 
   // Only where a pointer can actually hover: on a touch screen the browser
-  // synthesises mouseenter on tap, which would replay the board on the way
-  // out to the chapter.
-  const onEnter = React.useCallback(() => {
+  // synthesises mouseenter on tap, which would replay a lane on the way out
+  // to the chapter.
+  const onEnter = React.useCallback((e) => {
     if (reduced) return;
     if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    run();
+    run(e.currentTarget, true);
   }, [reduced, run]);
 
   return (
-    <div ref={ref} onMouseEnter={onEnter} className={["w-full", className].join(" ")}>
+    <div ref={ref} className={["w-full", className].join(" ")}>
       <ul role="list" className="board-lanes" aria-label={t("office.board.label")}>
         {STAFF_ORDER.map((id, i) => (
-          <BoardLane key={id} id={id} dir={BOARD_DIR[id]} step={i} onPick={onPick} />
+          <BoardLane key={id} id={id} dir={BOARD_DIR[id]} step={i} onPick={onPick} onEnter={onEnter} />
         ))}
       </ul>
       <p className="mx-auto mt-5 max-w-[540px] text-center text-[13px] leading-[1.5] text-fg-muted">
@@ -5106,13 +5121,7 @@ const OfficePage = React.memo(function OfficePage() {
     el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
   };
   return (
-    <div id="office" className="relative">
-      {/* behind everything on the page; see .office-bg */}
-      <div aria-hidden className="office-bg">
-        <span className="ob-1" />
-        <span className="ob-2" />
-        <span className="ob-3" />
-      </div>
+    <div id="office">
       <StaffHero onHire={() => scrollTo("team")} onSee={() => scrollTo("staff-ara")} onPick={(id) => scrollTo(`staff-${id}`)} />
       {STAFF_ORDER.map((id, i) => (
         <StaffChapter key={id} id={id} index={i} onHire={hire} />
@@ -5178,7 +5187,13 @@ function Shell() {
   const location = useLocation();
 
   return (
-    <div className="relative min-h-screen bg-ink-950 text-fg">
+    <div className="site-shell relative min-h-screen bg-ink-950 text-fg">
+      {/* behind every page; see .site-bg */}
+      <div aria-hidden className="site-bg">
+        <span className="ob-1" />
+        <span className="ob-2" />
+        <span className="ob-3" />
+      </div>
       <ErrorBoundary>
       </ErrorBoundary>
       <ErrorBoundary>
