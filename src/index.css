@@ -736,3 +736,76 @@ html.demo-dialog-open .day-phone,
 html.demo-dialog-open .ring-dot .halo {
   animation-play-state: paused;
 }
+
+/* ---------------------------------------------------------- office backdrop
+   A slow field behind the whole staff page so it is not flat ink under the
+   scenes. Deliberately built from radial gradients rather than blurred boxes:
+   a gradient is already soft, while filter: blur() on a 40rem element is one
+   of the most expensive things a phone GPU can be asked to do every frame,
+   and this page is already running four pixel canvases. Only transforms are
+   animated, so it never touches layout or paint. */
+.office-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+.office-bg span {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  will-change: transform;
+}
+.office-bg .ob-1 {
+  top: -18%; left: -12%;
+  width: 46rem; height: 46rem;
+  background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.17), rgba(56, 189, 248, 0.05) 38%, transparent 68%);
+  animation: obDriftA 46s ease-in-out infinite;
+}
+.office-bg .ob-2 {
+  top: 26%; right: -20%;
+  width: 40rem; height: 40rem;
+  background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.20), rgba(37, 99, 235, 0.05) 40%, transparent 70%);
+  animation: obDriftB 58s ease-in-out infinite;
+}
+.office-bg .ob-3 {
+  bottom: -22%; left: 22%;
+  width: 38rem; height: 38rem;
+  background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.12), transparent 65%);
+  animation: obDriftC 70s ease-in-out infinite;
+}
+@keyframes obDriftA {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(6%, 8%, 0) scale(1.12); }
+}
+@keyframes obDriftB {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.06); }
+  50% { transform: translate3d(-8%, -6%, 0) scale(1); }
+}
+@keyframes obDriftC {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4%, -7%, 0) scale(1.1); }
+}
+/* A ruled field under the glow. Fixed and static: it gives the page structure
+   that a gradient alone cannot, and costs one composited layer. Masked so it
+   fades out top and bottom rather than ending on a hard line. */
+.office-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 40%, black, transparent 78%);
+          mask-image: radial-gradient(ellipse 90% 70% at 50% 40%, black, transparent 78%);
+}
+
+/* Everything the page draws sits above the field. */
+#office > * { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .office-bg span { animation: none; }
+}

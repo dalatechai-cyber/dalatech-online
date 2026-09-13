@@ -383,6 +383,21 @@ export function ringing(ctx, x, y, t) {
 // to repaint — and a canvas running at 60fps under a translucent layer keeps
 // the compositor re-sampling the page on every frame of the overlay's own
 // animation, which is what made closing the request sheet stutter.
+
+// How much device resolution a pixel stage is allowed to ask for.
+// Every art pixel is already several device pixels wide, so a third device
+// pixel per step buys no detail a viewer can see — and it is not free: the
+// backing store grows with the square of this number, and on a phone the
+// four chapter scenes are composited on every scrolled frame. At dpr 3 that
+// measured about 20fps on a throttled mid-range device; capped at 2 it is
+// roughly double, with nothing lost. Nothing is lost because the canvas is
+// `image-rendering: pixelated` and the numbers stay whole: an art pixel is
+// 4 canvas pixels here, and on a 3x screen those 4 display as exactly 6, so
+// every art-pixel edge still lands on a device-pixel boundary.
+export const MAX_STAGE_DPR = 2;
+export const stageDpr = () =>
+  Math.min(MAX_STAGE_DPR, (typeof window !== "undefined" && window.devicePixelRatio) || 1);
+
 let stagesFrozen = false;
 const freezeSubscribers = new Set();
 
@@ -418,7 +433,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
     const host = canvas.parentElement || canvas;
     const cssW = host.clientWidth;
     if (!cssW) return;
-    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    const dpr = stageDpr();
     // never scale so far that the scene's content no longer fits the width
     sDev = Math.max(1, Math.min(Math.round(scale(cssW) * dpr), Math.floor((cssW * dpr) / minW)));
     W = Math.max(minW, Math.floor((cssW * dpr) / sDev));
