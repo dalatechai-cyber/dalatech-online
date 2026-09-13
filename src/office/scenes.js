@@ -321,9 +321,17 @@ const CHAPTER_KIT = {
 };
 
 // Where a sprite stands on a floor line: its feet sink four pixels into the
-// carpet, which is what stops furniture looking like it floats.
+// carpet, and it lays a contact shadow before it draws. Without the shadow a
+// bin or a plant is a cut-out pasted onto the carpet at a depth nothing else
+// in the frame agrees with. Two rows, inset from the sprite's own box so it
+// reads as the object's footprint rather than as a bar under it.
 function stand(ctx, img, id, x, lineY, lift = 0) {
-  sprite(ctx, img, id, x, lineY - SPRITES[id].h + 4 - lift);
+  const sp = SPRITES[id];
+  const base = lineY + 4 - lift;
+  const inset = Math.max(2, Math.round(sp.w * 0.16));
+  rect(ctx, x + inset, base - 1, sp.w - inset * 2, 2, "rgba(6,9,26,0.32)");
+  rect(ctx, x + inset + 2, base + 1, sp.w - inset * 2 - 4, 1, "rgba(6,9,26,0.17)");
+  sprite(ctx, img, id, x, lineY - sp.h + 4 - lift);
 }
 
 export function drawChapter(id) {
@@ -354,7 +362,10 @@ export function drawChapter(id) {
     windowFrame(ctx, glass.x, glass.y, glass.w, glass.h, posts);
 
     const lights = [];
-    const deskX = 6;
+    // Not 6. At 6 the desk's left end sits on the frame's own edge, and with
+    // the canvas's rounded corner over it the desk reads as cut off by the
+    // picture rather than as standing in the room.
+    const deskX = 14;
     const grow = mapRange(progress, 0.2, 0.62, 0, 1);
     const pieces = ["DESK_L", "DESK_M", "DESK_R"];
     const base = { id, x: deskX, y: deskY, t, seed: 2, lights, night, pieces };
@@ -393,8 +404,13 @@ export function drawChapter(id) {
     const kit = CHAPTER_KIT[id];
 
     // ---- the back wall left of the panel, where height is unconstrained
+    // The tolerance matters: these pieces are 60 art px wide and the room is
+    // only just wide enough for one beside the desk, so a strict test against
+    // panelX drops them entirely the moment anything else moves. It can be
+    // loose because the panel's lower edge sits above this piece's lower half
+    // — the most that can ever go behind it is a corner a few pixels across.
     const gapX = deskX + s.deskW + 2;
-    const gap = panelX - gapX;
+    const gap = panelX + 12 - gapX;
     if (kit.left) {
       const [lid, mode] = kit.left;
       const lw = SPRITES[lid].w;
