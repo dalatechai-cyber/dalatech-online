@@ -444,9 +444,11 @@ html.demo-dialog-open #dt-chat-frame {
 .board-lane[data-soon="true"] .board-arrow,
 /* :not() so the rule cannot resurrect the note Нова has already sent, which
    is authored invisible and is the one token meant to stay that way */
-.board-lane[data-soon="true"] .board-token:not(.board-token--ghost) { opacity: 0.58; }
+.board-lane[data-soon="true"] .board-token:not(.board-token--ghost) { --rest: 0.58; opacity: var(--rest); }
 
-@media (max-width: 719.98px) {
+/* the exact complement of the 720px block below, so no fractional width
+   between them falls through to neither */
+@media not all and (min-width: 720px) {
   .board-lanes { gap: 8px; }
   /* Two columns, not three: the person spans the top, and the rail keeps the
      chip at its far end on the row below. Stacked in one column the arrow
@@ -661,9 +663,12 @@ html.demo-dialog-open #dt-chat-frame {
   0%, 55% { transform: translateX(calc(100% - 26px)); }
   100% { transform: translateX(0); }
 }
+/* ends on the token's own resting opacity, not on 1: this one only ever
+   appears on a lane for staff who are not built yet, where the rest state is
+   dimmer, and a hard 1 made it pop down as the animation released */
 @keyframes boardReply {
   0%, 57% { opacity: 0; }
-  66%, 100% { opacity: 1; }
+  66%, 100% { opacity: var(--rest, 1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -677,11 +682,16 @@ html.demo-dialog-open #dt-chat-frame {
    preference is asking us not to do. Deleting the glass panel took the file's
    only handling of it with it; this replaces it on the surface that needs it. */
 @media (prefers-contrast: more) {
-  .board-lane { background: #0B1226; border-color: rgba(240, 244, 255, 0.5); }
+  /* Tailwind's preflight zeroes border-width on everything, so a colour on
+     its own draws nothing — the edge needs the width too. */
+  .board-lane { background: #0B1226; border: 1px solid rgba(240, 244, 255, 0.5); }
   .board-lane[data-soon="true"] .board-track,
   .board-lane[data-soon="true"] .board-arrow,
   .board-lane[data-soon="true"] .board-token:not(.board-token--ghost) { opacity: 1; }
-  .board-chip { border-color: rgba(240, 244, 255, 0.55); color: #F0F4FF; }
+  /* both selectors, or the narrower "soon" rule below wins and the two chips
+     this preference most needs to reach keep their low-alpha edge */
+  .board-chip,
+  .board-lane[data-soon="true"] .board-chip { border-color: rgba(240, 244, 255, 0.55); color: #F0F4FF; }
   .board-track { opacity: 1; }
   .board-role, .board-soon { color: #AEC0DE; }
 }

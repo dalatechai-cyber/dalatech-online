@@ -299,11 +299,13 @@ export function grade(ctx, W, H, hour, holes = []) {
     // One rectangular opening is four rectangles, not a clip path. An
     // evenodd clip cannot take the fast integer path, so it was rebuilding a
     // path mask every frame for a shape that is always the same four edges.
+    // clamped and ordered: a hole with a negative extent, or one entirely off
+    // the canvas, has to leave the canvas fully graded rather than inverted
     const h = holes[0];
-    const x0 = Math.max(0, h.x);
-    const x1 = Math.min(W, h.x + h.w);
-    const y0 = Math.max(0, h.y);
-    const y1 = Math.min(H, h.y + h.h);
+    const x0 = Math.max(0, Math.min(W, h.x));
+    const x1 = Math.max(x0, Math.min(W, h.x + h.w));
+    const y0 = Math.max(0, Math.min(H, h.y));
+    const y1 = Math.max(y0, Math.min(H, h.y + h.h));
     rect(ctx, 0, 0, W, y0, fill);
     rect(ctx, 0, y1, W, H - y1, fill);
     rect(ctx, 0, y0, x0, y1 - y0, fill);
@@ -406,6 +408,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
   let dirty = false;
 
   const render = () => {
+    dirty = false; // whatever was recorded is on the canvas now
     ctx.setTransform(sDev, 0, 0, sDev, 0, 0);
     ctx.imageSmoothingEnabled = false;
     draw(ctx, img, { W, H, t, progress });
@@ -452,10 +455,12 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
 
   const io = new IntersectionObserver((entries) => {
     visible = entries.some((e) => e.isIntersecting);
+    // A scroll that happened while this stage was off screen still has to
+    // land, and it lands here, once, rather than on every scroll event. This
+    // runs BEFORE update(): update() starts the loop, and then `running`
+    // would be true and the catch-up neither drawn nor cleared.
+    if (visible && dirty) { dirty = false; render(); }
     update();
-    // a scroll that happened while this stage was off screen still has to
-    // land, but it lands here, once, rather than on every scroll event
-    if (visible && !running && dirty) { dirty = false; render(); }
   }, { rootMargin: "80px" });
   io.observe(canvas);
   const ro = new ResizeObserver(resize);
@@ -475,7 +480,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
       // screen the progress is just recorded; the observer draws it once
       // when the stage comes back.
       if (running) return;
-      if (visible || reduced) render();
+      if (visible) render();
       else dirty = true;
     },
     destroy() {

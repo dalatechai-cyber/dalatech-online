@@ -947,6 +947,7 @@ function DayRing({ className = "" }) {
     let running = false;
     let visible = false;
     let started = 0;
+    let pausedAt = 0;
 
     const frame = (now) => {
       raf = 0;
@@ -1015,12 +1016,19 @@ function DayRing({ className = "" }) {
       const should = visible && !document.hidden;
       if (should && !running) {
         running = true;
-        // open on last night's moment, lit and at rest with two seconds of its
-        // hold left: a full ring that can be read, then the new day starts
-        started = performance.now() - (RING_CYCLE - RING_HOLD + 2.6) * 1000;
+        if (!started) {
+          // open on last night's moment, lit and at rest with two seconds of
+          // its hold left: a full ring that can be read, then the day starts
+          started = performance.now() - (RING_CYCLE - RING_HOLD + 2.6) * 1000;
+        } else {
+          // coming back: carry the origin forward past the time spent away,
+          // so scrolling off and back does not teleport the day to midnight
+          started += performance.now() - pausedAt;
+        }
         raf = requestAnimationFrame(frame);
       } else if (!should && running) {
         running = false;
+        pausedAt = performance.now();
         if (raf) cancelAnimationFrame(raf);
         raf = 0;
       }
@@ -1090,7 +1098,6 @@ function DayRing({ className = "" }) {
                 key={e.time}
                 ref={(el) => { dotsRef.current[i] = el; }}
                 className={["ring-dot", reduced ? "is-lit" : ""].join(" ")}
-                style={{ "--ring-x": `${x}px`, "--ring-y": `${y}px` }}
               >
                 <circle className="halo" cx={x} cy={y} r="6" fill="#38BDF8" />
                 <circle className="dot" cx={x} cy={y} r="5.5" />
@@ -3705,12 +3712,18 @@ const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 // its own hold and leaves before the next moment's light arrives, so the
 // stack never holds two moments at once. Progress units; the times are the
 // scene's own timestamps.
+// Each group needs (n-1) steps to stack its cards, then enough left over for
+// the last one to be read. The old split gave Ара 8.4 seconds for four cards
+// and Нова 1.9 for three, so Эхо's confirmation and Нова's reminder were on
+// screen for seven tenths of a second each while Ара's opening line got
+// nearly eight. These windows are sized from the card counts instead, and
+// scenes.js moves the room's own hours with them.
 const PHONE_FEED = {
-  ara: { from: 0.05, until: 0.4 },
-  veda: { from: 0.46, until: 0.68 },
-  eho: { from: 0.73, until: 0.845 },
-  nova: { from: 0.865, until: 0.945 },
-  done: { from: 0.955 },
+  ara: { from: 0.05, until: 0.29 },
+  veda: { from: 0.33, until: 0.45 },
+  eho: { from: 0.49, until: 0.69 },
+  nova: { from: 0.73, until: 0.9 },
+  done: { from: 0.93 },
 };
 const PHONE_STEP = 0.035;
 // The last screen has less runway than the others: the summary and the door
@@ -3873,7 +3886,7 @@ function PhoneFeed({ progress, group }) {
 
       <div className={groupCls} aria-hidden={!show("nova")} style={progress ? { pointerEvents: "none" } : undefined}>
         {feed.nova.items.map((n, i) => (
-          <PhoneCard key={n.title} progress={progress} at={step("nova", i)} span={0.025} until={g("nova").until} who="nova" name={feed.nova.from} time={n.time} title={n.title} className={i === feed.nova.items.length - 1 ? "border-sky-400/30" : ""}>
+          <PhoneCard key={n.title} progress={progress} at={g("nova").from + i * 0.025} span={0.025} until={g("nova").until} who="nova" name={feed.nova.from} time={n.time} title={n.title} className={i === feed.nova.items.length - 1 ? "border-sky-400/30" : ""}>
             <p className={phoneText}>{n.body}</p>
           </PhoneCard>
         ))}
@@ -4439,8 +4452,14 @@ function useDampedProgress(ref, offset, spring = CHAPTER_SPRING) {
 }
 
 // One line that rises into place as the scroll passes `at`.
-function Rise({ progress, at, span = 0.08, until, className = "", children }) {
+function Rise({ progress, at, span: rawSpan = 0.08, until, className = "", children }) {
   const reduced = useReducedMotion();
+  // A span that runs past `until` used to turn the exit ramp off silently:
+  // useUntil below is false, the element rises and then never leaves. Clamp
+  // instead, so passing a window always produces one.
+  const span = until !== undefined && at + rawSpan >= until
+    ? Math.max(1e-3, (until - at) * 0.6)
+    : rawSpan;
   // Without `until` a line rises once and stays, which is what the chapters
   // want. The pinned day scene needs the block to leave before the next
   // moment arrives, so the ramp runs back down to zero at the far end.
