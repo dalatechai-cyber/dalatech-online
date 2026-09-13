@@ -1,5 +1,8 @@
 # Globe textures
 
+How `public/globe/earth-map.jpg` and `public/globe/earth-topology.jpg` were
+produced. Kept out of `public/` so it is not served as part of the site.
+
 Both files are resampled from the example imagery in the MIT-licensed
 [`three-globe`](https://github.com/vasturiano/three-globe) package
 (`example/img/`, v2.45.2), which is derived from NASA's Blue Marble

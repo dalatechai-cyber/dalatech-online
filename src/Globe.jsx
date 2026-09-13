@@ -9,7 +9,7 @@ const GLOBE_RADIUS = 1.0;
 
 // Served from our own origin. These were loaded from a public CDN at runtime
 // until an outage was found to render the globe as a featureless sphere; see
-// public/globe/SOURCE.md for provenance, licence and how the sizes were chosen.
+// scripts/globe-textures.md for provenance, licence and how the sizes were chosen.
 const EARTH_MAP_URL = "/globe/earth-map.jpg";
 const EARTH_BUMP_URL = "/globe/earth-topology.jpg";
 
