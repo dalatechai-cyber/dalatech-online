@@ -687,7 +687,9 @@ html.demo-dialog-open #dt-chat-frame {
   .board-lane { background: #0B1226; border: 1px solid rgba(240, 244, 255, 0.5); }
   .board-lane[data-soon="true"] .board-track,
   .board-lane[data-soon="true"] .board-arrow,
-  .board-lane[data-soon="true"] .board-token:not(.board-token--ghost) { opacity: 1; }
+  /* --rest, not opacity: the reply keyframes end on var(--rest), so overriding
+     only the declarative opacity leaves the animation's tail at the low alpha */
+  .board-lane[data-soon="true"] .board-token:not(.board-token--ghost) { --rest: 1; opacity: 1; }
   /* both selectors, or the narrower "soon" rule below wins and the two chips
      this preference most needs to reach keep their low-alpha edge */
   .board-chip,

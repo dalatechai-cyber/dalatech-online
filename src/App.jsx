@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -998,7 +999,7 @@ function DayRing({ className = "" }) {
 
       if (shown !== shownRef.current) {
         shownRef.current = shown;
-        setActive(shown);
+        ReactDOM.flushSync(() => setActive(shown));
       }
       // The clock snaps to the moment's own time on arrival — not a moment
       // before it, which used to put the arriving time over the previous

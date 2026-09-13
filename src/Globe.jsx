@@ -82,8 +82,14 @@ export default function Globe({ className = "", reducedMotion = false }) {
     scene.add(globeGroup);
 
     const earthGeo = new THREE.SphereGeometry(GLOBE_RADIUS, 96, 96);
+    // The two earth textures come from a public CDN, so they can be slow or
+    // absent. MeshPhongMaterial multiplies `color` into `map`, so the base
+    // colour is both the pre-load state and the outage state: start on a deep
+    // ocean blue from the brand range (a white base shows a pale sphere until
+    // the jpg lands) and only go to white once the map is actually applied.
+    const EARTH_FALLBACK = 0x0d1b33;
     const earthMat = new THREE.MeshPhongMaterial({
-      color: 0xffffff,
+      color: EARTH_FALLBACK,
       shininess: 16,
       specular: 0x1a2230,
       bumpScale: 0.014,
@@ -93,16 +99,33 @@ export default function Globe({ className = "", reducedMotion = false }) {
 
     const loader = new THREE.TextureLoader();
     loader.setCrossOrigin("anonymous");
-    loader.load(EARTH_MAP_URL, (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      earthMat.map = tex;
-      earthMat.needsUpdate = true;
-    });
-    loader.load(EARTH_BUMP_URL, (tex) => {
-      earthMat.bumpMap = tex;
-      earthMat.needsUpdate = true;
-    });
+    loader.load(
+      EARTH_MAP_URL,
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        earthMat.map = tex;
+        earthMat.color.setHex(0xffffff);
+        earthMat.needsUpdate = true;
+      },
+      undefined,
+      () => {
+        // Keep the fallback colour and say so — the globe still turns, it just
+        // has no continents, and a silent console is how that ships unnoticed.
+        console.warn("Globe: earth map failed to load, using flat fallback.");
+      }
+    );
+    loader.load(
+      EARTH_BUMP_URL,
+      (tex) => {
+        earthMat.bumpMap = tex;
+        earthMat.needsUpdate = true;
+      },
+      undefined,
+      () => {
+        console.warn("Globe: earth topology failed to load, relief disabled.");
+      }
+    );
 
     const innerAtmoGeo = new THREE.SphereGeometry(GLOBE_RADIUS * 1.012, 64, 64);
     const innerAtmoMat = new THREE.MeshBasicMaterial({
