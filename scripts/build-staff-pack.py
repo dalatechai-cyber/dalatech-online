@@ -237,7 +237,6 @@ def props():
         "PLANT": single(O(98)),
         "PLANT_2": single(O(99)),
         "PLANT_3": single(O(100)),
-        "CABINET": single(O(180)),
         "WHITEBOARD": single(O(170)),
         "COFFEE": single(O(317)),
         "MUG": single(K(182)),
@@ -263,6 +262,12 @@ def props():
     # combined sheet, where it is a composed unit rather than a single
     sheet = Image.open(OFFICE_SHEET).convert("RGBA")
     S["SHELF_UNIT"] = (rule_colours(crop_alpha(sheet.crop((226, 400, 286, 460))), furniture_rule), {})
+    # CABINET used to be singles tile 180, which is not a cabinet at all: it is
+    # a blank tan wall panel, two thirds of it one flat colour, and on a wall it
+    # read as a featureless slab. Tile 174 is the stocked display cabinet. Its
+    # own tile carries two columns of bleed from the object beside it (only 16
+    # opaque rows deep), so the crop stops at x=50 rather than at the alpha box.
+    S["CABINET"] = (rule_colours(crop_alpha(Image.open(O(174)).convert("RGBA").crop((16, 32, 50, 78))), furniture_rule), {})
     # the coffee machine's steam: six 32x64 frames (steam row over mug row)
     cf = Image.open(LZ / "moderninteriors-win" / "3_Animated_objects" / "32x32" / "spritesheets" / "animated_coffee_32x32.png").convert("RGBA")
     strip = Image.new("RGBA", (6 * 32, 64))
