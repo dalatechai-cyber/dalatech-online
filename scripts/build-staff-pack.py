@@ -206,6 +206,37 @@ def single(path, rule=furniture_rule, cmap=None, screens=False):
     return im, entry
 
 
+# The four pieces that stand against the back wall of a chapter room, and the
+# check that keeps them readable. furniture_rule maps a source colour to navy
+# by its LIGHTNESS alone, so a tile whose frame, face and plinth sit in a narrow
+# band of source lightness comes out as one flat navy mass: no frame, no
+# plinth, nothing that reads as an object. That has now shipped twice — tile
+# 180, a blank wall panel sold as a cabinet, and tile 213, a standing board
+# from the same flat family — and both times it was caught by eye on the live
+# site rather than here. Measured on the four pieces that survive, the spread
+# between the 5th and 95th percentile of output lightness is 0.46 to 0.60;
+# the two that failed measured 0.19 and 0.29. Fail the build under 0.40.
+WALL_PIECES = ("SHELF_FILES", "SHREDDER", "COPIER", "CABINET")
+MIN_WALL_PIECE_SPREAD = 0.40
+
+
+def check_wall_pieces(S):
+    for name in WALL_PIECES:
+        if name not in S:
+            raise SystemExit(f"wall piece {name} is missing from the pack")
+        im = S[name][0]
+        ls = sorted(hls(p[:3])[1] for p in im.getdata() if p[3])
+        if not ls:
+            raise SystemExit(f"wall piece {name} is fully transparent")
+        spread = ls[int(len(ls) * 0.95)] - ls[int(len(ls) * 0.05)]
+        if spread < MIN_WALL_PIECE_SPREAD:
+            raise SystemExit(
+                f"wall piece {name} flattens to a lightness spread of {spread:.2f} "
+                f"(minimum {MIN_WALL_PIECE_SPREAD:.2f}). It will read as a slab on the "
+                f"wall, not as furniture — pick a source tile with more contrast."
+            )
+
+
 # ---------------------------------------------------------------- props
 def props():
     O = lambda n: str(OFFICE).format(n)
@@ -238,7 +269,6 @@ def props():
         "PLANT_2": single(O(99)),
         "PLANT_3": single(O(100)),
         "WHITEBOARD": single(O(170)),
-        "BOARD_STAND": single(O(213)),
         "COFFEE": single(O(317)),
         "MUG": single(K(182)),
         "STICKY": single(B(452)),
@@ -269,15 +299,15 @@ def props():
     # own tile carries two columns of bleed from the object beside it (only 16
     # opaque rows deep), so the crop stops at x=50 rather than at the alpha box.
     S["CABINET"] = (rule_colours(crop_alpha(Image.open(O(174)).convert("RGBA").crop((16, 32, 50, 78))), furniture_rule), {})
-    # The other two wall pieces beside a chapter desk, cropped the same way
-    # and from the same family: a shelf of files and a shredder, both built
-    # like CABINET out of a dark frame, a face and a plinth. Each carries the
-    # same two-column bleed fragment of the object beside it on its own tile —
-    # a flat #a79796 strip a third as deep as the piece — so both crops stop
-    # short of the alpha box on the right. Tile 213, the board on a stand, is
-    # clean and needs no crop; it is a plain single above.
+    # The three other wall pieces beside a chapter desk, cropped the same way
+    # and from the same family as CABINET: a shelf of files, a shredder and a
+    # copier, each a dark frame around a lit face over a plinth. All three
+    # carry the same two-column bleed fragment of the object beside them on
+    # their own tile — a flat #a79796 strip a third as deep as the piece — so
+    # every crop stops short of the alpha box on the right.
     S["SHELF_FILES"] = (rule_colours(crop_alpha(Image.open(O(156)).convert("RGBA").crop((0, 58, 30, 92))), furniture_rule), {})
     S["SHREDDER"] = (rule_colours(crop_alpha(Image.open(O(169)).convert("RGBA").crop((4, 32, 28, 76))), furniture_rule), {})
+    S["COPIER"] = (rule_colours(crop_alpha(Image.open(O(168)).convert("RGBA").crop((4, 32, 28, 76))), furniture_rule), {})
     # the coffee machine's steam: six 32x64 frames (steam row over mug row)
     cf = Image.open(LZ / "moderninteriors-win" / "3_Animated_objects" / "32x32" / "spritesheets" / "animated_coffee_32x32.png").convert("RGBA")
     strip = Image.new("RGBA", (6 * 32, 64))
@@ -298,6 +328,8 @@ def props():
     tile = lambda c, r: rb.crop((c * 32, r * 32, (c + 1) * 32, (r + 1) * 32))
     for sid, im in (("WALL_TOP", tile(8, 11)), ("WALL_MID", tile(5, 11)), ("SKIRT", tile(8, 12))):
         S[sid] = (rule_colours(im, wall_rule), {})
+
+    check_wall_pieces(S)
     # the floor is a 96x64 pattern, not the 64x64 corner of one it used to be,
     # so the tiling varies instead of repeating every two tiles
     S["FLOOR"] = (rule_colours(rb.crop((320, 160, 416, 224)), floor_rule), {})

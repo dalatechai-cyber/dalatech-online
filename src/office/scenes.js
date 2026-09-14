@@ -314,12 +314,14 @@ const CHAPTER_KIT = {
   ara: { left: ["SHELF_FILES", "stand"], front: ["CHAIR_ORANGE", "PLANT", "PLANT_3"] },
   // the analyst: what she prints and what she shreds, either side of the desk.
   // Her printer stands at the front of this same gap and covers the lowest
-  // twelve pixels of whatever is on the wall behind it, so her piece has to be
-  // one that still reads with its foot hidden — the board does not.
+  // twelve pixels of whatever is on the wall behind it, so hers has to be a
+  // piece that still reads with its foot hidden. Every room's is, now.
   veda: { left: ["SHREDDER", "stand"], front: ["CABINET", "PLANT_3", "PLANT"] },
-  // the phone desk: the corner people actually stand in between calls, and
-  // the board they keep the day's numbers on
-  eho: { left: ["BOARD_STAND", "stand"], front: ["COFFEE", "COOLER", "PLANT", "PLANT_3"] },
+  // the phone desk: the corner people actually stand in between calls, and the
+  // copier behind it. This was a board on a stand, which the pack draws as a
+  // face, a rail and two legs all within a hair of one lightness — recoloured
+  // for this room it came out a flat navy panel with no frame and no plinth.
+  eho: { left: ["COPIER", "stand"], front: ["COFFEE", "COOLER", "PLANT", "PLANT_3"] },
   // customer manager: a seat for whoever comes back, and something growing
   nova: { left: ["CABINET", "stand"], front: ["PLANT", "CHAIR_ORANGE", "PLANT_3", "COOLER"] },
 };
