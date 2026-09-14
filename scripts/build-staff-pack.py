@@ -238,6 +238,7 @@ def props():
         "PLANT_2": single(O(99)),
         "PLANT_3": single(O(100)),
         "WHITEBOARD": single(O(170)),
+        "BOARD_STAND": single(O(213)),
         "COFFEE": single(O(317)),
         "MUG": single(K(182)),
         "STICKY": single(B(452)),
@@ -268,6 +269,15 @@ def props():
     # own tile carries two columns of bleed from the object beside it (only 16
     # opaque rows deep), so the crop stops at x=50 rather than at the alpha box.
     S["CABINET"] = (rule_colours(crop_alpha(Image.open(O(174)).convert("RGBA").crop((16, 32, 50, 78))), furniture_rule), {})
+    # The other two wall pieces beside a chapter desk, cropped the same way
+    # and from the same family: a shelf of files and a shredder, both built
+    # like CABINET out of a dark frame, a face and a plinth. Each carries the
+    # same two-column bleed fragment of the object beside it on its own tile —
+    # a flat #a79796 strip a third as deep as the piece — so both crops stop
+    # short of the alpha box on the right. Tile 213, the board on a stand, is
+    # clean and needs no crop; it is a plain single above.
+    S["SHELF_FILES"] = (rule_colours(crop_alpha(Image.open(O(156)).convert("RGBA").crop((0, 58, 30, 92))), furniture_rule), {})
+    S["SHREDDER"] = (rule_colours(crop_alpha(Image.open(O(169)).convert("RGBA").crop((4, 32, 28, 76))), furniture_rule), {})
     # the coffee machine's steam: six 32x64 frames (steam row over mug row)
     cf = Image.open(LZ / "moderninteriors-win" / "3_Animated_objects" / "32x32" / "spritesheets" / "animated_coffee_32x32.png").convert("RGBA")
     strip = Image.new("RGBA", (6 * 32, 64))

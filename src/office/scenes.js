@@ -310,15 +310,33 @@ export function drawHero(ctx, img, v) {
 // page floats over it — so the character of each room is carried by its
 // front row, which sits low in the frame and can hold the tall things.
 const CHAPTER_KIT = {
-  // reception: somewhere for whoever walks in to sit
-  ara: { left: ["SHELF_UNIT", "stand"], front: ["CHAIR_ORANGE", "PLANT", "PLANT_3"] },
-  // the analyst: the month on the wall, the printer, the files
-  veda: { left: ["WHITEBOARD_CHART", "hang"], front: ["CABINET", "PLANT_3", "PLANT"] },
-  // the phone desk: the corner people actually stand in between calls
-  eho: { left: ["SHELF_UNIT", "stand"], front: ["COFFEE", "COOLER", "PLANT", "PLANT_3"] },
+  // reception: the folders whoever walks in gets handed, and a seat to wait in
+  ara: { left: ["SHELF_FILES", "stand"], front: ["CHAIR_ORANGE", "PLANT", "PLANT_3"] },
+  // the analyst: what she prints and what she shreds, either side of the desk.
+  // Her printer stands at the front of this same gap and covers the lowest
+  // twelve pixels of whatever is on the wall behind it, so her piece has to be
+  // one that still reads with its foot hidden — the board does not.
+  veda: { left: ["SHREDDER", "stand"], front: ["CABINET", "PLANT_3", "PLANT"] },
+  // the phone desk: the corner people actually stand in between calls, and
+  // the board they keep the day's numbers on
+  eho: { left: ["BOARD_STAND", "stand"], front: ["COFFEE", "COOLER", "PLANT", "PLANT_3"] },
   // customer manager: a seat for whoever comes back, and something growing
   nova: { left: ["CABINET", "stand"], front: ["PLANT", "CHAIR_ORANGE", "PLANT_3", "COOLER"] },
 };
+
+// All four rooms show their wall piece or none of them do. The four pieces
+// differ by a few pixels of width, and testing each against its own width
+// made them cross the threshold one at a time as the window widened: on a
+// 1024px viewport Нова's 34px cabinet stood beside her desk while the other
+// three rooms, whose pieces were wider, had bare wall. One threshold — the
+// widest of the four — so the rooms always agree with each other. The filter
+// matches the guard at the draw site: a kit is allowed to name no wall piece,
+// and must not take the whole module down at import if it does.
+const WALL_PIECE_W = Math.max(
+  ...Object.values(CHAPTER_KIT)
+    .filter((k) => k.left)
+    .map((k) => SPRITES[k.left[0]].w),
+);
 
 // Where a sprite stands on a floor line: its feet sink four pixels into the
 // carpet, and it lays a contact shadow before it draws. Without the shadow a
@@ -404,20 +422,18 @@ export function drawChapter(id) {
     const kit = CHAPTER_KIT[id];
 
     // ---- the back wall left of the panel, where height is unconstrained
-    // The tolerance matters: these pieces are 60 art px wide and the room is
-    // only just wide enough for one beside the desk, so a strict test against
-    // panelX drops them entirely the moment anything else moves. It can be
-    // loose because the panel's lower edge sits above this piece's lower half
-    // — the most that can ever go behind it is a corner a few pixels across.
+    // The gap beside the desk is all the room a wall piece has, and it is
+    // narrow: 43 art px on a 1024px viewport, 66 once the frame stops
+    // growing and the stage is as wide as it will get. The
+    // tolerance can reach a little past panelX because the panel's lower edge
+    // sits above this piece's lower half — the most that can ever go behind
+    // it is a corner a few pixels across.
     const gapX = deskX + s.deskW + 2;
     const gap = panelX + 12 - gapX;
-    if (kit.left) {
+    if (kit.left && gap >= WALL_PIECE_W) {
       const [lid, mode] = kit.left;
-      const lw = SPRITES[lid].w;
-      if (gap >= lw) {
-        if (mode === "stand") stand(ctx, img, lid, gapX, floorY);
-        else sprite(ctx, img, lid, gapX, floorY - SPRITES[lid].h - 6);
-      }
+      if (mode === "stand") stand(ctx, img, lid, gapX, floorY);
+      else sprite(ctx, img, lid, gapX, floorY - SPRITES[lid].h - 6);
     }
 
     // Nothing goes on the wall to the right of the desk. Measured across the
