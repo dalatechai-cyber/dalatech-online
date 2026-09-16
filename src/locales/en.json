@@ -93,20 +93,20 @@
     "title": "Work does not stop while you sleep.",
     "lead": "Watch what reaches your phone over one day. A booking at night, a report in the morning, a call just before closing.",
     "closing": "Four AI staff, working as one team. Send a request and we will show how they would work for your business.",
-    "sceneAlt": "An office from night to evening: Ara through the night, Veda in the morning, Eho in the evening.",
+    "sceneAlt": "An office from night to evening: Dali through the night, Vira in the morning, Eho in the evening.",
     "phone": {
       "alt": "The owner's phone: the notifications of one day",
       "customer": "Bold",
-      "ara": {
-        "from": "Ara · DalaTech",
+      "dali": {
+        "from": "Dali · DalaTech",
         "in": "Hello, could I book a time for tomorrow?",
         "reply": "Hello. Tomorrow 11:00 and 15:30 are free. Which suits you?",
         "pick": "15:30",
         "booked": "New booking recorded",
         "bookedBody": "Bold · tomorrow 15:30. Confirmation message sent."
       },
-      "veda": {
-        "from": "Veda · DalaTech",
+      "vira": {
+        "from": "Vira · DalaTech",
         "title": "September report is ready",
         "body": "Sales, customers, returning customers. Next month's recommendations attached."
       },
@@ -189,7 +189,7 @@
     },
     "aiAssistant": {
       "title": "AI staff setup",
-      "description": "We configure Ara, Eho, or both for your most common customer questions."
+      "description": "We configure Dali, Eho, or both for your most common customer questions."
     },
     "monthlySupport": {
       "title": "Monthly support",
@@ -201,23 +201,23 @@
   "portfolio": {
     "section": "WEBSITE",
     "title": "A website we built",
-    "description": "A website built for a beauty salon: online booking, QPay payments, and Ara integrated.",
+    "description": "A website built for a beauty salon: online booking, QPay payments, and Dali integrated.",
     "getDemo": "Send a request",
     "case": {
       "url": "Client website",
       "pills": {
         "website": "Website",
-        "chatbot": "Ara",
+        "chatbot": "Dali",
         "productQA": "QPay",
         "availability": "Online booking"
       },
       "title": "A beauty salon website",
-      "description": "A modern design matched to an eco-friendly brand. Customers book at any hour and pay by QPay. Ara answers the repeat questions.",
+      "description": "A modern design matched to an eco-friendly brand. Customers book at any hour and pay by QPay. Dali answers the repeat questions.",
       "whatWeBuilt": "Work delivered",
       "features": [
         "Modern salon website",
         "Online booking system",
-        "QPay payment and Ara integration"
+        "QPay payment and Dali integration"
       ],
       "idealOutcomes": "Outcomes",
       "outcomes": [
@@ -233,17 +233,17 @@
   },
   "liveDemo": {
     "section": "LIVE EXAMPLE",
-    "title": "When a customer writes, Ara answers like this.",
-    "description": "A Messenger conversation at a sample salon. Ara books the time, answers the questions, and hands the owner what she does not know. Send a request and we will show Ara configured on your own business.",
+    "title": "When a customer writes, Dali answers like this.",
+    "description": "A Messenger conversation at a sample salon. Dali books the time, answers the questions, and hands the owner what she does not know. Send a request and we will show Dali configured on your own business.",
     "ctaLabel": "Send a request",
     "widget": {
       "businessName": "Beauty salon",
       "statusOnline": "Online",
-      "agentName": "Ara",
+      "agentName": "Dali",
       "agentRole": "Receptionist",
       "inputPlaceholder": "Type a message…",
-      "typing": "Ara is typing",
-      "footnote": "Ara · DalaTech"
+      "typing": "Dali is typing",
+      "footnote": "Dali · DalaTech"
     },
     "messages": {
       "user1": "Hi, are you open tomorrow?",
@@ -253,12 +253,12 @@
       "ai3": "If you would like to speak with a person, I will connect you now."
     },
     "ask": {
-      "prompt": "Pick a question and see how Ara answers.",
+      "prompt": "Pick a question and see how Dali answers.",
       "chip3": "Can you give me 30% off?",
-      "decline": "Ara will not answer this one herself.",
+      "decline": "Dali will not answer this one herself.",
       "handoffTitle": "Handed to the owner",
       "handoffLine": "The customer asked",
-      "reassure": "Ara does not make decisions on your behalf."
+      "reassure": "Dali does not make decisions on your behalf."
     }
   },
   "pricing": {
@@ -281,14 +281,14 @@
         "cta": "Send a request"
       },
       "bundle": {
-        "title": "Website + Ara",
+        "title": "Website + Dali",
         "badge": "100,000₮ discount",
         "price": "800,000₮",
-        "subLine": "Separately 900,000₮ (website 750,000₮ + Ara setup 150,000₮). Together 800,000₮ · then Ara 250,000₮/month",
-        "description": "Your new website launches with Ara already answering.",
+        "subLine": "Separately 900,000₮ (website 750,000₮ + Dali setup 150,000₮). Together 800,000₮ · then Dali 250,000₮/month",
+        "description": "Your new website launches with Dali already answering.",
         "bullets": [
           "Smart website included",
-          "Ara answers on the website and on Messenger",
+          "Dali answers on the website and on Messenger",
           "100,000₮ discount on the setup"
         ],
         "cta": "Send a request",
@@ -338,8 +338,8 @@
       "answer": "They do not. AI staff handle the daily load: repeat questions, bookings, reminders, and reports. Anything sensitive or unusual is passed to your team."
     },
     "q5": {
-      "question": "What does Ara base its answers on?",
-      "answer": "Ara answers only from the information you supply: prices, hours, services, and terms. Anything outside that scope is passed to your team rather than guessed."
+      "question": "What does Dali base its answers on?",
+      "answer": "Dali answers only from the information you supply: prices, hours, services, and terms. Anything outside that scope is passed to your team rather than guessed."
     },
     "q6": {
       "question": "How long does rollout take?",
@@ -463,12 +463,12 @@
     "next": "Continue",
     "back": "Back",
     "serviceCards": {
-      "ara": {
-        "title": "Ара",
+      "dali": {
+        "title": "Дали",
         "line": "Answers every message"
       },
-      "veda": {
-        "title": "Веда",
+      "vira": {
+        "title": "Вира",
         "line": "The monthly report"
       },
       "eho": {
@@ -505,7 +505,7 @@
     "section": "AI STAFF",
     "hero": {
       "title": "Four AI staff, working for your business.",
-      "lead": "Ara answers every message and Eho answers every call. Veda prepares the monthly report and Nova follows up with customers. No new headcount, one fixed monthly fee.",
+      "lead": "Dali answers every message and Eho answers every call. Vira prepares the monthly report and Nova follows up with customers. No new headcount, one fixed monthly fee.",
       "hire": "Send a request",
       "see": "See them at work",
       "sceneAlt": "Four AI staff at their desks in an evening office, under one long window.",
@@ -522,12 +522,12 @@
       "addOnOnly": "Only alongside another staff member."
     },
     "chapters": {
-      "ara": {
-        "eyebrow": "Ara · Receptionist",
+      "dali": {
+        "eyebrow": "Dali · Receptionist",
         "title": "Every message, within seconds.",
-        "body": "Ara replies at once to messages on Facebook, Instagram and your website: prices, hours, services, and the booking itself. A customer left waiting goes to a competitor. Ara closes that leak.",
+        "body": "Dali replies at once to messages on Facebook, Instagram and your website: prices, hours, services, and the booking itself. A customer left waiting goes to a competitor. Dali closes that leak.",
         "cta": "Send a request",
-        "sceneAlt": "Ara at the desk at night, answering messages.",
+        "sceneAlt": "Dali at the desk at night, answering messages.",
         "chat": [
           {
             "from": "customer",
@@ -551,12 +551,12 @@
           }
         ]
       },
-      "veda": {
-        "eyebrow": "Veda · Business analyst",
+      "vira": {
+        "eyebrow": "Vira · Business analyst",
         "title": "See each month in numbers.",
         "body": "The report is ready on the first day of the month. Which service grew and which customers went quiet, you know from figures, not guesses.",
         "cta": "Send a request",
-        "sceneAlt": "Veda in the morning behind two screens, preparing the monthly report.",
+        "sceneAlt": "Vira in the morning behind two screens, preparing the monthly report.",
         "report": {
           "tag": "Sample",
           "title": "September · Report",
@@ -622,7 +622,7 @@
       "setup": "Setup, one time",
       "discount": "{{percent}}% discount",
       "perMinuteNote": "Eho call minutes carry an additional charge.",
-      "vedaAlone": "Veda works only alongside another staff member. Select one more.",
+      "viraAlone": "Vira works only alongside another staff member. Select one more.",
       "empty": "Select at least one staff member.",
       "soonNote": "Eho and Nova launch soon. Pre-register and we notify you at launch.",
       "cta": "Send a request",
@@ -647,8 +647,8 @@
     },
     "unavailable": "This image could not be loaded.",
     "agents": {
-      "ara": {
-        "name": "Ara",
+      "dali": {
+        "name": "Dali",
         "role": "Receptionist",
         "job": "Answers every Facebook, Instagram and website message within seconds, and records bookings and appointments."
       },
@@ -657,8 +657,8 @@
         "role": "Customer manager",
         "job": "Asks for feedback, sends reminders, and brings back customers who went quiet."
       },
-      "veda": {
-        "name": "Veda",
+      "vira": {
+        "name": "Vira",
         "role": "Business analyst",
         "job": "Prepares the monthly report and says, in numbers, what to change."
       },
@@ -670,7 +670,7 @@
     },
     "artCredit": "Pixel art on this page by",
     "limits": {
-      "title": "What Ara will not do",
+      "title": "What Dali will not do",
       "lead": "Trust rests less on what it can do than on what it will not.",
       "items": [
         "It does not guess. It answers within the prices, hours, services and terms you gave it.",
@@ -683,7 +683,7 @@
       "label": "How the work is split",
       "caption": "Four different kinds of work, one member of staff responsible for each.",
       "lanes": {
-        "ara": {
+        "dali": {
           "end": "Incoming messages",
           "dir": "Work that arrives"
         },
@@ -691,7 +691,7 @@
           "end": "Incoming calls",
           "dir": "Work that arrives"
         },
-        "veda": {
+        "vira": {
           "end": "The month's numbers",
           "dir": "Work done at the desk"
         },
@@ -709,7 +709,7 @@
     },
     "/office": {
       "title": "AI staff",
-      "desc": "Ara, Veda, Eho and Nova. What each one does, how they work, and which channels they answer on."
+      "desc": "Dali, Vira, Eho and Nova. What each one does, how they work, and which channels they answer on."
     },
     "/pricing": {
       "title": "Pricing",
@@ -717,7 +717,7 @@
     },
     "/portfolio": {
       "title": "Website",
-      "desc": "A website built for a beauty salon: online booking, QPay payments, Ara."
+      "desc": "A website built for a beauty salon: online booking, QPay payments, Dali."
     },
     "/faq": {
       "title": "Questions",

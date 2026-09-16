@@ -6,7 +6,7 @@
 // glass, each set up for the job its person does. What makes the four read
 // as four is not the pose — the character generator has no front-facing
 // seated pose, so everyone behind a desk shares the idle frames — but what
-// each one is visibly doing: Ара answering a message that just arrived, Веда
+// each one is visibly doing: Дали answering a message that just arrived, Вира
 // holding the report her screens are building, Эхо on a call, Нова sending.
 import {
   sprite, stripFrame, charFrame, sky, windowFrame, room, screenActivity, screenChart,
@@ -14,16 +14,16 @@ import {
 } from "./pixel";
 
 // Order on the hero row and the hour each chapter is set at.
-export const STAFF = ["ara", "veda", "eho", "nova"];
-// Ара deep in the night, Веда at first light, Эхо in the golden hour, Нова
+export const STAFF = ["dali", "vira", "eho", "nova"];
+// Дали deep in the night, Вира at first light, Эхо in the golden hour, Нова
 // in the blue hour: four moods that all sit inside the dark page.
-export const CHAPTER_HOUR = { ara: 2.25, veda: 6.75, eho: 18.4, nova: 19.6 };
+export const CHAPTER_HOUR = { dali: 2.25, vira: 6.75, eho: 18.4, nova: 19.6 };
 // The hero is set in the evening: lamps lit, screens glowing, the four still
 // at work. The people animate; the hour does not move.
 export const HERO_HOUR = 21;
 
-// Station widths in art pixels. Веда's is wider: two screens and a printer.
-const STATION_W = { ara: 66, veda: 92, eho: 66, nova: 68 };
+// Station widths in art pixels. Вира's is wider: two screens and a printer.
+const STATION_W = { dali: 66, vira: 92, eho: 66, nova: 68 };
 const ROW_W = STAFF.reduce((w, id) => w + STATION_W[id], 0);
 // Art pixels the four desks need side by side, with a margin each end.
 export const HERO_MIN_W = 8 + ROW_W;
@@ -37,8 +37,8 @@ const DESK_Y = 82;
 const REPORT = [0.5, 0.62, 0.48, 0.9];
 
 const KIT = {
-  ara: { anim: "idle", fps: 4 },
-  veda: { anim: "read", fps: 5 },
+  dali: { anim: "idle", fps: 4 },
+  vira: { anim: "read", fps: 5 },
   eho: { anim: "phone", fps: 8, loop: [4, 9] },
   nova: { anim: "idle", fps: 3 },
 };
@@ -106,9 +106,9 @@ function deskLamp(ctx, img, x, y, night, lights, showSprite = true) {
 // Each job is a small loop on `t`, seeded so the four never fire together.
 // The phases are named so the chapters can pin one (see drawChapter).
 
-// Ара: a message arrives and she answers it. It plays on her screen — the
+// Дали: a message arrives and she answers it. It plays on her screen — the
 // question in, her reply out — because that is where it really happens.
-function actAra(ctx, img, s, t, lights, force) {
+function actDali(ctx, img, s, t, lights, force) {
   const { x, y } = s;
   const lap = SPRITES.LAPTOP;
   const lx = x + 22, ly = y;
@@ -127,9 +127,9 @@ function actAra(ctx, img, s, t, lights, force) {
   });
 }
 
-// Веда: the report. Her two screens build the chart bar by bar, she reads
+// Вира: the report. Her two screens build the chart bar by bar, she reads
 // the printed pages, and the printer beside her puts out the next one.
-function actVeda(ctx, img, s, t, lights, chartGrow) {
+function actVira(ctx, img, s, t, lights, chartGrow) {
   const { x, y } = s;
   const dual = SPRITES.DUAL;
   const dx = x + 10, dy = y - 4;
@@ -197,11 +197,11 @@ function actNova(ctx, img, s, t, lights) {
 function officeRoom(ctx, img, { W, H, t }, {
   hour,
   cast = STAFF,          // who is at a desk; the rest get an empty chair and a dark screen
-  chartGrow,             // Веда's chart, when the scene drives it; else her own loop
+  chartGrow,             // Вира's chart, when the scene drives it; else her own loop
   focus = null,          // desk index 0..3 to keep lit
   focusAmount = 0,
   ring = null,
-  araPhase = null,
+  daliPhase = null,
 }) {
   const night = nightAmount(hour);
   const floorY = FLOOR_Y;
@@ -249,16 +249,16 @@ function officeRoom(ctx, img, { W, H, t }, {
     const occupied = cast.includes(id);
     const base = { id, x: x + 6, y: deskY, t, seed: i, lights, night, occupied, pieces: ["DESK_L", "DESK_R"] };
     let s;
-    if (id === "ara") {
+    if (id === "dali") {
       s = desk(ctx, img, { ...base, props: [["LAPTOP", 22, 0]] });
       deskLamp(ctx, img, base.x - 2, deskY - 14, night, lights, false);
-      if (occupied) actAra(ctx, img, { ...s, x: base.x, y: deskY }, t, lights, araPhase);
-    } else if (id === "veda") {
+      if (occupied) actDali(ctx, img, { ...s, x: base.x, y: deskY }, t, lights, daliPhase);
+    } else if (id === "vira") {
       s = desk(ctx, img, { ...base, pieces: ["DESK_L", "DESK_M", "DESK_R"], personX: 24, props: [["PAPER_STACK", -2, 4], ["DUAL", 10, -4]] });
       // the printer on its stand beside her desk, in the gap before Эхо
       const printerX = base.x + s.deskW - 6, printerY = deskY + 6;
       sprite(ctx, img, "PRINTER", printerX, printerY);
-      if (occupied) actVeda(ctx, img, { ...s, x: base.x, y: deskY, printerX, printerY }, t, lights, chartGrow);
+      if (occupied) actVira(ctx, img, { ...s, x: base.x, y: deskY, printerX, printerY }, t, lights, chartGrow);
     } else if (id === "eho") {
       s = desk(ctx, img, { ...base, props: [["DESK_PHONE", -2, 8], ["MONITOR_KB", 20, 0]] });
       if (occupied) actEho(ctx, img, { ...s, x: base.x, y: deskY }, t, lights, ring);
@@ -311,12 +311,12 @@ export function drawHero(ctx, img, v) {
 // front row, which sits low in the frame and can hold the tall things.
 const CHAPTER_KIT = {
   // reception: the folders whoever walks in gets handed, and a seat to wait in
-  ara: { left: ["SHELF_FILES", "stand"], front: ["CHAIR_ORANGE", "PLANT", "PLANT_3"] },
+  dali: { left: ["SHELF_FILES", "stand"], front: ["CHAIR_ORANGE", "PLANT", "PLANT_3"] },
   // the analyst: what she prints and what she shreds, either side of the desk.
   // Her printer stands at the front of this same gap and covers the lowest
   // twelve pixels of whatever is on the wall behind it, so hers has to be a
   // piece that still reads with its foot hidden. Every room's is, now.
-  veda: { left: ["SHREDDER", "stand"], front: ["CABINET", "PLANT_3", "PLANT"] },
+  vira: { left: ["SHREDDER", "stand"], front: ["CABINET", "PLANT_3", "PLANT"] },
   // the phone desk: the corner people actually stand in between calls, and the
   // copier behind it. This was a board on a stand, which the pack draws as a
   // face, a rail and two legs all within a hair of one lightness — recoloured
@@ -391,17 +391,17 @@ export function drawChapter(id) {
     const base = { id, x: deskX, y: deskY, t, seed: 2, lights, night, pieces };
     let s;
     let frontLeft = 0; // the left edge of the front row, once the desk knows it
-    let printer = null; // Веда's, deferred so the wall is painted behind it
+    let printer = null; // Вира's, deferred so the wall is painted behind it
 
-    if (id === "ara") {
+    if (id === "dali") {
       s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["LAPTOP", 50, 0]] });
       // Light, not object: see deskLamp. The chapter desk is 82 art px and
       // already carries a phone and a laptop, so the lamp had nowhere on the
       // surface to stand and was drawn above it — reading as a brass shape
       // hanging in the gap between the desk and the back wall.
       deskLamp(ctx, img, deskX + s.deskW - 32, deskY - 36, night, lights, false);
-      actAra(ctx, img, { ...s, x: deskX + 28, y: deskY }, t, lights, null);
-    } else if (id === "veda") {
+      actDali(ctx, img, { ...s, x: deskX + 28, y: deskY }, t, lights, null);
+    } else if (id === "vira") {
       s = desk(ctx, img, { ...base, personX: 8, props: [["PAPER_STACK", 0, 6], ["DUAL", 18, -4]] });
       // Her printer stands beside the desk at the desk's own depth. Against
       // the back wall it would be under the page's report card. It is drawn
@@ -410,7 +410,7 @@ export function drawChapter(id) {
       const py = frontY - SPRITES.PRINTER_STAND.h + 4 - 22;
       printer = { x: px, y: py };
       frontLeft = px + SPRITES.PRINTER_STAND.w + 8;
-      actVeda(ctx, img, { ...s, x: deskX + 8, y: deskY, printerX: px + 10, printerY: py }, t, lights, grow);
+      actVira(ctx, img, { ...s, x: deskX + 8, y: deskY, printerX: px + 10, printerY: py }, t, lights, grow);
     } else if (id === "eho") {
       s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["MONITOR_KB", 48, 0]] });
       deskLamp(ctx, img, deskX + s.deskW - 32, deskY - 36, night, lights, false);
@@ -445,7 +445,7 @@ export function drawChapter(id) {
     // The room's character is carried by the piece beside the desk, which the
     // panel never reaches, and by the front row, which sits below it.
 
-    // Веда's printer, now that the wall behind it is painted
+    // Вира's printer, now that the wall behind it is painted
     if (printer) {
       stand(ctx, img, "PRINTER_STAND", printer.x, frontY);
       sprite(ctx, img, "PRINTER", printer.x + 10, printer.y);
@@ -501,11 +501,11 @@ export function dayHour(p) {
 
 // Arrival is keyed to the HOUR, never to progress, so the cast can never
 // drift out of step with the light if the timeline is retuned.
-const ARRIVE = { ara: -1, veda: 8.0, eho: 17.0, nova: 19.0 };
+const ARRIVE = { dali: -1, vira: 8.0, eho: 17.0, nova: 19.0 };
 
 export const DAY_MOMENTS = [
-  { id: "ara", time: "02:14", from: 0.06, to: 0.26 },
-  { id: "veda", time: "09:00", from: 0.32, to: 0.51 },
+  { id: "dali", time: "02:14", from: 0.06, to: 0.26 },
+  { id: "vira", time: "09:00", from: 0.32, to: 0.51 },
   { id: "eho", time: "18:05", from: 0.57, to: 0.73 },
 ];
 
@@ -532,6 +532,6 @@ export function drawWorkingDay(ctx, img, view) {
     focusAmount: focusAmountAt(p),
     // the phone stops ringing as the "answered" card lands, not after it
     ring: p >= 0.56 && p < 0.60 ? true : p >= 0.60 && p < 0.74 ? false : null,
-    araPhase: p > 0.06 && p < 0.21 ? 1.8 : null,
+    daliPhase: p > 0.06 && p < 0.21 ? 1.8 : null,
   });
 }

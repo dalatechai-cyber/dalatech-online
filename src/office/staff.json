@@ -1,7 +1,7 @@
 {
  "atlas": "/office/staff.png",
  "chars": {
-  "ara": {
+  "dali": {
    "idle": {
     "h": 64,
     "n": 6,
@@ -91,7 +91,7 @@
     "y": 662
    }
   },
-  "veda": {
+  "vira": {
    "idle": {
     "h": 64,
     "n": 6,

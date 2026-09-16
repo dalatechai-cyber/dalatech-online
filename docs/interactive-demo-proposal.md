@@ -40,7 +40,7 @@ Four screens, each one tap:
    customer. A salon gets a 15:30 haircut booking at 02:14; a restaurant
    gets a table for four; a clinic gets an appointment. Every notification
    is tappable: tap the customer's message and choose what they ask next
-   (price, hours, change of time) and Ара answers it.
+   (price, hours, change of time) and Дали answers it.
 4. **The tally.** "Өнөөдөр танай салонд: 3 захиалга, 1 тайлан, 1 дуудлага" and
    the request form, already filled with what they chose.
 
@@ -56,10 +56,10 @@ largest part of the work.
 Risk: none technical. The one judgment call is keeping the sample figures
 plainly marked as samples.
 
-### 2. Ара on your Facebook page (phase two)
+### 2. Дали on your Facebook page (phase two)
 
 The visitor pastes their public Facebook page link. A server job reads
-the public About section, hours and recent posts, and Ара answers three
+the public About section, hours and recent posts, and Дали answers three
 questions about *their* business inside the site's chat widget.
 
 Why it builds trust: highest of the four. "It already knows my opening

@@ -875,13 +875,13 @@ const RING_OPEN = [10, 20]; // the hours a typical shop has someone at the count
 const RING_SECONDS = 36; // one whole day per revolution, at a constant rate
 
 const RING_EVENTS = [
-  { at: 2 + 14 / 60, time: "02:14", who: "ara" },
-  { at: 6 + 40 / 60, time: "06:40", who: "ara" },
-  { at: 9, time: "09:00", who: "veda" },
-  { at: 13 + 25 / 60, time: "13:25", who: "ara" },
+  { at: 2 + 14 / 60, time: "02:14", who: "dali" },
+  { at: 6 + 40 / 60, time: "06:40", who: "dali" },
+  { at: 9, time: "09:00", who: "vira" },
+  { at: 13 + 25 / 60, time: "13:25", who: "dali" },
   { at: 18 + 5 / 60, time: "18:05", who: "eho" },
   { at: 21 + 30 / 60, time: "21:30", who: "nova" },
-  { at: 23 + 50 / 60, time: "23:50", who: "ara" },
+  { at: 23 + 50 / 60, time: "23:50", who: "dali" },
 ];
 
 function ringPoint(hour, radius = RING_R) {
@@ -1632,7 +1632,7 @@ function Portfolio() {
             </div>
             <div className="flex flex-wrap gap-3">
               <MagneticButton href="https://app.dalatech.online" variant="primary">{t("portfolio.createDemo")}</MagneticButton>
-              <MagneticButton href="#demo" variant="ghost" demoServices={WEBSITE_ARA_DEMO_SERVICES}>{t("portfolio.getDemo")}</MagneticButton>
+              <MagneticButton href="#demo" variant="ghost" demoServices={WEBSITE_DALI_DEMO_SERVICES}>{t("portfolio.getDemo")}</MagneticButton>
             </div>
           </div>
         </Reveal>
@@ -1684,7 +1684,7 @@ function Portfolio() {
               </div>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_ARA_DEMO_SERVICES}>{t("portfolio.case.buttons.requestDemo")}</MagneticButton>
+                <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_DALI_DEMO_SERVICES}>{t("portfolio.case.buttons.requestDemo")}</MagneticButton>
               </div>
             </div>
           </Reveal>
@@ -1843,7 +1843,7 @@ function LiveDemo() {
               {t("liveDemo.description")}
             </p>
             <div className="mt-9">
-              <MagneticButton variant="primary" href="#demo" demoServices={["ara"]}>
+              <MagneticButton variant="primary" href="#demo" demoServices={["dali"]}>
                 {t("liveDemo.ctaLabel")}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12h14" />
@@ -2249,7 +2249,7 @@ function Pricing() {
             desc={t("pricing.cards.bundle.description")}
             bullets={t("pricing.cards.bundle.bullets", { returnObjects: true })}
             cta={t("pricing.cards.bundle.cta")}
-            demoServices={WEBSITE_ARA_DEMO_SERVICES}
+            demoServices={WEBSITE_DALI_DEMO_SERVICES}
             primary
           />
         </StaggerGroup>
@@ -2380,13 +2380,13 @@ function FAQ() {
 /** Options offered as chips, in display order. Keys are shared with the API. */
 // The four AI staff from /office come first so a visitor arriving from a desk
 // sees their choice at the top of the chips.
-const DEMO_SERVICES = ["ara", "veda", "eho", "nova", "website", "unsure"];
+const DEMO_SERVICES = ["dali", "vira", "eho", "nova", "website", "unsure"];
 // The kinds of business that write to us, for the second question.
 const DEMO_SECTORS = ["salon", "shop", "clinic", "food", "auto", "education", "other"];
 
 const DEMO_DRAFT_KEY = "dalatech:demo-draft";
 /** Pre-selected chips for CTAs whose context already implies a product. */
-const WEBSITE_ARA_DEMO_SERVICES = ["website", "ara"];
+const WEBSITE_DALI_DEMO_SERVICES = ["website", "dali"];
 const WEBSITE_DEMO_SERVICES = ["website"];
 
 const DEMO_ENDPOINT = "/api/demo-request";
@@ -3678,15 +3678,15 @@ const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 // scene's own timestamps.
 // Each group needs (n-1) steps to stack its cards, then enough left over for
 // the last one to be read. Sized by how long the group takes to READ, which is
-// not the same as how many cards it has: Веда gets the widest window of the
+// not the same as how many cards it has: Вира gets the widest window of the
 // four while sending the fewest, because hers is one report with a chart in it
 // and that takes longer to take in than three short notifications do.
 // Any change here has to be mirrored in scenes.js — the room behind the phone
 // runs off the same p, and the two disagreeing about the time is the one bug
 // this whole section can have.
 const PHONE_FEED = {
-  ara: { from: 0.05, until: 0.27 },
-  veda: { from: 0.31, until: 0.52 },
+  dali: { from: 0.05, until: 0.27 },
+  vira: { from: 0.31, until: 0.52 },
   eho: { from: 0.56, until: 0.74 },
   nova: { from: 0.76, until: 0.91 },
   done: { from: 0.93 },
@@ -3770,13 +3770,13 @@ function PhoneCard({ progress, at, until, span = PHONE_STEP, who, name, time, ti
 
 const phoneText = "mt-1 text-[12.5px] leading-[1.42] text-fg/85";
 
-// Веда's report card: the same four bars the scene draws on her screen.
+// Вира's report card: the same four bars the scene draws on her screen.
 function PhoneReport({ progress, at, until, report, feed }) {
   // hooks run unconditionally; at rest the bars are simply full
   const one = useMotionValue(1);
   const grow = useTransform(progress ?? one, progress ? [at + 0.01, at + 0.1] : [0, 1], [0, 1]);
   return (
-    <PhoneCard progress={progress} at={at} until={until} who="veda" name={feed.veda.from} time="09:00" title={feed.veda.title}>
+    <PhoneCard progress={progress} at={at} until={until} who="vira" name={feed.vira.from} time="09:00" title={feed.vira.title}>
       <div className="mt-2.5 flex h-[54px] items-end gap-1.5" aria-hidden>
         {report.values.map((v, i) => (
           <ReportBar key={i} value={v} index={i} count={report.values.length} grow={grow} last={i === report.values.length - 1} />
@@ -3785,7 +3785,7 @@ function PhoneReport({ progress, at, until, report, feed }) {
       <div className="mt-1 grid grid-cols-4 gap-1.5 text-[9.5px] text-fg-dim">
         {report.weeks.map((w) => <span key={w} className="truncate text-center">{w}</span>)}
       </div>
-      <p className={phoneText}>{feed.veda.body}</p>
+      <p className={phoneText}>{feed.vira.body}</p>
     </PhoneCard>
   );
 }
@@ -3812,7 +3812,7 @@ function PhoneFeed({ progress, group }) {
   const { t } = useTranslation();
   const { open: openDemoRequest } = useDemoRequest();
   const feed = t("day.phone", { returnObjects: true });
-  const report = t("office.chapters.veda.report", { returnObjects: true });
+  const report = t("office.chapters.vira.report", { returnObjects: true });
   const one = useMotionValue(1);
   const g = (k) => PHONE_FEED[k];
   const step = (k, i) => g(k).from + i * PHONE_STEP;
@@ -3820,23 +3820,23 @@ function PhoneFeed({ progress, group }) {
   const show = (k) => !progress || group === k;
   return (
     <>
-      <div className={groupCls} aria-hidden={!show("ara")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneCard progress={progress} at={step("ara", 0)} until={g("ara").until} who="customer" name={feed.customer} time="02:14">
-          <p className={phoneText}>{feed.ara.in}</p>
+      <div className={groupCls} aria-hidden={!show("dali")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneCard progress={progress} at={step("dali", 0)} until={g("dali").until} who="customer" name={feed.customer} time="02:14">
+          <p className={phoneText}>{feed.dali.in}</p>
         </PhoneCard>
-        <PhoneCard progress={progress} at={step("ara", 1)} until={g("ara").until} who="ara" name={feed.ara.from} time="02:14">
-          <p className={phoneText}>{feed.ara.reply}</p>
+        <PhoneCard progress={progress} at={step("dali", 1)} until={g("dali").until} who="dali" name={feed.dali.from} time="02:14">
+          <p className={phoneText}>{feed.dali.reply}</p>
         </PhoneCard>
-        <PhoneCard progress={progress} at={step("ara", 2)} until={g("ara").until} who="customer" name={feed.customer} time="02:15">
-          <p className={phoneText}>{feed.ara.pick}</p>
+        <PhoneCard progress={progress} at={step("dali", 2)} until={g("dali").until} who="customer" name={feed.customer} time="02:15">
+          <p className={phoneText}>{feed.dali.pick}</p>
         </PhoneCard>
-        <PhoneCard progress={progress} at={step("ara", 3)} until={g("ara").until} who="ara" name={feed.ara.from} time="02:15" title={feed.ara.booked} className="border-sky-400/30">
-          <p className={phoneText}>{feed.ara.bookedBody}</p>
+        <PhoneCard progress={progress} at={step("dali", 3)} until={g("dali").until} who="dali" name={feed.dali.from} time="02:15" title={feed.dali.booked} className="border-sky-400/30">
+          <p className={phoneText}>{feed.dali.bookedBody}</p>
         </PhoneCard>
       </div>
 
-      <div className={groupCls} aria-hidden={!show("veda")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneReport progress={progress} at={step("veda", 0)} until={g("veda").until} report={report} feed={feed} />
+      <div className={groupCls} aria-hidden={!show("vira")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneReport progress={progress} at={step("vira", 0)} until={g("vira").until} report={report} feed={feed} />
       </div>
 
       <div className={groupCls} aria-hidden={!show("eho")} style={progress ? { pointerEvents: "none" } : undefined}>
@@ -4328,7 +4328,7 @@ const FAQPage = React.memo(function FAQPage() {
 // over the scene, a team builder on paper, three steps. The canvas engine
 // lives in src/office/pixel.js, the scenes in src/office/scenes.js.
 
-const STAFF_LIVE = { ara: true, veda: true, eho: false, nova: false };
+const STAFF_LIVE = { dali: true, vira: true, eho: false, nova: false };
 
 function useStaffAtlas() {
   const [img, setImg] = React.useState(null);
@@ -4503,7 +4503,7 @@ function StaffStatus({ live }) {
 // which is the one thing a reader could not unsee. Same order as the chapters
 // and the pricing page. The direction is carried by the rails and the chips,
 // which is where it belongs, not by the sequence.
-const BOARD_DIR = { ara: "in", eho: "in", veda: "still", nova: "out" };
+const BOARD_DIR = { dali: "in", eho: "in", vira: "still", nova: "out" };
 
 // Each lane's payload, drawn small enough to sit on a 28px rail. The glyph is
 // the job: a message, a ringing call, four weeks of numbers, a note going out.
@@ -4792,7 +4792,7 @@ function StaffChat({ lines, progress, at, step = 0.07, until }) {
   );
 }
 
-// Веда's report: the same four bars the scene draws on her screen.
+// Вира's report: the same four bars the scene draws on her screen.
 function StaffReport({ report, progress, at, span = 0.22, until }) {
   const grow = useTransform(progress, [at, at + span], [0, 1]);
   return (
@@ -4870,7 +4870,7 @@ function StaffChapter({ id, index, onHire }) {
   const AT = 0.3;
 
   let overlay = null;
-  if (id === "veda") overlay = <StaffReport report={t(`${base}.report`, { returnObjects: true })} progress={progress} at={AT} />;
+  if (id === "vira") overlay = <StaffReport report={t(`${base}.report`, { returnObjects: true })} progress={progress} at={AT} />;
   else if (id === "eho") overlay = <StaffCall call={t(`${base}.call`, { returnObjects: true })} progress={progress} at={AT} />;
   else overlay = <StaffChat lines={t(`${base}.chat`, { returnObjects: true })} progress={progress} at={AT} />;
 
@@ -4947,7 +4947,7 @@ function StaffAvatar({ id, size = 2, className = "" }) {
 
 function StaffTeam({ onHire }) {
   const { t } = useTranslation();
-  const [picked, setPicked] = React.useState(() => new Set(["ara"]));
+  const [picked, setPicked] = React.useState(() => new Set(["dali"]));
   const ids = STAFF_ORDER;
   const toggle = (id) =>
     setPicked((s) => {
@@ -4961,9 +4961,9 @@ function StaffTeam({ onHire }) {
   const monthlyFull = chosen.reduce((s, id) => s + OFFICE_AGENTS[id].monthly, 0);
   const monthly = Math.round(monthlyFull * (1 - discount));
   const setup = chosen.reduce((s, id) => s + OFFICE_AGENTS[id].setup, 0);
-  const vedaAlone = chosen.length === 1 && chosen[0] === "veda";
+  const viraAlone = chosen.length === 1 && chosen[0] === "vira";
   const anyLive = chosen.some((id) => STAFF_LIVE[id]);
-  const blocked = chosen.length === 0 || vedaAlone;
+  const blocked = chosen.length === 0 || viraAlone;
 
   return (
     <section id="team" className="py-16 md:py-24">
@@ -5031,7 +5031,7 @@ function StaffTeam({ onHire }) {
             </dl>
             <div className="mt-4 min-h-[20px] text-[12.5px] leading-[1.5] text-fg-muted" aria-live="polite">
               {chosen.length === 0 && <p>{t("office.team.empty")}</p>}
-              {vedaAlone && <p>{t("office.team.vedaAlone")}</p>}
+              {viraAlone && <p>{t("office.team.viraAlone")}</p>}
               {!blocked && picked.has("eho") && <p>{t("office.team.perMinuteNote")}</p>}
               {!blocked && chosen.some((id) => !STAFF_LIVE[id]) && <p>{t("office.team.soonNote")}</p>}
             </div>
@@ -5122,7 +5122,7 @@ const OfficePage = React.memo(function OfficePage() {
   };
   return (
     <div id="office">
-      <StaffHero onHire={() => scrollTo("team")} onSee={() => scrollTo("staff-ara")} onPick={(id) => scrollTo(`staff-${id}`)} />
+      <StaffHero onHire={() => scrollTo("team")} onSee={() => scrollTo("staff-dali")} onPick={(id) => scrollTo(`staff-${id}`)} />
       {STAFF_ORDER.map((id, i) => (
         <StaffChapter key={id} id={id} index={i} onHire={hire} />
       ))}
