@@ -66,7 +66,7 @@ safety gain. Keep it that way when adding rules.
     src/Setup.jsx         Facebook SDK page-connect flow, lazy-loaded at /setup
     eslint.config.js      the build's lint gate (see Commands)
     src/i18n.js           i18next init
-    src/locales/          en.json, mn.json, zh-TW.json
+    src/locales/          en.json, mn.json
     public/               static assets, plus standalone pages (below)
     scripts/              one-off maintenance scripts, not part of the build
                           (scripts/build-staff-pack.py rebuilds public/office/staff.png
@@ -99,9 +99,9 @@ stable.
 Code, comments, commits: English.
 Anything a visitor reads: Mongolian (Cyrillic).
 
-The UI ships three locales — `mn` (default), `en`, `zh-TW` — switched from
+The UI ships two locales — `mn` (default), `en` — switched from
 the navbar and persisted to `localStorage` under `language`. New
-visitor-facing copy belongs in all three locale files, not hardcoded in JSX.
+visitor-facing copy belongs in both locale files, not hardcoded in JSX.
 Some sections still have hardcoded English; see `TRANSLATION_GUIDE.md`.
 
 ## Brand

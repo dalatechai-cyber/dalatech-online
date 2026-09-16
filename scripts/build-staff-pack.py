@@ -406,13 +406,13 @@ def headset(fr):
 # and each in the pose of their own job. Hair and outfit layers are tinted by
 # luminance rank so any LimeZu style can take any colour.
 PEOPLE = {
-    # Ара: reception. Long auburn hair, white blouse, at the laptop.
-    "ara": {"body": "Body_32x32_02", "eyes": "Eyes_32x32_01", "outfit": "Outfit_08_32x32_01", "hair": "Hairstyle_12_32x32_04",
+    # Дали: reception. Long auburn hair, white blouse, at the laptop.
+    "dali": {"body": "Body_32x32_02", "eyes": "Eyes_32x32_01", "outfit": "Outfit_08_32x32_01", "hair": "Hairstyle_12_32x32_04",
             "hairTint": ("#7A2E1E", "#A8442A", "#C9603C"),
             # the blouse: pale blue-grey rather than white, which blew out against the dark room
             "outfitTint": ("#8FA0C8", "#B7C2E0", "#D5DDF0")},
-    # Веда: analyst. Black hair up, glasses, brand-blue cardigan, reading the report.
-    "veda": {"body": "Body_32x32_01", "eyes": "Eyes_32x32_04", "outfit": "Outfit_21_32x32_01", "hair": "Hairstyle_18_32x32_04",
+    # Вира: analyst. Black hair up, glasses, brand-blue cardigan, reading the report.
+    "vira": {"body": "Body_32x32_01", "eyes": "Eyes_32x32_04", "outfit": "Outfit_21_32x32_01", "hair": "Hairstyle_18_32x32_04",
              "accessory": "Accessory_15_Glasses_32x32_01",
              "hairTint": ("#1B1826", "#2A2638", "#443E5C"),
              "outfitMap": {"#645d9a": BRAND["shade"], "#76689e": BRAND["base"], "#8d6ea7": BRAND["light"], "#8e99c8": BRAND["dark"]}},
