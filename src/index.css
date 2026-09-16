@@ -354,6 +354,14 @@ html.demo-dialog-open #dt-chat-frame {
 }
 
 /* The little waveform beside an answered call on the /office page. */
+/* Ора's window: the caret in the composer, and the line that reads down the
+   document while she is reading it */
+.ora-caret { animation: oraCaret 1.05s steps(2, jump-none) infinite; }
+@keyframes oraCaret { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .ora-caret { animation: none; opacity: 1; }
+}
+
 @keyframes staffWave {
   0%, 100% { transform: scaleY(0.5); }
   50% { transform: scaleY(1.5); }
@@ -499,6 +507,23 @@ html.demo-dialog-open #dt-chat-frame {
   }
 }
 
+/* The split the board is making: four lanes on the customer's side, then one
+   on the owner's. A label between them, not a heavier border — the lanes are
+   deliberately unruled and a rule here would read as the table's end. */
+.board-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 4px 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8B9FC4;
+}
+.board-divider::before,
+.board-divider::after { content: ""; height: 1px; flex: 1; background: rgba(255, 255, 255, 0.08); }
+
 /* who */
 .board-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .board-face {
@@ -563,6 +588,10 @@ html.demo-dialog-open #dt-chat-frame {
 .board-lane[data-dir="in"] .board-arrow { transform: rotate(-135deg); }
 .board-lane[data-dir="out"] .board-arrow { left: 38%; transform: rotate(45deg); }
 .board-lane[data-dir="out"] .board-arrow--back { left: 64%; transform: rotate(-135deg); }
+/* Ора's lane runs the other way round: the counterparty at the far end is the
+   owner, not a customer, and at rest what is shown is the work going back to
+   them, reviewed. */
+.board-lane[data-dir="owner"] .board-arrow { transform: rotate(45deg); }
 
 /* An arrowhead is how the lane states its direction when nothing is going to
    move: before it has played, and under prefers-reduced-motion. It is not
@@ -604,6 +633,13 @@ html.demo-dialog-open #dt-chat-frame {
 /* the note Нова sends is gone once the answer is back; the answer is what rests */
 .board-token--ghost { opacity: 0; }
 .board-token--reply { color: #7DD3FC; }
+
+/* The owner lane. The document comes in from the owner's end and is gone by
+   the time the reviewed one sets off home; the reviewed one rests at the far
+   end, with the owner, which is where the work ends up. Both are authored at
+   those positions so the lane is true with the animation off. */
+.board-slide--owner-in .board-token { opacity: 0; }
+.board-slide--owner-back { transform: translateX(calc(100% - 26px)); }
 
 .board-ripple {
   position: absolute;
@@ -676,6 +712,18 @@ html.demo-dialog-open #dt-chat-frame {
 .board-lane[data-run="on"] .board-token--reply {
   animation: boardReply 1500ms linear var(--d) backwards;
 }
+.board-lane[data-run="on"] .board-slide--owner-in {
+  animation: boardOwnerIn 1700ms cubic-bezier(0.5, 0, 0.5, 1) var(--d) backwards;
+}
+.board-lane[data-run="on"] .board-slide--owner-in .board-token {
+  animation: boardOwnerInToken 1700ms linear var(--d) backwards;
+}
+.board-lane[data-run="on"] .board-slide--owner-back {
+  animation: boardOwnerBack 1700ms cubic-bezier(0.5, 0, 0.5, 1) var(--d) backwards;
+}
+.board-lane[data-run="on"] .board-slide--owner-back .board-token {
+  animation: boardOwnerBackToken 1700ms linear var(--d) backwards;
+}
 
 @keyframes boardIn {
   from { transform: translateX(calc(100% - 26px)); opacity: 0; }
@@ -710,6 +758,26 @@ html.demo-dialog-open #dt-chat-frame {
 @keyframes boardReply {
   0%, 57% { opacity: 0; }
   66%, 100% { opacity: var(--rest, 1); }
+}
+
+/* owner lane, in: the document arrives at Ора's desk and stops existing there */
+@keyframes boardOwnerIn {
+  0% { transform: translateX(calc(100% - 26px)); }
+  42%, 100% { transform: translateX(0); }
+}
+@keyframes boardOwnerInToken {
+  0% { opacity: 0; }
+  10%, 42% { opacity: 1; }
+  52%, 100% { opacity: 0; }
+}
+/* owner lane, back: the reviewed document leaves her desk and goes home */
+@keyframes boardOwnerBack {
+  0%, 48% { transform: translateX(0); }
+  100% { transform: translateX(calc(100% - 26px)); }
+}
+@keyframes boardOwnerBackToken {
+  0%, 46% { opacity: 0; }
+  56%, 100% { opacity: var(--rest, 1); }
 }
 
 @media (prefers-reduced-motion: reduce) {

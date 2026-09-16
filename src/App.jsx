@@ -2173,7 +2173,7 @@ function StaffPriceCard({ id }) {
       <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
         <div className="flex items-center gap-3">
           <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-            <StaffAvatar id={id} size={3} className="-mt-[90px]" />
+            <StaffFace id={id} size={3} className="-mt-[90px]" />
           </span>
           <div className="min-w-0">
             <p className="font-display text-[18px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</p>
@@ -2219,6 +2219,20 @@ function Pricing() {
         <StaggerGroup className="mt-7 grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STAFF_ORDER.map((id) => <StaffPriceCard key={id} id={id} />)}
         </StaggerGroup>
+
+        {/* Ора is priced like the four but sold to a different person: not a
+            fifth card in their row, a row of her own with the reason beside it */}
+        <Reveal className="mt-10">
+          <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+            <div className="lg:pt-2">
+              <SectionLabel>{t("pricing.staff.ownerTitle")}</SectionLabel>
+              <p className="mt-3 max-w-[440px] text-[15px] leading-[1.55] text-fg-muted">{t("pricing.staff.ownerDescription")}</p>
+            </div>
+            <StaggerGroup className="grid">
+              <StaffPriceCard id="ora" />
+            </StaggerGroup>
+          </div>
+        </Reveal>
 
         <div id="website" className="scroll-mt-24" />
         <Reveal className="mt-16">
@@ -2380,7 +2394,7 @@ function FAQ() {
 /** Options offered as chips, in display order. Keys are shared with the API. */
 // The four AI staff from /office come first so a visitor arriving from a desk
 // sees their choice at the top of the chips.
-const DEMO_SERVICES = ["dali", "vira", "eho", "nova", "website", "unsure"];
+const DEMO_SERVICES = ["dali", "vira", "eho", "nova", "ora", "website", "unsure"];
 // The kinds of business that write to us, for the second question.
 const DEMO_SECTORS = ["salon", "shop", "clinic", "food", "auto", "education", "other"];
 
@@ -2537,7 +2551,7 @@ function demoMailtoHref(values, t) {
     `${t("demoForm.fields.phone.label")}: ${values.phone}`,
     `${t("demoForm.fields.business.label")}: ${values.business}`,
     `${t("demoForm.fields.services.label")} ${values.services
-      .map((s) => t(`demoForm.services.${s}`))
+      .map((s) => t(`demoForm.serviceCards.${s}.title`))
       .join(", ")}`,
   ];
   if (values.email.trim()) lines.push(`${t("demoForm.fields.email.label")}: ${values.email}`);
@@ -2995,9 +3009,11 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                         <fieldset disabled={sending} className="border-0 p-0">
                           <legend className="text-[14px] leading-[1.6] text-fg-muted">{t("demoForm.fields.services.hint")}</legend>
                           <div className="mt-4 grid grid-cols-2 gap-2.5">
-                            {DEMO_SERVICES.map((service) => {
+                            {DEMO_SERVICES.map((service, i) => {
                               const active = values.services.includes(service);
                               const agent = STAFF_LIVE[service] !== undefined;
+                              // an odd count leaves the last card alone on its row; let it take the row
+                              const wide = DEMO_SERVICES.length % 2 === 1 && i === DEMO_SERVICES.length - 1;
                               return (
                                 <button
                                   key={service}
@@ -3006,6 +3022,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                                   aria-pressed={active}
                                   className={[
                                     "pressable flex min-h-[64px] items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70",
+                                    wide ? "col-span-2" : "",
                                     active
                                       ? "border-sky-400/60 bg-sky-400/12"
                                       : "border-white/10 bg-white/[0.02] hover:border-white/25",
@@ -3013,7 +3030,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                                 >
                                   {agent ? (
                                     <span className="flex h-[36px] w-[32px] shrink-0 items-start justify-center overflow-hidden rounded-[9px] bg-white/[0.06]">
-                                      <StaffAvatar id={service} size={2} className="-mt-[60px]" />
+                                      <StaffFace id={service} size={2} className="-mt-[60px]" />
                                     </span>
                                   ) : (
                                     <span className="flex h-[36px] w-[32px] shrink-0 items-center justify-center rounded-[9px] bg-white/[0.06] text-fg-muted" aria-hidden>
@@ -3685,17 +3702,22 @@ const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 // runs off the same p, and the two disagreeing about the time is the one bug
 // this whole section can have.
 const PHONE_FEED = {
-  dali: { from: 0.05, until: 0.27 },
-  vira: { from: 0.31, until: 0.52 },
-  eho: { from: 0.56, until: 0.74 },
-  nova: { from: 0.76, until: 0.91 },
-  done: { from: 0.93 },
+  dali: { from: 0.04, until: 0.22 },
+  vira: { from: 0.25, until: 0.42 },
+  // the afternoon is the owner's: one card from Ора, who is not in the room
+  ora: { from: 0.45, until: 0.56 },
+  eho: { from: 0.59, until: 0.74 },
+  nova: { from: 0.76, until: 0.9 },
+  done: { from: 0.92 },
 };
 // How close together cards in one group arrive. Tighter than it looks like it
 // should be on purpose: every card in a group fades out together, so the last
 // one to arrive is always the one with least time on screen, and buying it a
 // beat costs the earlier cards nothing they need.
-const PHONE_STEP = 0.03;
+// A fraction of the run, not seconds: 0.024 × 42s is the one-second cadence the
+// feed had at 34s. Raising DAY_SECONDS without lowering this lengthens every
+// stack and eats the read time of the last card in each group.
+const PHONE_STEP = 0.024;
 // The last screen has less runway than the others: the summary and the door
 // in must both be fully up before the pin lets go at p = 1.
 const PHONE_DONE_STEP = 0.02;
@@ -3712,6 +3734,7 @@ function PhoneTime({ progress }) {
   const read = React.useCallback((p) => {
     const hold = DAY_MOMENTS.find((m) => p >= m.from && p <= m.to);
     if (hold) return hold.time;
+    if (p >= PHONE_FEED.ora.from && p <= PHONE_FEED.ora.until) return "13:30";
     if (p >= PHONE_FEED.nova.from && p <= PHONE_FEED.nova.until) return "19:40";
     if (p >= PHONE_FEED.done.from) return "21:00";
     const h = dayHour(p);
@@ -3731,7 +3754,7 @@ function PhoneIcon({ who, name }) {
   if (STAFF_LIVE[who] !== undefined) {
     return (
       <span className="flex h-[22px] w-[22px] shrink-0 items-start justify-center overflow-hidden rounded-[6px] bg-white/[0.08]" aria-hidden>
-        <StaffAvatar id={who} size={1} className="-mt-[27px]" />
+        <StaffFace id={who} size={1} className="-mt-[27px]" />
       </span>
     );
   }
@@ -3839,6 +3862,12 @@ function PhoneFeed({ progress, group }) {
         <PhoneReport progress={progress} at={step("vira", 0)} until={g("vira").until} report={report} feed={feed} />
       </div>
 
+      <div className={groupCls} aria-hidden={!show("ora")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneCard progress={progress} at={step("ora", 0)} until={g("ora").until} who="ora" name={feed.ora.from} time="13:30" title={feed.ora.title} className="border-sky-400/30">
+          <p className={phoneText}>{feed.ora.body}</p>
+        </PhoneCard>
+      </div>
+
       <div className={groupCls} aria-hidden={!show("eho")} style={progress ? { pointerEvents: "none" } : undefined}>
         <PhoneCard progress={progress} at={step("eho", 0)} until={g("eho").until} who="call" name={feed.eho.incoming} time="18:05">
           <p className={phoneText}>{feed.eho.number}</p>
@@ -3928,7 +3957,9 @@ function OwnerPhone({ progress, group, className = "" }) {
 // moved on. Now the section is ordinary height, the sequence starts when it
 // comes into view, plays once, and rests on the last screen with the button
 // on it. Scrolling past is just scrolling.
-const DAY_SECONDS = 34; // the whole day; every card holds proportionally longer
+// 42, not 34: Ора's afternoon card was added without shortening anyone else's
+// hold — every existing group keeps at least the seconds it had.
+const DAY_SECONDS = 42;
 
 function useTimedProgress(ref, seconds, disabled) {
   const progress = useMotionValue(0);
@@ -3994,7 +4025,7 @@ function WorkingDay() {
   const reduced = useReducedMotion();
   const { error } = useStaffAtlas();
   const dayRef = React.useRef(null);
-  const still = useMotionValue(0.51);
+  const still = useMotionValue(0.4);
   const progress = useTimedProgress(dayRef, DAY_SECONDS, reduced || !!error);
 
   const [group, setGroup] = React.useState(() => phoneGroupAt(0));
@@ -4094,9 +4125,11 @@ function TheFour() {
             <span aria-hidden>&rsaquo;</span>
           </Link>
         </div>
+        {/* the one split that matters on this list: four face the customers, one faces the owner */}
+        <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.55] text-fg-muted">{t("theFour.lead")}</p>
 
         <StaggerGroup className="mt-8 md:mt-10" stagger={0.06}>
-          {STAFF_ORDER.map((id) => (
+          {ALL_STAFF.map((id) => (
             <StaffRow key={id} id={id} />
           ))}
         </StaggerGroup>
@@ -4112,7 +4145,7 @@ function StaffRow({ id }) {
     <StaggerItem y={12}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[88px] sm:flex-nowrap sm:py-0">
         <span className="flex h-[44px] w-[40px] shrink-0 items-start justify-center overflow-hidden rounded-[10px] bg-white/[0.05]">
-          <StaffAvatar id={id} size={2} className="-mt-[58px]" />
+          <StaffFace id={id} size={2} className="-mt-[58px]" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
@@ -4328,7 +4361,12 @@ const FAQPage = React.memo(function FAQPage() {
 // over the scene, a team builder on paper, three steps. The canvas engine
 // lives in src/office/pixel.js, the scenes in src/office/scenes.js.
 
-const STAFF_LIVE = { dali: true, vira: true, eho: false, nova: false };
+const STAFF_LIVE = { dali: true, vira: true, eho: false, nova: false, ora: false };
+
+// Everyone on the payroll. STAFF_ORDER is the four in the pixel room; Ора is
+// not in that room — she works for the owner, not their customers, in her own
+// interface — so she is appended here rather than added to the scene's cast.
+const ALL_STAFF = [...STAFF_ORDER, "ora"];
 
 function useStaffAtlas() {
   const [img, setImg] = React.useState(null);
@@ -4422,7 +4460,7 @@ function useDampedProgress(ref, offset, spring = CHAPTER_SPRING) {
 }
 
 // One line that rises into place as the scroll passes `at`.
-function Rise({ progress, at, span: rawSpan = 0.08, until, className = "", children }) {
+function Rise({ progress, at, span: rawSpan = 0.08, until, className = "", ariaHidden = false, children }) {
   const reduced = useReducedMotion();
   // A span that runs past `until` used to turn the exit ramp off silently:
   // useUntil below is false, the element rises and then never leaves. Clamp
@@ -4458,7 +4496,7 @@ function Rise({ progress, at, span: rawSpan = 0.08, until, className = "", child
     useUntil ? [reduced ? 0 : 14, 0, 0, reduced ? 0 : -10] : [reduced ? 0 : 14, 0]
   );
   return (
-    <motion.div style={{ opacity, y }} className={className}>
+    <motion.div style={{ opacity, y }} className={className} aria-hidden={ariaHidden || undefined}>
       {children}
     </motion.div>
   );
@@ -4503,7 +4541,10 @@ function StaffStatus({ live }) {
 // which is the one thing a reader could not unsee. Same order as the chapters
 // and the pricing page. The direction is carried by the rails and the chips,
 // which is where it belongs, not by the sequence.
-const BOARD_DIR = { dali: "in", eho: "in", vira: "still", nova: "out" };
+// "owner": the fifth lane runs from the far end and back like Нова's, but the
+// party at the far end is the owner, not a customer — a document comes in
+// from them and goes back to them reviewed.
+const BOARD_DIR = { dali: "in", eho: "in", vira: "still", nova: "out", ora: "owner" };
 
 // Each lane's payload, drawn small enough to sit on a 28px rail. The glyph is
 // the job: a message, a ringing call, four weeks of numbers, a note going out.
@@ -4528,6 +4569,24 @@ function BoardGlyph({ kind }) {
       <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden>
         <path d="M17 3 2.6 8.6l5.5 2.1 2.1 5.5z" fill="currentColor" opacity="0.28" />
         <path d="M17 3 2.6 8.6l5.5 2.1 2.1 5.5zM17 3l-8.9 7.7" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "doc") {
+    return (
+      <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden>
+        <path d="M5.5 2.8h6l3.5 3.5v10.9h-9.5z" fill="currentColor" opacity="0.22" />
+        <path d="M5.5 2.8h6l3.5 3.5v10.9h-9.5zM11.5 2.8v3.5H15M8 10h4.5M8 13h4.5" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  // the document going home, marked
+  if (kind === "docDone") {
+    return (
+      <svg viewBox="0 0 20 20" width="15" height="15" fill="none" aria-hidden>
+        <path d="M5.5 2.8h6l3.5 3.5v10.9h-9.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+        <path d="M11.5 2.8v3.5H15" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+        <path d="M7.6 12.2l1.9 1.8 3.4-3.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
@@ -4567,7 +4626,7 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
         <div className="board-who">
           {/* the same pixel face as the scenes below: four people, not four bars */}
           <span className="board-face">
-            <StaffAvatar id={id} size={2} className="-mt-[60px]" />
+            <StaffFace id={id} size={2} className="-mt-[60px]" />
           </span>
           <span className="min-w-0">
             <span className="board-name">
@@ -4611,6 +4670,19 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
               </span>
               <span className="board-slide board-slide--back" aria-hidden>
                 <span className="board-token board-token--reply"><BoardGlyph kind="tick" /></span>
+              </span>
+            </>
+          )}
+
+          {/* the incoming document is a ghost for the same reason Нова's note
+              is: once the reviewed one has gone home, it no longer exists */}
+          {dir === "owner" && (
+            <>
+              <span className="board-slide board-slide--owner-in" aria-hidden>
+                <span className="board-token board-token--ghost"><BoardGlyph kind="doc" /></span>
+              </span>
+              <span className="board-slide board-slide--owner-back" aria-hidden>
+                <span className="board-token board-token--reply"><BoardGlyph kind="docDone" /></span>
               </span>
             </>
           )}
@@ -4681,6 +4753,10 @@ function ShiftBoard({ onPick, className = "" }) {
         {STAFF_ORDER.map((id, i) => (
           <BoardLane key={id} id={id} dir={BOARD_DIR[id]} step={i} onPick={onPick} onEnter={onEnter} />
         ))}
+        {/* the split the board makes: four lanes on the customer's side, one on the owner's */}
+        {/* aria-hidden: the split is already spoken by Ора's lane (its sr-only direction) and the caption */}
+        <li className="board-divider" aria-hidden="true">{t("office.board.owner")}</li>
+        <BoardLane id="ora" dir={BOARD_DIR.ora} step={STAFF_ORDER.length} onPick={onPick} onEnter={onEnter} />
       </ul>
       <p className="mx-auto mt-5 max-w-[540px] text-center text-[13px] leading-[1.5] text-fg-muted">
         {t("office.board.caption")}
@@ -4921,6 +4997,218 @@ function StaffChapter({ id, index, onHire }) {
   );
 }
 
+// ------------------------------------------------------------------ Ора
+// The four are shown from the customer's side: a room you look into, a phone
+// that receives their messages. Ора is the other way round — the owner talks
+// to her, privately, in her own interface — so she is not a fifth desk in the
+// room. She is the owner's own screen: a window in which a contract is
+// handed over, read, and handed back with the risk marked and one clause
+// redrafted. The conversation plays on a clock once the window is on screen,
+// like the day on the landing page, and rests on the finished exchange. Under
+// reduced motion it is the finished exchange from the start.
+const ORA_SECONDS = 15;
+// Moments of the exchange, as fractions of the run. The reading pass leaves
+// before the findings arrive; everything else stays.
+const ORA = {
+  ask: 0.03,
+  reading: 0.13, readingUntil: 0.44,
+  mark1: 0.22, mark2: 0.33,
+  found: 0.46, first: 0.55, second: 0.63,
+  redraft: 0.73, action: 0.85,
+};
+
+// One clause of the document, with the highlight Ора lays on it as she reads.
+function OraClause({ clause, progress, at }) {
+  const mark = useTransform(progress, at === undefined ? [0, 1] : [at, at + 0.04], at === undefined ? [0, 0] : [0, 1]);
+  return (
+    <li className="relative py-[5px] pl-3 text-[11.5px] leading-[1.45] text-fg/80">
+      {at !== undefined && (
+        <motion.span aria-hidden style={{ opacity: mark }} className="absolute inset-y-[1px] -left-1 right-0 rounded-[6px] border-l-2 border-sky-400 bg-sky-400/[0.12]" />
+      )}
+      <span className="relative">
+        <span className="mr-1.5 tabular-nums text-fg-muted">{clause.n}</span>
+        {clause.text}
+      </span>
+    </li>
+  );
+}
+
+function OraLine({ children, from = "ora", progress, at, until, className = "" }) {
+  const mine = from === "you";
+  return (
+    <Rise progress={progress} at={at} until={until} className={["flex", mine ? "justify-end" : "justify-start", className].join(" ")}>
+      <div
+        className={[
+          "max-w-[92%] rounded-[16px] px-3.5 py-2.5 text-[13px] leading-[1.45] shadow-[0_2px_10px_rgba(0,0,0,0.25)]",
+          mine ? "rounded-br-[5px] bg-brand-500 text-white" : "rounded-bl-[5px] border border-white/[0.09] bg-[#111A3A]/95 text-fg/90",
+        ].join(" ")}
+      >
+        {children}
+      </div>
+    </Rise>
+  );
+}
+
+function OraSession({ session, label }) {
+  const reduced = useReducedMotion();
+  const ref = React.useRef(null);
+  const timed = useTimedProgress(ref, ORA_SECONDS, reduced);
+  const one = useMotionValue(1);
+  const progress = reduced ? one : timed;
+  // The line that reads down the document: present only while she is reading.
+  const readTop = useTransform(progress, [ORA.reading, ORA.readingUntil], ["6%", "94%"]);
+  const readOpacity = useTransform(progress, [ORA.reading, ORA.reading + 0.02, ORA.readingUntil - 0.03, ORA.readingUntil], [0, 1, 1, 0]);
+  const marks = { [session.findings[0].clause]: ORA.mark1, [session.findings[1].clause]: ORA.mark2 };
+  const doc = Array.isArray(session.doc) ? session.doc : [];
+
+  return (
+    <div ref={ref} role="group" aria-label={label} className="overflow-hidden rounded-[20px] border border-white/[0.1] bg-[#0B1022] shadow-[0_30px_80px_rgba(0,0,0,0.5),inset_0_0_0_1px_rgba(255,255,255,0.03)]">
+      {/* the window's own bar: her name, and the one fact the four cannot claim */}
+      <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-2.5">
+        <span className="flex items-center gap-2.5">
+          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-[7px] bg-white/[0.06]"><OraMark /></span>
+          <span className="text-[13px] font-semibold tracking-tight text-fg">{session.window}</span>
+        </span>
+        <span className="flex items-center gap-1.5 text-[11px] font-medium text-fg-muted">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+          {session.private}
+        </span>
+      </div>
+
+      <div className="grid md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+        {/* the document, on a desk wide enough to show it beside the chat */}
+        <div className="relative hidden border-r border-white/[0.07] px-4 pb-4 pt-3.5 md:block">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-fg-muted">{session.docTitle}</p>
+          <p className="mt-0.5 text-[10.5px] text-fg-muted">{session.file} · {session.pages}</p>
+          <ol className="mt-3 flex flex-col">
+            {doc.map((c) => (
+              <OraClause key={c.n} clause={c} progress={progress} at={marks[c.n]} />
+            ))}
+          </ol>
+          <motion.span aria-hidden style={{ top: readTop, opacity: readOpacity }} className="pointer-events-none absolute inset-x-3 h-px bg-gradient-to-r from-transparent via-sky-400/70 to-transparent" />
+        </div>
+
+        <div className="flex min-h-[400px] flex-col px-4 pb-3 pt-4 sm:px-5">
+          <div className="flex flex-1 flex-col gap-2.5">
+            <OraLine from="you" progress={progress} at={ORA.ask}>
+              <span className="block">{session.ask}</span>
+              {/* the attachment: the same file the other pane is showing */}
+              <span className="mt-2 flex items-center gap-2 rounded-[10px] bg-ink-950/30 px-2.5 py-1.5 text-[11.5px]">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] bg-white/[0.14]"><OraMark className="text-white" /></span>
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">{session.file}</span>
+                  <span className="block text-white/90">{session.pages}</span>
+                </span>
+              </span>
+            </OraLine>
+
+            {/* transient chrome: it leaves at opacity 0, which does not leave the accessibility tree */}
+            <Rise progress={progress} at={ORA.reading} until={ORA.readingUntil} ariaHidden className="flex items-center gap-2 pl-1 text-[12px] text-fg-muted">
+              <span className="flex items-end gap-[3px]" aria-hidden>
+                {[0, 1, 2].map((i) => (
+                  <span key={i} className={["h-[5px] w-[5px] rounded-full bg-sky-400/80", reduced ? "" : "animate-[staffWave_1.1s_ease-in-out_infinite]"].join(" ")} style={{ animationDelay: `${i * 0.16}s` }} />
+                ))}
+              </span>
+              {session.reading}
+            </Rise>
+
+            <OraLine progress={progress} at={ORA.found}>{session.found}</OraLine>
+
+            {session.findings.map((f, i) => (
+              <Rise key={f.clause} progress={progress} at={i === 0 ? ORA.first : ORA.second} className="max-w-[92%]">
+                <div className="rounded-[14px] border border-sky-400/25 bg-sky-400/[0.06] px-3.5 py-2.5">
+                  <p className="text-[12.5px] leading-[1.45] text-fg">
+                    <span className="mr-2 rounded-[5px] bg-sky-400/15 px-1.5 py-[1px] text-[11px] font-semibold tabular-nums text-sky-300">{f.clause}</span>
+                    {f.text}
+                  </p>
+                  <p className="mt-1 text-[12px] leading-[1.45] text-fg-muted">{f.note}</p>
+                </div>
+              </Rise>
+            ))}
+
+            <OraLine progress={progress} at={ORA.redraft}>
+              <span className="block text-fg-muted">{session.redraftLead}</span>
+              {/* the redraft, set apart as the text of a contract, not of a chat */}
+              <span className="mt-2 block border-l-2 border-sky-400/70 pl-3 text-[13px] leading-[1.5] text-fg">{session.redraft}</span>
+            </OraLine>
+
+            <Rise progress={progress} at={ORA.action} className="pl-1">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.04] px-3 py-1.5 text-[12px] text-fg/90">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" /></svg>
+                {session.action}
+              </span>
+            </Rise>
+          </div>
+
+          {/* the composer: a mock, so hidden from readers — the exchange above is the content */}
+          <div aria-hidden className="mt-4 flex items-center gap-2 rounded-[12px] border border-white/[0.09] bg-white/[0.03] px-3.5 py-2.5 text-[12.5px] text-fg-dim">
+            <span className="ora-caret inline-block h-[14px] w-px bg-sky-400" />
+            {session.composer}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// The one sentence the page needs between the four and the fifth.
+function OraIntro() {
+  const { t } = useTranslation();
+  return (
+    <section className="pb-2 pt-16 md:pt-24">
+      <Container>
+        <Reveal className="mx-auto max-w-[680px] border-t border-white/[0.08] pt-10 text-center md:pt-14">
+          <SectionLabel>{t("office.chapters.oraIntro.eyebrow")}</SectionLabel>
+          <h2 className="mt-4 font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px] md:text-[44px]">{t("office.chapters.oraIntro.title")}</h2>
+          <p className="mx-auto mt-4 max-w-[46ch] text-[16px] leading-[1.55] text-fg-muted sm:text-[17px]">{t("office.chapters.oraIntro.lead")}</p>
+        </Reveal>
+      </Container>
+    </section>
+  );
+}
+
+function OraChapter({ onHire }) {
+  const { t } = useTranslation();
+  const id = "ora";
+  const base = `office.chapters.${id}`;
+  const live = STAFF_LIVE[id];
+  const session = t(`${base}.session`, { returnObjects: true });
+  const does = Array.isArray(session.does) ? session.does : [];
+  return (
+    <section id={`staff-${id}`} className="py-14 md:py-24">
+      <Container>
+        <div className="grid gap-6 md:grid-cols-12 md:grid-rows-[auto_auto] md:gap-x-10 md:gap-y-4">
+          <Reveal className="md:col-span-5 md:col-start-1 md:row-start-1 md:self-end">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <SectionLabel>{t(`${base}.eyebrow`)}</SectionLabel>
+              <StaffStatus live={live} />
+            </div>
+            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[40px] md:text-[46px]">{t(`${base}.title`)}</h2>
+          </Reveal>
+          <div className="md:col-span-7 md:col-start-6 md:row-span-2 md:row-start-1 md:self-center">
+            <OraSession session={session} label={t(`${base}.sceneAlt`)} />
+          </div>
+          <Reveal className="md:col-span-5 md:col-start-1 md:row-start-2 md:self-start">
+            <p className="max-w-[460px] text-[17px] leading-[1.47] text-fg-muted">{t(`${base}.body`)}</p>
+            {/* what else she takes: the breadth, stated once, quietly */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {does.map((d) => <Pill key={d}>{d}</Pill>)}
+            </div>
+            <div className="mt-6 border-t border-white/[0.08] pt-5">
+              <StaffPrice id={id} />
+              <div className="mt-5">
+                <MagneticButton onClick={() => onHire([id])} variant={live ? "primary" : "secondary"} className="min-h-[44px]">
+                  {t(`${base}.cta`)}
+                </MagneticButton>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 // A pixel portrait cut from the atlas with CSS, idling in six frames.
 function StaffAvatar({ id, size = 2, className = "" }) {
   // One still frame. The portraits used to step through the idle strip, which
@@ -4945,10 +5233,32 @@ function StaffAvatar({ id, size = 2, className = "" }) {
   );
 }
 
+// Ора has no pixel face: she is not in the room. Where the four show a
+// portrait she shows a mark — a document, which is her work — so every list
+// stays one list without pretending she is a fifth desk.
+function OraMark({ className = "" }) {
+  return (
+    <span aria-hidden className={["flex h-full w-full items-center justify-center text-sky-400", className].join(" ")}>
+      <svg viewBox="0 0 24 24" className="h-[54%] w-[54%]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M7 3.5h7l4 4v13H7z" />
+        <path d="M14 3.5v4h4" />
+        <path d="M9.6 12h4.8M9.6 15.4h4.8" />
+      </svg>
+    </span>
+  );
+}
+
+// The portrait for any member of staff: the atlas frame for the four who are
+// drawn, the mark for the one who is not. Callers size the box; both fill it.
+function StaffFace({ id, size = 2, className = "" }) {
+  if (!STAFF_CHARS[id]) return <OraMark />;
+  return <StaffAvatar id={id} size={size} className={className} />;
+}
+
 function StaffTeam({ onHire }) {
   const { t } = useTranslation();
   const [picked, setPicked] = React.useState(() => new Set(["dali"]));
-  const ids = STAFF_ORDER;
+  const ids = ALL_STAFF;
   const toggle = (id) =>
     setPicked((s) => {
       const n = new Set(s);
@@ -4975,7 +5285,7 @@ function StaffTeam({ onHire }) {
             <p className="mx-auto mt-4 max-w-[560px] text-[17px] leading-[1.47] text-fg-muted">{t("office.team.description")}</p>
           </Reveal>
 
-          <div className="mt-10 grid gap-3 sm:grid-cols-2 md:grid-cols-4" role="group" aria-label={t("office.team.pick")}>
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5" role="group" aria-label={t("office.team.pick")}>
             {ids.map((id) => {
               const on = picked.has(id);
               const a = OFFICE_AGENTS[id];
@@ -4992,7 +5302,7 @@ function StaffTeam({ onHire }) {
                   ].join(" ")}
                 >
                   <span className="flex h-[64px] w-[64px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-                    <StaffAvatar id={id} size={2} className="-mt-7" />
+                    <StaffFace id={id} size={2} className="-mt-7" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
@@ -5033,6 +5343,7 @@ function StaffTeam({ onHire }) {
               {chosen.length === 0 && <p>{t("office.team.empty")}</p>}
               {viraAlone && <p>{t("office.team.viraAlone")}</p>}
               {!blocked && picked.has("eho") && <p>{t("office.team.perMinuteNote")}</p>}
+              {!blocked && picked.has("ora") && <p>{t("office.team.ownerNote")}</p>}
               {!blocked && chosen.some((id) => !STAFF_LIVE[id]) && <p>{t("office.team.soonNote")}</p>}
             </div>
             <button
@@ -5126,6 +5437,12 @@ const OfficePage = React.memo(function OfficePage() {
       {STAFF_ORDER.map((id, i) => (
         <StaffChapter key={id} id={id} index={i} onHire={hire} />
       ))}
+      {/* the fifth is not a fifth chapter of the same room: she works for the
+          owner, in her own interface, and is shown in it */}
+      <OraIntro />
+      <ErrorBoundary fallback={null}>
+        <OraChapter onHire={hire} />
+      </ErrorBoundary>
       <StaffTeam onHire={hire} />
       <StaffLimits />
       <StaffSteps />

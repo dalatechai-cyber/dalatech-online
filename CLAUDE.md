@@ -59,7 +59,7 @@ safety gain. Keep it that way when adding rules.
     src/App.jsx           ~3.4k lines: every component, page and the router
     src/Globe.jsx         three.js globe, lazy-loaded
     src/office/           the pixel office: pixel.js (atlas, stage, sprite
-                          helpers), scenes.js (the office room, the four /office
+                          helpers), scenes.js (the office room, the four pixel /office
                           chapters, and the landing page's working-day timeline
                           that runs behind the owner's phone), agents.js (prices),
                           staff.json (atlas manifest)
