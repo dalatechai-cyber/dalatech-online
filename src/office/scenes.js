@@ -483,9 +483,9 @@ export function drawChapter(id) {
 // the gap between groups. It is keyed to PHONE_FEED in App.jsx: change one
 // and the room and the phone stop agreeing about what time it is.
 const DAY_KEYS = [
-  [0.0, 2.23], [0.05, 2.25], [0.27, 2.3], [0.31, 8.6],
-  [0.52, 9.1], [0.56, 17.9], [0.74, 18.2], [0.76, 19.5],
-  [0.91, 20.5], [1.0, 21.0],
+  [0.0, 2.23], [0.04, 2.25], [0.22, 2.3], [0.25, 8.6],
+  [0.42, 9.1], [0.45, 13.4], [0.56, 13.6], [0.59, 17.9],
+  [0.74, 18.2], [0.76, 19.5], [0.90, 20.5], [1.0, 21.0],
 ];
 const smoothstep = (t) => t * t * (3 - 2 * t);
 
@@ -504,13 +504,16 @@ export function dayHour(p) {
 const ARRIVE = { dali: -1, vira: 8.0, eho: 17.0, nova: 19.0 };
 
 export const DAY_MOMENTS = [
-  { id: "dali", time: "02:14", from: 0.06, to: 0.26 },
-  { id: "vira", time: "09:00", from: 0.32, to: 0.51 },
-  { id: "eho", time: "18:05", from: 0.57, to: 0.73 },
+  { id: "dali", time: "02:14", from: 0.05, to: 0.21 },
+  { id: "vira", time: "09:00", from: 0.26, to: 0.41 },
+  { id: "eho", time: "18:05", from: 0.60, to: 0.73 },
 ];
 
-// which desk the room keeps lit, following the same group boundaries
-const focusDeskAt = (p) => (p < 0.29 ? 0 : p < 0.54 ? 1 : p < 0.75 ? 2 : 3);
+// Which desk the room keeps lit, following the same group boundaries. The
+// gap between Вира's and Эхо's is the afternoon, when the card on the phone is
+// Ора's — and she is not in this room. Nothing is lit for her; the room
+// simply carries on at full light while the owner's own work gets done.
+const focusDeskAt = (p) => (p < 0.235 ? 0 : p < 0.435 ? 1 : p < 0.575 ? null : p < 0.75 ? 2 : 3);
 
 export function focusAmountAt(p) {
   for (const m of DAY_MOMENTS) {
@@ -527,11 +530,11 @@ export function drawWorkingDay(ctx, img, view) {
   officeRoom(ctx, img, view, {
     hour,
     cast: STAFF.filter((id) => hour >= ARRIVE[id]),
-    chartGrow: mapRange(p, 0.32, 0.50, 0, 1),
+    chartGrow: mapRange(p, 0.26, 0.40, 0, 1),
     focus: p < 0.91 ? focusDeskAt(p) : null,
     focusAmount: focusAmountAt(p),
     // the phone stops ringing as the "answered" card lands, not after it
-    ring: p >= 0.56 && p < 0.60 ? true : p >= 0.60 && p < 0.74 ? false : null,
-    daliPhase: p > 0.06 && p < 0.21 ? 1.8 : null,
+    ring: p >= 0.59 && p < 0.624 ? true : p >= 0.624 && p < 0.74 ? false : null,
+    daliPhase: p > 0.05 && p < 0.17 ? 1.8 : null,
   });
 }

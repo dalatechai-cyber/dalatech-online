@@ -16,7 +16,7 @@
   "hero": {
     "badge": "AI staff for Mongolian businesses",
     "title": "AI staff that handle customer service 24/7.",
-    "description": "Four AI staff answer customer questions in Mongolian, around the clock, on Facebook, Instagram, and your website. They add no headcount, shift, or leave costs.",
+    "description": "Four AI staff answer customer questions in Mongolian, around the clock, on Facebook, Instagram, and your website. A fifth, Ora, works for you alone: contracts, paperwork, decisions. No headcount, shift, or leave costs.",
     "buttons": {
       "request": "Send a request",
       "seeWork": "Meet the staff"
@@ -92,8 +92,8 @@
   "day": {
     "title": "Work does not stop while you sleep.",
     "lead": "Watch what reaches your phone over one day. A booking at night, a report in the morning, a call just before closing.",
-    "closing": "Four AI staff, working as one team. Send a request and we will show how they would work for your business.",
-    "sceneAlt": "An office from night to evening: Dali through the night, Vira in the morning, Eho in the evening.",
+    "closing": "Five AI staff, working as one team. Send a request and we will show how they would work for your business.",
+    "sceneAlt": "An office from night to evening: Dali through the night, Vira in the morning, Eho in the evening. Ora reviews a contract for the owner during the day.",
     "phone": {
       "alt": "The owner's phone: the notifications of one day",
       "customer": "Bold",
@@ -145,16 +145,23 @@
         "rows": [
           "3 bookings recorded",
           "1 report ready",
+          "1 contract reviewed",
           "1 call answered",
           "10 customers notified"
         ]
       },
       "cta": "Send a request",
-      "ctaHint": "A one-minute form. We call you back."
+      "ctaHint": "A one-minute form. We call you back.",
+      "ora": {
+        "from": "Ora · DalaTech",
+        "title": "Contract review ready",
+        "body": "Two risky clauses found in the lease. A redraft of 9.1 is proposed."
+      }
     }
   },
   "theFour": {
-    "title": "Four staff, four jobs."
+    "title": "Five staff, five jobs.",
+    "lead": "Four talk to your customers. Ora works with you alone."
   },
   "websiteOffer": {
     "title": "Staff by the month. A website once.",
@@ -307,10 +314,12 @@
     },
     "staff": {
       "title": "AI staff",
-      "description": "Monthly fee, one-time setup. Two staff −10%, three −15%, four −20%; the discount applies to the monthly fee.",
+      "description": "Monthly fee, one-time setup. Two staff −10%, three −15%, four or more −20%; the discount applies to the monthly fee.",
       "teamLink": "Team composition and pricing",
       "hire": "Send a request",
-      "preorder": "Send a request"
+      "preorder": "Send a request",
+      "ownerTitle": "For the owner",
+      "ownerDescription": "Four talk to your customers. Ora works with you alone — in her own chat interface, not Messenger."
     },
     "website": {
       "title": "Website",
@@ -486,6 +495,10 @@
       "unsure": {
         "title": "Not decided yet",
         "line": "We work it out together"
+      },
+      "ora": {
+        "title": "Ора",
+        "line": "Contracts and paperwork, for you"
       }
     },
     "sectors": {
@@ -504,8 +517,8 @@
   "office": {
     "section": "AI STAFF",
     "hero": {
-      "title": "Four AI staff, working for your business.",
-      "lead": "Dali answers every message and Eho answers every call. Vira prepares the monthly report and Nova follows up with customers. No new headcount, one fixed monthly fee.",
+      "title": "Five AI staff, working for your business.",
+      "lead": "Dali answers every message and Eho answers every call. Vira prepares the monthly report and Nova follows up with customers. Ora works for you alone: contracts, paperwork, decisions. No new headcount, one fixed monthly fee.",
       "hire": "Send a request",
       "see": "See them at work",
       "sceneAlt": "Four AI staff at their desks in an evening office, under one long window.",
@@ -611,12 +624,79 @@
             "time": "19:41"
           }
         ]
+      },
+      "ora": {
+        "eyebrow": "Ora · Personal assistant",
+        "title": "Reads your contract and shows you the risk.",
+        "body": "Four of the staff talk to your customers. Ora works with you alone: she reads a contract in professional legal Mongolian, finds the clauses that expose you and redrafts them. Paperwork, decision briefs, presentations. Her own chat interface, not Messenger.",
+        "cta": "Send a request",
+        "sceneAlt": "Ora's chat: the owner sends a lease, Ora finds two risky clauses and redrafts one.",
+        "session": {
+          "window": "Ora",
+          "private": "For you only",
+          "you": "You",
+          "file": "Lease agreement.pdf",
+          "pages": "6 pages",
+          "ask": "Read this contract and tell me which clauses are risky.",
+          "reading": "Reading the contract",
+          "found": "Two clauses need your attention.",
+          "findings": [
+            {
+              "clause": "6.2",
+              "text": "A late-payment penalty of 1% per day.",
+              "note": "Well above the market. Leases like this settle at 0.1–0.3%."
+            },
+            {
+              "clause": "9.1",
+              "text": "The landlord may terminate on 7 days' notice.",
+              "note": "You have no matching right. A one-sided term."
+            }
+          ],
+          "redraftLead": "I suggest replacing 9.1 with:",
+          "redraft": "9.1. Either party may terminate this agreement by giving the other party thirty (30) days' written notice.",
+          "action": "Prepare the revised version as a Word file",
+          "composer": "Write to Ora…",
+          "docTitle": "LEASE AGREEMENT",
+          "doc": [
+            {
+              "n": "6.1",
+              "text": "The tenant pays rent by the 5th of each month."
+            },
+            {
+              "n": "6.2",
+              "text": "A late-payment penalty of 1% per day applies."
+            },
+            {
+              "n": "7.1",
+              "text": "The tenant uses the premises for their stated purpose."
+            },
+            {
+              "n": "9.1",
+              "text": "The landlord may terminate on 7 days' notice."
+            },
+            {
+              "n": "9.2",
+              "text": "The premises are returned when the agreement ends."
+            }
+          ],
+          "does": [
+            "Contracts",
+            "Paperwork",
+            "Decisions",
+            "Presentations"
+          ]
+        }
+      },
+      "oraIntro": {
+        "eyebrow": "FOR THE OWNER",
+        "title": "Four work with your customers. One works with you.",
+        "lead": "Dali, Vira, Eho and Nova talk to your customers. Ora takes the work on your own desk."
       }
     },
     "team": {
       "eyebrow": "TEAM PRICING",
       "title": "The monthly fee falls as the team grows.",
-      "description": "Two staff −10%, three −15%, four −20%. The discount applies to the monthly fee.",
+      "description": "Two staff −10%, three −15%, four or more −20%. The discount applies to the monthly fee.",
       "pick": "Choose staff",
       "monthly": "Monthly fee",
       "setup": "Setup, one time",
@@ -624,9 +704,10 @@
       "perMinuteNote": "Eho call minutes carry an additional charge.",
       "viraAlone": "Vira works only alongside another staff member. Select one more.",
       "empty": "Select at least one staff member.",
-      "soonNote": "Eho and Nova launch soon. Pre-register and we notify you at launch.",
+      "soonNote": "Eho, Nova and Ora launch soon. Pre-register and we notify you at launch.",
       "cta": "Send a request",
-      "ctaPreorder": "Send a request"
+      "ctaPreorder": "Send a request",
+      "ownerNote": "Ora works with you, not with your customers."
     },
     "steps": {
       "title": "Three steps to launch",
@@ -666,6 +747,11 @@
         "name": "Eho",
         "role": "Phone operator",
         "job": "Answers every incoming call, handles the questions, and records the order."
+      },
+      "ora": {
+        "name": "Ora",
+        "role": "Personal assistant",
+        "job": "Reads contracts, drafts paperwork, helps you decide and builds presentations. Works with you, not with your customers."
       }
     },
     "artCredit": "Pixel art on this page by",
@@ -681,7 +767,7 @@
     },
     "board": {
       "label": "How the work is split",
-      "caption": "Four different kinds of work, one member of staff responsible for each.",
+      "caption": "Four different kinds of work, one member of staff for each, on the customer's side. The fifth is on yours.",
       "lanes": {
         "dali": {
           "end": "Incoming messages",
@@ -698,18 +784,23 @@
         "nova": {
           "end": "Customers who went quiet",
           "dir": "Goes out and comes back"
+        },
+        "ora": {
+          "end": "Your contracts and paperwork",
+          "dir": "From you, back to you"
         }
-      }
+      },
+      "owner": "For the owner"
     }
   },
   "meta": {
     "/": {
       "title": "AI staff for Mongolian businesses",
-      "desc": "Four AI staff answering customer questions in Mongolian, around the clock, on Facebook, Instagram and your website."
+      "desc": "Four AI staff answering customer questions in Mongolian around the clock, and a personal assistant the owner hands their contracts and paperwork to."
     },
     "/office": {
       "title": "AI staff",
-      "desc": "Dali, Vira, Eho and Nova. What each one does, how they work, and which channels they answer on."
+      "desc": "Dali, Vira, Eho, Nova and Ora. What each one does, how they work, and which of them works with your customers and which with you."
     },
     "/pricing": {
       "title": "Pricing",

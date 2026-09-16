@@ -37,6 +37,7 @@ const SERVICE_LABELS = {
   nova: "Нова — AI харилцагчийн менежер",
   vira: "Вира — AI бизнес аналитик",
   eho: "Эхо — AI утасны оператор",
+  ora: "Ора — AI хувийн туслах",
   website: "Вэбсайт",
   // keys an older build of the form may still send
   ara: "Дали — AI хүлээн авагч (хуучин нэр: Ара)",
