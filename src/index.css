@@ -354,14 +354,6 @@ html.demo-dialog-open #dt-chat-frame {
 }
 
 /* The little waveform beside an answered call on the /office page. */
-/* Ора's window: the caret in the composer, and the line that reads down the
-   document while she is reading it */
-.ora-caret { animation: oraCaret 1.05s steps(2, jump-none) infinite; }
-@keyframes oraCaret { from { opacity: 1; } to { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) {
-  .ora-caret { animation: none; opacity: 1; }
-}
-
 @keyframes staffWave {
   0%, 100% { transform: scaleY(0.5); }
   50% { transform: scaleY(1.5); }

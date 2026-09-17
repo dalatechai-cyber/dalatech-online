@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the pixel-art pack for the /office page.
 
-Composes the four AI staff from LimeZu's character generator layers, picks the
+Composes the five AI staff from LimeZu's character generator layers, picks the
 office props the page uses, shifts their colours toward the site palette and
 packs everything into one atlas plus a manifest.
 
@@ -42,6 +42,8 @@ ROOM_OFFICE = LZ / "Modern_Office_Revamped_v1.2" / "1_Room_Builder_Office" / "Ro
 # singles.
 OFFICE_SHEET = LZ / "Modern_Office_Revamped_v1.2" / "Modern_Office_32x32.png"
 ROOM_GENERIC = LZ / "moderninteriors-win" / "1_Interiors" / "32x32" / "Room_Builder_32x32.png"
+# The doors are only on the combined generic sheet, not among the singles.
+GENERIC_SHEET = LZ / "moderninteriors-win" / "1_Interiors" / "32x32" / "Theme_Sorter_32x32" / "1_Generic_32x32.png"
 GEN = LZ / "moderninteriors-win" / "2_Characters" / "Character_Generator"
 
 # ---------------------------------------------------------------- palette
@@ -216,7 +218,7 @@ def single(path, rule=furniture_rule, cmap=None, screens=False):
 # site rather than here. Measured on the four pieces that survive, the spread
 # between the 5th and 95th percentile of output lightness is 0.46 to 0.60;
 # the two that failed measured 0.19 and 0.29. Fail the build under 0.40.
-WALL_PIECES = ("SHELF_FILES", "SHREDDER", "COPIER", "CABINET")
+WALL_PIECES = ("SHELF_FILES", "SHREDDER", "COPIER", "CABINET", "DOOR")
 MIN_WALL_PIECE_SPREAD = 0.40
 
 
@@ -293,6 +295,19 @@ def props():
     # combined sheet, where it is a composed unit rather than a single
     sheet = Image.open(OFFICE_SHEET).convert("RGBA")
     S["SHELF_UNIT"] = (rule_colours(crop_alpha(sheet.crop((226, 400, 286, 460))), furniture_rule), {})
+
+    # Ора's room is a closed room, and these are what make it one. The wood
+    # panel doors in this family flatten to a single navy slab under
+    # furniture_rule (measured 0.24); only the glazed ones keep a spread,
+    # because the pane holds near-white pixels the rule passes through.
+    door = Image.open(GENERIC_SHEET).convert("RGBA").crop((96, 1350, 128, 1406))
+    # LimeZu draws a door as a run of wall: a 4px jamb on the left and the door
+    # on the rest, with the right-hand jamb belonging to the next tile along.
+    # Standing on its own it needs both, so the left jamb is mirrored over.
+    jamb = door.crop((0, 0, 4, door.size[1])).transpose(Image.FLIP_LEFT_RIGHT)
+    door.paste(jamb, (door.size[0] - 4, 0))
+    S["DOOR"] = (rule_colours(door, furniture_rule), {})
+
     # CABINET used to be singles tile 180, which is not a cabinet at all: it is
     # a blank tan wall panel, two thirds of it one flat colour, and on a wall it
     # read as a featureless slab. Tile 174 is the stocked display cabinet. Its
@@ -402,7 +417,7 @@ def headset(fr):
     return fr
 
 
-# Four people who read as four at a glance: different hair, clothes, skin,
+# Five people who read as five at a glance: different hair, clothes, skin,
 # and each in the pose of their own job. Hair and outfit layers are tinted by
 # luminance rank so any LimeZu style can take any colour.
 PEOPLE = {
@@ -422,6 +437,13 @@ PEOPLE = {
     # Нова: customer care. Dark brown bob, teal top, phone in hand.
     "nova": {"body": "Body_32x32_04", "eyes": "Eyes_32x32_01", "outfit": "Outfit_23_32x32_03", "hair": "Hairstyle_20_32x32_03",
              "hairTint": ("#3B261C", "#5A3B2C", "#75503C")},
+    # Ора: the owner's assistant. She does not sit on the customer floor, so she
+    # is the one who reads as senior rather than as front desk: hair up in cool
+    # steel, a stone blazer. Both were picked against the graded room, not on
+    # white — navy on her would have sunk into the wall behind her.
+    "ora": {"body": "Body_32x32_05", "eyes": "Eyes_32x32_02", "outfit": "Outfit_27_32x32_01", "hair": "Hairstyle_02_32x32_01",
+            "hairTint": ("#5C6A88", "#8FA0C0", "#C3CEE4"),
+            "outfitTint": ("#3E4152", "#5C6072", "#858A9E")},
 }
 
 

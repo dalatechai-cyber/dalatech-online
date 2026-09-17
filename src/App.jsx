@@ -25,7 +25,7 @@ import {
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawChapter as drawStaffChapter, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -2173,7 +2173,7 @@ function StaffPriceCard({ id }) {
       <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
         <div className="flex items-center gap-3">
           <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-            <StaffFace id={id} size={3} className="-mt-[90px]" />
+            <StaffAvatar id={id} size={3} className="-mt-[90px]" />
           </span>
           <div className="min-w-0">
             <p className="font-display text-[18px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</p>
@@ -3030,7 +3030,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                                 >
                                   {agent ? (
                                     <span className="flex h-[36px] w-[32px] shrink-0 items-start justify-center overflow-hidden rounded-[9px] bg-white/[0.06]">
-                                      <StaffFace id={service} size={2} className="-mt-[60px]" />
+                                      <StaffAvatar id={service} size={2} className="-mt-[60px]" />
                                     </span>
                                   ) : (
                                     <span className="flex h-[36px] w-[32px] shrink-0 items-center justify-center rounded-[9px] bg-white/[0.06] text-fg-muted" aria-hidden>
@@ -3754,7 +3754,7 @@ function PhoneIcon({ who, name }) {
   if (STAFF_LIVE[who] !== undefined) {
     return (
       <span className="flex h-[22px] w-[22px] shrink-0 items-start justify-center overflow-hidden rounded-[6px] bg-white/[0.08]" aria-hidden>
-        <StaffFace id={who} size={1} className="-mt-[27px]" />
+        <StaffAvatar id={who} size={1} className="-mt-[27px]" />
       </span>
     );
   }
@@ -4145,7 +4145,7 @@ function StaffRow({ id }) {
     <StaggerItem y={12}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[88px] sm:flex-nowrap sm:py-0">
         <span className="flex h-[44px] w-[40px] shrink-0 items-start justify-center overflow-hidden rounded-[10px] bg-white/[0.05]">
-          <StaffFace id={id} size={2} className="-mt-[58px]" />
+          <StaffAvatar id={id} size={2} className="-mt-[58px]" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
@@ -4626,7 +4626,7 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
         <div className="board-who">
           {/* the same pixel face as the scenes below: four people, not four bars */}
           <span className="board-face">
-            <StaffFace id={id} size={2} className="-mt-[60px]" />
+            <StaffAvatar id={id} size={2} className="-mt-[60px]" />
           </span>
           <span className="min-w-0">
             <span className="board-name">
@@ -4999,155 +4999,55 @@ function StaffChapter({ id, index, onHire }) {
 
 // ------------------------------------------------------------------ Ора
 // The four are shown from the customer's side: a room you look into, a phone
-// that receives their messages. Ора is the other way round — the owner talks
-// to her, privately, in her own interface — so she is not a fifth desk in the
-// room. She is the owner's own screen: a window in which a contract is
-// handed over, read, and handed back with the risk marked and one clause
-// redrafted. The conversation plays on a clock once the window is on screen,
-// like the day on the landing page, and rests on the finished exchange. Under
-// reduced motion it is the finished exchange from the start.
-const ORA_SECONDS = 15;
-// Moments of the exchange, as fractions of the run. The reading pass leaves
-// before the findings arrive; everything else stays.
-const ORA = {
-  ask: 0.03,
-  reading: 0.13, readingUntil: 0.44,
-  mark1: 0.22, mark2: 0.33,
-  found: 0.46, first: 0.55, second: 0.63,
-  redraft: 0.73, action: 0.85,
-};
+// that receives their messages. Ора is the other way round, and the room says
+// it before the copy does. The four sit along a wall of glass on the customer
+// floor; her room has no glass in it at all. What the owner hands her stays in
+// a closed room, which is most of the reason to hire her.
+//
+// Her chat floats over that room the way the message, the report and the call
+// float over the other four: it is her own interface rather than Messenger,
+// and it is where the range of her work is visible in one glance.
 
-// One clause of the document, with the highlight Ора lays on it as she reads.
-function OraClause({ clause, progress, at }) {
-  const mark = useTransform(progress, at === undefined ? [0, 1] : [at, at + 0.04], at === undefined ? [0, 0] : [0, 1]);
+function LockIcon({ className = "" }) {
   return (
-    <li className="relative py-[5px] pl-3 text-[11.5px] leading-[1.45] text-fg/80">
-      {at !== undefined && (
-        <motion.span aria-hidden style={{ opacity: mark }} className="absolute inset-y-[1px] -left-1 right-0 rounded-[6px] border-l-2 border-sky-400 bg-sky-400/[0.12]" />
-      )}
-      <span className="relative">
-        <span className="mr-1.5 tabular-nums text-fg-muted">{clause.n}</span>
-        {clause.text}
-      </span>
-    </li>
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
   );
 }
 
-function OraLine({ children, from = "ora", progress, at, until, className = "" }) {
-  const mine = from === "you";
+// Her chat, as the owner sees it: a titled window rather than a bare thread,
+// because whose window it is happens to be the point.
+function OraPanel({ panel, progress, at, step = 0.08 }) {
+  const lines = Array.isArray(panel.lines) ? panel.lines : [];
   return (
-    <Rise progress={progress} at={at} until={until} className={["flex", mine ? "justify-end" : "justify-start", className].join(" ")}>
-      <div
-        className={[
-          "max-w-[92%] rounded-[16px] px-3.5 py-2.5 text-[13px] leading-[1.45] shadow-[0_2px_10px_rgba(0,0,0,0.25)]",
-          mine ? "rounded-br-[5px] bg-brand-500 text-white" : "rounded-bl-[5px] border border-white/[0.09] bg-[#111A3A]/95 text-fg/90",
-        ].join(" ")}
-      >
-        {children}
-      </div>
-    </Rise>
-  );
-}
-
-function OraSession({ session, label }) {
-  const reduced = useReducedMotion();
-  const ref = React.useRef(null);
-  const timed = useTimedProgress(ref, ORA_SECONDS, reduced);
-  const one = useMotionValue(1);
-  const progress = reduced ? one : timed;
-  // The line that reads down the document: present only while she is reading.
-  const readTop = useTransform(progress, [ORA.reading, ORA.readingUntil], ["6%", "94%"]);
-  const readOpacity = useTransform(progress, [ORA.reading, ORA.reading + 0.02, ORA.readingUntil - 0.03, ORA.readingUntil], [0, 1, 1, 0]);
-  const marks = { [session.findings[0].clause]: ORA.mark1, [session.findings[1].clause]: ORA.mark2 };
-  const doc = Array.isArray(session.doc) ? session.doc : [];
-
-  return (
-    <div ref={ref} role="group" aria-label={label} className="overflow-hidden rounded-[20px] border border-white/[0.1] bg-[#0B1022] shadow-[0_30px_80px_rgba(0,0,0,0.5),inset_0_0_0_1px_rgba(255,255,255,0.03)]">
-      {/* the window's own bar: her name, and the one fact the four cannot claim */}
-      <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-2.5">
-        <span className="flex items-center gap-2.5">
-          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-[7px] bg-white/[0.06]"><OraMark /></span>
-          <span className="text-[13px] font-semibold tracking-tight text-fg">{session.window}</span>
-        </span>
+    <Rise progress={progress} at={at} className="overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+      <div className="flex items-center justify-between gap-2 border-b border-white/[0.07] px-3 py-2">
+        <span className="text-[12px] font-semibold tracking-tight text-fg">{panel.window}</span>
         <span className="flex items-center gap-1.5 text-[11px] font-medium text-fg-muted">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
-          {session.private}
+          <LockIcon />
+          {panel.private}
         </span>
       </div>
-
-      <div className="grid md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-        {/* the document, on a desk wide enough to show it beside the chat */}
-        <div className="relative hidden border-r border-white/[0.07] px-4 pb-4 pt-3.5 md:block">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-fg-muted">{session.docTitle}</p>
-          <p className="mt-0.5 text-[10.5px] text-fg-muted">{session.file} · {session.pages}</p>
-          <ol className="mt-3 flex flex-col">
-            {doc.map((c) => (
-              <OraClause key={c.n} clause={c} progress={progress} at={marks[c.n]} />
-            ))}
-          </ol>
-          <motion.span aria-hidden style={{ top: readTop, opacity: readOpacity }} className="pointer-events-none absolute inset-x-3 h-px bg-gradient-to-r from-transparent via-sky-400/70 to-transparent" />
-        </div>
-
-        <div className="flex min-h-[400px] flex-col px-4 pb-3 pt-4 sm:px-5">
-          <div className="flex flex-1 flex-col gap-2.5">
-            <OraLine from="you" progress={progress} at={ORA.ask}>
-              <span className="block">{session.ask}</span>
-              {/* the attachment: the same file the other pane is showing */}
-              <span className="mt-2 flex items-center gap-2 rounded-[10px] bg-ink-950/30 px-2.5 py-1.5 text-[11.5px]">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] bg-white/[0.14]"><OraMark className="text-white" /></span>
-                <span className="min-w-0">
-                  <span className="block truncate font-medium">{session.file}</span>
-                  <span className="block text-white/90">{session.pages}</span>
-                </span>
-              </span>
-            </OraLine>
-
-            {/* transient chrome: it leaves at opacity 0, which does not leave the accessibility tree */}
-            <Rise progress={progress} at={ORA.reading} until={ORA.readingUntil} ariaHidden className="flex items-center gap-2 pl-1 text-[12px] text-fg-muted">
-              <span className="flex items-end gap-[3px]" aria-hidden>
-                {[0, 1, 2].map((i) => (
-                  <span key={i} className={["h-[5px] w-[5px] rounded-full bg-sky-400/80", reduced ? "" : "animate-[staffWave_1.1s_ease-in-out_infinite]"].join(" ")} style={{ animationDelay: `${i * 0.16}s` }} />
-                ))}
-              </span>
-              {session.reading}
+      <ol className="flex flex-col gap-2 px-3 pb-3 pt-2.5" role="list">
+        {lines.map((m, i) => {
+          const mine = m.from === "ora";
+          return (
+            <Rise key={i} progress={progress} at={at + 0.05 + i * step} className={["flex max-w-[94%]", mine ? "self-start" : "self-end"].join(" ")}>
+              <li
+                className={[
+                  "rounded-[14px] px-3 py-2 text-[12.5px] leading-[1.42] shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[13.5px]",
+                  mine ? "rounded-bl-[5px] bg-[#1C2547] text-fg" : "rounded-br-[5px] bg-brand-500 text-white",
+                ].join(" ")}
+              >
+                {m.text}
+              </li>
             </Rise>
-
-            <OraLine progress={progress} at={ORA.found}>{session.found}</OraLine>
-
-            {session.findings.map((f, i) => (
-              <Rise key={f.clause} progress={progress} at={i === 0 ? ORA.first : ORA.second} className="max-w-[92%]">
-                <div className="rounded-[14px] border border-sky-400/25 bg-sky-400/[0.06] px-3.5 py-2.5">
-                  <p className="text-[12.5px] leading-[1.45] text-fg">
-                    <span className="mr-2 rounded-[5px] bg-sky-400/15 px-1.5 py-[1px] text-[11px] font-semibold tabular-nums text-sky-300">{f.clause}</span>
-                    {f.text}
-                  </p>
-                  <p className="mt-1 text-[12px] leading-[1.45] text-fg-muted">{f.note}</p>
-                </div>
-              </Rise>
-            ))}
-
-            <OraLine progress={progress} at={ORA.redraft}>
-              <span className="block text-fg-muted">{session.redraftLead}</span>
-              {/* the redraft, set apart as the text of a contract, not of a chat */}
-              <span className="mt-2 block border-l-2 border-sky-400/70 pl-3 text-[13px] leading-[1.5] text-fg">{session.redraft}</span>
-            </OraLine>
-
-            <Rise progress={progress} at={ORA.action} className="pl-1">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.04] px-3 py-1.5 text-[12px] text-fg/90">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" /></svg>
-                {session.action}
-              </span>
-            </Rise>
-          </div>
-
-          {/* the composer: a mock, so hidden from readers — the exchange above is the content */}
-          <div aria-hidden className="mt-4 flex items-center gap-2 rounded-[12px] border border-white/[0.09] bg-white/[0.03] px-3.5 py-2.5 text-[12.5px] text-fg-dim">
-            <span className="ora-caret inline-block h-[14px] w-px bg-sky-400" />
-            {session.composer}
-          </div>
-        </div>
-      </div>
-    </div>
+          );
+        })}
+      </ol>
+    </Rise>
   );
 }
 
@@ -5167,15 +5067,37 @@ function OraIntro() {
   );
 }
 
+// What she actually takes on, as work rather than as features. Six blocks:
+// five kinds of work, and the condition all five are done under.
+function OraDoes({ items }) {
+  return (
+    <StaggerGroup className="mt-12 grid gap-x-10 gap-y-8 sm:grid-cols-2 md:mt-16 lg:grid-cols-3">
+      {items.map((d) => (
+        <StaggerItem key={d.title}>
+          <h3 className="flex items-center gap-2 text-[15.5px] font-semibold tracking-tight text-fg">
+            {d.locked && <span className="text-sky-400"><LockIcon /></span>}
+            {d.title}
+          </h3>
+          <p className="mt-2 text-[14.5px] leading-[1.52] text-fg-muted">{d.text}</p>
+        </StaggerItem>
+      ))}
+    </StaggerGroup>
+  );
+}
+
 function OraChapter({ onHire }) {
   const { t } = useTranslation();
+  const ref = React.useRef(null);
+  const progress = useDampedProgress(ref, ["start end", "end start"]);
+  const draw = React.useMemo(() => drawOraRoom(), []);
   const id = "ora";
   const base = `office.chapters.${id}`;
   const live = STAFF_LIVE[id];
-  const session = t(`${base}.session`, { returnObjects: true });
-  const does = Array.isArray(session.does) ? session.does : [];
+  const panel = t(`${base}.panel`, { returnObjects: true });
+  const does = t(`${base}.does`, { returnObjects: true });
+
   return (
-    <section id={`staff-${id}`} className="py-14 md:py-24">
+    <section ref={ref} id={`staff-${id}`} className="py-14 md:py-24">
       <Container>
         <div className="grid gap-6 md:grid-cols-12 md:grid-rows-[auto_auto] md:gap-x-10 md:gap-y-4">
           <Reveal className="md:col-span-5 md:col-start-1 md:row-start-1 md:self-end">
@@ -5186,14 +5108,28 @@ function OraChapter({ onHire }) {
             <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[40px] md:text-[46px]">{t(`${base}.title`)}</h2>
           </Reveal>
           <div className="md:col-span-7 md:col-start-6 md:row-span-2 md:row-start-1 md:self-center">
-            <OraSession session={session} label={t(`${base}.sceneAlt`)} />
+            <div className="relative -mx-5 sm:mx-0">
+              {/* Only the canvas is wrapped. The section carries her name, her
+                  price and the request button, so a stage that throws has to
+                  cost a picture, never the fifth member of staff. */}
+              <ErrorBoundary fallback={null}>
+                <PixelStage
+                  draw={draw}
+                  logicalH={CHAPTER_HEIGHT}
+                  scale={CHAPTER_SCALE}
+                  minW={150}
+                  progress={progress}
+                  label={t(`${base}.sceneAlt`)}
+                  className="sm:rounded-[24px] sm:border sm:border-white/[0.08]"
+                />
+              </ErrorBoundary>
+              <div className="absolute left-[49%] right-[4%] top-[4%] sm:left-[50%]">
+                <OraPanel panel={panel} progress={progress} at={0.3} />
+              </div>
+            </div>
           </div>
           <Reveal className="md:col-span-5 md:col-start-1 md:row-start-2 md:self-start">
             <p className="max-w-[460px] text-[17px] leading-[1.47] text-fg-muted">{t(`${base}.body`)}</p>
-            {/* what else she takes: the breadth, stated once, quietly */}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {does.map((d) => <Pill key={d}>{d}</Pill>)}
-            </div>
             <div className="mt-6 border-t border-white/[0.08] pt-5">
               <StaffPrice id={id} />
               <div className="mt-5">
@@ -5204,6 +5140,7 @@ function OraChapter({ onHire }) {
             </div>
           </Reveal>
         </div>
+        {Array.isArray(does) && <OraDoes items={does} />}
       </Container>
     </section>
   );
@@ -5231,28 +5168,6 @@ function StaffAvatar({ id, size = 2, className = "" }) {
       }}
     />
   );
-}
-
-// Ора has no pixel face: she is not in the room. Where the four show a
-// portrait she shows a mark — a document, which is her work — so every list
-// stays one list without pretending she is a fifth desk.
-function OraMark({ className = "" }) {
-  return (
-    <span aria-hidden className={["flex h-full w-full items-center justify-center text-sky-400", className].join(" ")}>
-      <svg viewBox="0 0 24 24" className="h-[54%] w-[54%]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M7 3.5h7l4 4v13H7z" />
-        <path d="M14 3.5v4h4" />
-        <path d="M9.6 12h4.8M9.6 15.4h4.8" />
-      </svg>
-    </span>
-  );
-}
-
-// The portrait for any member of staff: the atlas frame for the four who are
-// drawn, the mark for the one who is not. Callers size the box; both fill it.
-function StaffFace({ id, size = 2, className = "" }) {
-  if (!STAFF_CHARS[id]) return <OraMark />;
-  return <StaffAvatar id={id} size={size} className={className} />;
 }
 
 function StaffTeam({ onHire }) {
@@ -5302,7 +5217,7 @@ function StaffTeam({ onHire }) {
                   ].join(" ")}
                 >
                   <span className="flex h-[64px] w-[64px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-                    <StaffFace id={id} size={2} className="-mt-7" />
+                    <StaffAvatar id={id} size={2} className="-mt-7" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
@@ -5440,9 +5355,7 @@ const OfficePage = React.memo(function OfficePage() {
       {/* the fifth is not a fifth chapter of the same room: she works for the
           owner, in her own interface, and is shown in it */}
       <OraIntro />
-      <ErrorBoundary fallback={null}>
-        <OraChapter onHire={hire} />
-      </ErrorBoundary>
+      <OraChapter onHire={hire} />
       <StaffTeam onHire={hire} />
       <StaffLimits />
       <StaffSteps />
