@@ -130,8 +130,15 @@ function useCue(ref, count, step = CUE_STEP, lead = CUE_LEAD) {
     if (reduced || !inView) return undefined;
     // One timer per arrival, all cleared together: a single interval left a
     // stray tick running after the panel unmounted on a route change.
+    //
+    // Monotonic, because this effect re-runs whenever the item count changes —
+    // which a language switch does the moment one locale carries a message the
+    // other does not. Assigning the index outright would drop a panel the
+    // visitor had already read back to one bubble and replay it at them.
     const timers = [];
-    for (let i = 1; i <= count; i++) timers.push(setTimeout(() => setShown(i), lead + (i - 1) * step));
+    for (let i = 1; i <= count; i++) {
+      timers.push(setTimeout(() => setShown((prev) => Math.max(prev, i)), lead + (i - 1) * step));
+    }
     return () => timers.forEach(clearTimeout);
   }, [inView, count, step, lead, reduced]);
   return reduced ? count : shown;
@@ -144,7 +151,10 @@ function CueGroup({ as = "div", className = "", step, lead, children, ...rest })
   const M = motion[as];
   return (
     <M ref={ref} className={className} data-cue-shown={shown} {...rest}>
-      {kids.map((c, i) => (React.isValidElement(c) ? React.cloneElement(c, { cueShown: i < shown }) : c))}
+      {/* Only a CueItem is handed the flag. Anything else in the list — a date
+          divider, a spacer — would take `cueShown` down to the DOM as a stray
+          attribute and warn about it in development. */}
+      {kids.map((c, i) => (React.isValidElement(c) && c.type === CueItem ? React.cloneElement(c, { cueShown: i < shown }) : c))}
     </M>
   );
 }
