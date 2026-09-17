@@ -9,8 +9,8 @@
 // each one is visibly doing: Дали answering a message that just arrived, Вира
 // holding the report her screens are building, Эхо on a call, Нова sending.
 import {
-  sprite, stripFrame, charFrame, sky, windowFrame, room, screenActivity, screenChart,
-  lampGlow, grade, sunPatch, screenLight, ringing, mapRange, nightAmount, rect, focusDim, noise, SPRITES,
+  sprite, stripFrame, charFrame, sky, windowFrame, room, screenSpill,
+  lampGlow, grade, sunPatch, ringing, mapRange, nightAmount, rect, focusDim, noise, SPRITES,
 } from "./pixel";
 
 // Order on the hero row and the hour each chapter is set at.
@@ -33,9 +33,6 @@ export const HERO_MIN_W = 8 + ROW_W;
 const FLOOR_Y = 58;
 const DESK_Y = 82;
 
-// Four weeks of the sample report, the same bars the page shows in HTML.
-const REPORT = [0.5, 0.62, 0.48, 0.9];
-
 const KIT = {
   dali: { anim: "idle", fps: 4 },
   vira: { anim: "read", fps: 5 },
@@ -57,11 +54,12 @@ function frameIndex(kit, t, seed) {
 // A person seated behind a desk. `pieces` are desk sprites laid left to
 // right; props are placed relative to the desk's top-left corner. Drawn in
 // the order the eye expects: chair, person, desk, things on the desk.
-// Anything that gives off light (screens, the lamp) is pushed to
-// `lights` and drawn by the scene after the room is graded, so it stays
-// bright at night.
+// Anything that gives off light (the lamp, the glow off a screen) is pushed
+// to `lights` by the caller and drawn after the room is graded, so it stays
+// bright at night. Everything solid is drawn here, before the grade, so it
+// takes the room's light like the rest of the furniture.
 function desk(ctx, img, o) {
-  const { id, x, y, t, pieces, props, lights, seed = 0, night = 0 } = o;
+  const { id, x, y, t, pieces, props, seed = 0 } = o;
   const occupied = o.occupied !== false;
   // A scene may hand in its own kit: Ора's room switches hers between reading
   // and her screen as the loop runs, which the fixed per-person kit cannot do.
@@ -77,16 +75,15 @@ function desk(ctx, img, o) {
     sprite(ctx, img, p, px, y);
     px += SPRITES[p].w;
   }
+  // Where each prop landed, so the jobs below can light the right monitor and
+  // ring the right phone instead of recomputing offsets the props list owns.
+  // Those two copies drifted apart every time a desk was rearranged.
+  const placed = {};
   for (const [pid, dx, dy] of props) {
     sprite(ctx, img, pid, x + dx, y + dy);
-    if (SPRITES[pid].screens && occupied) {
-      lights.push(() => {
-        screenLight(ctx, pid, x + dx, y + dy, night);
-        screenActivity(ctx, pid, x + dx, y + dy, t, seed + 5);
-      });
-    }
+    placed[pid] = { x: x + dx, y: y + dy, w: SPRITES[pid].w, h: SPRITES[pid].h };
   }
-  return { cx, cy, deskW };
+  return { cx, cy, deskW, placed };
 }
 
 // A desk lamp standing on a desk. Lit once the light goes; the glow is
@@ -108,93 +105,76 @@ function deskLamp(ctx, img, x, y, night, lights, showSprite = true) {
   });
 }
 
+// Нова's coffee. The strip is a cup with its steam, not steam alone, so the
+// desk must not also carry a MUG under it — that drew her two cups, one
+// inside the other. The cup stands at rows 38..52 of a 64px cell, which is
+// what the offset below puts on the desk's surface rather than the box.
+//
+// It is drawn here, with the furniture, and not pushed onto `lights`: that
+// list runs after the grade, so the one object on the desk that took it read
+// as bright white in a room every other object had been darkened into.
+function coffee(ctx, img, x, deskY, t) {
+  stripFrame(ctx, img, "COFFEE_STEAM", Math.floor(t * 5) % 6, x, deskY - 20);
+}
+
 // ------------------------------------------------------- what each one does
 // Each job is a small loop on `t`, seeded so the four never fire together.
 // The phases are named so the chapters can pin one (see drawChapter).
 
-// Дали: a message arrives and she answers it. It plays on her screen — the
-// question in, her reply out — because that is where it really happens.
-function actDali(ctx, img, s, t, lights, force) {
-  const { x, y } = s;
-  const lap = SPRITES.LAPTOP;
-  const lx = x + 22, ly = y;
-  const cycle = force ?? ((t + 1.3) % 5.2);
-  lights.push(() => {
-    // The thought bubble and the envelope that used to float over her head
-    // are gone: the page shows the real conversation beside the scene, and a
-    // cartoon emote over a person in a room reads as a game, not an office.
-    // What is left is what a person at a desk actually does — the exchange
-    // appears on her screen.
-    const sc = lap.screens[0];
-    const sx = lx + sc.x, sy = ly + sc.y;
-    rect(ctx, sx, sy, sc.w, sc.h, "#1E3F8A");
-    rect(ctx, sx + 1, sy + 1, 9, 3, "#5E9BFF");
-    if (cycle >= 2.4) rect(ctx, sx + sc.w - 11, sy + 5, 10, 3, "#9CC5FF");
-  });
+// Every screen in the building now has its back to the room, because a
+// monitor someone is actually working at faces them and not us. That takes
+// away the surface these four jobs used to be drawn on: the exchange on
+// Дали's laptop, Вира's chart, Эхо's waveform, Нова's thread. None of it is
+// lost to the page — each is on the card floated beside the room, at a size
+// that can be read — so what is left here is the part a screen really shows
+// across a room, which is its light, and the parts that were never on it:
+// a phone that rings, a page that comes out of a printer.
+//
+// Each job keeps its own rhythm in that light, so the four rooms still differ
+// with the sound off.
+
+// The glow of whichever screen a desk has. Guarded because these closures run
+// inside the draw: reaching through a missing prop would throw on every frame
+// and leave the canvas blank. A desk that lost its monitor should lose its
+// glow, not its room.
+function spill(ctx, lights, s, night, amount) {
+  const m = s.placed.MONITOR_BACK;
+  if (!m) return;
+  lights.push(() => screenSpill(ctx, m.x, m.y, m.w, m.h, night, amount));
 }
 
-// Вира: the report. Her two screens build the chart bar by bar, she reads
-// the printed pages, and the printer beside her puts out the next one.
-function actVira(ctx, img, s, t, lights, chartGrow) {
-  const { x, y } = s;
-  const dual = SPRITES.DUAL;
-  const dx = x + 10, dy = y - 4;
+// Дали: a message lands and she answers it. Two lifts to a cycle, the second
+// the brighter, because the reply is the half with the work in it.
+function actDali(ctx, img, s, t, lights, night, force) {
+  const cycle = force ?? ((t + 1.3) % 5.2);
+  const at = (c, w) => Math.max(0, 1 - Math.abs(cycle - c) / w);
+  spill(ctx, lights, s, night, 0.4 + 0.3 * at(1.1, 0.9) + 0.6 * at(3.1, 1.1));
+}
+
+// Вира: the report. The light builds with it and flares as the page prints,
+// which is also when the printer beside her puts one out.
+function actVira(ctx, img, s, t, lights, night, chartGrow) {
   const grow = chartGrow ?? ((t % 7) / 5.2);
-  lights.push(() => {
-    screenChart(ctx, "DUAL", 0, dx, dy, REPORT, Math.min(1, grow));
-    // the second screen: rows of a sheet filling top to bottom
-    const sc = dual.screens[1];
-    const sx = dx + sc.x, sy = dy + sc.y;
-    rect(ctx, sx, sy, sc.w, sc.h, "#1E3F8A");
-    const rows = Math.floor(Math.min(1, grow) * 4);
-    for (let r = 0; r < rows; r++) rect(ctx, sx + 1, sy + 1 + r * 3, sc.w - 2 - (r % 2) * 5, 2, r === rows - 1 ? "#9CC5FF" : "#5E9BFF");
-  });
-  // a page comes out of the printer as the chart finishes
+  const g = Math.min(1, grow);
+  spill(ctx, lights, s, night, 0.35 + 0.45 * g + (g > 0.9 ? 0.35 : 0));
   if (grow > 0.9 && grow < 1.3) sprite(ctx, img, "PAPERS", s.printerX + 3, s.printerY + 30);
 }
 
-// Эхо: the phone rings, he answers, the call runs on his screen as a
-// waveform. Ringing is the sound rings around the desk phone.
-function actEho(ctx, img, s, t, lights, ringForce) {
-  const { x, y } = s;
+// Эхо: the phone rings, he answers, and the light moves the way a voice does
+// for as long as the call runs. The ringing is still the sound around the
+// phone itself, which was never on the screen.
+function actEho(ctx, img, s, t, lights, night, ringForce) {
+  const phone = s.placed.DESK_PHONE;
   const cycle = (t + 2.1) % 6.5;
   const ring = ringForce ?? (cycle < 1.5);
-  const mon = SPRITES.MONITOR_KB;
-  const mx = x + 20, my = y;
-  lights.push(() => {
-    // the sound rings around the phone itself; the floating "!" is gone
-    if (ring) ringing(ctx, x - 2 + 20, y + 8 + 6, t);
-    const sc = mon.screens[0];
-    const sx = mx + sc.x, sy = my + sc.y;
-    rect(ctx, sx, sy, sc.w, sc.h, "#1E3F8A");
-    if (!ring) {
-      // the waveform: bars that pulse while the call is on
-      for (let i = 0; i < 10; i++) {
-        const h = 1 + Math.round(noise(i * 13 + Math.floor(t * 8)) * (sc.h - 4));
-        rect(ctx, sx + 2 + i * 2, sy + sc.h - 1 - h, 1, h, i % 3 === 0 ? "#9CC5FF" : "#5E9BFF");
-      }
-    } else {
-      rect(ctx, sx + 2, sy + sc.h / 2 - 1, sc.w - 4, 1, "#5E9BFF");
-    }
-  });
+  if (ring && phone) lights.push(() => ringing(ctx, phone.x + phone.w, phone.y + 6, t));
+  spill(ctx, lights, s, night, ring ? 0.35 : 0.55 + 0.35 * noise(Math.floor(t * 9)));
 }
 
-// Нова: reaching out. The thread on her screen advances a line at a time as
-// each message goes out.
-function actNova(ctx, img, s, t, lights) {
-  const { x, y } = s;
-  const lap = SPRITES.LAPTOP;
-  const lx = x + 12, ly = y;
-  lights.push(() => {
-    const sc = lap.screens[0];
-    const sx = lx + sc.x, sy = ly + sc.y;
-    rect(ctx, sx, sy, sc.w, sc.h, "#1E3F8A");
-    for (let r = 0; r < 3; r++) rect(ctx, sx + 1, sy + 1 + r * 3, 6 + ((Math.floor(t) + r) % 3) * 3, 2, "#5E9BFF");
-    // a line on her screen lights as each message goes out; the envelopes
-    // and the heart that used to drift over her head are gone
-    const sent = Math.floor(t / 1.2) % 3;
-    rect(ctx, sx + 1, sy + 1 + sent * 3, 10, 2, "#9CC5FF");
-  });
+// Нова: reaching out. One lift per message, three to a round.
+function actNova(ctx, img, s, t, lights, night) {
+  const step = (t / 1.2) % 1;
+  spill(ctx, lights, s, night, 0.45 + 0.45 * Math.max(0, 1 - step * 2.2));
 }
 
 // ----------------------------------------------------------------- the room
@@ -256,23 +236,24 @@ function officeRoom(ctx, img, { W, H, t }, {
     const base = { id, x: x + 6, y: deskY, t, seed: i, lights, night, occupied, pieces: ["DESK_L", "DESK_R"] };
     let s;
     if (id === "dali") {
-      s = desk(ctx, img, { ...base, props: [["LAPTOP", 22, 0]] });
-      deskLamp(ctx, img, base.x - 2, deskY - 14, night, lights, false);
-      if (occupied) actDali(ctx, img, { ...s, x: base.x, y: deskY }, t, lights, daliPhase);
+      s = desk(ctx, img, { ...base, props: [["MONITOR_BACK", 18, 0]] });
+      // on the desk, not above it: the pool used to sit 14px clear of the
+      // surface, which put the light on the wall behind the work
+      deskLamp(ctx, img, base.x - 2, deskY, night, lights, false);
+      if (occupied) actDali(ctx, img, s, t, lights, night, daliPhase);
     } else if (id === "vira") {
-      s = desk(ctx, img, { ...base, pieces: ["DESK_L", "DESK_M", "DESK_R"], personX: 24, props: [["PAPER_STACK", -2, 4], ["DUAL", 10, -4]] });
+      s = desk(ctx, img, { ...base, pieces: ["DESK_L", "DESK_M", "DESK_R"], personX: 24, props: [["PAPER_STACK", -2, 4], ["MONITOR_BACK", 30, 0]] });
       // the printer on its stand beside her desk, in the gap before Эхо
       const printerX = base.x + s.deskW - 6, printerY = deskY + 6;
       sprite(ctx, img, "PRINTER", printerX, printerY);
-      if (occupied) actVira(ctx, img, { ...s, x: base.x, y: deskY, printerX, printerY }, t, lights, chartGrow);
+      if (occupied) actVira(ctx, img, { ...s, printerX, printerY }, t, lights, night, chartGrow);
     } else if (id === "eho") {
-      s = desk(ctx, img, { ...base, props: [["DESK_PHONE", -2, 8], ["MONITOR_KB", 20, 0]] });
-      if (occupied) actEho(ctx, img, { ...s, x: base.x, y: deskY }, t, lights, ring);
+      s = desk(ctx, img, { ...base, props: [["DESK_PHONE", -2, 8], ["MONITOR_BACK", 18, 0]] });
+      if (occupied) actEho(ctx, img, s, t, lights, night, ring);
     } else {
-      s = desk(ctx, img, { ...base, props: [["LAPTOP", 12, 0]] });
-      // her coffee, steaming
-      lights.push(() => stripFrame(ctx, img, "COFFEE_STEAM", Math.floor(t * 5) % 6, base.x + 34, deskY - 26));
-      if (occupied) actNova(ctx, img, { ...s, x: base.x, y: deskY }, t, lights);
+      s = desk(ctx, img, { ...base, props: [["MONITOR_BACK", 18, 0]] });
+      coffee(ctx, img, base.x - 6, deskY, t);
+      if (occupied) actNova(ctx, img, s, t, lights, night);
     }
     stations[id] = { ...s, x: base.x, i, left: x, width: STATION_W[id] };
     x += STATION_W[id];
@@ -400,15 +381,20 @@ export function drawChapter(id) {
     let printer = null; // Вира's, deferred so the wall is painted behind it
 
     if (id === "dali") {
-      s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["LAPTOP", 50, 0]] });
+      s = desk(ctx, img, { ...base, personX: 44, props: [["DESK_PHONE", 4, 10], ["MONITOR_BACK", 46, 0]] });
       // Light, not object: see deskLamp. The chapter desk is 82 art px and
-      // already carries a phone and a laptop, so the lamp had nowhere on the
-      // surface to stand and was drawn above it — reading as a brass shape
-      // hanging in the gap between the desk and the back wall.
-      deskLamp(ctx, img, deskX + s.deskW - 32, deskY - 36, night, lights, false);
-      actDali(ctx, img, { ...s, x: deskX + 28, y: deskY }, t, lights, null);
+      // already carries a phone and a monitor, so the lamp has nowhere on the
+      // surface to stand. The pool stays; it now falls on the free left end of
+      // the desk at the depth a lamp standing there would light, instead of
+      // 36px above the surface where it lit the back wall and nothing else.
+      deskLamp(ctx, img, deskX + 2, deskY, night, lights, false);
+      actDali(ctx, img, s, t, lights, night, null);
     } else if (id === "vira") {
-      s = desk(ctx, img, { ...base, personX: 8, props: [["PAPER_STACK", 0, 6], ["DUAL", 18, -4]] });
+      // The stack sat 2px past the desk's front edge, and her two screens 8px
+      // past it — both hanging through the apron rather than standing on the
+      // top. The surface ends 34px below the desk's back edge; everything on
+      // it lands there now.
+      s = desk(ctx, img, { ...base, personX: 44, props: [["PAPER_STACK", 2, 4], ["MONITOR_BACK", 46, 0]] });
       // Her printer stands beside the desk at the desk's own depth. Against
       // the back wall it would be under the page's report card. It is drawn
       // after the wall piece, below, so the wall cannot paint over it.
@@ -416,15 +402,15 @@ export function drawChapter(id) {
       const py = frontY - SPRITES.PRINTER_STAND.h + 4 - 22;
       printer = { x: px, y: py };
       frontLeft = px + SPRITES.PRINTER_STAND.w + 8;
-      actVira(ctx, img, { ...s, x: deskX + 8, y: deskY, printerX: px + 10, printerY: py }, t, lights, grow);
+      actVira(ctx, img, { ...s, printerX: px + 10, printerY: py }, t, lights, night, grow);
     } else if (id === "eho") {
-      s = desk(ctx, img, { ...base, personX: 10, props: [["DESK_PHONE", 4, 10], ["MONITOR_KB", 48, 0]] });
-      deskLamp(ctx, img, deskX + s.deskW - 32, deskY - 36, night, lights, false);
-      actEho(ctx, img, { ...s, x: deskX + 24, y: deskY }, t, lights, null);
+      s = desk(ctx, img, { ...base, personX: 44, props: [["DESK_PHONE", 4, 10], ["MONITOR_BACK", 46, 0]] });
+      deskLamp(ctx, img, deskX + 2, deskY, night, lights, false);
+      actEho(ctx, img, s, t, lights, night, null);
     } else {
-      s = desk(ctx, img, { ...base, personX: 10, props: [["MUG", 6, 12], ["LAPTOP", 50, 0]] });
-      lights.push(() => stripFrame(ctx, img, "COFFEE_STEAM", Math.floor(t * 5) % 6, deskX + 2, deskY - 26));
-      actNova(ctx, img, { ...s, x: deskX + 38, y: deskY }, t, lights);
+      s = desk(ctx, img, { ...base, personX: 44, props: [["MONITOR_BACK", 46, 0]] });
+      coffee(ctx, img, deskX, deskY, t);
+      actNova(ctx, img, s, t, lights, night);
     }
 
     const kit = CHAPTER_KIT[id];

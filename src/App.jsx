@@ -21,6 +21,7 @@ import {
   useMotionValue,
   useMotionValueEvent,
   useReducedMotion,
+  useInView,
 } from "framer-motion";
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
@@ -97,6 +98,72 @@ function StaggerGroup({ children, className = "", stagger = 0.07, delay = 0, amo
     >
       {children}
     </motion.div>
+  );
+}
+
+// A conversation arrives on its own clock. The room overlays used to be driven
+// by their section's scroll progress, which tied the pace of a chat to how
+// fast the page happened to be moving under it: flick past and four messages
+// landed in one frame, creep and they hung half-risen with the reply already
+// showing. These run on time instead, once, from when the panel comes into
+// view — a message lands, a beat passes, the answer lands.
+//
+// The pacing is a timer rather than framer's `staggerChildren`: driving the
+// group with variant labels left every child at its resting style and
+// produced no stagger at all, and a mechanism whose failure looks exactly
+// like success — all four messages present — is not one to build on. Here
+// what has arrived is a number this component owns, which a test can read.
+const CUE_STEP = 850; // ms between arrivals
+const CUE_LEAD = 250; // and before the first
+const CUE_RISE = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } };
+// Reduced motion keeps the whole exchange, it just does not perform it: empty
+// variants leave each item at its resting style, which is visible.
+const CUE_STILL = { hidden: {}, show: {} };
+// A bar does not rise into place, it grows out of its own baseline.
+const BAR_GROW = { hidden: { scaleY: 0, opacity: 0.55 }, show: { scaleY: 1, opacity: 1 } };
+
+function useCue(ref, count, step = CUE_STEP, lead = CUE_LEAD) {
+  const reduced = useReducedMotion();
+  const inView = useInView(ref, { once: true, amount: 0.3 });
+  const [shown, setShown] = React.useState(0);
+  React.useEffect(() => {
+    if (reduced || !inView) return undefined;
+    // One timer per arrival, all cleared together: a single interval left a
+    // stray tick running after the panel unmounted on a route change.
+    const timers = [];
+    for (let i = 1; i <= count; i++) timers.push(setTimeout(() => setShown(i), lead + (i - 1) * step));
+    return () => timers.forEach(clearTimeout);
+  }, [inView, count, step, lead, reduced]);
+  return reduced ? count : shown;
+}
+
+function CueGroup({ as = "div", className = "", step, lead, children, ...rest }) {
+  const ref = React.useRef(null);
+  const kids = React.Children.toArray(children);
+  const shown = useCue(ref, kids.length, step, lead);
+  const M = motion[as];
+  return (
+    <M ref={ref} className={className} data-cue-shown={shown} {...rest}>
+      {kids.map((c, i) => (React.isValidElement(c) ? React.cloneElement(c, { cueShown: i < shown }) : c))}
+    </M>
+  );
+}
+
+function CueItem({ as = "div", className = "", variants, style, cueShown = false, children }) {
+  const reduced = useReducedMotion();
+  const M = motion[as];
+  const v = reduced ? CUE_STILL : variants ?? CUE_RISE;
+  return (
+    <M
+      className={className}
+      style={style}
+      variants={v}
+      initial="hidden"
+      animate={cueShown ? "show" : "hidden"}
+      transition={SPRING_REVEAL}
+    >
+      {children}
+    </M>
   );
 }
 
@@ -4844,52 +4911,37 @@ function StaffPrice({ id, align = "left" }) {
 
 // A chat as the customer sees it in Messenger. The time is shown once per
 // exchange, beside the bubble that opens it, never as a log under each line.
-function StaffChat({ lines, progress, at, step = 0.07, until }) {
+function StaffChat({ lines, step }) {
   return (
-    <ol className="flex flex-col gap-2" role="list">
+    <CueGroup as="ol" step={step} className="flex flex-col gap-2" role="list">
       {lines.map((m, i) => {
         const mine = m.from === "staff";
         const stamp = i === 0 || m.time !== lines[i - 1].time ? m.time : null;
         return (
-          <Rise key={i} progress={progress} at={at + i * step} until={until} className={["flex max-w-[94%] items-end gap-1.5", mine ? "flex-row-reverse self-end" : "self-start"].join(" ")}>
-            <li
+          <CueItem
+            as="li"
+            key={i}
+            className={["flex max-w-[94%] items-end gap-1.5", mine ? "flex-row-reverse self-end" : "self-start"].join(" ")}
+          >
+            <span
               className={[
                 "rounded-[16px] px-3 py-2 text-[13px] leading-[1.42] shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[14px]",
                 mine ? "rounded-br-[5px] bg-brand-500 text-white" : "rounded-bl-[5px] bg-[#1C2547] text-fg",
               ].join(" ")}
             >
               {m.text}
-            </li>
+            </span>
             {stamp && <span className="mb-1 shrink-0 text-[11px] tabular-nums text-fg-muted">{stamp}</span>}
-          </Rise>
+          </CueItem>
         );
       })}
-    </ol>
+    </CueGroup>
   );
 }
 
-// Вира's report: the same four bars the scene draws on her screen.
-function StaffReport({ report, progress, at, span = 0.22, until }) {
-  const grow = useTransform(progress, [at, at + span], [0, 1]);
-  return (
-    <Rise progress={progress} at={at} until={until} className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
-      <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-fg-dim">{report.tag}</p>
-      <p className="mt-1 text-[13px] font-semibold text-fg">{report.title}</p>
-      <div className="mt-3 flex h-[72px] items-end gap-2" aria-hidden>
-        {report.values.map((v, i) => (
-          <ReportBar key={i} value={v} index={i} count={report.values.length} grow={grow} last={i === report.values.length - 1} />
-        ))}
-      </div>
-      <div className="mt-1 grid grid-cols-4 gap-2 text-[10px] text-fg-dim">
-        {report.weeks.map((w) => <span key={w} className="truncate text-center">{w}</span>)}
-      </div>
-      <p className="mt-3 text-[12.5px] leading-[1.45] text-fg/85">{report.insight}</p>
-    </Rise>
-  );
-}
-
+// The scroll-driven bar, still used by the phone feed in the pinned day
+// scene: that timeline is scrubbed on purpose, so its cards follow the scroll.
 function ReportBar({ value, index, count, grow, last }) {
-  // each bar grows in turn, left to right, as the chapter scrolls in
   const scaleY = useTransform(grow, (g) => Math.min(1, Math.max(0, g * count - index)));
   return (
     <div className="flex flex-1 items-end" style={{ height: "100%" }}>
@@ -4901,19 +4953,47 @@ function ReportBar({ value, index, count, grow, last }) {
   );
 }
 
-// Эхо's call: incoming, answered, the first line.
-function StaffCall({ call, progress, at, step = 0.09, until }) {
+// Вира's report. Her screen has its back to the room now, so this card is
+// where the four bars are actually read; they build in turn on the card's own
+// clock rather than as the page scrolls.
+function StaffReport({ report }) {
+  const last = report.values.length - 1;
+  return (
+    <Reveal y={10} className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+      <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-fg-dim">{report.tag}</p>
+      <p className="mt-1 text-[13px] font-semibold text-fg">{report.title}</p>
+      <CueGroup className="mt-3 flex h-[72px] items-end gap-2" step={170} lead={400} aria-hidden>
+        {report.values.map((v, i) => (
+          <CueItem
+            key={i}
+            variants={BAR_GROW}
+            style={{ height: `${v * 100}%` }}
+            className={["flex-1 origin-bottom rounded-t-[3px]", i === last ? "bg-sky-400" : "bg-brand-500/70"].join(" ")}
+          />
+        ))}
+      </CueGroup>
+      <div className="mt-1 grid grid-cols-4 gap-2 text-[10px] text-fg-dim">
+        {report.weeks.map((w) => <span key={w} className="truncate text-center">{w}</span>)}
+      </div>
+      <p className="mt-3 text-[12.5px] leading-[1.45] text-fg/85">{report.insight}</p>
+    </Reveal>
+  );
+}
+
+// Эхо's call: incoming, answered, the first line. Three beats arriving in
+// turn, the way a call goes, rather than as fast as the page is scrolled.
+function StaffCall({ call, step }) {
   const reduced = useReducedMotion();
   return (
-    <div className="flex flex-col gap-2">
-      <Rise progress={progress} at={at} until={until} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+    <CueGroup className="flex flex-col gap-2" step={step}>
+      <CueItem className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-400/15 text-sky-400" aria-hidden>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
         </span>
         <span className="min-w-0 flex-1 text-[13px] font-semibold text-fg">{call.incoming}</span>
         <span className="shrink-0 text-[11px] tabular-nums text-fg-muted">18:05</span>
-      </Rise>
-      <Rise progress={progress} at={at + step} until={until} className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+      </CueItem>
+      <CueItem className="flex items-center gap-3 rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 px-3.5 py-3 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
         <span className="flex h-9 w-9 shrink-0 items-end justify-center gap-[3px] rounded-full bg-sky-400/15 pb-[11px]" aria-hidden>
           {[0, 1, 2, 3].map((i) => (
             <span
@@ -4927,11 +5007,11 @@ function StaffCall({ call, progress, at, step = 0.09, until }) {
           <span className="block text-[13px] font-semibold text-fg">{call.answered}</span>
           <span className="block text-[12px] text-fg-muted">{call.after}</span>
         </span>
-      </Rise>
-      <Rise progress={progress} at={at + 2 * step} until={until} className="self-end">
+      </CueItem>
+      <CueItem className="self-end">
         <p className="max-w-[92%] rounded-[16px] rounded-br-[5px] bg-brand-500 px-3 py-2 text-[13px] leading-[1.42] text-white shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[14px]">{call.line}</p>
-      </Rise>
-    </div>
+      </CueItem>
+    </CueGroup>
   );
 }
 
@@ -4943,12 +5023,11 @@ function StaffChapter({ id, index, onHire }) {
   const live = STAFF_LIVE[id];
   const base = `office.chapters.${id}`;
   const flip = index % 2 === 1;
-  const AT = 0.3;
 
   let overlay = null;
-  if (id === "vira") overlay = <StaffReport report={t(`${base}.report`, { returnObjects: true })} progress={progress} at={AT} />;
-  else if (id === "eho") overlay = <StaffCall call={t(`${base}.call`, { returnObjects: true })} progress={progress} at={AT} />;
-  else overlay = <StaffChat lines={t(`${base}.chat`, { returnObjects: true })} progress={progress} at={AT} />;
+  if (id === "vira") overlay = <StaffReport report={t(`${base}.report`, { returnObjects: true })} />;
+  else if (id === "eho") overlay = <StaffCall call={t(`${base}.call`, { returnObjects: true })} />;
+  else overlay = <StaffChat lines={t(`${base}.chat`, { returnObjects: true })} />;
 
   return (
     <section ref={ref} id={`staff-${id}`} className="py-14 md:py-24">
@@ -5019,10 +5098,10 @@ function LockIcon({ className = "" }) {
 
 // Her chat, as the owner sees it: a titled window rather than a bare thread,
 // because whose window it is happens to be the point.
-function OraPanel({ panel, progress, at, step = 0.08 }) {
+function OraPanel({ panel, step }) {
   const lines = Array.isArray(panel.lines) ? panel.lines : [];
   return (
-    <Rise progress={progress} at={at} className="overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+    <Reveal y={10} className="overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
       <div className="flex items-center justify-between gap-2 border-b border-white/[0.07] px-3 py-2">
         <span className="text-[12px] font-semibold tracking-tight text-fg">{panel.window}</span>
         <span className="flex items-center gap-1.5 text-[11px] font-medium text-fg-muted">
@@ -5030,24 +5109,24 @@ function OraPanel({ panel, progress, at, step = 0.08 }) {
           {panel.private}
         </span>
       </div>
-      <ol className="flex flex-col gap-2 px-3 pb-3 pt-2.5" role="list">
+      <CueGroup as="ol" step={step} className="flex flex-col gap-2 px-3 pb-3 pt-2.5" role="list">
         {lines.map((m, i) => {
           const mine = m.from === "ora";
           return (
-            <Rise key={i} progress={progress} at={at + 0.05 + i * step} className={["flex max-w-[94%]", mine ? "self-start" : "self-end"].join(" ")}>
-              <li
+            <CueItem as="li" key={i} className={["flex max-w-[94%]", mine ? "self-start" : "self-end"].join(" ")}>
+              <span
                 className={[
                   "rounded-[14px] px-3 py-2 text-[12.5px] leading-[1.42] shadow-[0_2px_10px_rgba(0,0,0,0.25)] sm:text-[13.5px]",
                   mine ? "rounded-bl-[5px] bg-[#1C2547] text-fg" : "rounded-br-[5px] bg-brand-500 text-white",
                 ].join(" ")}
               >
                 {m.text}
-              </li>
-            </Rise>
+              </span>
+            </CueItem>
           );
         })}
-      </ol>
-    </Rise>
+      </CueGroup>
+    </Reveal>
   );
 }
 
@@ -5124,7 +5203,7 @@ function OraChapter({ onHire }) {
                 />
               </ErrorBoundary>
               <div className="absolute left-[49%] right-[4%] top-[4%] sm:left-[50%]">
-                <OraPanel panel={panel} progress={progress} at={0.3} />
+                <OraPanel panel={panel} />
               </div>
             </div>
           </div>

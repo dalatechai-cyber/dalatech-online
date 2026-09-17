@@ -392,6 +392,24 @@ export function screenLight(ctx, id, x, y, night) {
   ctx.restore();
 }
 
+// The glow of a screen we cannot see. A monitor with its back to the room
+// still throws light onto the wall behind it and onto whoever sits in front
+// of it, so a desk turned the right way round is not a dark one. `amount`
+// rides the person's own rhythm of work: it is what is left to read of a job
+// once the screen stops facing the camera.
+export function screenSpill(ctx, x, y, w, h, night, amount = 1) {
+  if (night <= 0 || amount <= 0) return;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  for (let r = 20; r > 6; r -= 4) {
+    ctx.globalAlpha = 0.05 * night * Math.min(1, amount);
+    rect(ctx, cx - r, cy - r - 10, r * 2, r * 2, "#3B82F6");
+  }
+  ctx.restore();
+}
+
 // Sound rings beside a ringing phone.
 export function ringing(ctx, x, y, t) {
   const phase = (t * 2) % 1;
