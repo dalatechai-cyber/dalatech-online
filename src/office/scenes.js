@@ -9,7 +9,7 @@
 // each one is visibly doing: Дали answering a message that just arrived, Вира
 // holding the report her screens are building, Эхо on a call, Нова sending.
 import {
-  sprite, stripFrame, charFrame, sky, windowFrame, room, screenSpill,
+  sprite, stripFrame, charFrame, sky, windowFrame, room, screenSpill, screenTell,
   lampGlow, grade, sunPatch, ringing, mapRange, nightAmount, rect, focusDim, noise, SPRITES,
 } from "./pixel";
 
@@ -133,14 +133,26 @@ function coffee(ctx, img, x, deskY, t) {
 // Each job keeps its own rhythm in that light, so the four rooms still differ
 // with the sound off.
 
-// The glow of whichever screen a desk has. Guarded because these closures run
-// inside the draw: reaching through a missing prop would throw on every frame
-// and leave the canvas blank. A desk that lost its monitor should lose its
-// glow, not its room.
-function spill(ctx, lights, s, night, amount) {
+// What a desk shows of the work going on at it, in two parts: the pool of
+// light the screen throws, and the activity light on the back of the monitor.
+//
+// The pool alone is not enough. It is night-gated, and nightAmount() is
+// exactly 0 between 07:30 and 17:30 — a third of the landing scene's day,
+// Вира's whole 09:00 moment among it, which the room dims itself onto. The
+// screens this replaced were drawn after the grade and so were lit at any
+// hour; with only the pool, that stretch of the day had four dead slabs and
+// two people sitting at nothing. The tell carries the rhythm through daylight.
+//
+// Guarded because these closures run inside the draw: reaching through a
+// missing prop would throw on every frame and leave the canvas blank. A desk
+// that lost its monitor should lose its glow, not its room.
+function working(ctx, lights, s, night, amount) {
   const m = s.placed.MONITOR_BACK;
   if (!m) return;
-  lights.push(() => screenSpill(ctx, m.x, m.y, m.w, m.h, night, amount));
+  lights.push(() => {
+    screenSpill(ctx, m.x, m.y, m.w, m.h, night, amount);
+    screenTell(ctx, m.x, m.y, m.w, m.h, amount);
+  });
 }
 
 // Дали: a message lands and she answers it. Two lifts to a cycle, the second
@@ -148,7 +160,7 @@ function spill(ctx, lights, s, night, amount) {
 function actDali(ctx, img, s, t, lights, night, force) {
   const cycle = force ?? ((t + 1.3) % 5.2);
   const at = (c, w) => Math.max(0, 1 - Math.abs(cycle - c) / w);
-  spill(ctx, lights, s, night, 0.4 + 0.3 * at(1.1, 0.9) + 0.6 * at(3.1, 1.1));
+  working(ctx, lights, s, night, 0.4 + 0.3 * at(1.1, 0.9) + 0.6 * at(3.1, 1.1));
 }
 
 // Вира: the report. The light builds with it and flares as the page prints,
@@ -156,7 +168,7 @@ function actDali(ctx, img, s, t, lights, night, force) {
 function actVira(ctx, img, s, t, lights, night, chartGrow) {
   const grow = chartGrow ?? ((t % 7) / 5.2);
   const g = Math.min(1, grow);
-  spill(ctx, lights, s, night, 0.35 + 0.45 * g + (g > 0.9 ? 0.35 : 0));
+  working(ctx, lights, s, night, 0.35 + 0.45 * g + (g > 0.9 ? 0.35 : 0));
   if (grow > 0.9 && grow < 1.3) sprite(ctx, img, "PAPERS", s.printerX + 3, s.printerY + 30);
 }
 
@@ -168,13 +180,13 @@ function actEho(ctx, img, s, t, lights, night, ringForce) {
   const cycle = (t + 2.1) % 6.5;
   const ring = ringForce ?? (cycle < 1.5);
   if (ring && phone) lights.push(() => ringing(ctx, phone.x + phone.w, phone.y + 6, t));
-  spill(ctx, lights, s, night, ring ? 0.35 : 0.55 + 0.35 * noise(Math.floor(t * 9)));
+  working(ctx, lights, s, night, ring ? 0.35 : 0.55 + 0.35 * noise(Math.floor(t * 9)));
 }
 
 // Нова: reaching out. One lift per message, three to a round.
 function actNova(ctx, img, s, t, lights, night) {
   const step = (t / 1.2) % 1;
-  spill(ctx, lights, s, night, 0.45 + 0.45 * Math.max(0, 1 - step * 2.2));
+  working(ctx, lights, s, night, 0.45 + 0.45 * Math.max(0, 1 - step * 2.2));
 }
 
 // ----------------------------------------------------------------- the room
