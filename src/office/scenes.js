@@ -169,7 +169,13 @@ function actVira(ctx, img, s, t, lights, night, chartGrow) {
   const grow = chartGrow ?? ((t % 7) / 5.2);
   const g = Math.min(1, grow);
   working(ctx, lights, s, night, 0.35 + 0.45 * g + (g > 0.9 ? 0.35 : 0));
-  if (grow > 0.9 && grow < 1.3) sprite(ctx, img, "PAPERS", s.printerX + 3, s.printerY + 30);
+  // Whether a page is coming out, for the caller to draw once its printer is
+  // down. Drawing it here worked in the landing row, where the printer is
+  // already on the floor, and lost it in the chapter, where the printer is
+  // deferred past the wall piece and then painted over the page it had just
+  // produced. That page is one of the two things left that show this job
+  // happening, so it cannot be the one that goes missing.
+  return grow > 0.9 && grow < 1.3;
 }
 
 // Эхо: the phone rings, he answers, and the light moves the way a voice does
@@ -258,7 +264,9 @@ function officeRoom(ctx, img, { W, H, t }, {
       // the printer on its stand beside her desk, in the gap before Эхо
       const printerX = base.x + s.deskW - 6, printerY = deskY + 6;
       sprite(ctx, img, "PRINTER", printerX, printerY);
-      if (occupied) actVira(ctx, img, { ...s, printerX, printerY }, t, lights, night, chartGrow);
+      if (occupied && actVira(ctx, img, { ...s, printerX, printerY }, t, lights, night, chartGrow)) {
+        sprite(ctx, img, "PAPERS", printerX + 3, printerY + 30);
+      }
     } else if (id === "eho") {
       s = desk(ctx, img, { ...base, props: [["DESK_PHONE", -2, 8], ["MONITOR_BACK", 18, 0]] });
       if (occupied) actEho(ctx, img, s, t, lights, night, ring);
@@ -391,6 +399,7 @@ export function drawChapter(id) {
     let s;
     let frontLeft = 0; // the left edge of the front row, once the desk knows it
     let printer = null; // Вира's, deferred so the wall is painted behind it
+    let printing = false; // and her page, which has to land on top of it
 
     if (id === "dali") {
       s = desk(ctx, img, { ...base, personX: 44, props: [["DESK_PHONE", 4, 10], ["MONITOR_BACK", 46, 0]] });
@@ -414,7 +423,7 @@ export function drawChapter(id) {
       const py = frontY - SPRITES.PRINTER_STAND.h + 4 - 22;
       printer = { x: px, y: py };
       frontLeft = px + SPRITES.PRINTER_STAND.w + 8;
-      actVira(ctx, img, { ...s, printerX: px + 10, printerY: py }, t, lights, night, grow);
+      printing = actVira(ctx, img, { ...s, printerX: px + 10, printerY: py }, t, lights, night, grow);
     } else if (id === "eho") {
       s = desk(ctx, img, { ...base, personX: 44, props: [["DESK_PHONE", 4, 10], ["MONITOR_BACK", 46, 0]] });
       deskLamp(ctx, img, deskX + 2, deskY, night, lights, false);
@@ -453,6 +462,7 @@ export function drawChapter(id) {
     if (printer) {
       stand(ctx, img, "PRINTER_STAND", printer.x, frontY);
       sprite(ctx, img, "PRINTER", printer.x + 10, printer.y);
+      if (printing) sprite(ctx, img, "PAPERS", printer.x + 13, printer.y + 30);
     }
 
     // ---- the front of the room, at the depth the desk stands at
