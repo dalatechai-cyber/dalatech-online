@@ -16,7 +16,7 @@
   "hero": {
     "badge": "AI staff for Mongolian businesses",
     "title": "AI staff that handle customer service 24/7.",
-    "description": "Four AI staff answer customer questions in Mongolian, around the clock, on Facebook, Instagram, and your website. A fifth, Ora, works for you alone: contracts, paperwork, decisions. No headcount, shift, or leave costs.",
+    "description": "Four AI staff answer customer questions in Mongolian, around the clock, on Facebook, Instagram, and your website. A fifth, Ora, works for you alone: documents, presentations, dates, decisions. No headcount, shift, or leave costs.",
     "buttons": {
       "request": "Send a request",
       "seeWork": "Meet the staff"
@@ -93,9 +93,9 @@
     "title": "Work does not stop while you sleep.",
     "lead": "Watch what reaches your phone over one day. A booking at night, a report in the morning, a call just before closing.",
     "closing": "Five AI staff, working as one team. Send a request and we will show how they would work for your business.",
-    "sceneAlt": "An office from night to evening: Dali through the night, Vira in the morning, Eho in the evening. Ora reviews a contract for the owner during the day.",
+    "sceneAlt": "An office from night to evening: Dali through the night, Vira in the morning, Eho in the evening. Ora works for you alone during the day.",
     "phone": {
-      "alt": "The owner's phone: the notifications of one day",
+      "alt": "Your phone: the notifications of one day",
       "customer": "Bold",
       "dali": {
         "from": "Dali · DalaTech",
@@ -145,7 +145,7 @@
         "rows": [
           "3 bookings recorded",
           "1 report ready",
-          "1 contract reviewed",
+          "1 meeting prepared",
           "1 call answered",
           "10 customers notified"
         ]
@@ -154,8 +154,8 @@
       "ctaHint": "A one-minute form. We call you back.",
       "ora": {
         "from": "Ora · DalaTech",
-        "title": "Contract review ready",
-        "body": "Two risky clauses found in the lease. A redraft of 9.1 is proposed."
+        "title": "Tomorrow's meeting is ready",
+        "body": "The deck, the figures and five questions to ask are prepared. The English contract is translated into Mongolian."
       }
     }
   },
@@ -318,8 +318,8 @@
       "teamLink": "Team composition and pricing",
       "hire": "Send a request",
       "preorder": "Send a request",
-      "ownerTitle": "For the owner",
-      "ownerDescription": "Four talk to your customers. Ora works with you alone — in her own chat interface, not Messenger."
+      "ownerTitle": "Yours alone",
+      "ownerDescription": "Four talk to your customers. Ora works with you alone: documents, presentations, dates, decisions. In her own closed chat."
     },
     "website": {
       "title": "Website",
@@ -497,8 +497,8 @@
         "line": "We work it out together"
       },
       "ora": {
-        "title": "Ора",
-        "line": "Contracts and paperwork, for you"
+        "title": "Ora",
+        "line": "Documents, decks, deadlines"
       }
     },
     "sectors": {
@@ -518,7 +518,7 @@
     "section": "AI STAFF",
     "hero": {
       "title": "Five AI staff, working for your business.",
-      "lead": "Dali answers every message and Eho answers every call. Vira prepares the monthly report and Nova follows up with customers. Ora works for you alone: contracts, paperwork, decisions. No new headcount, one fixed monthly fee.",
+      "lead": "Dali answers every message and Eho answers every call. Vira prepares the monthly report and Nova follows up with customers. Ora works for you alone: documents, presentations, dates, decisions. No new headcount, one fixed monthly fee.",
       "hire": "Send a request",
       "see": "See them at work",
       "sceneAlt": "Four AI staff at their desks in an evening office, under one long window.",
@@ -627,70 +627,64 @@
       },
       "ora": {
         "eyebrow": "Ora · Personal assistant",
-        "title": "Reads your contract and shows you the risk.",
-        "body": "Four of the staff talk to your customers. Ora works with you alone: she reads a contract in professional legal Mongolian, finds the clauses that expose you and redrafts them. Paperwork, decision briefs, presentations. Her own chat interface, not Messenger.",
+        "title": "Reads, prepares, reminds, and thinks it through with you.",
+        "body": "Ora works with you alone. Neither your customers nor your team deal with her, so anything from the documents stacked on your desk to the decision you keep putting off can go to her. She works in her own chat, open only to you — not Messenger.",
         "cta": "Send a request",
-        "sceneAlt": "Ora's chat: the owner sends a lease, Ora finds two risky clauses and redrafts one.",
-        "session": {
+        "sceneAlt": "Ora's room: a closed room with no window, where she reads a document at her desk. A presentation board on the wall, a pinboard of reminders beside it, and her files behind her.",
+        "panel": {
           "window": "Ora",
-          "private": "For you only",
-          "you": "You",
-          "file": "Lease agreement.pdf",
-          "pages": "6 pages",
-          "ask": "Read this contract and tell me which clauses are risky.",
-          "reading": "Reading the contract",
-          "found": "Two clauses need your attention.",
-          "findings": [
+          "private": "Yours alone",
+          "lines": [
             {
-              "clause": "6.2",
-              "text": "A late-payment penalty of 1% per day.",
-              "note": "Well above the market. Leases like this settle at 0.1–0.3%."
+              "from": "you",
+              "text": "Meeting at the bank tomorrow at 10. What should I have ready?"
             },
             {
-              "clause": "9.1",
-              "text": "The landlord may terminate on 7 days' notice.",
-              "note": "You have no matching right. A one-sided term."
+              "from": "ora",
+              "text": "The deck, the financial summary and five questions to ask are ready."
+            },
+            {
+              "from": "you",
+              "text": "The draft contract arrived in English."
+            },
+            {
+              "from": "ora",
+              "text": "Translated into Mongolian, with notes on two clauses."
             }
-          ],
-          "redraftLead": "I suggest replacing 9.1 with:",
-          "redraft": "9.1. Either party may terminate this agreement by giving the other party thirty (30) days' written notice.",
-          "action": "Prepare the revised version as a Word file",
-          "composer": "Write to Ora…",
-          "docTitle": "LEASE AGREEMENT",
-          "doc": [
-            {
-              "n": "6.1",
-              "text": "The tenant pays rent by the 5th of each month."
-            },
-            {
-              "n": "6.2",
-              "text": "A late-payment penalty of 1% per day applies."
-            },
-            {
-              "n": "7.1",
-              "text": "The tenant uses the premises for their stated purpose."
-            },
-            {
-              "n": "9.1",
-              "text": "The landlord may terminate on 7 days' notice."
-            },
-            {
-              "n": "9.2",
-              "text": "The premises are returned when the agreement ends."
-            }
-          ],
-          "does": [
-            "Contracts",
-            "Paperwork",
-            "Decisions",
-            "Presentations"
           ]
-        }
+        },
+        "does": [
+          {
+            "title": "Reading and drafting documents",
+            "text": "Reads contracts, official letters and reports, and tells you briefly what they say and what to watch. Drafts new ones in proper professional register."
+          },
+          {
+            "title": "Preparing presentations",
+            "text": "Builds the deck for a meeting, an investor or your own team, with the structure and the figures in place, so all that is left is to talk."
+          },
+          {
+            "title": "Keeping your dates",
+            "text": "Tracks contract end dates, reporting days and payment schedules, and reminds you before one runs out."
+          },
+          {
+            "title": "Translating from English",
+            "text": "Turns contracts, letters and invoices that arrive in English into Mongolian with the meaning intact, and explains them plainly."
+          },
+          {
+            "title": "Thinking a decision through",
+            "text": "Lays out the advantages and the risks of each option, and suggests the questions to ask before you commit."
+          },
+          {
+            "title": "Yours alone",
+            "text": "The documents and conversations you give her stay with you. Not your team, and not your customers.",
+            "locked": true
+          }
+        ]
       },
       "oraIntro": {
-        "eyebrow": "FOR THE OWNER",
-        "title": "Four work with your customers. One works with you.",
-        "lead": "Dali, Vira, Eho and Nova talk to your customers. Ora takes the work on your own desk."
+        "eyebrow": "THE FIFTH MEMBER OF STAFF",
+        "title": "Four work with your customers. One works only with you.",
+        "lead": "Dali, Vira, Eho and Nova talk to your customers. Ora talks to none of them — she takes the work that piles up on your own desk."
       }
     },
     "team": {
@@ -751,7 +745,7 @@
       "ora": {
         "name": "Ora",
         "role": "Personal assistant",
-        "job": "Reads contracts, drafts paperwork, helps you decide and builds presentations. Works with you, not with your customers."
+        "job": "Reads and drafts documents, builds presentations, keeps your dates, translates from English and thinks a decision through with you. Works with you, not with your customers."
       }
     },
     "artCredit": "Pixel art on this page by",
@@ -786,17 +780,17 @@
           "dir": "Goes out and comes back"
         },
         "ora": {
-          "end": "Your contracts and paperwork",
+          "end": "The work on your desk",
           "dir": "From you, back to you"
         }
       },
-      "owner": "For the owner"
+      "owner": "Yours alone"
     }
   },
   "meta": {
     "/": {
       "title": "AI staff for Mongolian businesses",
-      "desc": "Four AI staff answering customer questions in Mongolian around the clock, and a personal assistant the owner hands their contracts and paperwork to."
+      "desc": "Four AI staff answering customer questions in Mongolian around the clock, and a personal assistant who handles your documents, presentations and dates."
     },
     "/office": {
       "title": "AI staff",

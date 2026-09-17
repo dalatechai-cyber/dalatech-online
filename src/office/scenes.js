@@ -41,6 +41,10 @@ const KIT = {
   vira: { anim: "read", fps: 5 },
   eho: { anim: "phone", fps: 8, loop: [4, 9] },
   nova: { anim: "idle", fps: 3 },
+  // Ора is never in the shared room — STAFF does not list her — but desk()
+  // falls back to this table when a scene hands in no kit of its own, and a
+  // missing entry there would be a crash rather than a wrong pose.
+  ora: { anim: "read", fps: 5 },
 };
 
 function frameIndex(kit, t, seed) {
@@ -59,7 +63,9 @@ function frameIndex(kit, t, seed) {
 function desk(ctx, img, o) {
   const { id, x, y, t, pieces, props, lights, seed = 0, night = 0 } = o;
   const occupied = o.occupied !== false;
-  const kit = KIT[id];
+  // A scene may hand in its own kit: Ора's room switches hers between reading
+  // and her screen as the loop runs, which the fixed per-person kit cannot do.
+  const kit = o.kit ?? KIT[id];
   const deskW = pieces.reduce((w, p) => w + SPRITES[p].w, 0);
   const cx = x + (o.personX ?? Math.floor((deskW - 32) / 2));
   // head and shoulders clear the desk; the desk hides the rest
@@ -471,6 +477,125 @@ export function drawChapter(id) {
 
     grade(ctx, W, H, hour, [glass]);
     sunPatch(ctx, glass, floorY, H, hour);
+    for (const draw of lights) draw();
+  };
+}
+
+// -------------------------------------------------------------- Ора's room
+// The fifth room, and deliberately not the room the other four share. They sit
+// along a wall of glass on the customer floor; hers has no glass in it at all.
+// That is the product difference drawn rather than claimed: what crosses her
+// desk is the owner's, so the room it crosses is a closed one.
+//
+// Evening, one lamp. Late enough that the building is quiet, not so late that
+// the room reads as abandoned.
+export const ORA_HOUR = 20.6;
+
+// Her loop in seconds. Long, because the room is quiet by design and a short
+// cycle would make the one moving thing in it read as a twitch.
+const ORA_LOOP = 16;
+// Reading, then turned to her own screen. Both play behind the desk, which
+// hides everything below the shoulders, so the switch reads as attention
+// moving rather than as a pose change.
+const ORA_READ = { anim: "read", fps: 5 };
+const ORA_SCREEN = { anim: "idle", fps: 3 };
+
+// A note going up on the cork board: the deadline she is holding for the
+// owner. It is the one thing in the room that appears rather than moves, so
+// it is what the eye finds on a second look.
+function oraNote(ctx, x, y, show) {
+  if (show <= 0) return;
+  const h = Math.max(1, Math.round(10 * show));
+  rect(ctx, x, y, 11, h, "rgba(199,214,247,0.92)");
+  rect(ctx, x, y, 11, 1, "rgba(255,255,255,0.5)");
+  if (h > 4) rect(ctx, x + 2, y + 3, 7, 1, "rgba(60,74,116,0.75)");
+  if (h > 7) rect(ctx, x + 2, y + 6, 5, 1, "rgba(60,74,116,0.6)");
+}
+
+export function drawOraRoom() {
+  const hour = ORA_HOUR;
+  const night = nightAmount(hour);
+  return (ctx, img, { W, H, t }) => {
+    const floorY = H - Math.round(H * 0.34);
+    const deskY = floorY + 8;
+    const frontY = deskY + SPRITES.DESK_L.h - 4;
+    // Same contract as the four chapters: the page's panel owns the right half
+    // of the frame, so nothing that has to be seen is drawn past this line.
+    const panelX = Math.round(W * 0.49);
+    const phase = (t / ORA_LOOP) % 1;
+
+    room(ctx, img, W, H, floorY);
+
+    const lights = [];
+    const deskX = 14;
+    const pieces = ["DESK_L", "DESK_M", "DESK_R"];
+    // The band of wall above her head. Her head starts at deskY - 58, so
+    // anything hung here clears her however the stage is sized.
+    const headY = deskY - 58;
+
+    // On the wall: the board she is building tomorrow's presentation on, and
+    // the notes she is holding dates on. Together they are the half of her
+    // work that is not documents, said without a word of copy.
+    const cork = SPRITES.CORK;
+    const board = SPRITES.WHITEBOARD_CHART;
+    const wallRight = panelX + 10;
+    const corkX = 4;
+    const boardX = corkX + cork.w + 8;
+    const boardY = Math.max(4, headY - board.h - 6);
+    const corkY = boardY + 8;
+    const wallFits = boardX + board.w <= wallRight && boardY + board.h < headY;
+    if (wallFits) {
+      sprite(ctx, img, "WHITEBOARD_CHART", boardX, boardY);
+      sprite(ctx, img, "CORK", corkX, corkY);
+      // two notes already up, and a third that arrives late in the loop: the
+      // one thing in the room that appears rather than repeats
+      oraNote(ctx, corkX + 5, corkY + 7, 1);
+      oraNote(ctx, corkX + 17, corkY + 9, 1);
+      oraNote(ctx, corkX + 9, corkY + 20, mapRange(phase, 0.66, 0.74, 0, 1));
+    }
+
+    // She reads for most of the loop, then turns to her own screen. Her screen
+    // is drawn from behind: she sits facing the camera, so a monitor she is
+    // actually looking at has its back to us. The front view the other rooms
+    // use sits beside their person, where the orientation does not read; here
+    // it sat directly under her chin and pointed the wrong way.
+    //
+    // She takes the right-hand end of the desk so the lamp has the left end to
+    // itself. The four chapters keep the pool of light and drop the lamp
+    // sprite; in a room with this much bare wall that left a warm smear with
+    // nothing making it, so here the lamp is an object. It stands at dy 0 like
+    // every other prop, which is what puts it ON the desk — lifted clear of
+    // the surface it read as hanging in the air, and its pool of light fell on
+    // the wall instead of the work.
+    const kit = phase < 0.58 ? ORA_READ : ORA_SCREEN;
+    const s = desk(ctx, img, {
+      id: "ora", x: deskX, y: deskY, t, seed: 3, lights, night, pieces, kit,
+      personX: 44,
+      props: [["MONITOR_BACK", 46, 0]],
+    });
+    deskLamp(ctx, img, deskX + 2, deskY, night, lights, true);
+
+    // The door, shut. It is the whole argument for her in one sprite, so it
+    // takes the gap beside the desk that the four give to a filing cabinet.
+    const door = SPRITES.DOOR;
+    const gapX = deskX + s.deskW + 6;
+    if (gapX + door.w <= wallRight) sprite(ctx, img, "DOOR", gapX, floorY - door.h + 2);
+
+    // The front of the room: what a room that keeps the owner's papers looks
+    // like, and something growing, so the near floor is not a bare expanse.
+    let fx = W - 6;
+    const frontStop = deskX + s.deskW + 2;
+    for (const tall of ["PLANT", "SHELF_UNIT", "PLANT_3"]) {
+      const w = SPRITES[tall].w;
+      if (fx - w < frontStop) continue;
+      fx -= w;
+      stand(ctx, img, tall, fx, frontY);
+      fx -= 8;
+    }
+
+    // No window, so no hole in the grade and no patch of sun on the carpet.
+    // What lights this room is what is in it.
+    grade(ctx, W, H, hour);
     for (const draw of lights) draw();
   };
 }
