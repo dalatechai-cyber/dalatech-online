@@ -554,18 +554,26 @@ export function drawOraRoom() {
       oraNote(ctx, corkX + 9, corkY + 20, mapRange(phase, 0.66, 0.74, 0, 1));
     }
 
-    // She reads for most of the loop, then turns to her own screen. She sits at
-    // the right-hand end of the desk so the lamp has the left end to itself:
-    // the four chapters keep the pool of light and drop the lamp sprite, which
-    // in a room with this much bare wall left a warm smear with nothing making
-    // it. Here the lamp is an object, and the light has a source.
+    // She reads for most of the loop, then turns to her own screen. Her screen
+    // is drawn from behind: she sits facing the camera, so a monitor she is
+    // actually looking at has its back to us. The front view the other rooms
+    // use sits beside their person, where the orientation does not read; here
+    // it sat directly under her chin and pointed the wrong way.
+    //
+    // She takes the right-hand end of the desk so the lamp has the left end to
+    // itself. The four chapters keep the pool of light and drop the lamp
+    // sprite; in a room with this much bare wall that left a warm smear with
+    // nothing making it, so here the lamp is an object. It stands at dy 0 like
+    // every other prop, which is what puts it ON the desk — lifted clear of
+    // the surface it read as hanging in the air, and its pool of light fell on
+    // the wall instead of the work.
     const kit = phase < 0.58 ? ORA_READ : ORA_SCREEN;
     const s = desk(ctx, img, {
       id: "ora", x: deskX, y: deskY, t, seed: 3, lights, night, pieces, kit,
       personX: 44,
-      props: [["LAPTOP", 48, 0]],
+      props: [["MONITOR_BACK", 46, 0]],
     });
-    deskLamp(ctx, img, deskX + 2, deskY - 28, night, lights, true);
+    deskLamp(ctx, img, deskX + 2, deskY, night, lights, true);
 
     // The door, shut. It is the whole argument for her in one sprite, so it
     // takes the gap beside the desk that the four give to a filing cabinet.

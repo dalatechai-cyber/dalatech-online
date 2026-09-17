@@ -281,6 +281,13 @@ def props():
         "PANEL": single(O(208), rule=surface_rule),
         "COOLER": single(O(173)),
         "PRINTER_STAND": single(O(177)),
+        # The back of a monitor. A screen the person behind the desk is
+        # actually looking at has to face away from the camera, so the front
+        # view the other rooms use would be the wrong way round on a desk with
+        # someone sitting right behind it. The dark variant of this tile
+        # (O(122)) flattens to a 0.20 lightness spread and reads as a slab;
+        # this one keeps 0.60.
+        "MONITOR_BACK": single(O(126)),
         "CERT": single(O(113)),
         "CORK": single(O(97)),
         "NOTICE": single(O(116)),
