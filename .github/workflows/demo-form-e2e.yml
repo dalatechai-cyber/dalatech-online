@@ -1,8 +1,8 @@
 # Fills in the «Хүсэлт илгээх» form on the live site in a real phone-sized browser and
 # reports what the visitor sees and how long each step takes.
 #
-# Every run sends ONE clearly fake lead («TEST — Claude», phone 00000000): one Telegram
-# message and one email to the owner. Manual only: it ran once from a push on the branch
+# Every run submits ONE clearly fake lead («TEST — Claude», phone 00000000). Since
+# 2026-09-25 the endpoint recognises it as a test and sends the owner nothing. Manual only: it ran once from a push on the branch
 # that introduced it (2026-09-25 06:31 UTC, request 4196ea17), and that trigger is gone.
 name: Demo form end-to-end
 

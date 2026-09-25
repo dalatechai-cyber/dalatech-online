@@ -104,6 +104,22 @@ function normalisePhone(raw) {
   return { display: raw, e164: digits ? `+${digits}` : "", digits };
 }
 
+/**
+ * A request from one of our own test runs. The founder's rule (2026-09-25): tests never
+ * send him anything. Both test workflows mark themselves — «TEST — Claude» /
+ * «ТЕСТ — GitHub Actions», phone 00000000 — so this reads what they already submit:
+ * a name or business starting with TEST/ТЕСТ, a +test@ address, an all-zero phone, or a
+ * note starting with «TEST —». Such a request is still logged and answered 200 (the
+ * browser shows its success screen), but Telegram and email are skipped.
+ */
+function isTestRequest(lead) {
+  const starts = (v) => /^\s*(?:TEST|ТЕСТ)(?![\p{L}\p{N}])/u.test(String(v || "").normalize("NFC"));
+  const digits = (lead.phone && lead.phone.digits) || "";
+  return starts(lead.name) || starts(lead.business) || starts(lead.note)
+    || /\+test@/i.test(lead.email || "")
+    || (digits.length > 0 && /^0+$/.test(digits.replace(/^976/, "")));
+}
+
 const UB_TIME_ZONE = "Asia/Ulaanbaatar";
 
 /**
@@ -594,6 +610,15 @@ export default async function handler(req, res) {
     })
   );
 
+  if (isTestRequest(lead)) {
+    console.log(`demo-request: test request ${lead.requestId} — Telegram and email skipped`);
+    return res.status(200).json({
+      ok: true,
+      requestId: lead.requestId,
+      channels: { telegram: "skipped_test", email: "skipped_test" },
+    });
+  }
+
   const [telegram, email] = await Promise.allSettled([
     withTimeout(sendTelegram(lead), TELEGRAM_TIMEOUT_MS + 1500, "telegram"),
     withTimeout(sendEmail(lead), EMAIL_TIMEOUT_MS + 1500, "email"),
@@ -636,3 +661,4 @@ export default async function handler(req, res) {
 
   return res.status(200).json({ ok: true, requestId: lead.requestId, channels: state });
 }
+export { isTestRequest };

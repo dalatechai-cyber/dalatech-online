@@ -1,8 +1,8 @@
 // Drives the «Хүсэлт илгээх» form on the LIVE site in a real phone-sized browser and
 // reports exactly what a visitor sees at each step, and how long each step takes.
 //
-// It submits ONE real request, so it puts one message on the owner's phone and one in
-// the owner's inbox. The lead is unmistakably fake: name «TEST — Claude», a business
+// It submits ONE real request. The endpoint recognises it as a test (see isTestRequest in
+// api/demo-request.js) and sends the owner nothing. The lead is unmistakably fake: name «TEST — Claude», a business
 // that says it is not a business, and 00000000 as the phone (no Mongolian number
 // starts with 0). Run it only from .github/workflows/demo-form-e2e.yml.
 //
