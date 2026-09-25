@@ -307,7 +307,7 @@
       "terms": [
         "Website: 50% on signing, 50% on handover; delivery in 7–10 working days",
         "AI staff: setup once, monthly fee at the start of each month",
-        "AI staff go live within 3–5 days"
+        "AI staff go live within 1–2 weeks"
       ],
       "note": "A tailored quote is prepared from your sector and the work you want to automate.",
       "cta": "Send a request"
@@ -352,7 +352,7 @@
     },
     "q6": {
       "question": "How long does rollout take?",
-      "answer": "AI staff go live within 3–5 days. A website is delivered within 7–10 working days."
+      "answer": "AI staff go live within 1–2 weeks. A website is delivered within 7–10 working days."
     },
     "stillHaveQuestions": "More questions",
     "contactPrompt": "Send us the rest. We call back with the answers.",
@@ -698,7 +698,7 @@
       "perMinuteNote": "Eho call minutes carry an additional charge.",
       "viraAlone": "Vira works only alongside another staff member. Select one more.",
       "empty": "Select at least one staff member.",
-      "soonNote": "Eho, Nova and Ora launch soon. Pre-register and we notify you at launch.",
+      "soonNote": "Vira, Eho, Nova and Ora launch soon. Pre-register and we notify you at launch.",
       "cta": "Send a request",
       "ctaPreorder": "Send a request",
       "ownerNote": "Ora works with you, not with your customers."
@@ -711,7 +711,7 @@
           "body": "We review your operations and the types of messages you receive."
         },
         {
-          "title": "Setup, 3–5 days",
+          "title": "Setup, 1–2 weeks",
           "body": "We train the AI staff on your pages and your information."
         },
         {

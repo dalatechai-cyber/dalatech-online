@@ -4438,7 +4438,8 @@ const FAQPage = React.memo(function FAQPage() {
 // over the scene, a team builder on paper, three steps. The canvas engine
 // lives in src/office/pixel.js, the scenes in src/office/scenes.js.
 
-const STAFF_LIVE = { dali: true, vira: true, eho: false, nova: false, ora: false };
+// Only Дали is built. The other four are pre-registration only (founder, 2026-09-25).
+const STAFF_LIVE = { dali: true, vira: false, eho: false, nova: false, ora: false };
 
 // Everyone on the payroll. STAFF_ORDER is the four in the pixel room; Ора is
 // not in that room — she works for the owner, not their customers, in her own
