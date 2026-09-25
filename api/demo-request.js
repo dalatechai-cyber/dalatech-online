@@ -459,6 +459,12 @@ function notifyRecipients(configured) {
     });
 }
 
+function maskAddress(entry) {
+  const a = String((entry && entry.address) || entry || "");
+  const at = a.indexOf("@");
+  return at > 0 ? `${a[0]}***${a.slice(at)}` : "***";
+}
+
 async function sendEmail(lead) {
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
@@ -483,7 +489,7 @@ async function sendEmail(lead) {
   });
 
   try {
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `"DalaTech вэбсайт" <${user}>`,
       to,
       subject: emailSubject(lead),
@@ -493,6 +499,17 @@ async function sendEmail(lead) {
       // address, and falls back to our own inbox when they did not.
       replyTo: lead.email || undefined,
     });
+    // What Gmail's SMTP server said, per recipient. A resolved sendMail only
+    // means the submission was accepted; this line is what shows whether each
+    // inbox was, so a lead that reaches one inbox and not the other is
+    // diagnosable from the log. Addresses are masked to their first letter.
+    console.log(
+      `demo-request email: requestId=${lead.requestId} messageId=${info.messageId} ` +
+        `accepted=${JSON.stringify((info.accepted || []).map(maskAddress))} ` +
+        `rejected=${JSON.stringify((info.rejected || []).map(maskAddress))} ` +
+        `companyInboxAccepted=${(info.accepted || []).some((a) => String(a.address || a).toLowerCase() === COMPANY_INBOX)} ` +
+        `response=${JSON.stringify(String(info.response || "").slice(0, 120))}`
+    );
     return "sent";
   } finally {
     transporter.close();
