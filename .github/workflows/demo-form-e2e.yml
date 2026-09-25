@@ -1,0 +1,47 @@
+# Fills in the «Хүсэлт илгээх» form on the live site in a real phone-sized browser and
+# reports what the visitor sees and how long each step takes.
+#
+# Every run sends ONE clearly fake lead («TEST — Claude», phone 00000000): one Telegram
+# message and one email to the owner. Manual only. The push trigger is scoped to the
+# branch that introduced it and to this file, so it fired exactly once, for the
+# overnight check it was written for.
+name: Demo form end-to-end
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Site to test, without a trailing slash"
+        required: true
+        default: "https://dalatech.online"
+  push:
+    branches: [claude/exciting-allen-ru6hvm]
+    paths: [".github/workflows/demo-form-e2e.yml"]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright (Chromium only)
+        working-directory: scripts/e2e
+        run: |
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund playwright@1.49.1
+          npx playwright install --with-deps chromium
+      - name: Submit one fake lead through the live form
+        working-directory: scripts/e2e
+        env:
+          BASE_URL: ${{ inputs.base_url || 'https://dalatech.online' }}
+          OUT_DIR: e2e-out
+        run: node demo-form.mjs
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-form-e2e
+          path: scripts/e2e/e2e-out
