@@ -17,7 +17,8 @@
  *   GMAIL_USER           gmail address used to send the notification
  *   GMAIL_APP_PASSWORD   16-character Google app password for GMAIL_USER
  * Optional:
- *   DEMO_NOTIFY_EMAIL    recipient of the notification (defaults to GMAIL_USER)
+ *   DEMO_NOTIFY_EMAIL    extra recipient(s), comma-separated (defaults to GMAIL_USER).
+ *                        The company inbox, dalatech.ai@gmail.com, always gets it too.
  */
 
 import nodemailer from "nodemailer";
@@ -439,6 +440,25 @@ async function sendTelegram(lead) {
   }
 }
 
+// Founder's call 2026-09-25: every lead reaches the company inbox, with the
+// inbox the form used to write to (DEMO_NOTIFY_EMAIL, else GMAIL_USER) kept
+// as a second recipient for now. Addresses beyond the company's own live in
+// the environment, never in code.
+const COMPANY_INBOX = "dalatech.ai@gmail.com";
+
+function notifyRecipients(configured) {
+  const seen = new Set();
+  return [COMPANY_INBOX, ...String(configured || "").split(",")]
+    .map((a) => a.trim())
+    .filter((a) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(a))
+    .filter((a) => {
+      const k = a.toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+}
+
 async function sendEmail(lead) {
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
@@ -447,7 +467,7 @@ async function sendEmail(lead) {
     err.notConfigured = true;
     throw err;
   }
-  const to = process.env.DEMO_NOTIFY_EMAIL || user;
+  const to = notifyRecipients(process.env.DEMO_NOTIFY_EMAIL || user);
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
