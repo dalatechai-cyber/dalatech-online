@@ -128,6 +128,15 @@ face without Cyrillic (Outfit was one) silently renders every heading in Inter.
   do, so follow their pattern rather than adding raw transitions.
 - Comment non-obvious logic.
 
+## Demo requests (api/demo-request.js)
+The «Хүсэлт илгээх» form posts here; each real request goes to the DalaTech Telegram
+chat (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`) and by email. **A test request sends
+nothing** (founder's rule, 2026-09-25): a name, business or note starting with
+`TEST`/`ТЕСТ`, a `+test@` email, or an all-zero phone is logged and answered 200 with
+`channels: {telegram: "skipped_test", email: "skipped_test"}`. Both workflows in
+`.github/workflows/` submit such requests. These variables must hold the **DalaTech**
+bot and chat — on 2026-08-23 a request from this form landed in the Core Language chat.
+
 ## Deployment
 Vercel project `dalatech-online`, live at **https://dalatech.online**
 (`www.dalatech.online` also attached). Pushes to `main` deploy to production.

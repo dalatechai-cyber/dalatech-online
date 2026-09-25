@@ -1,6 +1,8 @@
-# Sends one real demo request to a deployed /api/demo-request and reports what
-# came back. Manual only — it never runs on push, and every run puts a message
-# on the owner's phone.
+# Sends one demo request to a deployed /api/demo-request and reports what came
+# back. Manual only — it never runs on push. The request is marked as a test
+# («ТЕСТ —» name), so since 2026-09-25 the endpoint answers 200 and skips
+# Telegram and email: test runs never message the owner (founder's rule). It
+# proves the endpoint, validation and test routing, not the delivery channels.
 #
 # Needs the repository secret VERCEL_AUTOMATION_BYPASS_SECRET when the target
 # is a preview URL (Vercel Authentication sits in front of those). Production
@@ -14,14 +16,6 @@ on:
         description: "Deployment to test, without a trailing slash"
         required: true
         default: "https://dalatech.online"
-      expect:
-        description: "Expected outcome: delivered (200) or undelivered (502, no channel configured)"
-        required: true
-        default: "delivered"
-        type: choice
-        options:
-          - delivered
-          - undelivered
       note:
         description: "Note field sent with the request"
         required: false
@@ -97,29 +91,16 @@ jobs:
           echo "POST_STATUS=$status" >> "$GITHUB_ENV"
 
       - name: Check the outcome
-        env:
-          EXPECT: ${{ inputs.expect }}
         run: |
           set -euo pipefail
-          if [ "$EXPECT" = "delivered" ]; then
-            if [ "$POST_STATUS" != "200" ]; then
-              echo "::error::expected 200, got $POST_STATUS"
-              exit 1
-            fi
-            grep -q '"ok":true' response.json || { echo "::error::response was not ok"; exit 1; }
-            grep -q '"telegram":"sent"' response.json \
-              || echo "::warning::telegram did not report sent — check the Vercel runtime logs"
-            grep -q '"email":"sent"' response.json \
-              || echo "::warning::email did not report sent — check the Vercel runtime logs"
-            echo "Delivered. Request id: $REQUEST_ID"
-          else
-            if [ "$POST_STATUS" != "502" ]; then
-              echo "::error::expected 502 with no channel configured, got $POST_STATUS"
-              exit 1
-            fi
-            grep -q '"ok":false' response.json || { echo "::error::a failed delivery must never report ok"; exit 1; }
-            echo "Correctly refused to claim success. Request id: $REQUEST_ID"
+          if [ "$POST_STATUS" != "200" ]; then
+            echo "::error::expected 200, got $POST_STATUS"
+            exit 1
           fi
+          grep -q '"ok":true' response.json || { echo "::error::response was not ok"; exit 1; }
+          grep -q '"telegram":"skipped_test"' response.json && grep -q '"email":"skipped_test"' response.json \
+            || { echo "::error::a test request must skip Telegram and email"; exit 1; }
+          echo "Accepted and skipped as a test. Request id: $REQUEST_ID"
 
       - name: Reject an invalid request
         run: |
