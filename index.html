@@ -48,7 +48,7 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
 
-    <!-- DalaTech.ai chatbot widget — JS-injected for guaranteed clickability -->
+    <!-- DalaTech chatbot widget — JS-injected for guaranteed clickability -->
     <style>
       #dt-chat-toggle, #dt-chat-frame { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
       #dt-chat-toggle * , #dt-chat-frame * { box-sizing: border-box; }
@@ -180,7 +180,7 @@
           var btn = document.createElement('button');
           btn.id = 'dt-chat-toggle';
           btn.type = 'button';
-          btn.setAttribute('aria-label', 'Open DalaTech.ai assistant');
+          btn.setAttribute('aria-label', 'Open DalaTech assistant');
           btn.setAttribute('aria-expanded', 'false');
           btn.setAttribute('aria-controls', 'dt-chat-frame');
           btn.setAttribute('data-cursor', 'hover');
@@ -221,8 +221,8 @@
           var frame = document.createElement('div');
           frame.id = 'dt-chat-frame';
           frame.setAttribute('role', 'dialog');
-          frame.setAttribute('aria-label', 'DalaTech.ai Chatbot');
-          frame.innerHTML = '<iframe src="https://dalatech-chatbot.vercel.app" title="DalaTech.ai Chatbot" allow="clipboard-write" loading="lazy"></iframe>';
+          frame.setAttribute('aria-label', 'DalaTech Chatbot');
+          frame.innerHTML = '<iframe src="https://dalatech-chatbot.vercel.app" title="DalaTech Chatbot" allow="clipboard-write" loading="lazy"></iframe>';
 
           document.body.appendChild(btn);
           document.body.appendChild(frame);
@@ -231,7 +231,7 @@
             btn.classList.toggle('is-open', open);
             frame.classList.toggle('is-open', open);
             btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-            btn.setAttribute('aria-label', open ? 'Close DalaTech.ai assistant' : 'Open DalaTech.ai assistant');
+            btn.setAttribute('aria-label', open ? 'Close DalaTech assistant' : 'Open DalaTech assistant');
           }
 
           btn.addEventListener('click', function (e) {
