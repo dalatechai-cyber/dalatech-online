@@ -16,7 +16,7 @@
   "hero": {
     "badge": "AI staff for Mongolian businesses",
     "title": "An AI staff member that answers customer messages 24/7.",
-    "description": "Dali answers customer questions on your Facebook Page and website, around the clock, in Mongolian — prices, hours and services, only from the information you give. Vira, Eho, Nova and Ora join soon; pre-register now. No headcount, shift or leave costs.",
+    "description": "Dali answers customer questions on your Facebook Page, Instagram and website, around the clock, in Mongolian — prices, hours and services, only from the information you give. Vira, Eho, Nova and Ora join soon; pre-register now. No headcount, shift or leave costs.",
     "buttons": {
       "request": "Send a request",
       "seeWork": "Meet the staff"
@@ -538,7 +538,7 @@
       "dali": {
         "eyebrow": "Dali · Receptionist",
         "title": "Every message, within seconds.",
-        "body": "Dali replies at once to messages on your Facebook Page and website: prices, hours, services, and the link to book. A customer left waiting goes to a competitor. Dali closes that leak.",
+        "body": "Dali replies at once to messages on Facebook, Instagram and your website: prices, hours, services, and the link to book. A customer left waiting goes to a competitor. Dali closes that leak.",
         "cta": "Send a request",
         "sceneAlt": "Dali at the desk at night, answering messages.",
         "chat": [
@@ -725,7 +725,7 @@
       "dali": {
         "name": "Dali",
         "role": "Receptionist",
-        "job": "Answers every Facebook Page and website message within seconds, and sends the booking link."
+        "job": "Answers every Facebook, Instagram and website message within seconds, and sends the booking link."
       },
       "nova": {
         "name": "Nova",
