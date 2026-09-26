@@ -15,8 +15,8 @@
   },
   "hero": {
     "badge": "AI staff for Mongolian businesses",
-    "title": "AI staff that handle customer service 24/7.",
-    "description": "Four AI staff answer customer questions in Mongolian, around the clock, on Facebook, Instagram, and your website. A fifth, Ora, works for you alone: documents, presentations, dates, decisions. No headcount, shift, or leave costs.",
+    "title": "An AI staff member that answers customer messages 24/7.",
+    "description": "Dali answers customer questions on your Facebook Page and website, around the clock, in Mongolian — prices, hours and services, only from the information you give. Vira, Eho, Nova and Ora join soon; pre-register now. No headcount, shift or leave costs.",
     "buttons": {
       "request": "Send a request",
       "seeWork": "Meet the staff"
@@ -75,35 +75,35 @@
       ]
     },
     "ring": {
-      "alt": "A day as a ring. Seven moments, each at its own hour: a booking at night, the report in the morning, a call just before closing.",
+      "alt": "A day as a ring. Seven moments, each at its own hour: a question at night, a price question, a message after closing.",
       "open": "Open {{from}}–{{to}}",
-      "closed": "The other {{hours}} hours are covered by the AI staff",
+      "closed": "Dali answers the other {{hours}} hours",
       "events": [
-        "Took a booking that came in overnight",
+        "Answered a question that came in overnight",
         "Answered a question about prices",
-        "The monthly report is ready",
-        "Moved a booking to another time",
-        "Answered a call at closing time",
-        "Reminded a customer about tomorrow",
-        "Replied to a message from Instagram"
+        "Gave the opening hours",
+        "Sent the booking link",
+        "Passed a question that needs a decision to your team",
+        "Answered a message after closing",
+        "Answered a message from the website"
       ]
     }
   },
   "day": {
     "title": "Work does not stop while you sleep.",
-    "lead": "Watch what reaches your phone over one day. A booking at night, a report in the morning, a call just before closing.",
-    "closing": "Five AI staff, working as one team. Send a request and we will show how they would work for your business.",
-    "sceneAlt": "An office from night to evening: Dali through the night, Vira in the morning, Eho in the evening. Ora works for you alone during the day.",
+    "lead": "Watch what reaches your phone over one day once the full team has joined. Today Dali is working; the others are coming soon.",
+    "closing": "Today Dali is working. Vira, Eho, Nova and Ora join soon, and the five will work as one team. Send a request and we will show how it would work for your business.",
+    "sceneAlt": "An office from night to evening: Dali works through the night. Vira, Eho and Ora join soon.",
     "phone": {
       "alt": "Your phone: the notifications of one day",
       "customer": "Bold",
       "dali": {
         "from": "Dali · DalaTech",
         "in": "Hello, could I book a time for tomorrow?",
-        "reply": "Hello. Tomorrow 11:00 and 15:30 are free. Which suits you?",
+        "reply": "Hello. Pick a time that suits you and book it with this link.",
         "pick": "15:30",
-        "booked": "New booking recorded",
-        "bookedBody": "Bold · tomorrow 15:30. Confirmation message sent."
+        "booked": "Booking link sent",
+        "bookedBody": "Bold · asked at 01:40. Dali answered on the spot."
       },
       "vira": {
         "from": "Vira · DalaTech",
@@ -143,7 +143,7 @@
         "app": "DalaTech",
         "title": "Today",
         "rows": [
-          "3 bookings recorded",
+          "3 questions answered overnight",
           "1 report ready",
           "1 meeting prepared",
           "1 call answered",
@@ -160,8 +160,8 @@
     }
   },
   "theFour": {
-    "title": "Five staff, five jobs.",
-    "lead": "Four talk to your customers. Ora works with you alone."
+    "title": "Dali is working. Four more join soon.",
+    "lead": "Dali talks to your customers from today. Vira, Eho and Nova join soon; Ora works with you alone."
   },
   "websiteOffer": {
     "title": "Staff by the month. A website once.",
@@ -196,7 +196,7 @@
     },
     "aiAssistant": {
       "title": "AI staff setup",
-      "description": "We configure Dali, Eho, or both for your most common customer questions."
+      "description": "We configure Dali for your most common customer questions."
     },
     "monthlySupport": {
       "title": "Monthly support",
@@ -241,7 +241,7 @@
   "liveDemo": {
     "section": "LIVE EXAMPLE",
     "title": "When a customer writes, Dali answers like this.",
-    "description": "A Messenger conversation at a sample salon. Dali books the time, answers the questions, and hands the owner what she does not know. Send a request and we will show Dali configured on your own business.",
+    "description": "A Messenger conversation at a sample salon. Dali answers the questions, sends the booking link, and hands the owner what she does not know. Send a request and we will show Dali configured on your own business.",
     "ctaLabel": "Send a request",
     "widget": {
       "businessName": "Beauty salon",
@@ -256,7 +256,7 @@
       "user1": "Hi, are you open tomorrow?",
       "ai1": "Hello. We are open tomorrow, 10:00–20:00.",
       "user2": "Can I book for two at 16:00?",
-      "ai2": "The booking for two at 16:00 tomorrow is confirmed. A confirmation message will arrive shortly.",
+      "ai2": "Pick 16:00 tomorrow for two with this link and book it there.",
       "ai3": "If you would like to speak with a person, I will connect you now."
     },
     "ask": {
@@ -319,7 +319,7 @@
       "hire": "Send a request",
       "preorder": "Send a request",
       "ownerTitle": "Yours alone",
-      "ownerDescription": "Four talk to your customers. Ora works with you alone: documents, presentations, dates, decisions. In her own closed chat."
+      "ownerDescription": "Dali talks to your customers today; Vira, Eho and Nova join soon. Ora works with you alone: documents, presentations, dates, decisions. In her own closed chat."
     },
     "website": {
       "title": "Website",
@@ -344,7 +344,7 @@
     },
     "q4": {
       "question": "Will AI staff replace employees?",
-      "answer": "They do not. AI staff handle the daily load: repeat questions, bookings, reminders, and reports. Anything sensitive or unusual is passed to your team."
+      "answer": "They do not. Dali handles the daily messages: repeat questions, prices, hours and booking links. Anything sensitive or unusual is passed to your team."
     },
     "q5": {
       "question": "What does Dali base its answers on?",
@@ -517,8 +517,8 @@
   "office": {
     "section": "AI STAFF",
     "hero": {
-      "title": "Five AI staff, working for your business.",
-      "lead": "Dali answers every message and Eho answers every call. Vira prepares the monthly report and Nova follows up with customers. Ora works for you alone: documents, presentations, dates, decisions. No new headcount, one fixed monthly fee.",
+      "title": "An AI team for your business: Dali is working, four more soon.",
+      "lead": "Dali answers every message from today. Coming soon: Eho answers calls, Vira prepares the monthly report and Nova follows up with customers. Ora works for you alone: documents, presentations, dates, decisions. No new headcount, one fixed monthly fee.",
       "hire": "Send a request",
       "see": "See them at work",
       "sceneAlt": "Four AI staff at their desks in an evening office, under one long window.",
@@ -538,7 +538,7 @@
       "dali": {
         "eyebrow": "Dali · Receptionist",
         "title": "Every message, within seconds.",
-        "body": "Dali replies at once to messages on Facebook, Instagram and your website: prices, hours, services, and the booking itself. A customer left waiting goes to a competitor. Dali closes that leak.",
+        "body": "Dali replies at once to messages on your Facebook Page and website: prices, hours, services, and the link to book. A customer left waiting goes to a competitor. Dali closes that leak.",
         "cta": "Send a request",
         "sceneAlt": "Dali at the desk at night, answering messages.",
         "chat": [
@@ -725,7 +725,7 @@
       "dali": {
         "name": "Dali",
         "role": "Receptionist",
-        "job": "Answers every Facebook, Instagram and website message within seconds, and records bookings and appointments."
+        "job": "Answers every Facebook Page and website message within seconds, and sends the booking link."
       },
       "nova": {
         "name": "Nova",
@@ -761,7 +761,7 @@
     },
     "board": {
       "label": "How the work is split",
-      "caption": "Four different kinds of work, one member of staff for each, on the customer's side. The fifth is on yours.",
+      "caption": "Four different kinds of work, one member of staff for each, on the customer's side. The fifth is on yours. Today Dali is working; the others are coming soon.",
       "lanes": {
         "dali": {
           "end": "Incoming messages",
