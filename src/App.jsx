@@ -951,13 +951,14 @@ const RING_OPEN = [10, 20]; // the hours a typical shop has someone at the count
 
 const RING_SECONDS = 36; // one whole day per revolution, at a constant rate
 
+// Every moment is Дали's: the ring shows what works today, not the team to come.
 const RING_EVENTS = [
   { at: 2 + 14 / 60, time: "02:14", who: "dali" },
   { at: 6 + 40 / 60, time: "06:40", who: "dali" },
-  { at: 9, time: "09:00", who: "vira" },
+  { at: 9, time: "09:00", who: "dali" },
   { at: 13 + 25 / 60, time: "13:25", who: "dali" },
-  { at: 18 + 5 / 60, time: "18:05", who: "eho" },
-  { at: 21 + 30 / 60, time: "21:30", who: "nova" },
+  { at: 18 + 5 / 60, time: "18:05", who: "dali" },
+  { at: 21 + 30 / 60, time: "21:30", who: "dali" },
   { at: 23 + 50 / 60, time: "23:50", who: "dali" },
 ];
 
@@ -3853,12 +3854,17 @@ function PhoneIcon({ who, name }) {
 }
 
 function PhoneCard({ progress, at, until, span = PHONE_STEP, who, name, time, title, children, className = "" }) {
+  const { t } = useTranslation();
   const rise = progress ? { progress, at, until, span } : null;
+  // A card from one of the four who are not built yet says so (founder, 2026-09-26): the
+  // phone shows a day with the whole team, and only Дали works today.
+  const soon = STAFF_LIVE[who] === false;
   const body = (
     <div className={["rounded-[14px] border border-white/[0.09] bg-[#111A3A]/95 px-3 py-2.5 shadow-[0_6px_22px_rgba(0,0,0,0.35)] backdrop-blur-[6px]", className].join(" ")}>
       <div className="flex items-center gap-2">
         <PhoneIcon who={who} name={name} />
         <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-fg-muted">{name}</span>
+        {soon && <span className="shrink-0 rounded-full border border-amber-300/40 px-1.5 text-[10px] font-semibold text-amber-200">{t("office.status.soon")}</span>}
         {time && <span className="shrink-0 text-[10.5px] tabular-nums text-fg-dim">{time}</span>}
       </div>
       {title && <p className="mt-1.5 text-[13px] font-semibold leading-[1.3] text-fg">{title}</p>}
