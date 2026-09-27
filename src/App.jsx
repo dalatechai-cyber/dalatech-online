@@ -27,6 +27,8 @@ import {
 import { Spotlight } from "./components/ui/spotlight";
 import { WordRotate } from "./components/ui/word-rotate";
 import { AnimatedBeam } from "./components/ui/animated-beam";
+import { PeriodToggle } from "./components/ui/pricing-section";
+import { ShimmerButton } from "./components/ui/shimmer-button";
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
 import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
@@ -2160,13 +2162,15 @@ function LiveDemo() {
 }
 
 function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote, demoServices }) {
+  const { t } = useTranslation();
+  const featuredLabel = t("pricing.featured");
   return (
     <StaggerItem>
       <div className="relative h-full pt-3 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5">
         {primary && (
           <span className="absolute left-6 top-0 z-10 inline-flex items-center gap-1.5 rounded-full border border-sky-400/55 bg-sky-400/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-100 shadow-[0_8px_22px_-6px_rgba(56,189,248,0.7)] backdrop-blur">
             <span className="h-1 w-1 rounded-full bg-sky-300" />
-            Featured
+            {featuredLabel}
           </span>
         )}
         <div
@@ -2226,7 +2230,7 @@ function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, prima
 
 // One card per AI staff member on the pricing page: the same facts as the
 // office page, in the pricing page's own frame.
-function StaffPriceCard({ id }) {
+function StaffPriceCard({ id, yearly = false }) {
   const { t } = useTranslation();
   const live = STAFF_LIVE[id];
   return (
@@ -2243,7 +2247,7 @@ function StaffPriceCard({ id }) {
         </div>
         <p className="mt-4 text-[13.5px] leading-[1.5] text-fg-muted">{t(`office.agents.${id}.job`)}</p>
         <div className="mt-6">
-          <StaffPrice id={id} />
+          <StaffPrice id={id} yearly={yearly} />
         </div>
         <div className="mt-4">
           <StaffStatus live={live} />
@@ -2258,13 +2262,74 @@ function StaffPriceCard({ id }) {
   );
 }
 
+// -------------------------------------------------------- launch-day offer
+// «Анхны 10 бизнест онцгой санал». Built, and switched OFF: nothing of it
+// renders anywhere until launch day (founder, 2026-09-27). To switch it on,
+// set VITE_LAUNCH_OFFER=on in the Vercel project's environment and redeploy;
+// no code change. Before that, Дали's prompt (dalatech-chatbot api/chat.js
+// and lib/facts.js) must learn the offer, or the chat will contradict the page.
+const LAUNCH_OFFER = import.meta.env.VITE_LAUNCH_OFFER === "on";
+
+// A real count, not a countdown: lower it by hand when a business signs, and
+// switch the offer off at zero.
+const LAUNCH_SEATS_LEFT = 10;
+const LAUNCH_SEATS_TOTAL = 10;
+
+// Gold appears on the site only here.
+const LAUNCH_SHIMMER = { shimmerColor: "#F4D78F", background: "linear-gradient(180deg, #2A2210 0%, #16120A 100%)", borderRadius: "12px" };
+
+function LaunchOffer() {
+  const { t } = useTranslation();
+  const { open } = useDemoRequest();
+  if (!LAUNCH_OFFER) return null;
+  const items = t("launchOffer.items", { returnObjects: true });
+  return (
+    <Reveal className="mt-10">
+      <div className="relative overflow-hidden rounded-2xl border border-gold-400/30 bg-gradient-to-b from-gold-400/[0.06] to-ink-800/65 p-6">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-gold-300/70 to-transparent" />
+        <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <p className="font-display text-[16px] font-semibold tracking-tight text-gold-300">{t("launchOffer.title")}</p>
+            <ul className="mt-4 space-y-2.5 text-[13.5px] leading-[1.55] text-fg/90">
+              {(Array.isArray(items) ? items : []).map((it) => (
+                <li key={it} className="flex items-start gap-2.5">
+                  <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-gold-400" />
+                  <span>{it}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 text-[13px] text-fg-muted">
+              {t("launchOffer.seats", { left: LAUNCH_SEATS_LEFT, total: LAUNCH_SEATS_TOTAL })}
+            </p>
+          </div>
+          <ShimmerButton {...LAUNCH_SHIMMER} onClick={() => open(["dali"])} className="min-h-[48px] border-gold-400/35 px-6 text-[14px] font-semibold text-gold-300">
+            {t("launchOffer.cta")}
+          </ShimmerButton>
+        </div>
+        <p className="mt-5 border-t border-white/[0.06] pt-4 text-[12.5px] leading-[1.55] text-fg-muted">{t("launchOffer.fine")}</p>
+      </div>
+    </Reveal>
+  );
+}
+
 function Pricing() {
   const { t } = useTranslation();
   const terms = t("pricing.paymentTerms.terms", { returnObjects: true });
+  const [yearly, setYearly] = React.useState(false);
   return (
     <section id="pricing" className="relative py-16 md:py-28">
       <Container>
         <SectionHeader eyebrow={t("pricing.section")} title={t("pricing.title")} description={t("pricing.description")} />
+
+        {/* monthly / yearly: changes the staff prices only; the website is a one-off */}
+        <div className="mt-8 flex flex-col items-center gap-3 text-center">
+          <PeriodToggle
+            yearly={yearly}
+            onChange={setYearly}
+            labels={{ group: t("pricing.period.label"), monthly: t("pricing.period.monthly"), yearly: t("pricing.period.yearly") }}
+          />
+          <p className="max-w-[560px] text-[13.5px] leading-[1.55] text-fg-muted">{t("pricing.period.note")}</p>
+        </div>
 
         <Reveal className="mt-14">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
@@ -2278,7 +2343,7 @@ function Pricing() {
           </div>
         </Reveal>
         <StaggerGroup className="mt-7 grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {STAFF_ORDER.map((id) => <StaffPriceCard key={id} id={id} />)}
+          {STAFF_ORDER.map((id) => <StaffPriceCard key={id} id={id} yearly={yearly} />)}
         </StaggerGroup>
 
         {/* Ора is priced like the four but sold to a different person: not a
@@ -2290,7 +2355,7 @@ function Pricing() {
               <p className="mt-3 max-w-[440px] text-[15px] leading-[1.55] text-fg-muted">{t("pricing.staff.ownerDescription")}</p>
             </div>
             <StaggerGroup className="grid">
-              <StaffPriceCard id="ora" />
+              <StaffPriceCard id="ora" yearly={yearly} />
             </StaggerGroup>
           </div>
         </Reveal>
@@ -2328,6 +2393,8 @@ function Pricing() {
             primary
           />
         </StaggerGroup>
+
+        <LaunchOffer />
 
         <Reveal className="mt-14">
           <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-800/45 p-7 transition-[border-color,box-shadow] duration-300 hover:border-sky-400/25 hover:shadow-[0_24px_60px_-24px_rgba(56,189,248,0.25)]">
@@ -5039,9 +5106,12 @@ function StaffHero({ onHire, onSee, onPick }) {
   );
 }
 
-function StaffPrice({ id, align = "left" }) {
+// `yearly`: the price for a year paid up front, which is ten months' fee for
+// twelve months (the approved rule, «10 сарын төлбөрөөр 12 сар»).
+function StaffPrice({ id, align = "left", yearly = false }) {
   const { t } = useTranslation();
   const a = OFFICE_AGENTS[id];
+  const extras = t(`pricing.staff.extras.${id}`, { returnObjects: true, defaultValue: [] });
   if (a.monthly == null) {
     return (
       <div className={align === "center" ? "text-center" : ""}>
@@ -5052,10 +5122,14 @@ function StaffPrice({ id, align = "left" }) {
   return (
     <div className={align === "center" ? "text-center" : ""}>
       <p className="font-display text-[22px] font-semibold tracking-tight text-fg">
-        {formatTugrik(a.monthly)}
-        <span className="text-[14px] font-normal text-fg-muted">{t("office.price.perMonth")}</span>
+        {formatTugrik(yearly ? a.monthly * 10 : a.monthly)}
+        <span className="text-[14px] font-normal text-fg-muted">{t(yearly ? "office.price.perYear" : "office.price.perMonth")}</span>
       </p>
+      {yearly && <p className="mt-1 text-[13px] text-sky-400">{t("pricing.period.yearlyHint")}</p>}
       <p className="mt-1 text-[13px] text-fg-muted">{t("office.price.setup", { price: formatTugrik(a.setup) })}</p>
+      {Array.isArray(extras) && extras.map((line) => (
+        <p key={line} className="mt-1 text-[13px] text-fg-muted">{line}</p>
+      ))}
     </div>
   );
 }

@@ -285,54 +285,75 @@
         "title": "Smart website",
         "badge": "One-time",
         "price": "750,000₮",
-        "subLine": "Modern design • 5 pages • Mobile responsive • Admin panel",
+        "subLine": "Hosting 150,000₮/year. Add-ons: QPay payments 200,000₮, online booking 300,000₮.",
         "description": "A five-page website, built for mobile, with an admin panel.",
         "bullets": [
           "Modern design (UI/UX)",
-          "5 core pages (Home, About, Contact, and others)",
-          "Mobile responsive",
-          "Admin panel for managing content"
+          "5 core pages (Home, About, Contact and more)",
+          "Fully mobile-friendly",
+          "Admin panel to manage content",
+          "Delivered in 7–10 working days"
         ],
         "cta": "Send a request"
       },
       "bundle": {
         "title": "Website + Dali",
-        "badge": "100,000₮ discount",
+        "badge": "125,000₮ off",
+        "was": "925,000₮",
         "price": "800,000₮",
-        "subLine": "Separately 900,000₮ (website 750,000₮ + Dali setup 150,000₮). Together 800,000₮ · then Dali 250,000₮/month",
-        "description": "Your new website launches with Dali already answering.",
+        "subLine": "Includes the website, Dali's setup and 50% off Dali's first month. From the second month, Dali is 250,000₮/month.",
+        "description": "From the day your new website opens, Dali answers every customer.",
         "bullets": [
-          "Smart website included",
-          "Dali answers on the website and on Messenger",
-          "100,000₮ discount on the setup"
+          "Smart website — 750,000₮",
+          "Dali's setup — 50,000₮",
+          "Dali's first month at 50% off — 125,000₮"
         ],
-        "cta": "Send a request",
-        "was": "900,000₮"
+        "cta": "Send a request"
       }
     },
     "paymentTerms": {
       "title": "Payment terms",
       "terms": [
-        "Website: 50% on signing, 50% on handover; delivery in 7–10 working days",
-        "AI staff: setup once, monthly fee at the start of each month",
-        "AI staff go live within 1–2 weeks"
+        "Website: 50% on signing, 50% on delivery; hosting is paid yearly.",
+        "AI staff: setup once on signing, the monthly fee by the 5th of each month via QPay or bank transfer.",
+        "The minimum term is 3 months. After that you continue month to month, or cancel with 30 days' notice."
       ],
-      "note": "A tailored quote is prepared from your sector and the work you want to automate.",
+      "note": "No VAT is added, so you pay exactly the listed price. Custom quotes depend on your business and the work to automate.",
       "cta": "Send a request"
     },
     "staff": {
       "title": "AI staff",
-      "description": "Monthly fee, one-time setup. Two staff −10%, three −15%, four or more −20%; the discount applies to the monthly fee.",
+      "description": "Two AI staff: 10% off the monthly fee. Three: 15%. Four or more: 20%. Discounts do not stack.",
       "teamLink": "Team composition and pricing",
       "hire": "Send a request",
       "preorder": "Send a request",
       "ownerTitle": "Yours alone",
-      "ownerDescription": "Dali talks to your customers today; Vira, Eho and Nova join soon. Ora works with you alone: documents, presentations, dates, decisions. In her own closed chat."
+      "ownerDescription": "Dali talks to your customers today; Vira, Eho and Nova join soon. Ora works with you alone: documents, presentations, dates, decisions. In her own closed chat.",
+      "extras": {
+        "vira": [
+          "Ad budget not included."
+        ],
+        "nova": [
+          "1,000 SMS included, 50₮ per extra SMS"
+        ],
+        "ora": [
+          "1,500 messages a month included; extra 500 messages 49,000₮",
+          "Each extra user has their own 1,500 messages: 2nd user 200,000₮, 3rd 175,000₮, from the 4th 150,000₮ each, monthly"
+        ]
+      }
     },
     "website": {
       "title": "Website",
       "description": "One-time build. No monthly fee."
-    }
+    },
+    "period": {
+      "label": "Billing period",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "note": "Prepay a year and get 2 months free — 12 months for the price of 10.",
+      "yearlyHint": "12 months for the price of 10"
+    },
+    "featured": "Featured"
   },
   "faq": {
     "section": "FAQ",
@@ -539,7 +560,8 @@
     "price": {
       "perMonth": "/month",
       "setup": "{{price}} setup",
-      "notAnnounced": "Price not announced yet."
+      "notAnnounced": "Price not announced yet.",
+      "perYear": "/year"
     },
     "chapters": {
       "dali": {
@@ -890,5 +912,16 @@
       }
     ],
     "policy": "Privacy policy"
+  },
+  "launchOffer": {
+    "title": "Special offer for the first 10 businesses",
+    "items": [
+      "Free setup",
+      "50% off the first month",
+      "Price locked for 1 year"
+    ],
+    "seats": "Seats left: {{left}} / {{total}}",
+    "cta": "Take a seat",
+    "fine": "Minimum term 3 months. No VAT is added. Discounts do not stack."
   }
 }
