@@ -99,71 +99,65 @@
   },
   "day": {
     "title": "Work does not stop while you sleep.",
-    "lead": "Watch what reaches your phone over one day once the full team has joined. Today Dali is working; the others are coming soon.",
-    "closing": "Today Dali is working. Vira, Eho, Nova and Ora join soon, and the five will work as one team. Send a request and we will show how it would work for your business.",
-    "sceneAlt": "An office from night to evening: Dali works through the night. Vira, Eho and Ora join soon.",
+    "lead": "See what Dali does over one day, and what reaches your phone.",
+    "closing": "Dali works from today. We will show you Dali set up with your business information.",
+    "sceneAlt": "The office from night to evening: Dali sits at her desk and answers every message. The other desks are ready for the staff joining soon.",
     "phone": {
-      "alt": "Your phone: the notifications of one day",
-      "customer": "Bold",
-      "dali": {
-        "from": "Dali · DalaTech",
-        "in": "Hello, could I book a time for tomorrow?",
-        "reply": "Hello. Pick a time that suits you and book it with this link.",
-        "pick": "15:30",
-        "booked": "Booking link sent",
-        "bookedBody": "Bold · asked at 01:40. Dali answered on the spot."
+      "alt": "Your phone: one day of Dali",
+      "cta": "Send a request",
+      "ctaHint": "A one-minute form. We call you back."
+    },
+    "feed": {
+      "nightAsk": {
+        "from": "Bold · Messenger",
+        "body": "Hello, can I book a time for tomorrow?"
       },
-      "vira": {
-        "from": "Vira · DalaTech",
-        "title": "September report is ready",
-        "body": "Sales, customers, returning customers. Next month's recommendations attached."
+      "nightReply": {
+        "from": "Dali · to Bold",
+        "body": "Hello. Choose a time that suits you with this link and book."
       },
-      "eho": {
-        "from": "Eho · DalaTech",
-        "incoming": "Incoming call",
-        "number": "+976 •••• ••••",
-        "answered": "Call answered",
-        "line": "Hello, Dala Store. How can I help?",
-        "booked": "Booking recorded",
-        "bookedBody": "By phone · tomorrow 12:00 · 2 people."
+      "nightBooked": {
+        "from": "DalaTech · To you",
+        "title": "A customer who wants to book",
+        "body": "Bold asked for a time tomorrow. Dali sent the booking link at 02:14."
       },
-      "nova": {
-        "from": "Nova · DalaTech",
-        "items": [
-          {
-            "time": "19:30",
-            "title": "Discount notice sent",
-            "body": "Messaged 10 customers about this month’s discount. 4 have replied."
-          },
-          {
-            "time": "19:35",
-            "title": "Booking reminder sent",
-            "body": "Reminded Bold about tomorrow at 15:30. Bold confirmed."
-          },
-          {
-            "time": "19:40",
-            "title": "Customer won back",
-            "body": "Invited Saraa, who had not been in for 2 months. She booked tomorrow at 12:00."
-          }
-        ]
+      "priceAsk": {
+        "from": "Saraa · Instagram",
+        "body": "Can I get your prices?"
+      },
+      "priceReply": {
+        "from": "Dali · to Saraa",
+        "body": "Of course. I have sent the price list."
+      },
+      "discountAsk": {
+        "from": "Nomin · Messenger",
+        "body": "Can you do 30% off?"
+      },
+      "discountReply": {
+        "from": "Dali · to Nomin",
+        "body": "Our team will get back to you on this question."
+      },
+      "discountHandoff": {
+        "from": "DalaTech · To you",
+        "title": "A question passed to you",
+        "body": "Nomin: “Can you do 30% off?” Dali never promises a discount on her own — the decision is yours."
+      },
+      "lateAsk": {
+        "from": "Temuulen · Website",
+        "body": "Are you open tomorrow?"
+      },
+      "lateReply": {
+        "from": "Dali · to Temuulen",
+        "body": "Hello. We are open tomorrow from 10:00 to 20:00."
       },
       "summary": {
-        "app": "DalaTech",
-        "title": "Today",
+        "from": "DalaTech",
+        "title": "Dali today",
         "rows": [
-          "3 questions answered overnight",
-          "1 report ready",
-          "1 meeting prepared",
-          "1 call answered",
-          "10 customers notified"
+          "Answered 4 customers",
+          "Sent 1 booking link",
+          "Passed 1 question to you"
         ]
-      },
-      "cta": "Send a request",
-      "ctaHint": "A one-minute form. We call you back.",
-      "ora": {
-        "from": "Ora · DalaTech",
-        "title": "Tomorrow's meeting is ready",
-        "body": "The deck, the figures and five questions to ask are prepared. The English contract is translated into Mongolian."
       }
     }
   },

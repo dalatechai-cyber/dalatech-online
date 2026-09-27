@@ -16,7 +16,6 @@ import {
   motion,
   AnimatePresence,
   useScroll,
-  useTransform,
   useSpring,
   useMotionValue,
   useMotionValueEvent,
@@ -31,7 +30,7 @@ import { PeriodToggle } from "./components/ui/pricing-section";
 import { ShimmerButton } from "./components/ui/shimmer-button";
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, dayHour, DAY_CARDS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -3809,83 +3808,48 @@ function LocationBadge() {
 const DAY_SCALE = (w) => (w < 1024 ? 2 : w < 1280 ? 3 : 3.5);
 const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 
-// The owner's phone, over the room. Each group of notifications lands during
-// its own hold and leaves before the next moment's light arrives, so the
-// stack never holds two moments at once. Progress units; the times are the
-// scene's own timestamps.
-// Each group needs (n-1) steps to stack its cards, then enough left over for
-// the last one to be read. Sized by how long the group takes to READ, which is
-// not the same as how many cards it has: Вира gets the widest window of the
-// four while sending the fewest, because hers is one report with a chart in it
-// and that takes longer to take in than three short notifications do.
-// Any change here has to be mirrored in scenes.js — the room behind the phone
-// runs off the same p, and the two disagreeing about the time is the one bug
-// this whole section can have.
-const PHONE_FEED = {
-  dali: { from: 0.04, until: 0.22 },
-  vira: { from: 0.25, until: 0.42 },
-  // the afternoon is the owner's: one card from Ора, who is not in the room
-  ora: { from: 0.45, until: 0.56 },
-  eho: { from: 0.59, until: 0.74 },
-  nova: { from: 0.76, until: 0.9 },
-  done: { from: 0.92 },
-};
-// How close together cards in one group arrive. Tighter than it looks like it
-// should be on purpose: every card in a group fades out together, so the last
-// one to arrive is always the one with least time on screen, and buying it a
-// beat costs the earlier cards nothing they need.
-// A fraction of the run, not seconds: 0.024 × 42s is the one-second cadence the
-// feed had at 34s. Raising DAY_SECONDS without lowering this lengthens every
-// stack and eats the read time of the last card in each group.
-const PHONE_STEP = 0.024;
-// The last screen has less runway than the others: the summary and the door
-// in must both be fully up before the pin lets go at p = 1.
-const PHONE_DONE_STEP = 0.02;
+// The owner's phone, over the room. It shows only what Дали does today: four
+// real moments from one day and the evening summary, on the timeline the room
+// is drawn from (DAY_CARDS in scenes.js).
+//
+// It is a notification stack, newest on top, never cleared: the old version
+// emptied the screen between groups of cards, which read as a blank phone in
+// the middle of the section. Here the first card is on screen from the first
+// frame, a new card slides in above the others, and the oldest slides out at
+// the bottom once four are showing.
+const FEED_VISIBLE = 4;
 
-function phoneGroupAt(p) {
-  if (p >= PHONE_FEED.done.from) return "done";
-  return Object.keys(PHONE_FEED).find((k) => p >= PHONE_FEED[k].from && p <= (PHONE_FEED[k].until ?? 1)) || null;
+function cardsLandedAt(p) {
+  // the first card is up from the start, so the screen is never empty
+  let n = 1;
+  for (let i = 1; i < DAY_CARDS.length; i++) if (p >= DAY_CARDS[i].at) n = i + 1;
+  return n;
 }
 
-// A per-frame ticking clock reads as a slot machine. This steps in five
-// minutes and hard-snaps to the three real timestamps inside the holds.
-function PhoneTime({ progress }) {
-  const [label, setLabel] = React.useState(DAY_MOMENTS[0].time);
-  const read = React.useCallback((p) => {
-    const hold = DAY_MOMENTS.find((m) => p >= m.from && p <= m.to);
-    if (hold) return hold.time;
-    if (p >= PHONE_FEED.ora.from && p <= PHONE_FEED.ora.until) return "13:30";
-    if (p >= PHONE_FEED.nova.from && p <= PHONE_FEED.nova.until) return "19:40";
-    if (p >= PHONE_FEED.done.from) return "21:00";
-    const h = dayHour(p);
-    let hh = Math.floor(h);
-    let mm = Math.round(((h - hh) * 60) / 5) * 5;
-    if (mm === 60) { mm = 0; hh += 1; }
-    return `${String(hh % 24).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
-  }, []);
-  React.useEffect(() => setLabel(read(progress.get())), [progress, read]);
-  useMotionValueEvent(progress, "change", (p) => setLabel(read(p)));
-  return <span className="tabular-nums">{label}</span>;
+// The status-bar clock: the landed card's own time while its moment plays,
+// then the day moving on in five-minute steps. A per-frame ticking clock
+// reads as a slot machine.
+function feedClock(p) {
+  const last = DAY_CARDS[cardsLandedAt(p) - 1];
+  if (p - last.at < 0.06) return last.time;
+  const h = dayHour(p);
+  let hh = Math.floor(h);
+  let mm = Math.round(((h - hh) * 60) / 5) * 5;
+  if (mm === 60) { mm = 0; hh += 1; }
+  return `${String(hh % 24).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 
-// The app icon on a notification: the agent's pixel head, or the customer's
-// initial. No logos of other companies.
+// The app icon on a notification: Дали's head, the customer's initial, or
+// the business's own app for what reaches the owner. No other company's logo.
 function PhoneIcon({ who, name }) {
-  if (STAFF_LIVE[who] !== undefined) {
+  if (who === "dali") {
     return (
       <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-white/[0.08]" aria-hidden>
-        <StaffHead id={who} size={0.7} />
+        <StaffHead id="dali" size={0.7} />
       </span>
     );
   }
-  if (who === "call") {
-    return (
-      <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px] bg-sky-400/15 text-sky-400" aria-hidden>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
-      </span>
-    );
-  }
-  if (who === "summary") {
+  if (who === "owner" || who === "summary") {
     return <span className="h-[22px] w-[22px] shrink-0 rounded-[6px] bg-gradient-to-br from-sky-400 to-brand-500" aria-hidden />;
   }
   return (
@@ -3895,167 +3859,91 @@ function PhoneIcon({ who, name }) {
   );
 }
 
-function PhoneCard({ progress, at, until, span = PHONE_STEP, who, name, time, title, children, className = "" }) {
-  const { t } = useTranslation();
-  const rise = progress ? { progress, at, until, span } : null;
-  // A card from one of the four who are not built yet says so (founder, 2026-09-26): the
-  // phone shows a day with the whole team, and only Дали works today.
-  const soon = STAFF_LIVE[who] === false;
-  const body = (
-    <div className={["rounded-[14px] border border-white/[0.09] bg-[#111A3A]/95 px-3 py-2.5 shadow-[0_6px_22px_rgba(0,0,0,0.35)] backdrop-blur-[6px]", className].join(" ")}>
-      <div className="flex items-center gap-2">
-        <PhoneIcon who={who} name={name} />
-        <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-fg-muted">{name}</span>
-        {soon && <span className="shrink-0 rounded-full border border-amber-300/40 px-1.5 text-[10px] font-semibold text-amber-200">{t("office.status.soon")}</span>}
-        {time && <span className="shrink-0 text-[10.5px] tabular-nums text-fg-dim">{time}</span>}
-      </div>
-      {title && <p className="mt-1.5 text-[13px] font-semibold leading-[1.3] text-fg">{title}</p>}
-      {children}
-    </div>
-  );
-  return rise ? <Rise {...rise}>{body}</Rise> : body;
-}
-
 const phoneText = "mt-1 text-[12.5px] leading-[1.42] text-fg/85";
 
-// Вира's report card: the same four bars the scene draws on her screen.
-function PhoneReport({ progress, at, until, report, feed }) {
-  // hooks run unconditionally; at rest the bars are simply full
-  const one = useMotionValue(1);
-  const grow = useTransform(progress ?? one, progress ? [at + 0.01, at + 0.1] : [0, 1], [0, 1]);
+function PhoneCard({ card }) {
+  const { t } = useTranslation();
+  const c = t(`day.feed.${card.key}`, { returnObjects: true });
+  const lit = card.who === "owner" || card.who === "summary";
   return (
-    <PhoneCard progress={progress} at={at} until={until} who="vira" name={feed.vira.from} time="09:00" title={feed.vira.title}>
-      <div className="mt-2.5 flex h-[54px] items-end gap-1.5" aria-hidden>
-        {report.values.map((v, i) => (
-          <ReportBar key={i} value={v} index={i} count={report.values.length} grow={grow} last={i === report.values.length - 1} />
+    <div className={["rounded-[14px] border bg-[#111A3A]/95 px-3 py-2.5 shadow-[0_6px_22px_rgba(0,0,0,0.35)]", lit ? "border-sky-400/30" : "border-white/[0.09]"].join(" ")}>
+      <div className="flex items-center gap-2">
+        <PhoneIcon who={card.who} name={c.from || ""} />
+        <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-fg-muted">{c.from}</span>
+        <span className="shrink-0 text-[10.5px] tabular-nums text-fg-dim">{card.time}</span>
+      </div>
+      {c.title && <p className="mt-1.5 text-[13px] font-semibold leading-[1.3] text-fg">{c.title}</p>}
+      {c.body && <p className={phoneText}>{c.body}</p>}
+      {Array.isArray(c.rows) && (
+        <ul className="mt-2 flex flex-col gap-1.5 text-[12.5px] leading-[1.35] text-fg/85">
+          {c.rows.map((r) => (
+            <li key={r} className="flex items-center gap-2">
+              <span aria-hidden className="h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+              {r}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// `count` cards have landed; the newest FEED_VISIBLE show, newest first.
+function PhoneFeed({ count, animate }) {
+  // one card fewer once the summary lands, to leave room for the button under it
+  const visible = count >= DAY_CARDS.length ? FEED_VISIBLE - 1 : FEED_VISIBLE;
+  const shown = DAY_CARDS.slice(Math.max(0, count - visible), count).reverse();
+  if (!animate) {
+    return (
+      <div className="flex flex-col gap-2">
+        {shown.map((card) => <PhoneCard key={card.key} card={card} />)}
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <AnimatePresence initial={false} mode="popLayout">
+        {shown.map((card) => (
+          <motion.div
+            key={card.key}
+            layout
+            initial={{ opacity: 0, y: -14, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.7 }}
+          >
+            <PhoneCard card={card} />
+          </motion.div>
         ))}
-      </div>
-      <div className="mt-1 grid grid-cols-4 gap-1.5 text-[9.5px] text-fg-dim">
-        {report.weeks.map((w) => <span key={w} className="truncate text-center">{w}</span>)}
-      </div>
-      <p className={phoneText}>{feed.vira.body}</p>
-    </PhoneCard>
+      </AnimatePresence>
+    </div>
   );
 }
 
-function PhoneWave() {
-  const reduced = useReducedMotion();
-  return (
-    <span className="flex h-[22px] w-[22px] shrink-0 items-end justify-center gap-[2px] rounded-[6px] bg-sky-400/15 pb-[6px]" aria-hidden>
-      {[0, 1, 2, 3].map((i) => (
-        <span
-          key={i}
-          className={["w-[2px] rounded-full bg-sky-400", reduced ? "" : "animate-[staffWave_1.1s_ease-in-out_infinite]"].join(" ")}
-          style={{ height: 4 + (i % 2) * 4, animationDelay: `${i * 0.14}s` }}
-        />
-      ))}
-    </span>
-  );
-}
-
-// Every card of the day, in the order they land. `progress` undefined draws
-// the whole feed at rest, which is what the static variant and screen readers
-// get.
-function PhoneFeed({ progress, group }) {
+// The device: a plain frame, no brand marks, no wallpaper. `progress`
+// undefined is the phone at rest on the end of the day (reduced motion).
+function OwnerPhone({ progress, className = "" }) {
   const { t } = useTranslation();
   const { open: openDemoRequest } = useDemoRequest();
-  const feed = t("day.phone", { returnObjects: true });
-  const report = t("office.chapters.vira.report", { returnObjects: true });
-  const one = useMotionValue(1);
-  const g = (k) => PHONE_FEED[k];
-  const step = (k, i) => g(k).from + i * PHONE_STEP;
-  const groupCls = progress ? "absolute inset-x-0 top-0 flex flex-col gap-2" : "flex flex-col gap-2";
-  const show = (k) => !progress || group === k;
-  return (
-    <>
-      <div className={groupCls} aria-hidden={!show("dali")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneCard progress={progress} at={step("dali", 0)} until={g("dali").until} who="customer" name={feed.customer} time="02:14">
-          <p className={phoneText}>{feed.dali.in}</p>
-        </PhoneCard>
-        <PhoneCard progress={progress} at={step("dali", 1)} until={g("dali").until} who="dali" name={feed.dali.from} time="02:14">
-          <p className={phoneText}>{feed.dali.reply}</p>
-        </PhoneCard>
-        <PhoneCard progress={progress} at={step("dali", 2)} until={g("dali").until} who="customer" name={feed.customer} time="02:15">
-          <p className={phoneText}>{feed.dali.pick}</p>
-        </PhoneCard>
-        <PhoneCard progress={progress} at={step("dali", 3)} until={g("dali").until} who="dali" name={feed.dali.from} time="02:15" title={feed.dali.booked} className="border-sky-400/30">
-          <p className={phoneText}>{feed.dali.bookedBody}</p>
-        </PhoneCard>
-      </div>
-
-      <div className={groupCls} aria-hidden={!show("vira")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneReport progress={progress} at={step("vira", 0)} until={g("vira").until} report={report} feed={feed} />
-      </div>
-
-      <div className={groupCls} aria-hidden={!show("ora")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneCard progress={progress} at={step("ora", 0)} until={g("ora").until} who="ora" name={feed.ora.from} time="13:30" title={feed.ora.title} className="border-sky-400/30">
-          <p className={phoneText}>{feed.ora.body}</p>
-        </PhoneCard>
-      </div>
-
-      <div className={groupCls} aria-hidden={!show("eho")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneCard progress={progress} at={step("eho", 0)} until={g("eho").until} who="call" name={feed.eho.incoming} time="18:05">
-          <p className={phoneText}>{feed.eho.number}</p>
-        </PhoneCard>
-        <PhoneCard progress={progress} at={step("eho", 1)} until={g("eho").until} who="eho" name={feed.eho.from} time="18:05" title={feed.eho.answered}>
-          <div className="mt-1.5 flex items-center gap-2">
-            <PhoneWave />
-            <p className="text-[12.5px] leading-[1.42] text-fg/85">{feed.eho.line}</p>
-          </div>
-        </PhoneCard>
-        <PhoneCard progress={progress} at={step("eho", 2)} until={g("eho").until} who="eho" name={feed.eho.from} time="18:08" title={feed.eho.booked} className="border-sky-400/30">
-          <p className={phoneText}>{feed.eho.bookedBody}</p>
-        </PhoneCard>
-      </div>
-
-      <div className={groupCls} aria-hidden={!show("nova")} style={progress ? { pointerEvents: "none" } : undefined}>
-        {feed.nova.items.map((n, i) => (
-          <PhoneCard key={n.title} progress={progress} at={g("nova").from + i * 0.022} span={0.025} until={g("nova").until} who="nova" name={feed.nova.from} time={n.time} title={n.title} className={i === feed.nova.items.length - 1 ? "border-sky-400/30" : ""}>
-            <p className={phoneText}>{n.body}</p>
-          </PhoneCard>
-        ))}
-      </div>
-
-      {/* the last screen is the product: what the day added up to, and the door in */}
-      <div className={groupCls} aria-hidden={!show("done")} style={progress ? { pointerEvents: show("done") ? "auto" : "none" } : undefined}>
-        <PhoneCard progress={progress} at={step("done", 0)} span={PHONE_DONE_STEP} who="summary" name={feed.summary.app} time="21:00" title={feed.summary.title}>
-          <ul className="mt-2 flex flex-col gap-1.5 text-[12.5px] leading-[1.35] text-fg/85">
-            {feed.summary.rows.map((r) => (
-              <li key={r} className="flex items-center gap-2">
-                <span aria-hidden className="h-1 w-1 shrink-0 rounded-full bg-sky-400" />
-                {r}
-              </li>
-            ))}
-          </ul>
-        </PhoneCard>
-        <Rise progress={progress ?? one} at={progress ? step("done", 0) + PHONE_DONE_STEP : 0} span={PHONE_DONE_STEP}>
-          <button
-            type="button"
-            onClick={() => openDemoRequest()}
-            className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
-          >
-            {feed.cta}
-            <span aria-hidden>→</span>
-          </button>
-          <p className="mt-2 text-center text-[11px] text-fg-dim">{feed.ctaHint}</p>
-        </Rise>
-      </div>
-    </>
-  );
-}
-
-// The device: a plain frame, no brand marks, no wallpaper. The screen is the
-// dark page colour so the cards are the only thing on it.
-function OwnerPhone({ progress, group, className = "" }) {
-  const { t } = useTranslation();
+  const animate = !!progress;
+  const atRest = useMotionValue(1);
+  const [count, setCount] = React.useState(() => (progress ? cardsLandedAt(progress.get()) : DAY_CARDS.length));
+  const [clock, setClock] = React.useState(() => (progress ? feedClock(progress.get()) : DAY_CARDS[DAY_CARDS.length - 1].time));
+  useMotionValueEvent(progress ?? atRest, "change", (p) => {
+    if (!progress) return;
+    const n = cardsLandedAt(p);
+    setCount((c) => (c === n ? c : n));
+    const label = feedClock(p);
+    setClock((l) => (l === label ? l : label));
+  });
+  const done = count >= DAY_CARDS.length;
   return (
     <div className={["relative w-[240px] sm:w-[270px]", className].join(" ")} role="group" aria-label={t("day.phone.alt")}>
       <div className="day-phone rounded-[42px] border border-white/[0.14] bg-[#0B1022] p-[7px] shadow-[0_30px_80px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(255,255,255,0.04)]">
-        {/* at rest the whole feed is on screen, so the screen grows to hold it */}
-        <div className={["relative overflow-hidden rounded-[36px] bg-[#070C1F]", progress ? "h-[500px] sm:h-[560px]" : "min-h-[500px] pb-8 sm:min-h-[560px]"].join(" ")}>
+        <div className="relative h-[500px] overflow-hidden rounded-[36px] bg-[#070C1F] sm:h-[560px]">
           {/* status bar */}
           <div className="flex items-center justify-between px-6 pt-4 text-[12px] font-semibold text-fg/90">
-            <span>{progress ? <PhoneTime progress={progress} /> : "21:00"}</span>
+            <span className="tabular-nums">{clock}</span>
             <span className="flex items-center gap-1.5" aria-hidden>
               <span className="flex items-end gap-[2px]">
                 {[3, 5, 7, 9].map((h) => <span key={h} className="w-[3px] rounded-[1px] bg-fg/85" style={{ height: h }} />)}
@@ -4066,7 +3954,28 @@ function OwnerPhone({ progress, group, className = "" }) {
           <span aria-hidden className="absolute left-1/2 top-[11px] h-[22px] w-[74px] -translate-x-1/2 rounded-full bg-black" />
 
           <div className="relative mx-3 mt-5">
-            <PhoneFeed progress={progress} group={group} />
+            <PhoneFeed count={count} animate={animate} />
+          </div>
+
+          {/* the bottom of the stack fades out under the door in */}
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#070C1F] via-[#070C1F]/85 to-transparent" />
+          <div
+            className={[
+              "absolute inset-x-3 bottom-7 transition-[opacity,transform] duration-500 ease-out",
+              done ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
+            ].join(" ")}
+            aria-hidden={!done}
+          >
+            <button
+              type="button"
+              tabIndex={done ? 0 : -1}
+              onClick={() => openDemoRequest()}
+              className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
+            >
+              {t("day.phone.cta")}
+              <span aria-hidden>→</span>
+            </button>
+            <p className="mt-2 text-center text-[11px] text-fg-dim">{t("day.phone.ctaHint")}</p>
           </div>
 
           <span aria-hidden className="absolute bottom-2 left-1/2 h-[4px] w-[96px] -translate-x-1/2 rounded-full bg-fg/40" />
@@ -4076,15 +3985,10 @@ function OwnerPhone({ progress, group, className = "" }) {
   );
 }
 
-// The day plays on a clock, not on the scrollbar. It used to be a 340vh
-// sticky scene: scrolling up replayed the whole sequence backwards and a
-// visitor who had already seen it had three screens to climb before the page
-// moved on. Now the section is ordinary height, the sequence starts when it
-// comes into view, plays once, and rests on the last screen with the button
-// on it. Scrolling past is just scrolling.
-// 42, not 34: Ора's afternoon card was added without shortening anyone else's
-// hold — every existing group keeps at least the seconds it had.
-const DAY_SECONDS = 42;
+// The day plays on a clock, not on the scrollbar: the section is ordinary
+// height, the sequence starts when it comes into view, plays once, and rests
+// on the summary with the button on it. Scrolling past is just scrolling.
+const DAY_SECONDS = 36;
 
 function useTimedProgress(ref, seconds, disabled) {
   const progress = useMotionValue(0);
@@ -4150,14 +4054,8 @@ function WorkingDay() {
   const reduced = useReducedMotion();
   const { error } = useStaffAtlas();
   const dayRef = React.useRef(null);
-  const still = useMotionValue(0.4);
+  const still = useMotionValue(0.93);
   const progress = useTimedProgress(dayRef, DAY_SECONDS, reduced || !!error);
-
-  const [group, setGroup] = React.useState(() => phoneGroupAt(0));
-  useMotionValueEvent(progress, "change", (p) => {
-    const g = phoneGroupAt(p);
-    if (g !== group) setGroup(g);
-  });
 
   const heading = (
     <Container>
@@ -4172,13 +4070,13 @@ function WorkingDay() {
     <Container>
       <div className="mt-14 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
-        <MagneticButton href="#demo" variant="primary">{t("day.phone.cta")}</MagneticButton>
+        <MagneticButton href="#demo" variant="primary" demoServices={["dali"]}>{t("day.phone.cta")}</MagneticButton>
       </div>
     </Container>
   );
 
-  // Reduced motion, or no atlas: the room held at nine in the morning and the
-  // whole feed at rest, in document order. Every card is in the DOM, so this
+  // Reduced motion, or no atlas: the room held at the evening and the phone
+  // at rest on the end of the day. Every card is text in the DOM, so this
   // reads correctly even if no canvas ever appears.
   if (reduced || error) {
     return (
@@ -4220,7 +4118,7 @@ function WorkingDay() {
           <div className="relative -mt-14 flex justify-center lg:absolute lg:inset-0 lg:mt-0 lg:block">
             <Container className="lg:relative lg:h-full">
               <div className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
-                <OwnerPhone progress={progress} group={group} />
+                <OwnerPhone progress={progress} />
               </div>
             </Container>
           </div>
@@ -4743,49 +4641,6 @@ function useDampedProgress(ref, offset, spring = CHAPTER_SPRING) {
   return reduced ? scrollYProgress : smooth;
 }
 
-// One line that rises into place as the scroll passes `at`.
-function Rise({ progress, at, span: rawSpan = 0.08, until, className = "", ariaHidden = false, children }) {
-  const reduced = useReducedMotion();
-  // A span that runs past `until` used to turn the exit ramp off silently:
-  // useUntil below is false, the element rises and then never leaves. Clamp
-  // instead, so passing a window always produces one.
-  const span = until !== undefined && at + rawSpan >= until
-    ? Math.max(1e-3, (until - at) * 0.6)
-    : rawSpan;
-  // Without `until` a line rises once and stays, which is what the chapters
-  // want. The pinned day scene needs the block to leave before the next
-  // moment arrives, so the ramp runs back down to zero at the far end.
-  //
-  // The exit ramp is a short fixed fade, not another `span`: a late line in a
-  // staggered group can start after `until - span`, and useTransform requires
-  // strictly increasing inputs — a non-monotonic stop list silently produced a
-  // broken transform and the card never appeared.
-  const OUT = 0.04;
-  const inEnd = at + span;
-  const outStart = Math.max(inEnd + 1e-4, Math.min(until - OUT, until - 1e-4));
-  const useUntil = until !== undefined && until > inEnd;
-  const stops = useUntil ? [at, inEnd, outStart, until] : [at, inEnd];
-  // Opacity is ramped over a third of the travel, not over all of it. A chat
-  // row is a dark plate with a light timestamp beside it: over a night scene
-  // the plate disappears at half opacity while the stamp is still perfectly
-  // legible, so a long cross-fade left bare times floating on the pixel art
-  // with nothing under them. The movement keeps the full ramp.
-  const fadeIn = at + span * 0.34;
-  const fadeOut = useUntil ? outStart + (until - outStart) * 0.66 : 0;
-  const opacityStops = useUntil ? [at, fadeIn, fadeOut, until] : [at, fadeIn];
-  const opacity = useTransform(progress, opacityStops, useUntil ? [0, 1, 1, 0] : [0, 1]);
-  const y = useTransform(
-    progress,
-    stops,
-    useUntil ? [reduced ? 0 : 14, 0, 0, reduced ? 0 : -10] : [reduced ? 0 : 14, 0]
-  );
-  return (
-    <motion.div style={{ opacity, y }} className={className} aria-hidden={ariaHidden || undefined}>
-      {children}
-    </motion.div>
-  );
-}
-
 // One scale and one height, deliberately not branched on width. The stage
 // measures its own frame, and the chapter frame is not monotonic in viewport
 // width: below md the scene is full width, at md it becomes seven columns of
@@ -5165,20 +5020,6 @@ function StaffChat({ lines, step }) {
         );
       })}
     </CueGroup>
-  );
-}
-
-// The scroll-driven bar, still used by the phone feed in the pinned day
-// scene: that timeline is scrubbed on purpose, so its cards follow the scroll.
-function ReportBar({ value, index, count, grow, last }) {
-  const scaleY = useTransform(grow, (g) => Math.min(1, Math.max(0, g * count - index)));
-  return (
-    <div className="flex flex-1 items-end" style={{ height: "100%" }}>
-      <motion.div
-        style={{ height: `${value * 100}%`, scaleY, transformOrigin: "bottom" }}
-        className={["w-full rounded-t-[3px]", last ? "bg-sky-400" : "bg-brand-500/70"].join(" ")}
-      />
-    </div>
   );
 }
 

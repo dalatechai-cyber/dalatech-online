@@ -609,16 +609,35 @@ export function drawOraRoom() {
 }
 
 // ------------------------------------------------------------ a working day
-// Scroll progress maps to an hour; the light and the cast are pure functions
-// of that hour. Kept for the landing scene, which runs the room from night
-// to day and back behind the phone.
-// The hour holds while a group of notifications is being read and moves in
-// the gap between groups. It is keyed to PHONE_FEED in App.jsx: change one
-// and the room and the phone stop agreeing about what time it is.
+// The landing page's room behind the owner's phone, over one day. Only Дали
+// works today (founder, 2026-09-25), so only Дали is at a desk: the other three
+// desks stand ready and dark. The day is four real Дали moments — a booking
+// asked for at night, a price question in the morning, a discount request she
+// hands to the owner, a message after closing — and one evening summary.
+//
+// DAY_CARDS is the single timeline for both halves of the section: the phone
+// in App.jsx lands each card at its `at`, and the room below lights Дали's
+// desk, shows the waiting message over her screen and answers it on the same
+// clock. Progress is 0..1 over the whole run.
+export const DAY_CARDS = [
+  { key: "nightAsk", at: 0.02, who: "customer", time: "02:14" },
+  { key: "nightReply", at: 0.09, who: "dali", time: "02:14" },
+  { key: "nightBooked", at: 0.16, who: "owner", time: "02:15" },
+  { key: "priceAsk", at: 0.3, who: "customer", time: "09:40" },
+  { key: "priceReply", at: 0.37, who: "dali", time: "09:40" },
+  { key: "discountAsk", at: 0.51, who: "customer", time: "13:25" },
+  { key: "discountReply", at: 0.58, who: "dali", time: "13:25" },
+  { key: "discountHandoff", at: 0.64, who: "owner", time: "13:26" },
+  { key: "lateAsk", at: 0.77, who: "customer", time: "21:30" },
+  { key: "lateReply", at: 0.84, who: "dali", time: "21:30" },
+  { key: "summary", at: 0.93, who: "summary", time: "21:45" },
+];
+
+// [progress, hour]: the hour holds while a moment plays and moves between
+// moments, eased, so the light never jumps.
 const DAY_KEYS = [
-  [0.0, 2.23], [0.04, 2.25], [0.22, 2.3], [0.25, 8.6],
-  [0.42, 9.1], [0.45, 13.4], [0.56, 13.6], [0.59, 17.9],
-  [0.74, 18.2], [0.76, 19.5], [0.90, 20.5], [1.0, 21.0],
+  [0.0, 2.2], [0.2, 2.3], [0.28, 9.6], [0.44, 9.75], [0.5, 13.35],
+  [0.7, 13.5], [0.75, 21.45], [0.9, 21.55], [1.0, 21.75],
 ];
 const smoothstep = (t) => t * t * (3 - 2 * t);
 
@@ -632,42 +651,83 @@ export function dayHour(p) {
   return DAY_KEYS[DAY_KEYS.length - 1][1];
 }
 
-// Arrival is keyed to the HOUR, never to progress, so the cast can never
-// drift out of step with the light if the timeline is retuned.
-const ARRIVE = { dali: -1, vira: 8.0, eho: 17.0, nova: 19.0 };
-
-export const DAY_MOMENTS = [
-  { id: "dali", time: "02:14", from: 0.05, to: 0.21 },
-  { id: "vira", time: "09:00", from: 0.26, to: 0.41 },
-  { id: "eho", time: "18:05", from: 0.60, to: 0.73 },
+// The moments, as the room sees them: a question waits over Дали's screen
+// from `ask` until she answers at `reply`.
+const DALI_MOMENTS = [
+  { ask: 0.02, reply: 0.09, end: 0.2 },
+  { ask: 0.3, reply: 0.37, end: 0.44 },
+  { ask: 0.51, reply: 0.58, end: 0.7 },
+  { ask: 0.77, reply: 0.84, end: 0.9 },
 ];
 
-// Which desk the room keeps lit, following the same group boundaries. The
-// gap between Вира's and Эхо's is the afternoon, when the card on the phone is
-// Ора's — and she is not in this room. Nothing is lit for her; the room
-// simply carries on at full light while the owner's own work gets done.
-const focusDeskAt = (p) => (p < 0.235 ? 0 : p < 0.435 ? 1 : p < 0.575 ? null : p < 0.75 ? 2 : 3);
-
+// How much the room is gathered on Дали's desk: eased in as a moment starts,
+// eased out after it, so the dim never snaps.
 export function focusAmountAt(p) {
-  for (const m of DAY_MOMENTS) {
-    if (p < m.from || p > m.to) continue;
-    return Math.min(1, Math.min((p - m.from) / 0.03, (m.to - p) / 0.03));
+  let a = 0;
+  for (const m of DALI_MOMENTS) {
+    const inn = smoothstep(Math.min(1, Math.max(0, (p - m.ask + 0.02) / 0.04)));
+    const out = smoothstep(Math.min(1, Math.max(0, (m.end + 0.03 - p) / 0.04)));
+    a = Math.max(a, Math.min(inn, out));
   }
-  return 0;
+  return a * 0.85;
+}
+
+// A speech bubble in art pixels over Дали's screen. While a message waits it
+// holds three dots that step in turn; the moment she answers it becomes a
+// tick and lifts away. `pop` is 0..1 and only scales the bubble's reveal, so
+// it grows from its tail instead of blinking on.
+function daliBubble(ctx, cx, bottomY, t, state, pop) {
+  if (pop <= 0) return;
+  const w = 17, h = 10;
+  const lift = state === "done" ? Math.round((1 - pop) * 4) : 0;
+  const x = Math.round(cx - w / 2);
+  const y = Math.round(bottomY - h - 3 - lift);
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, pop * 1.4);
+  const rows = Math.max(1, Math.round(h * Math.min(1, pop * 1.6)));
+  const top = y + (h - rows);
+  // body, with the corners knocked off so it reads as a pixel bubble
+  rect(ctx, x + 1, top, w - 2, rows, "#EAF4FF");
+  rect(ctx, x, top + 1, 1, Math.max(0, rows - 2), "#EAF4FF");
+  rect(ctx, x + w - 1, top + 1, 1, Math.max(0, rows - 2), "#EAF4FF");
+  // tail, pointing down at the screen
+  rect(ctx, cx - 1, y + h, 3, 1, "#EAF4FF");
+  rect(ctx, cx, y + h + 1, 1, 1, "#EAF4FF");
+  if (rows === h) {
+    if (state === "wait") {
+      const step = Math.floor(t * 3) % 3;
+      for (let i = 0; i < 3; i++) rect(ctx, x + 4 + i * 4, y + 4, 2, 2, i === step ? "#2563EB" : "#9FB3D9");
+    } else {
+      // a tick: the reply went out
+      const c = "#2563EB";
+      rect(ctx, x + 5, y + 5, 2, 2, c);
+      rect(ctx, x + 7, y + 6, 2, 2, c);
+      rect(ctx, x + 9, y + 4, 2, 2, c);
+      rect(ctx, x + 11, y + 2, 2, 2, c);
+    }
+  }
+  ctx.restore();
 }
 
 // Module-level so its identity is stable: PixelStage keys an effect on `draw`.
 export function drawWorkingDay(ctx, img, view) {
   const p = view.progress ?? 0;
   const hour = dayHour(p);
-  officeRoom(ctx, img, view, {
+  const current = DALI_MOMENTS.find((m) => p >= m.ask && p < m.end + 0.02);
+  const stations = officeRoom(ctx, img, view, {
     hour,
-    cast: STAFF.filter((id) => hour >= ARRIVE[id]),
-    chartGrow: mapRange(p, 0.26, 0.40, 0, 1),
-    focus: p < 0.91 ? focusDeskAt(p) : null,
+    cast: ["dali"],
+    focus: 0,
     focusAmount: focusAmountAt(p),
-    // the phone stops ringing as the "answered" card lands, not after it
-    ring: p >= 0.59 && p < 0.624 ? true : p >= 0.624 && p < 0.74 ? false : null,
-    daliPhase: p > 0.05 && p < 0.17 ? 1.8 : null,
+    // her screen brightens as she writes the reply
+    daliPhase: current && p >= current.reply - 0.03 && p < current.reply + 0.03 ? 3.1 : null,
   });
+  const m = stations.dali?.placed?.MONITOR_BACK;
+  if (!m || !current) return;
+  const cx = m.x + Math.floor(m.w / 2);
+  if (p < current.reply) {
+    daliBubble(ctx, cx, m.y, view.t, "wait", Math.min(1, (p - current.ask) / 0.015));
+  } else {
+    daliBubble(ctx, cx, m.y, view.t, "done", Math.max(0, 1 - (p - current.reply) / 0.05));
+  }
 }
