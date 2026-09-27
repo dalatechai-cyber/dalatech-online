@@ -24,6 +24,8 @@ import {
   useInView,
 } from "framer-motion";
 
+import { Spotlight } from "./components/ui/spotlight";
+import { WordRotate } from "./components/ui/word-rotate";
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
 import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
@@ -1144,8 +1146,8 @@ function DayRing({ className = "" }) {
             {event.time}
           </span>
           <span key={`who-${active}`} className="ring-caption mt-2.5 flex items-center gap-1.5">
-            <span className="flex h-[20px] w-[18px] shrink-0 items-start justify-center overflow-hidden rounded-[5px] bg-white/[0.07]" aria-hidden>
-              <StaffAvatar id={event.who} size={1} className="-mt-[30px]" />
+            <span className="flex h-[20px] w-[18px] shrink-0 items-center justify-center overflow-hidden rounded-[5px] bg-white/[0.07]" aria-hidden>
+              <StaffHead id={event.who} size={0.625} />
             </span>
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-300">
               {t(`office.agents.${event.who}.name`)}
@@ -1174,10 +1176,13 @@ function DayRing({ className = "" }) {
 
 function Hero() {
   const { t } = useTranslation();
+  const channels = t("hero.channels", { returnObjects: true });
+  const heroChannels = React.useMemo(() => (Array.isArray(channels) ? channels : []), [channels]);
 
   return (
     <section id="top" className="relative overflow-hidden pb-16 pt-24 md:pb-24 md:pt-32">
-      {/* one quiet pool of light behind the ring, nothing else */}
+      {/* the spotlight sweeps in once from the top left; the pool sits behind the ring */}
+      <Spotlight className="-top-40 left-0 md:-top-24 md:left-40" fill="#60C8FF" />
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
           className="absolute right-[-10%] top-[6%] h-[38rem] w-[38rem] rounded-full lg:right-[2%]"
@@ -1185,7 +1190,7 @@ function Hero() {
         />
       </div>
 
-      <Container className="relative">
+      <Container className="relative z-[2]">
         <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-16">
           <div className="text-center lg:text-left">
             <motion.p
@@ -1197,8 +1202,15 @@ function Hero() {
               {t("hero.badge")}
             </motion.p>
 
+            {/* the channel word rotates; screen readers get the whole line once */}
             <h1 className="mt-4 font-display text-[36px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[48px] lg:text-[58px]">
-              <HeroWords text={t("hero.title")} delay={0.15} stagger={0.045} />
+              <span className="sr-only">{t("hero.titleA11y")}</span>
+              <span aria-hidden className="block text-accent">
+                <WordRotate words={heroChannels} staticText={t("hero.channelsStatic")} duration={2600} />
+              </span>
+              <span aria-hidden className="block">
+                <HeroWords text={t("hero.titleAfter")} delay={0.15} stagger={0.045} />
+              </span>
             </h1>
 
             <motion.p
@@ -2220,8 +2232,8 @@ function StaffPriceCard({ id }) {
     <StaggerItem className="h-full">
       <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
         <div className="flex items-center gap-3">
-          <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-            <StaffAvatar id={id} size={3} className="-mt-[90px]" />
+          <span className="flex h-[66px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
+            <StaffHead id={id} size={2} />
           </span>
           <div className="min-w-0">
             <p className="font-display text-[18px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</p>
@@ -3077,8 +3089,8 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                                   ].join(" ")}
                                 >
                                   {agent ? (
-                                    <span className="flex h-[36px] w-[32px] shrink-0 items-start justify-center overflow-hidden rounded-[9px] bg-white/[0.06]">
-                                      <StaffAvatar id={service} size={2} className="-mt-[60px]" />
+                                    <span className="flex h-[36px] w-[32px] shrink-0 items-center justify-center overflow-hidden rounded-[9px] bg-white/[0.06]">
+                                      <StaffHead id={service} size={1} />
                                     </span>
                                   ) : (
                                     <span className="flex h-[36px] w-[32px] shrink-0 items-center justify-center rounded-[9px] bg-white/[0.06] text-fg-muted" aria-hidden>
@@ -3789,8 +3801,8 @@ function PhoneTime({ progress }) {
 function PhoneIcon({ who, name }) {
   if (STAFF_LIVE[who] !== undefined) {
     return (
-      <span className="flex h-[22px] w-[22px] shrink-0 items-start justify-center overflow-hidden rounded-[6px] bg-white/[0.08]" aria-hidden>
-        <StaffAvatar id={who} size={1} className="-mt-[27px]" />
+      <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-white/[0.08]" aria-hidden>
+        <StaffHead id={who} size={0.7} />
       </span>
     );
   }
@@ -4185,8 +4197,8 @@ function StaffRow({ id }) {
   return (
     <StaggerItem y={12}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[88px] sm:flex-nowrap sm:py-0">
-        <span className="flex h-[44px] w-[40px] shrink-0 items-start justify-center overflow-hidden rounded-[10px] bg-white/[0.05]">
-          <StaffAvatar id={id} size={2} className="-mt-[58px]" />
+        <span className="flex h-[44px] w-[40px] shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-white/[0.05]">
+          <StaffHead id={id} size={1.25} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
@@ -4668,7 +4680,7 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
         <div className="board-who">
           {/* the same pixel face as the scenes below: four people, not four bars */}
           <span className="board-face">
-            <StaffAvatar id={id} size={2} className="-mt-[60px]" />
+            <StaffHead id={id} size={1} />
           </span>
           <span className="min-w-0">
             <span className="board-name">
@@ -5206,24 +5218,28 @@ function OraChapter({ onHire }) {
 }
 
 // A pixel portrait cut from the atlas with CSS, idling in six frames.
-function StaffAvatar({ id, size = 2, className = "" }) {
-  // One still frame. The portraits used to step through the idle strip, which
-  // read as bobbing on a card; the pixel scenes carry the motion instead.
+// Every staff picture on the site is a head, never a figure (founder,
+// 2026-09-27). The atlas frame is 32×64 with the person standing in it; rows
+// 15–45 hold the hair, the face and the neck for all five, so this window
+// crops the same head for everyone. `size` scales it; the box it sits in
+// centres it.
+const HEAD_TOP = 15;
+const HEAD_ROWS = 31;
+
+function StaffHead({ id, size = 1, className = "" }) {
   const a = STAFF_CHARS[id].idle;
   return (
     <span
       aria-hidden
-      className={["block shrink-0 overflow-hidden", className].join(" ")}
+      className={["block shrink-0", className].join(" ")}
       style={{
         width: a.w * size,
-        height: a.h * size,
+        height: HEAD_ROWS * size,
         backgroundImage: `url(${STAFF_ATLAS.url})`,
         backgroundSize: `${STAFF_ATLAS.w * size}px ${STAFF_ATLAS.h * size}px`,
-        backgroundPosition: "var(--staff-x) var(--staff-y)",
+        backgroundPosition: `-${a.x * size}px -${(a.y + HEAD_TOP) * size}px`,
         backgroundRepeat: "no-repeat",
         imageRendering: "pixelated",
-        "--staff-x": `-${a.x * size}px`,
-        "--staff-y": `-${a.y * size}px`,
       }}
     />
   );
@@ -5277,8 +5293,8 @@ function StaffTeam({ onHire }) {
                     on ? "border-sky-400/80 shadow-[0_0_0_1px_rgba(56,189,248,0.6),0_16px_40px_-24px_rgba(56,189,248,0.5)]" : "border-white/[0.08] hover:border-white/[0.22]",
                   ].join(" ")}
                 >
-                  <span className="flex h-[64px] w-[64px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-                    <StaffAvatar id={id} size={2} className="-mt-7" />
+                  <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
+                    <StaffHead id={id} size={2} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">

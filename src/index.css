@@ -523,7 +523,7 @@ html.demo-dialog-open #dt-chat-frame {
   width: 34px;
   height: 38px;
   flex: none;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   overflow: hidden;
   border-radius: 9px;

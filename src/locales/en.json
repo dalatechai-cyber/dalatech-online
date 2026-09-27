@@ -87,7 +87,15 @@
         "Answered a message after closing",
         "Answered a message from the website"
       ]
-    }
+    },
+    "channels": [
+      "Facebook",
+      "Instagram",
+      "website"
+    ],
+    "channelsStatic": "Facebook, Instagram and website",
+    "titleAfter": "messages answered 24/7 by an AI staff member.",
+    "titleA11y": "Facebook, Instagram and website messages answered 24/7 by an AI staff member."
   },
   "day": {
     "title": "Work does not stop while you sleep.",
