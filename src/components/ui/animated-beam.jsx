@@ -32,6 +32,11 @@ export const AnimatedBeam = ({
   const id = `beam-${React.useId().replace(/:/g, "")}`;
   const [pathD, setPathD] = React.useState("");
   const [svgDimensions, setSvgDimensions] = React.useState({ width: 0, height: 0 });
+  // A still beam: the light sits on the middle of this path. The gradient is
+  // in user space (the whole SVG), so the stop has to be placed in pixels from
+  // the path's own ends; a fixed percentage lights one strip of the SVG and
+  // leaves any path outside it dark.
+  const [still, setStill] = React.useState({ x1: "0", x2: "0", y1: "0", y2: "0" });
 
   const gradientCoordinates = reverse
     ? { x1: ["90%", "-10%"], x2: ["100%", "0%"], y1: ["0%", "0%"], y2: ["0%", "0%"] }
@@ -50,6 +55,9 @@ export const AnimatedBeam = ({
       const endY = rectB.top - containerRect.top + rectB.height / 2 + endYOffset;
       const controlY = startY - curvature;
       setPathD(`M ${startX},${startY} Q ${(startX + endX) / 2},${controlY} ${endX},${endY}`);
+      const mid = (startX + endX) / 2;
+      const half = Math.max(24, Math.abs(endX - startX) * 0.3);
+      setStill({ x1: String(mid + half), x2: String(mid - half), y1: "0", y2: "0" });
     };
 
     const resizeObserver = new ResizeObserver(updatePath);
@@ -57,9 +65,6 @@ export const AnimatedBeam = ({
     updatePath();
     return () => resizeObserver.disconnect();
   }, [containerRef, fromRef, toRef, curvature, startXOffset, startYOffset, endXOffset, endYOffset]);
-
-  // A still beam: the light sits at the middle of the path.
-  const still = { x1: "25%", x2: "0%", y1: "0%", y2: "0%" };
 
   return (
     <svg

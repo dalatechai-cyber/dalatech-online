@@ -29,7 +29,22 @@ site's structure, pages and look, and brings over only what the founder listed.
 | 14 | /office: Вира «маркетинг менежер», Нова «сануулга, SMS», sales descriptions, head icons | done |
 
 ## Next
-- Run the code review over `git diff main...HEAD`, fix what it confirms, push, report.
+- Founder review of the drafts and the open questions below.
+
+## Code review (round 2)
+A review workflow over `git diff main...HEAD`: 4 reviewers (runtime, visitor UX, content truth,
+consistency with live), each finding checked by 2 skeptics. 18 findings, 12 survived; fixed:
+- Phone clock could step back a minute and jump 70 minutes in one frame: it now shows the newest card's time.
+- Reduced motion / no pixel room: the phone at rest showed only the last 3 of 11 cards; it now shows the whole day.
+- «АЖИЛЛАХ ЗАРЧИМ» under reduced motion: the still beams lit only the left strip, the Дали → «Танд» beam was dark.
+- The in-phone «Хүсэлт илгээх» opened the form without Дали preselected, unlike the button under it.
+- /office team builder: Эхо alone showed «0₮/сар»; it shows «—» now.
+- Нова's 1,000 SMS read as per year under the yearly price: now «Сард 1,000 SMS…».
+- /portfolio listed «7–10 ажлын өдөрт хүлээлгэн өгнө» twice.
+- Privacy/terms: download window and deletion now read the same in MN and EN (30 days to download, deleted at the end).
+- Dead locale keys removed (`hero.title`, `contact.emailCta`, `office.chapters.vira.report`).
+Not changed, on purpose: the legal pages' old staff roles and «Вира зөвхөн өөр ажилтантай хамт» (open question 2);
+the `accent` colour #60C8FF (the founder's round-1 rule: the logo's light blue).
 
 ## Decisions (round 2)
 - **Restored from `main`**: `src/App.jsx`, `src/index.css`, `src/locales/*.json`, then re-applied only the
@@ -283,7 +298,7 @@ Every Mongolian line that is new or changed against `main` (live), by where it a
 - `pricing.staff.preorder` — Урьдчилан бүртгүүлэх
 - `pricing.staff.ownerDescription` — Эхлээд Далиг ажиллуулж, бусдыг нь нээгдэх үед нэмнэ үү. Вира, Эхо, Нова удахгүй танай харилцагчдад үйлчилж эхэлнэ. Удахгүй нэгдэх Ора зөвхөн танд нээгддэг чатаар бичиг баримт, танилцуулга, хугацаа, шийдвэрт туслана.
 - `pricing.staff.extras.vira[0]` — Сурталчилгааны төсөв ороогүй.
-- `pricing.staff.extras.nova[0]` — 1,000 SMS багтсан, нэмэлт SMS тутам 50₮
+- `pricing.staff.extras.nova[0]` — Сард 1,000 SMS багтсан, нэмэлт SMS тутам 50₮
 - `pricing.staff.extras.ora[0]` — Сард 1,500 мессеж багтсан; нэмэлт 500 мессеж 49,000₮
 - `pricing.staff.extras.ora[1]` — Нэмэлт хэрэглэгч бүр өөрийн 1,500 мессежтэй: 2 дахь хэрэглэгч 200,000₮, 3 дахь 175,000₮, 4 дэхээс эхлэн тус бүр 150,000₮ сар бүр
 - `pricing.period.label` — Төлбөрийн хугацаа
@@ -386,13 +401,13 @@ Every Mongolian line that is new or changed against `main` (live), by where it a
 - `launchOffer.fine` — Гэрээний доод хугацаа 3 сар. Үнэд НӨАТ нэмж тооцогдохгүй. Хөнгөлөлтүүд хоорондоо нэмэгдэхгүй.
 
 **`/privacy/` (Нууцлалын бодлого)**
-- §7 — Гэрээ дууссанаас хойш 30 хоногийн дотор бид ярианы түүх, сургалтын мэдээллийг өөрсдийн системээс устгана. Энэ хугацаанд та мэдээллээ буцааж авах боломжтой.
+- §7 — Гэрээ дууссанаас хойш 30 хоногийн турш та мэдээллээ буцааж авах боломжтой. Энэ хугацааны төгсгөлд буюу гэрээ дууссанаас хойш 30 хоногийн дотор бид ярианы түүх, сургалтын мэдээллийг өөрсдийн системээс устгана.
 - §9 — Ямар ч систем бүрэн аюулгүй байж чадахгүй. Таны мэдээлэлд хамаарах зөрчил гарвал бид мэдсэнээс хойш 72 цагийн дотор холбогдох үйлчлүүлэгч болон хамаарах хүмүүст юу болсон, юу хийж байгаагаа мэдэгдэнэ.
 - header — Сүүлд шинэчилсэн: 2026 оны 9 дүгээр сарын 27
 
 **`/terms/` (Үйлчилгээний нөхцөл)**
-- §16 — Гэрээ дууссанаас хойш 30 хоногийн дотор та яриа болон бизнесийн мэдээллээ татаж авах боломжтой. Хүсвэл бид уг мэдээллийг файлаар гаргаж өгнө.
-- §16 — Гэрээ дууссанаас хойш 30 хоногийн дотор бид танай мэдээллийг системээсээ устгана. Нэхэмжлэх, төлбөрийн бүртгэл хуулийн шаардлагын дагуу үлдэнэ.
+- §16 — Гэрээ дууссанаас хойш 30 хоногийн турш та яриа болон бизнесийн мэдээллээ татаж авах боломжтой. Хүсвэл бид уг мэдээллийг файлаар гаргаж өгнө.
+- §16 — Энэ хугацааны төгсгөлд буюу гэрээ дууссанаас хойш 30 хоногийн дотор бид танай мэдээллийг системээсээ устгана. Нэхэмжлэх, төлбөрийн бүртгэл хуулийн шаардлагын дагуу үлдэнэ.
 - header — Сүүлд шинэчилсэн: 2026 оны 9 дүгээр сарын 27
 
 ## Open questions for the founder
@@ -402,7 +417,9 @@ Every Mongolian line that is new or changed against `main` (live), by where it a
    policy untrue. Say if you want it reworded, e.g. «мессенжер үйлчилгээ».
 2. **Old role text in the legal pages.** Privacy §1–§2 and terms §3 still say Вира «бизнес аналитик» and Нова
    «харилцагчийн менежер». Terms §3 still has «Вира зөвхөн өөр ажилтантай хамт ажиллана». Privacy §8
-   names Gemini as the AI provider. Legal wording was not rewritten without approval.
+   names Gemini as the AI provider. Legal wording was not rewritten without approval. The site itself no
+   longer has the «Вира only with another» rule (the approved Дали prompt has none), so /office lets a
+   visitor pick Вира alone while terms §3 says that is not possible.
 3. **Hero day ring.** The live 24-hour ring stays next to the headline ("live hero, plus only…"). It can
    be removed in one line.
 4. **Yearly prices.** Yearly = 10 months for 12. Дали 2,500,000₮, Вира 3,500,000₮, Нова 1,500,000₮,

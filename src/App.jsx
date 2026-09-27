@@ -30,7 +30,7 @@ import { PeriodToggle } from "./components/ui/pricing-section";
 import { ShimmerButton } from "./components/ui/shimmer-button";
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, dayHour, DAY_CARDS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, DAY_CARDS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -3836,17 +3836,12 @@ function cardsLandedAt(p) {
   return n;
 }
 
-// The status-bar clock: the landed card's own time while its moment plays,
-// then the day moving on in five-minute steps. A per-frame ticking clock
-// reads as a slot machine.
+// The status-bar clock: the time of the newest card on the screen. It only
+// ever moves forward (DAY_CARDS is in time order) and changes when a card
+// lands, never per frame: a ticking clock reads as a slot machine, and one
+// that runs ahead of the next card has to jump back when that card lands.
 function feedClock(p) {
-  const last = DAY_CARDS[cardsLandedAt(p) - 1];
-  if (p - last.at < 0.06) return last.time;
-  const h = dayHour(p);
-  let hh = Math.floor(h);
-  let mm = Math.round(((h - hh) * 60) / 5) * 5;
-  if (mm === 60) { mm = 0; hh += 1; }
-  return `${String(hh % 24).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  return DAY_CARDS[cardsLandedAt(p) - 1].time;
 }
 
 // The app icon on a notification: Дали's head, the customer's initial, or
@@ -3899,17 +3894,20 @@ function PhoneCard({ card }) {
 }
 
 // `count` cards have landed; the newest FEED_VISIBLE show, newest first.
+// At rest (reduced motion, or no pixel room) nothing plays, so the whole day
+// is on the screen at once: the summary on top counts cards the visitor can
+// read, and so does a screen reader.
 function PhoneFeed({ count, animate }) {
-  // one card fewer once the summary lands, to leave room for the button under it
-  const visible = count >= DAY_CARDS.length ? FEED_VISIBLE - 1 : FEED_VISIBLE;
-  const shown = DAY_CARDS.slice(Math.max(0, count - visible), count).reverse();
   if (!animate) {
     return (
       <div className="flex flex-col gap-2">
-        {shown.map((card) => <PhoneCard key={card.key} card={card} />)}
+        {DAY_CARDS.slice().reverse().map((card) => <PhoneCard key={card.key} card={card} />)}
       </div>
     );
   }
+  // one card fewer once the summary lands, to leave room for the button under it
+  const visible = count >= DAY_CARDS.length ? FEED_VISIBLE - 1 : FEED_VISIBLE;
+  const shown = DAY_CARDS.slice(Math.max(0, count - visible), count).reverse();
   return (
     <div className="flex flex-col gap-2">
       <AnimatePresence initial={false} mode="popLayout">
@@ -3947,10 +3945,25 @@ function OwnerPhone({ progress, className = "" }) {
     setClock((l) => (l === label ? l : label));
   });
   const done = count >= DAY_CARDS.length;
+  // the same preset as the section's own «Хүсэлт илгээх» under the phone
+  const cta = (
+    <>
+      <button
+        type="button"
+        tabIndex={done ? 0 : -1}
+        onClick={() => openDemoRequest(["dali"])}
+        className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
+      >
+        {t("day.phone.cta")}
+        <span aria-hidden>→</span>
+      </button>
+      <p className="mt-2 text-center text-[11px] text-fg-dim">{t("day.phone.ctaHint")}</p>
+    </>
+  );
   return (
     <div className={["relative w-[240px] sm:w-[270px]", className].join(" ")} role="group" aria-label={t("day.phone.alt")}>
       <div className="day-phone rounded-[42px] border border-white/[0.14] bg-[#0B1022] p-[7px] shadow-[0_30px_80px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(255,255,255,0.04)]">
-        <div className="relative h-[500px] overflow-hidden rounded-[36px] bg-[#070C1F] sm:h-[560px]">
+        <div className={["relative overflow-hidden rounded-[36px] bg-[#070C1F]", animate ? "h-[500px] sm:h-[560px]" : "pb-8"].join(" ")}>
           {/* status bar */}
           <div className="flex items-center justify-between px-6 pt-4 text-[12px] font-semibold text-fg/90">
             <span className="tabular-nums">{clock}</span>
@@ -3967,26 +3980,23 @@ function OwnerPhone({ progress, className = "" }) {
             <PhoneFeed count={count} animate={animate} />
           </div>
 
-          {/* the bottom of the stack fades out under the door in */}
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#070C1F] via-[#070C1F]/85 to-transparent" />
-          <div
-            className={[
-              "absolute inset-x-3 bottom-7 transition-[opacity,transform] duration-500 ease-out",
-              done ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
-            ].join(" ")}
-            aria-hidden={!done}
-          >
-            <button
-              type="button"
-              tabIndex={done ? 0 : -1}
-              onClick={() => openDemoRequest()}
-              className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
-            >
-              {t("day.phone.cta")}
-              <span aria-hidden>→</span>
-            </button>
-            <p className="mt-2 text-center text-[11px] text-fg-dim">{t("day.phone.ctaHint")}</p>
-          </div>
+          {animate ? (
+            <>
+              {/* the bottom of the stack fades out under the door in */}
+              <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#070C1F] via-[#070C1F]/85 to-transparent" />
+              <div
+                className={[
+                  "absolute inset-x-3 bottom-7 transition-[opacity,transform] duration-500 ease-out",
+                  done ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
+                ].join(" ")}
+                aria-hidden={!done}
+              >
+                {cta}
+              </div>
+            </>
+          ) : (
+            <div className="mx-3 mt-4">{cta}</div>
+          )}
 
           <span aria-hidden className="absolute bottom-2 left-1/2 h-[4px] w-[96px] -translate-x-1/2 rounded-full bg-fg/40" />
         </div>
@@ -4204,7 +4214,8 @@ function StaffRow({ id }) {
 function WebsiteOffer() {
   const { t } = useTranslation();
   const bullets = t("pricing.cards.website.bullets", { returnObjects: true });
-  const rows = [...(Array.isArray(bullets) ? bullets : []), t("websiteOffer.delivery")];
+  // the pricing card's bullets now carry the delivery line too: list it once
+  const rows = [...new Set([...(Array.isArray(bullets) ? bullets : []), t("websiteOffer.delivery")])];
   return (
     <section className="py-16 md:py-28">
       <Container>
@@ -5350,6 +5361,8 @@ function StaffTeam({ onHire }) {
   const setup = priced.reduce((s, id) => s + OFFICE_AGENTS[id].setup, 0);
   const anyLive = chosen.some((id) => STAFF_LIVE[id]);
   const blocked = chosen.length === 0;
+  // only Эхо picked: there is no announced price to add up, so no «0₮»
+  const unpriced = chosen.length > 0 && priced.length === 0;
 
   return (
     <section id="team" className="py-16 md:py-24">
@@ -5404,8 +5417,8 @@ function StaffTeam({ onHire }) {
               <div className="flex items-baseline justify-between gap-4 sm:block">
                 <dt className="text-[13px] text-fg-muted">{t("office.team.monthly")}</dt>
                 <dd className="text-right sm:mt-1 sm:text-left">
-                  <span className="font-display text-[30px] font-semibold leading-none tracking-tight tabular-nums text-fg">{formatTugrik(priced.length ? monthly : 0)}</span>
-                  <span className="text-[14px] text-fg-muted">{t("office.price.perMonth")}</span>
+                  <span className="font-display text-[30px] font-semibold leading-none tracking-tight tabular-nums text-fg">{unpriced ? "—" : formatTugrik(priced.length ? monthly : 0)}</span>
+                  {!unpriced && <span className="text-[14px] text-fg-muted">{t("office.price.perMonth")}</span>}
                   {discount > 0 && (
                     <span className="ml-2 inline-flex items-center gap-1.5 align-middle text-[13px] tabular-nums text-fg-muted">
                       <s>{formatTugrik(monthlyFull)}</s>
@@ -5416,7 +5429,7 @@ function StaffTeam({ onHire }) {
               </div>
               <div className="flex items-baseline justify-between gap-4 sm:block">
                 <dt className="text-[13px] text-fg-muted">{t("office.team.setup")}</dt>
-                <dd className="text-right font-display text-[22px] font-semibold tracking-tight tabular-nums text-fg sm:mt-1 sm:text-left">{formatTugrik(setup)}</dd>
+                <dd className="text-right font-display text-[22px] font-semibold tracking-tight tabular-nums text-fg sm:mt-1 sm:text-left">{unpriced ? "—" : formatTugrik(setup)}</dd>
               </div>
             </dl>
             <div className="mt-4 min-h-[20px] text-[12.5px] leading-[1.5] text-fg-muted" aria-live="polite">

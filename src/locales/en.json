@@ -15,7 +15,6 @@
   },
   "hero": {
     "badge": "In Mongolian, with no extra headcount",
-    "title": "An AI staff member that answers customer messages 24/7.",
     "description": "Nights and weekends, no customer of yours goes unanswered. Dali answers questions on your Facebook page, Instagram and website in Mongolian, within seconds, and records the booking — using only the prices, hours and services you provide. No extra headcount, shift or leave costs. Vira, Eho, Nova and Ora join soon; you can pre-register now.",
     "buttons": {
       "request": "Send a request",
@@ -328,7 +327,7 @@
           "Ad budget not included."
         ],
         "nova": [
-          "1,000 SMS included, 50₮ per extra SMS"
+          "1,000 SMS a month included, 50₮ per extra SMS"
         ],
         "ora": [
           "1,500 messages a month included; extra 500 messages 49,000₮",
@@ -412,7 +411,6 @@
     "description": "Leave a request. We call you and explain how an AI staff member would work in your business. If you are interested in a website, your free demo is ready within 24 hours.",
     "requestCta": "Send a request",
     "demoCta": "Generate a demo website",
-    "emailCta": "Email us",
     "messengerCta": "Message us on Messenger",
     "commentLine": "Comment «1» under any post on DalaTech's Facebook page and we'll contact you.",
     "facebookLink": "Facebook page"
@@ -622,23 +620,6 @@
         "body": "If you never find the time to keep your page active, Vira takes charge of it: short videos, posts and boosted ads.",
         "cta": "Send a request",
         "sceneAlt": "Vira at two screens in the morning, preparing the month's content plan.",
-        "report": {
-          "tag": "Sample",
-          "title": "September · Report",
-          "weeks": [
-            "Week 1",
-            "Week 2",
-            "Week 3",
-            "Week 4"
-          ],
-          "values": [
-            0.5,
-            0.62,
-            0.48,
-            0.9
-          ],
-          "insight": "Week 4 had the highest sales. The full figures and next month’s recommendations are in the report."
-        },
         "plan": {
           "tag": "Every month",
           "title": "Vira's package",
