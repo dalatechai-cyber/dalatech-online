@@ -286,6 +286,20 @@
           "Admin panel for managing content"
         ],
         "cta": "Send a request"
+      },
+      "bundle": {
+        "title": "Website + Dali",
+        "badge": "100,000₮ discount",
+        "price": "800,000₮",
+        "subLine": "Separately 900,000₮ (website 750,000₮ + Dali setup 150,000₮). Together 800,000₮ · then Dali 250,000₮/month",
+        "description": "Your new website launches with Dali already answering.",
+        "bullets": [
+          "Smart website included",
+          "Dali answers on the website and on Messenger",
+          "100,000₮ discount on the setup"
+        ],
+        "cta": "Send a request",
+        "was": "900,000₮"
       }
     },
     "paymentTerms": {
@@ -517,8 +531,7 @@
     "price": {
       "perMonth": "/month",
       "setup": "{{price}} setup",
-      "plusPerMinute": "+ per call minute",
-      "addOnOnly": "Only alongside another staff member."
+      "notAnnounced": "Price not announced yet."
     },
     "chapters": {
       "dali": {
@@ -681,14 +694,12 @@
       "monthly": "Monthly fee",
       "setup": "Setup, one time",
       "discount": "{{percent}}% discount",
-      "perMinuteNote": "Eho call minutes carry an additional charge.",
-      "viraAlone": "Vira works only alongside another staff member. Select one more.",
       "empty": "Select at least one staff member.",
       "soonNote": "Vira, Eho, Nova and Ora launch soon. Pre-register and we notify you at launch.",
       "cta": "Send a request",
       "ctaPreorder": "Send a request",
       "ownerNote": "Ora works with you, not with your customers.",
-      "ehoNoPrice": "Eho's price hasn't been announced, so it isn't in the total."
+      "ehoNoPrice": "Eho's price has not been announced, so it is not in the total."
     },
     "steps": {
       "title": "Three steps to launch",
@@ -817,365 +828,5 @@
     "body": "That page does not exist. The link may be out of date, or the address may be wrong.",
     "home": "Home",
     "staff": "AI staff"
-  },
-  "home": {
-    "hero": {
-      "eyebrow": "AI staff for Mongolian businesses",
-      "channels": [
-        "Facebook",
-        "Instagram",
-        "your website"
-      ],
-      "channelsStatic": "Facebook, Instagram and your website",
-      "titleAfter": "messages answered 24/7 by an AI staff member.",
-      "titleA11y": "Facebook, Instagram and website messages answered 24/7 by an AI staff member.",
-      "lead": "Dali answers your customers on your Facebook page, Instagram and website, day and night, in Mongolian — prices, hours and services, using only the information you give.",
-      "primary": "Send a request",
-      "secondary": "See prices",
-      "daliStatus": "Dali · Live",
-      "daliPrice": "Price: 250,000₮/month, setup 50,000₮"
-    },
-    "night": {
-      "eyebrow": "MESSAGES AT NIGHT",
-      "title": "Work doesn't stop while you sleep.",
-      "lead": "Customers write when it suits them, sometimes in the middle of the night. If the answer takes too long, they write to someone else. Dali answers straight away and tells you about the interested customer on Telegram.",
-      "phoneLabel": "A message at 01:40, Dali's reply, and the notice in your Telegram",
-      "clock": "01:41",
-      "date": "Tuesday",
-      "customer": "Bold",
-      "channel": "Messenger",
-      "time": "01:40",
-      "question": "Hello, can I book a time for tomorrow?",
-      "daliFrom": "Dali",
-      "answer": "Hello. Choose a time that suits you with this link and book.",
-      "leadFrom": "Telegram · DalaTech",
-      "leadTitle": "New customer",
-      "leadBody": "Bold · Messenger · wants a time tomorrow. Dali sent the booking link.",
-      "now": "now",
-      "points": [
-        "Answers straight away, at night and on weekends too.",
-        "Answers only within the prices, hours and services you give.",
-        "Never offers discounts on its own; anything that needs a decision goes to you."
-      ],
-      "note": "Example conversation."
-    },
-    "how": {
-      "eyebrow": "HOW IT WORKS",
-      "title": "Three channels. One Dali. Your Telegram.",
-      "lead": "Works on your website too: Facebook, Instagram and website are all in one price.",
-      "diagramLabel": "Messages from Facebook, Instagram and your website reach Dali; new customers reach your Telegram",
-      "website": "Website",
-      "dali": "Dali",
-      "telegram": "Your Telegram",
-      "steps": [
-        {
-          "title": "A customer writes",
-          "body": "On Facebook, Instagram or your website, any time of day."
-        },
-        {
-          "title": "Dali answers",
-          "body": "Replies straight away with your prices, hours and services."
-        },
-        {
-          "title": "You get notified",
-          "body": "Customers who want to book reach your Telegram."
-        }
-      ]
-    },
-    "staff": {
-      "eyebrow": "AI STAFF",
-      "title": "Dali is working. Four more are coming soon.",
-      "lead": "Dali talks to your customers from today. Vira, Eho and Nova join soon; Ora works only with you.",
-      "live": "Live",
-      "soon": "Coming soon — pre-registration",
-      "hire": "Send a request",
-      "preregister": "Pre-register",
-      "more": "Meet the staff",
-      "setup": "setup 50,000₮",
-      "perMonth": "/month",
-      "noPrice": "Price not announced yet.",
-      "people": {
-        "dali": {
-          "name": "Dali",
-          "role": "AI receptionist",
-          "job": "Replies to every Facebook, Instagram and website message within seconds and sends the booking link.",
-          "price": "250,000₮"
-        },
-        "vira": {
-          "name": "Vira",
-          "role": "marketing manager",
-          "job": "3 short videos and 8 posts a month, a content plan, boost management and a weekly report. Ad budget not included.",
-          "price": "350,000₮"
-        },
-        "nova": {
-          "name": "Nova",
-          "role": "reminders, SMS",
-          "job": "Nova sends booking reminders by SMS and takes the YES/NO replies.",
-          "price": "150,000₮"
-        },
-        "ora": {
-          "name": "Ora",
-          "role": "personal assistant",
-          "job": "Ora works only with you. Neither your customers nor your team deal with her.",
-          "price": "250,000₮"
-        },
-        "eho": {
-          "name": "Eho",
-          "role": "phone operator",
-          "job": "Talks on the phone like a person, answers questions and records bookings.",
-          "price": ""
-        }
-      }
-    },
-    "website": {
-      "eyebrow": "WEBSITE",
-      "title": "A website we built",
-      "lead": "A website for a beauty salon: online booking, QPay payments, Dali built in.",
-      "url": "Client website",
-      "name": "Smart website",
-      "price": "750,000₮",
-      "priceNote": "one-off, no monthly fee",
-      "bullets": [
-        "Modern design (UI/UX)",
-        "5 core pages (Home, About, Contact and more)",
-        "Fully mobile-friendly",
-        "Admin panel to manage content",
-        "Delivered in 7–10 working days"
-      ],
-      "addonsTitle": "Add-ons",
-      "addons": [
-        {
-          "name": "Hosting",
-          "price": "150,000₮/year"
-        },
-        {
-          "name": "QPay payments",
-          "price": "200,000₮"
-        },
-        {
-          "name": "Online booking",
-          "price": "300,000₮"
-        }
-      ],
-      "daliNote": "Dali works on your website too: Facebook, Instagram and website are all in one price.",
-      "demo": "Free demo website",
-      "demoNote": "For a free demo, go to app.dalatech.online and enter your business details — your website demo is ready in 24 hours.",
-      "request": "Send a request"
-    },
-    "pricing": {
-      "eyebrow": "PRICING",
-      "title": "Clear prices, clear terms",
-      "lead": "Every staff member has a fixed monthly fee and a one-off setup.",
-      "period": "Billing period",
-      "monthly": "Monthly",
-      "yearly": "Yearly",
-      "yearlyNote": "Prepay a year and get 2 months free — 12 months for the price of 10.",
-      "yearlyHint": "12 months for the price of 10",
-      "perMonth": "/month",
-      "perYear": "/year",
-      "setup": "setup 50,000₮",
-      "liveBadge": "Live",
-      "soonBadge": "Coming soon — pre-registration",
-      "features": {
-        "dali": [
-          "Replies straight away to Facebook, Instagram and website messages with your prices, hours and services.",
-          "Records bookings and appointments. Answers messages that arrive at night too.",
-          "Answers only within the prices, hours and services you give. Never offers discounts on its own; anything that needs a decision goes to you.",
-          "Works on your website too: Facebook, Instagram and website are all in one price."
-        ],
-        "vira": [
-          "3 short videos and 8 posts a month",
-          "Content plan",
-          "Boost management",
-          "Weekly report"
-        ],
-        "nova": [
-          "Nova sends booking reminders by SMS and takes the YES/NO replies."
-        ],
-        "ora": [
-          "Reads and drafts documents",
-          "Prepares presentations",
-          "Tracks deadlines",
-          "Translates from English",
-          "Helps weigh decisions"
-        ],
-        "eho": [
-          "Talks on the phone like a person, answers questions and records bookings.",
-          "No missed calls after hours or at busy times."
-        ]
-      },
-      "extras": {
-        "vira": [
-          "Ad budget not included."
-        ],
-        "nova": [
-          "1,000 SMS included, 50₮ per extra SMS"
-        ],
-        "ora": [
-          "1,500 messages a month included; extra 500 messages 49,000₮",
-          "Each extra user has their own 1,500 messages: 2nd user 200,000₮, 3rd 175,000₮, from the 4th 150,000₮ each, monthly"
-        ]
-      },
-      "teamTitle": "Team discount",
-      "teamLine": "Two AI staff: 10% off the monthly fee. Three: 15%. Four or more: 20%.",
-      "teamTiers": [
-        "2 staff",
-        "3 staff",
-        "4+ staff"
-      ],
-      "noStack": "Discounts don't stack: the yearly, team or special offer — one of them applies.",
-      "terms": [
-        {
-          "title": "Contract",
-          "body": "The minimum term is 3 months. After that you continue month to month, or cancel with 30 days' notice."
-        },
-        {
-          "title": "VAT, e-receipt",
-          "body": "We can't issue a VAT receipt (e-barimt) at the moment. No VAT is added, so you pay exactly the listed price."
-        },
-        {
-          "title": "Payment terms",
-          "body": "Website: 50% on signing, 50% on delivery; hosting is paid yearly. AI staff: setup once on signing, the monthly fee by the 5th of each month via QPay or bank transfer."
-        }
-      ]
-    },
-    "offers": {
-      "eyebrow": "SPECIAL OFFERS",
-      "title": "Two offers to start with.",
-      "bundle": {
-        "name": "Website + Dali",
-        "price": "800,000₮",
-        "items": [
-          "Website",
-          "Dali's setup",
-          "50% off Dali's first month"
-        ],
-        "after": "From the second month, Dali is 250,000₮/month.",
-        "cta": "Get the offer"
-      },
-      "first": {
-        "name": "Special offer for the first 10 businesses",
-        "items": [
-          "Free setup",
-          "50% off the first month",
-          "Price locked for 1 year"
-        ],
-        "seats": "Seats left",
-        "of": "/ 10",
-        "cta": "Take a seat"
-      },
-      "fine": "Minimum term 3 months. No VAT is added. Discounts don't stack."
-    },
-    "steps": {
-      "eyebrow": "GETTING STARTED",
-      "title": "Three steps to launch",
-      "items": [
-        {
-          "title": "Meeting, 30 minutes",
-          "body": "We learn how you work and what messages you get."
-        },
-        {
-          "title": "Setup, 1–2 weeks",
-          "body": "We train the AI staff member on your page and information."
-        },
-        {
-          "title": "It starts working",
-          "body": "It answers customers from day one. You pay only the monthly fee."
-        }
-      ]
-    },
-    "data": {
-      "eyebrow": "DATA PROTECTION",
-      "title": "Your data works only for you.",
-      "items": [
-        {
-          "title": "Only for the service",
-          "body": "Your data and your customers' data is used only to serve you."
-        },
-        {
-          "title": "Never sold",
-          "body": "Never sold, never used to train other AI."
-        },
-        {
-          "title": "Kept separate",
-          "body": "Each business's data is stored apart from everyone else's."
-        },
-        {
-          "title": "Encrypted keys",
-          "body": "The access keys to your page and channels are encrypted."
-        }
-      ],
-      "breachUnit": "hours",
-      "breach": "If data is ever exposed, we tell you within 72 hours.",
-      "deleteUnit": "days",
-      "delete": "Your data is deleted within 30 days after the contract ends.",
-      "policy": "Privacy policy"
-    },
-    "faq": {
-      "eyebrow": "FAQ",
-      "title": "Common questions",
-      "items": [
-        {
-          "q": "What kind of business is this for?",
-          "a": "Small and medium businesses that get customer questions all the time: shops, salons, clinics, restaurants, car services, training centres and so on."
-        },
-        {
-          "q": "Do I need technical knowledge?",
-          "a": "None at all. We do all the setup and launch for you."
-        },
-        {
-          "q": "Does AI staff replace people?",
-          "a": "It doesn't replace your staff — it helps them. It takes the daily load of repeat questions, bookings, reminders and reports, and passes anything that needs a decision to your team."
-        },
-        {
-          "q": "What does Dali base its answers on?",
-          "a": "Only the information you give: prices, hours, services, terms. It doesn't guess outside that; it passes the question to your team."
-        },
-        {
-          "q": "How long does it take to launch?",
-          "a": "AI staff usually start within 1–2 weeks. A website is ready in 7–10 working days."
-        },
-        {
-          "q": "What does the monthly fee include?",
-          "a": "Servers, model usage, monitoring, information updates and support."
-        },
-        {
-          "q": "Is there a discount for several staff?",
-          "a": "Yes: two AI staff get 10% off the monthly fee, three get 15%, four or more 20%."
-        },
-        {
-          "q": "Is paying yearly cheaper?",
-          "a": "Prepay a year and get 2 months free — 12 months for the price of 10. This discount doesn't combine with others."
-        },
-        {
-          "q": "What is the minimum contract?",
-          "a": "3 months. After that you continue month to month, or cancel with 30 days' notice."
-        },
-        {
-          "q": "Do you issue a VAT receipt (e-barimt)?",
-          "a": "Not at the moment. No VAT is added, so you pay exactly the listed price."
-        },
-        {
-          "q": "How do I pay?",
-          "a": "Website: 50% on signing, 50% on delivery; hosting yearly. AI staff: setup once on signing, the monthly fee by the 5th of each month via QPay or bank transfer."
-        },
-        {
-          "q": "Can I see a free demo?",
-          "a": "Go to app.dalatech.online and enter your business details — your website demo is ready in 24 hours. That tool is for website demos only; for AI staff, send a request and we'll contact you right away."
-        }
-      ],
-      "more": "Any other question — ask Dali in the bottom-right corner."
-    },
-    "cta": {
-      "title": "A solution that fits your business",
-      "lead": "Write on Messenger, comment «1» on a Facebook post, or make your free demo website yourself — any of them works.",
-      "messenger": "Write on Messenger",
-      "messengerNote": "We'll reply right there.",
-      "comment": "Comment «1»",
-      "commentNote": "Write «1» under any post on our Facebook page and we'll contact you.",
-      "demo": "Free demo website",
-      "demoNote": "app.dalatech.online — demo ready in 24 hours.",
-      "request": "Or send a request"
-    }
   }
 }

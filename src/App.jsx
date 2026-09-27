@@ -16,28 +16,17 @@ import {
   motion,
   AnimatePresence,
   useScroll,
+  useTransform,
   useSpring,
   useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
   useInView,
 } from "framer-motion";
 
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawChapter as drawStaffChapter, drawOraRoom, STAFF as STAFF_ORDER } from "./office/scenes";
-
-import { Spotlight } from "./components/ui/spotlight";
-import { WordRotate } from "./components/ui/word-rotate";
-import { AnimatedBeam } from "./components/ui/animated-beam";
-import { AnimatedList } from "./components/ui/animated-list";
-import { BentoGrid, BentoCard } from "./components/ui/bento-grid";
-import { BorderBeam } from "./components/ui/border-beam";
-import { PricingSection } from "./components/ui/pricing-section";
-import { ShimmerButton } from "./components/ui/shimmer-button";
-import { NumberTicker } from "./components/ui/number-ticker";
-import { Safari } from "./components/ui/safari";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./components/ui/accordion";
-import { BlurFade } from "./components/ui/blur-fade";
+import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -80,36 +69,17 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-function Reveal({ children, delay = 0, y = 28, className = "", once = true, amount = 0.2 }) {
-  const reduced = useReducedMotion();
-  return (
-    <motion.div
-      initial={reduced ? false : { opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once, amount }}
-      transition={{ ...SPRING_REVEAL, delay }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
+// Content is never hidden waiting for the scroll. Reveal and the stagger pair
+// used to start every block at opacity 0 and fade it in once it crossed into
+// view; on a phone that read as a black screen for a second or two per
+// section, so they now render their children as they are. The names stay so
+// the call sites keep their structure.
+function Reveal({ children, className = "" }) {
+  return <div className={className}>{children}</div>;
 }
 
-function StaggerGroup({ children, className = "", stagger = 0.07, delay = 0, amount = 0.2 }) {
-  return (
-    <motion.div
-      className={className}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, amount }}
-      variants={{
-        hidden: {},
-        show: { transition: { staggerChildren: stagger, delayChildren: delay } },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
+function StaggerGroup({ children, className = "" }) {
+  return <div className={className}>{children}</div>;
 }
 
 // A conversation arrives on its own clock. The room overlays used to be driven
@@ -188,19 +158,8 @@ function CueItem({ as = "div", className = "", variants, style, cueShown = false
   );
 }
 
-function StaggerItem({ children, className = "", y = 24 }) {
-  const reduced = useReducedMotion();
-  return (
-    <motion.div
-      className={className}
-      variants={{
-        hidden: reduced ? { opacity: 1 } : { opacity: 0, y },
-        show: { opacity: 1, y: 0, transition: SPRING_REVEAL },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
+function StaggerItem({ children, className = "" }) {
+  return <div className={className}>{children}</div>;
 }
 
 function useContactJump() {
@@ -400,10 +359,8 @@ const LANGUAGES = [
 const NAV_ITEMS = [
   { to: "/office", labelKey: "staff" },
   { to: "/portfolio", labelKey: "website" },
-  // Prices and questions are sections of the homepage now; /pricing and /faq
-  // still resolve (old links) and render the same sections.
-  { to: "/", labelKey: "pricing", state: { scrollTo: "pricing" } },
-  { to: "/", labelKey: "faq", state: { scrollTo: "faq" } },
+  { to: "/pricing", labelKey: "pricing" },
+  { to: "/faq", labelKey: "faq" },
 ];
 
 // The trust pages were reachable only from the footer, which is most of the
@@ -737,7 +694,7 @@ function Navbar() {
               className="flex flex-1 flex-col justify-center gap-2 px-5 sm:px-7"
             >
               {NAV_ITEMS.map(({ to, labelKey, state }) => {
-                const isActive = location.pathname === to && !state;
+                const isActive = location.pathname === to;
                 return (
                   <motion.div
                     key={labelKey}
@@ -818,6 +775,32 @@ function Navbar() {
       document.body
       )}
     </motion.header>
+  );
+}
+
+function HeroWords({ text, delay = 0, stagger = 0.06 }) {
+  const reduced = useReducedMotion();
+  const words = text.split(/(\s+)/);
+  let wIndex = 0;
+  return (
+    <span aria-label={text}>
+      {words.map((tok, i) => {
+        if (/^\s+$/.test(tok)) return <span key={i}>{tok}</span>;
+        const idx = wIndex++;
+        return (
+          <span key={i} className="word-mask">
+            <motion.span
+              initial={reduced ? false : { y: "110%" }}
+              animate={{ y: 0 }}
+              transition={{ ...SPRING_HEADLINE, delay: delay + idx * stagger }}
+              className="inline-block"
+            >
+              {tok}
+            </motion.span>
+          </span>
+        );
+      })}
+    </span>
   );
 }
 
@@ -918,31 +901,351 @@ function SalonPreview() {
           />
         </div>
       </div>
-      {/* the booking strip and Дали's bubble: the two things this site sold */}
-      <div className="relative mx-5 mt-1 flex items-end justify-between gap-3 sm:mx-6">
-        <div className="rounded-lg bg-white/[0.04] p-2 ring-1 ring-white/[0.06] sm:p-3">
-          <p className="text-[7.5px] font-semibold uppercase tracking-[0.14em] text-emerald-300/80 sm:text-[9px]">Цаг захиалах</p>
-          <div className="mt-1.5 flex gap-1 sm:mt-2 sm:gap-1.5">
-            {["10:00", "11:30", "14:00", "15:30"].map((slot, i) => (
-              <span
-                key={slot}
-                className={[
-                  "rounded px-1 py-0.5 font-display text-[7.5px] font-semibold tabular-nums sm:px-1.5 sm:text-[9.5px]",
-                  i === 3 ? "bg-emerald-400 text-emerald-950" : "bg-white/[0.06] text-white/70",
-                ].join(" ")}
-              >
-                {slot}
-              </span>
-            ))}
-          </div>
-        </div>
-        <div className="max-w-[46%] rounded-lg rounded-br-sm bg-white/[0.08] px-2 py-1.5 ring-1 ring-white/[0.08] sm:px-3 sm:py-2">
-          <p className="text-[7px] font-semibold text-emerald-300/90 sm:text-[9px]">Дали</p>
-          <p className="mt-0.5 text-[7.5px] leading-[1.35] text-white/80 sm:text-[10px]">Сайн байна уу. Юугаар туслах вэ?</p>
-        </div>
-      </div>
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-ink-950/45 to-transparent" />
     </div>
+  );
+}
+
+// ------------------------------------------------------------ the first screen
+// A day drawn as a ring. The hand sweeps one revolution per day and leaves a
+// lit arc behind it: the part of the day already covered. Seven real moments
+// sit at their real hour and light as the hand reaches them — and all but one
+// of them falls outside the hours a shop is open, which is the whole argument.
+//
+// One requestAnimationFrame loop writes through refs; nothing here re-renders
+// React per frame. It stops when the ring leaves the screen or the tab hides.
+const RING_R = 118;
+const RING_C = 2 * Math.PI * RING_R;
+const RING_CX = 150;
+const RING_OPEN = [10, 20]; // the hours a typical shop has someone at the counter
+
+const RING_SECONDS = 36; // one whole day per revolution, at a constant rate
+
+// Every moment is Дали's: the ring shows what works today, not the team to come.
+const RING_EVENTS = [
+  { at: 2 + 14 / 60, time: "02:14", who: "dali" },
+  { at: 6 + 40 / 60, time: "06:40", who: "dali" },
+  { at: 9, time: "09:00", who: "dali" },
+  { at: 13 + 25 / 60, time: "13:25", who: "dali" },
+  { at: 18 + 5 / 60, time: "18:05", who: "dali" },
+  { at: 21 + 30 / 60, time: "21:30", who: "dali" },
+  { at: 23 + 50 / 60, time: "23:50", who: "dali" },
+];
+
+function ringPoint(hour, radius = RING_R) {
+  const a = ((hour / 24) * 360 - 90) * (Math.PI / 180);
+  return [RING_CX + radius * Math.cos(a), RING_CX + radius * Math.sin(a)];
+}
+
+// The arc of the working day, drawn over the track.
+function ringArc(from, to, radius = RING_R) {
+  const [x0, y0] = ringPoint(from, radius);
+  const [x1, y1] = ringPoint(to, radius);
+  const large = (to - from) % 24 > 12 ? 1 : 0;
+  return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${radius} ${radius} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+}
+
+const ringClock = (hour) => {
+  const q = Math.floor((hour % 24) * 4) / 4; // quarter hours: a clock, not a slot machine
+  const hh = Math.floor(q);
+  const mm = Math.round((q - hh) * 60);
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+};
+
+function DayRing({ className = "" }) {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const captions = t("hero.ring.events", { returnObjects: true });
+  const labels = Array.isArray(captions) ? captions : [];
+
+  const hostRef = React.useRef(null);
+  const handRef = React.useRef(null);
+  const trailRef = React.useRef(null);
+  const timeRef = React.useRef(null);
+  const dotsRef = React.useRef([]);
+  // which event the centre is showing, so text is written only when it changes
+  const shownRef = React.useRef(-1);
+  const clockRef = React.useRef("");
+  const spinRef = React.useRef("");
+  const litRef = React.useRef(-2);
+  const [active, setActive] = React.useState(RING_EVENTS.length - 1);
+
+  React.useEffect(() => {
+    if (reduced || !hostRef.current) return undefined;
+
+    let raf = 0;
+    let running = false;
+    let visible = false;
+    let started = 0;
+    let pausedAt = 0;
+
+    const frame = (now) => {
+      raf = 0;
+      if (!running) return;
+      // A constant sweep: one revolution is one day.
+      const p = ((now - started) / (RING_SECONDS * 1000)) % 1;
+      const hour = p * 24;
+
+      // The written values are often identical to the last ones, so comparing
+      // first skips the string building, not just the style write.
+      const spin = `rotate(${(p * 360).toFixed(2)}deg)`;
+      if (spin !== spinRef.current) {
+        spinRef.current = spin;
+        if (handRef.current) handRef.current.style.transform = spin;
+        if (trailRef.current) trailRef.current.style.strokeDashoffset = String(RING_C * (1 - p));
+      }
+
+      // the most recent moment the hand has passed; before the first one of
+      // the day, the centre still holds last night's
+      let idx = -1;
+      for (let i = 0; i < RING_EVENTS.length; i += 1) if (hour >= RING_EVENTS[i].at) idx = i;
+      const shown = idx === -1 ? RING_EVENTS.length - 1 : idx;
+
+      if (idx !== litRef.current) {
+        litRef.current = idx;
+        for (let i = 0; i < RING_EVENTS.length; i += 1) {
+          const el = dotsRef.current[i];
+          if (el) el.classList.toggle("is-lit", i <= idx);
+        }
+      }
+
+      if (shown !== shownRef.current) {
+        shownRef.current = shown;
+        setActive(shown);
+      }
+      // the clock lands exactly on a moment's own time as the hand reaches it
+      const near = idx >= 0 && hour - RING_EVENTS[idx].at < 0.35;
+      const text = near ? RING_EVENTS[idx].time : ringClock(hour);
+      if (text !== clockRef.current) {
+        clockRef.current = text;
+        if (timeRef.current) timeRef.current.textContent = text;
+      }
+
+      raf = requestAnimationFrame(frame);
+    };
+
+    const update = () => {
+      const should = visible && !document.hidden;
+      if (should && !running) {
+        running = true;
+        if (!started) {
+          // start the day a little before the 02:14 message so the first thing
+          // a visitor sees is a moment landing, not an empty ring
+          started = performance.now() - 1.4 * (RING_SECONDS / 24) * 1000;
+        } else {
+          // coming back: carry the origin forward past the time spent away,
+          // so scrolling off and back does not teleport the day to midnight
+          started += performance.now() - pausedAt;
+        }
+        raf = requestAnimationFrame(frame);
+      } else if (!should && running) {
+        running = false;
+        pausedAt = performance.now();
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const io = new IntersectionObserver((entries) => {
+      visible = entries.some((e) => e.isIntersecting);
+      update();
+    }, { rootMargin: "60px" });
+    io.observe(hostRef.current);
+    document.addEventListener("visibilitychange", update);
+
+    return () => {
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+      io.disconnect();
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, [reduced]);
+
+  const event = RING_EVENTS[active] || RING_EVENTS[0];
+  const openArc = ringArc(RING_OPEN[0], RING_OPEN[1]);
+  const closedHours = 24 - (RING_OPEN[1] - RING_OPEN[0]);
+
+  return (
+    <div ref={hostRef} className={["relative w-full max-w-[380px]", className].join(" ")}>
+      <div className="relative">
+        <svg viewBox="0 0 300 300" className="block w-full" role="img" aria-label={t("hero.ring.alt")}>
+          {/* the whole day: what the four cover */}
+          <circle cx={RING_CX} cy={RING_CX} r={RING_R} fill="none" stroke="rgba(56,189,248,0.16)" strokeWidth="10" />
+          {/* the hours someone is at the counter */}
+          <path d={openArc} fill="none" stroke="rgba(240,244,255,0.22)" strokeWidth="10" strokeLinecap="butt" />
+          {/* hour ticks */}
+          {Array.from({ length: 24 }, (_, h) => {
+            const major = h % 6 === 0;
+            const [x0, y0] = ringPoint(h, RING_R - (major ? 14 : 9));
+            const [x1, y1] = ringPoint(h, RING_R - 6);
+            return <line key={h} x1={x0} y1={y0} x2={x1} y2={y1} stroke={major ? "rgba(240,244,255,0.45)" : "rgba(240,244,255,0.16)"} strokeWidth={major ? 1.6 : 1} strokeLinecap="round" />;
+          })}
+          {[0, 6, 12, 18].map((h) => {
+            const [x, y] = ringPoint(h, RING_R - 30);
+            return (
+              <text key={h} x={x} y={y} textAnchor="middle" dominantBaseline="central" fill="rgba(139,159,196,0.75)" fontSize="11" fontFamily="Inter, system-ui, sans-serif" letterSpacing="1">
+                {String(h).padStart(2, "0")}
+              </text>
+            );
+          })}
+          {/* the part of the day already covered */}
+          <circle
+            ref={trailRef}
+            cx={RING_CX}
+            cy={RING_CX}
+            r={RING_R}
+            fill="none"
+            stroke="#38BDF8"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray={RING_C}
+            strokeDashoffset={reduced ? RING_C * (1 - RING_EVENTS[RING_EVENTS.length - 1].at / 24) : RING_C}
+            transform={`rotate(-90 ${RING_CX} ${RING_CX})`}
+          />
+          {/* the seven moments */}
+          {RING_EVENTS.map((e, i) => {
+            const [x, y] = ringPoint(e.at);
+            return (
+              <g
+                key={e.time}
+                ref={(el) => { dotsRef.current[i] = el; }}
+                className={["ring-dot", reduced ? "is-lit" : ""].join(" ")}
+              >
+                <circle className="halo" cx={x} cy={y} r="6" fill="#38BDF8" />
+                <circle className="dot" cx={x} cy={y} r="5.5" />
+              </g>
+            );
+          })}
+          {/* the hand */}
+          <g
+            ref={handRef}
+            className="ring-hand"
+            style={{
+              transformOrigin: `${RING_CX}px ${RING_CX}px`,
+              transformBox: "view-box",
+              transform: reduced ? `rotate(${(RING_EVENTS[RING_EVENTS.length - 1].at / 24) * 360}deg)` : "rotate(0deg)",
+            }}
+          >
+            <line x1={RING_CX} y1={RING_CX - 46} x2={RING_CX} y2={RING_CX - RING_R + 4} stroke="url(#ringHand)" strokeWidth="2" strokeLinecap="round" />
+            <circle cx={RING_CX} cy={RING_CX - RING_R} r="4.5" fill="#F0F4FF" />
+            <circle cx={RING_CX} cy={RING_CX - RING_R} r="9" fill="#38BDF8" opacity="0.22" />
+          </g>
+          <defs>
+            <linearGradient id="ringHand" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stopColor="#38BDF8" stopOpacity="0" />
+              <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.9" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* the centre: what just happened, and who did it */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-[22%] text-center">
+          <span ref={timeRef} className="font-display text-[34px] font-semibold leading-none tabular-nums tracking-tight text-fg sm:text-[38px]">
+            {event.time}
+          </span>
+          <span key={`who-${active}`} className="ring-caption mt-2.5 flex items-center gap-1.5">
+            <span className="flex h-[20px] w-[18px] shrink-0 items-start justify-center overflow-hidden rounded-[5px] bg-white/[0.07]" aria-hidden>
+              <StaffAvatar id={event.who} size={1} className="-mt-[30px]" />
+            </span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-300">
+              {t(`office.agents.${event.who}.name`)}
+            </span>
+          </span>
+          <span key={`line-${active}`} className="ring-caption mt-2 text-[12.5px] leading-[1.4] text-fg-muted" aria-live="off">
+            {labels[active] || ""}
+          </span>
+        </div>
+      </div>
+
+      {/* the legend is the argument: ten hours open, fourteen covered anyway */}
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[12px] text-fg-muted">
+        <span className="inline-flex items-center gap-2">
+          <span aria-hidden className="h-1.5 w-5 rounded-full bg-white/25" />
+          {t("hero.ring.open", { from: "10:00", to: "20:00" })}
+        </span>
+        <span className="inline-flex items-center gap-2">
+          <span aria-hidden className="h-1.5 w-5 rounded-full bg-sky-400" />
+          {t("hero.ring.closed", { hours: closedHours })}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function Hero() {
+  const { t } = useTranslation();
+
+  return (
+    <section id="top" className="relative overflow-hidden pb-16 pt-24 md:pb-24 md:pt-32">
+      {/* one quiet pool of light behind the ring, nothing else */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute right-[-10%] top-[6%] h-[38rem] w-[38rem] rounded-full lg:right-[2%]"
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.16) 0%, rgba(37,99,235,0.06) 42%, rgba(56,189,248,0) 70%)", filter: "blur(40px)" }}
+        />
+      </div>
+
+      <Container className="relative">
+        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-16">
+          <div className="text-center lg:text-left">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
+              className="text-[11.5px] font-medium leading-[1.5] tracking-[0.14em] text-fg-dim"
+            >
+              {t("hero.badge")}
+            </motion.p>
+
+            <h1 className="mt-4 font-display text-[36px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[48px] lg:text-[58px]">
+              <HeroWords text={t("hero.title")} delay={0.15} stagger={0.045} />
+            </h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.5 }}
+              className="mx-auto mt-6 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px] lg:mx-0 lg:text-[18px]"
+            >
+              {t("hero.description")}
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING_REVEAL, delay: 0.65 }}
+              className="mt-9 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6 lg:justify-start"
+            >
+              <MagneticButton href="#demo" variant="primary" className="w-full sm:w-auto">
+                {t("hero.buttons.request")}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
+              </MagneticButton>
+              {/* a link, not a second button box: the hero gets one accent */}
+              <Link
+                to="/office"
+                className="inline-flex min-h-[44px] items-center gap-1.5 text-[17px] text-sky-400 transition-colors hover:text-sky-300"
+              >
+                {t("hero.buttons.seeWork")}
+                <span aria-hidden>&rsaquo;</span>
+              </Link>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ ...SPRING_REVEAL, delay: 0.3 }}
+            className="flex justify-center lg:justify-end"
+          >
+            <ErrorBoundary fallback={null}>
+              <DayRing />
+            </ErrorBoundary>
+          </motion.div>
+        </div>
+      </Container>
+    </section>
   );
 }
 
@@ -1838,6 +2141,297 @@ function LiveDemo() {
             </div>
           </Reveal>
         </div>
+      </Container>
+    </section>
+  );
+}
+
+function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote, demoServices }) {
+  return (
+    <StaggerItem>
+      <div className="relative h-full pt-3 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5">
+        {primary && (
+          <span className="absolute left-6 top-0 z-10 inline-flex items-center gap-1.5 rounded-full border border-sky-400/55 bg-sky-400/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-100 shadow-[0_8px_22px_-6px_rgba(56,189,248,0.7)] backdrop-blur">
+            <span className="h-1 w-1 rounded-full bg-sky-300" />
+            Featured
+          </span>
+        )}
+        <div
+          className={[
+            "relative flex h-full flex-col overflow-hidden rounded-2xl p-6 transition-[border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            primary
+              ? "border border-sky-400/55 bg-gradient-to-b from-sky-400/[0.06] to-ink-800/65 shadow-[0_0_0_1px_rgba(56,189,248,0.18),0_30px_70px_-30px_rgba(56,189,248,0.55)]"
+              : "border border-white/[0.08] bg-ink-800/45 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]",
+          ].join(" ")}
+        >
+          {primary && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 h-[2px]"
+              style={{ background: "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.85) 50%, transparent 100%)" }}
+            />
+          )}
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-display text-[16px] font-semibold tracking-tight text-fg">{title}</p>
+              {desc && <p className="mt-1.5 text-[13.5px] text-fg-muted">{desc}</p>}
+            </div>
+            {badge && (
+              <span
+                className={[
+                  "shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                  primary
+                    ? "bg-sky-400/15 text-sky-200 ring-1 ring-inset ring-sky-400/40"
+                    : "bg-white/[0.03] text-fg-muted ring-1 ring-inset ring-white/10",
+                ].join(" ")}
+              >
+                {badge}
+              </span>
+            )}
+          </div>
+          <div className="mt-7">
+            <p className="font-display text-[36px] font-semibold leading-none tracking-tightest text-fg sm:text-[40px]">{priceLine}</p>
+            {subLine && <p className="mt-3 text-[13px] leading-[1.55] text-fg-muted">{subLine}</p>}
+          </div>
+          <ul className="mt-6 space-y-2.5 text-[13.5px] leading-[1.55] text-fg/90">
+            {bullets.map((b, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <CheckIcon />
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-auto pt-7">
+            <MagneticButton href="#demo" variant={primary ? "primary" : "ghost"} className="w-full" demoServices={demoServices}>{cta}</MagneticButton>
+          </div>
+          {footnote && <p className="mt-4 text-[11px] leading-[1.55] text-fg-muted/80">{footnote}</p>}
+        </div>
+      </div>
+    </StaggerItem>
+  );
+}
+
+// One card per AI staff member on the pricing page: the same facts as the
+// office page, in the pricing page's own frame.
+function StaffPriceCard({ id }) {
+  const { t } = useTranslation();
+  const live = STAFF_LIVE[id];
+  return (
+    <StaggerItem className="h-full">
+      <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
+        <div className="flex items-center gap-3">
+          <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
+            <StaffAvatar id={id} size={3} className="-mt-[90px]" />
+          </span>
+          <div className="min-w-0">
+            <p className="font-display text-[18px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</p>
+            <p className="text-[12.5px] text-fg-muted">{t(`office.agents.${id}.role`)}</p>
+          </div>
+        </div>
+        <p className="mt-4 text-[13.5px] leading-[1.5] text-fg-muted">{t(`office.agents.${id}.job`)}</p>
+        <div className="mt-6">
+          <StaffPrice id={id} />
+        </div>
+        <div className="mt-4">
+          <StaffStatus live={live} />
+        </div>
+        <div className="mt-auto pt-6">
+          <MagneticButton href="#demo" variant={live ? "primary" : "ghost"} className="w-full" demoServices={[id]}>
+            {live ? t("pricing.staff.hire") : t("pricing.staff.preorder")}
+          </MagneticButton>
+        </div>
+      </div>
+    </StaggerItem>
+  );
+}
+
+function Pricing() {
+  const { t } = useTranslation();
+  const terms = t("pricing.paymentTerms.terms", { returnObjects: true });
+  return (
+    <section id="pricing" className="relative py-16 md:py-28">
+      <Container>
+        <SectionHeader eyebrow={t("pricing.section")} title={t("pricing.title")} description={t("pricing.description")} />
+
+        <Reveal className="mt-14">
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+            <div>
+              <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("pricing.staff.title")}</h3>
+              <p className="mt-1.5 max-w-[620px] text-[14.5px] leading-[1.55] text-fg-muted">{t("pricing.staff.description")}</p>
+            </div>
+            <Link to="/office" state={{ scrollTo: "team" }} data-cursor="hover" className="pressable inline-flex min-h-[44px] items-center gap-1 text-[15px] text-sky-400 hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 rounded-md">
+              {t("pricing.staff.teamLink")} <span aria-hidden>›</span>
+            </Link>
+          </div>
+        </Reveal>
+        <StaggerGroup className="mt-7 grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {STAFF_ORDER.map((id) => <StaffPriceCard key={id} id={id} />)}
+        </StaggerGroup>
+
+        {/* Ора is priced like the four but sold to a different person: not a
+            fifth card in their row, a row of her own with the reason beside it */}
+        <Reveal className="mt-10">
+          <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+            <div className="lg:pt-2">
+              <SectionLabel>{t("pricing.staff.ownerTitle")}</SectionLabel>
+              <p className="mt-3 max-w-[440px] text-[15px] leading-[1.55] text-fg-muted">{t("pricing.staff.ownerDescription")}</p>
+            </div>
+            <StaggerGroup className="grid">
+              <StaffPriceCard id="ora" />
+            </StaggerGroup>
+          </div>
+        </Reveal>
+
+        <div id="website" className="scroll-mt-24" />
+        <Reveal className="mt-16">
+          <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("pricing.website.title")}</h3>
+          <p className="mt-1.5 text-[14.5px] text-fg-muted">{t("pricing.website.description")}</p>
+        </Reveal>
+        <StaggerGroup className="mt-7 grid gap-5 lg:grid-cols-2">
+          <PriceCard
+            title={t("pricing.cards.website.title")}
+            badge={t("pricing.cards.website.badge")}
+            priceLine={t("pricing.cards.website.price")}
+            subLine={t("pricing.cards.website.subLine")}
+            desc={t("pricing.cards.website.description")}
+            bullets={t("pricing.cards.website.bullets", { returnObjects: true })}
+            cta={t("pricing.cards.website.cta")}
+            demoServices={WEBSITE_DEMO_SERVICES}
+          />
+          <PriceCard
+            title={t("pricing.cards.bundle.title")}
+            badge={t("pricing.cards.bundle.badge")}
+            priceLine={
+              <span>
+                <span className="text-fg-muted/70 line-through">{t("pricing.cards.bundle.was")}</span>{" "}
+                <span className="text-fg">{t("pricing.cards.bundle.price")}</span>
+              </span>
+            }
+            subLine={t("pricing.cards.bundle.subLine")}
+            desc={t("pricing.cards.bundle.description")}
+            bullets={t("pricing.cards.bundle.bullets", { returnObjects: true })}
+            cta={t("pricing.cards.bundle.cta")}
+            demoServices={WEBSITE_DALI_DEMO_SERVICES}
+            primary
+          />
+        </StaggerGroup>
+
+        <Reveal className="mt-14">
+          <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-800/45 p-7 transition-[border-color,box-shadow] duration-300 hover:border-sky-400/25 hover:shadow-[0_24px_60px_-24px_rgba(56,189,248,0.25)]">
+            <div className="grid gap-7 sm:grid-cols-[1fr_auto] sm:items-end">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">{t("pricing.paymentTerms.title")}</p>
+                <ul className="mt-5 grid gap-2.5 text-[14px] leading-[1.55] text-fg/90 sm:grid-cols-3 sm:gap-x-6">
+                  {terms.map((term, i) => (
+                    <li key={i} className="flex items-start gap-2.5">
+                      <CheckIcon />
+                      <span>{term}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <MagneticButton href="#demo" variant="primary">{t("contact.requestCta")}</MagneticButton>
+            </div>
+            <p className="mt-6 border-t border-white/[0.06] pt-5 text-[12.5px] leading-[1.55] text-fg-muted">{t("pricing.paymentTerms.note")}</p>
+          </div>
+        </Reveal>
+      </Container>
+    </section>
+  );
+}
+
+function FAQItem({ question, answer }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <StaggerItem>
+      <div
+        className={[
+          "rounded-2xl border bg-ink-800/45 transition-[border-color,box-shadow,background] duration-200",
+          open
+            ? "border-sky-400/35 bg-sky-400/[0.025] shadow-[0_18px_44px_-24px_rgba(56,189,248,0.32)]"
+            : "border-white/[0.08] hover:border-white/20",
+        ].join(" ")}
+      >
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="pressable flex w-full items-start justify-between gap-5 px-5 py-4 text-left sm:px-6 sm:py-5"
+          data-cursor="hover"
+        >
+          <p className="font-display text-[15.5px] font-semibold leading-[1.4] tracking-tight text-fg">{question}</p>
+          <span
+            className={[
+              "mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-fg transition-[transform,border-color,background-color,color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              open ? "rotate-45 border-sky-400/50 bg-sky-400/10 text-sky-300" : "border-white/10 bg-white/[0.03]",
+            ].join(" ")}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14" /><path d="M5 12h14" />
+            </svg>
+          </span>
+        </button>
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              key="content"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{
+                height: { duration: 0.24, ease: [0.16, 1, 0.3, 1] },
+                opacity: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
+              }}
+              className="overflow-hidden"
+            >
+              <p className="px-5 pb-5 text-[14px] leading-[1.65] text-fg-muted sm:px-6 sm:pb-6">{answer}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </StaggerItem>
+  );
+}
+
+function FAQ() {
+  const { t } = useTranslation();
+  return (
+    <section id="faq" className="relative py-20 md:py-24">
+      <Container>
+        <SectionHeader eyebrow={t("faq.section")} title={t("faq.title")} description={t("faq.description")} />
+
+        <StaggerGroup className="mt-12 grid gap-3.5 md:grid-cols-2">
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <FAQItem key={n} question={t(`faq.q${n}.question`)} answer={t(`faq.q${n}.answer`)} />
+          ))}
+        </StaggerGroup>
+
+        <Reveal className="mt-10">
+          <div
+            className="relative overflow-hidden rounded-2xl p-7 transition-[border-color,box-shadow] duration-300"
+            style={{
+              backgroundImage:
+                "linear-gradient(180deg, rgba(13,20,48,0.55) 0%, rgba(13,20,48,0.55) 100%), linear-gradient(135deg, rgba(56,189,248,0.55) 0%, rgba(56,189,248,0) 40%, rgba(37,99,235,0.5) 100%)",
+              backgroundOrigin: "border-box",
+              backgroundClip: "padding-box, border-box",
+              border: "1px solid transparent",
+              boxShadow: "0 30px 70px -32px rgba(56,189,248,0.4)",
+            }}
+          >
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full"
+              style={{ background: "radial-gradient(circle, rgba(56,189,248,0.2) 0%, rgba(56,189,248,0) 65%)" }}
+            />
+            <div className="relative flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+              <div className="max-w-xl">
+                <p className="font-display text-[18px] font-semibold tracking-tight text-fg sm:text-[19px]">{t("faq.stillHaveQuestions")}</p>
+                <p className="mt-1.5 text-[14.5px] leading-[1.6] text-fg-muted">{t("faq.contactPrompt")}</p>
+              </div>
+              <MagneticButton href="#demo" variant="primary">{t("faq.talkToUs")}</MagneticButton>
+            </div>
+          </div>
+        </Reveal>
       </Container>
     </section>
   );
@@ -2844,6 +3438,101 @@ function DemoRequestProvider({ children }) {
   );
 }
 
+function ContactOrbField() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-grid opacity-[0.55]" />
+
+      <div
+        className="contact-orb-glow absolute left-1/2 top-1/2 h-[44rem] w-[44rem] rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(56,189,248,0.34) 0%, rgba(56,189,248,0.10) 28%, rgba(37,99,235,0.04) 50%, rgba(56,189,248,0) 70%)",
+          filter: "blur(48px)",
+        }}
+      />
+
+      <svg
+        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2"
+        viewBox="-200 -200 400 400"
+      >
+        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
+        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
+        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
+      </svg>
+
+      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-2 w-2 rounded-full bg-sky-300"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
+        />
+      </div>
+      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
+        />
+      </div>
+      <div className="contact-orbit contact-orbit-3 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-1 w-1 rounded-full bg-white/85"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(190px)", boxShadow: "0 0 14px 2px rgba(255,255,255,0.55)" }}
+        />
+      </div>
+
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink-950 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink-950 to-transparent" />
+    </div>
+  );
+}
+
+function Contact() {
+  const { t } = useTranslation();
+  const mailtoHref = `mailto:${DEMO_EMAIL}?subject=${encodeURIComponent("Хүсэлт / Request")}`;
+
+  return (
+    <section id="contact" className="relative overflow-hidden py-20 sm:py-40">
+      <ContactOrbField />
+
+      <Container className="relative">
+        <StaggerGroup className="text-center" stagger={0.08} amount={0.3}>
+          <StaggerItem>
+            <h2 className="font-display mx-auto max-w-[22ch] text-[clamp(40px,7vw,80px)] font-semibold leading-[1.02] tracking-[-0.035em] text-fg">
+              {t("contact.title")}
+            </h2>
+          </StaggerItem>
+
+          <StaggerItem>
+            <p className="mx-auto mt-7 max-w-[54ch] text-[16px] leading-[1.55] text-fg-muted sm:text-[17px]">
+              {t("contact.description")}
+            </p>
+          </StaggerItem>
+
+          <StaggerItem>
+            <div className="mt-11 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+              <MagneticButton href="#demo" variant="primary">
+                <span>{t("contact.requestCta")}</span>
+                <span aria-hidden className="contact-arrow inline-block">→</span>
+              </MagneticButton>
+              <MagneticButton href="https://app.dalatech.online" variant="ghost">
+                {t("contact.demoCta")}
+              </MagneticButton>
+              <MagneticButton href={mailtoHref} variant="ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="m3 7 9 6 9-6" />
+                </svg>
+                {t("contact.emailCta")}
+              </MagneticButton>
+            </div>
+          </StaggerItem>
+
+        </StaggerGroup>
+      </Container>
+    </section>
+  );
+}
+
 function Chatbot() {
   React.useEffect(() => {
     const container = document.getElementById("dalatech-chatbot-container");
@@ -2900,7 +3589,6 @@ function FooterColumn({ heading, links }) {
 
 function Footer() {
   const { t } = useTranslation();
-  const reduced = useReducedMotion();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -2948,12 +3636,7 @@ function Footer() {
         className="pointer-events-none absolute inset-x-0 -top-32 h-32"
         style={{ background: "radial-gradient(50% 100% at 50% 100%, rgba(56,189,248,0.10) 0%, rgba(56,189,248,0) 70%)" }}
       />
-      <motion.div
-        initial={reduced ? false : { opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
-        transition={SPRING_REVEAL}
-      >
+      <div>
         <Container className="pt-16 pb-10">
           <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
             <div>
@@ -2999,7 +3682,7 @@ function Footer() {
             </p>
           </div>
         </Container>
-      </motion.div>
+      </div>
     </footer>
   );
 }
@@ -3014,13 +3697,7 @@ function LocationBadge() {
       className="relative py-16 md:py-28"
     >
       <Container className="relative">
-        <motion.div
-          initial={reduced ? false : { opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={SPRING_REVEAL}
-          className="grid items-center gap-12 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-16"
-        >
+        <div className="grid items-center gap-12 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-16">
           <div className="mx-auto w-full max-w-[360px] sm:max-w-[420px] md:mx-0 md:max-w-[480px]">
             <ErrorBoundary fallback={<div className="aspect-square w-full" aria-hidden />}>
               <React.Suspense fallback={<div className="aspect-square w-full" aria-hidden />}>
@@ -3037,9 +3714,493 @@ function LocationBadge() {
               {t("location.tagline")}
             </p>
           </div>
-        </motion.div>
+        </div>
       </Container>
     </section>
+  );
+}
+
+// Page wrappers: each route renders only its own sections.
+// ------------------------------------------------------------ a working day
+const DAY_SCALE = (w) => (w < 1024 ? 2 : w < 1280 ? 3 : 3.5);
+const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
+
+// The owner's phone, over the room. Each group of notifications lands during
+// its own hold and leaves before the next moment's light arrives, so the
+// stack never holds two moments at once. Progress units; the times are the
+// scene's own timestamps.
+// Each group needs (n-1) steps to stack its cards, then enough left over for
+// the last one to be read. Sized by how long the group takes to READ, which is
+// not the same as how many cards it has: Вира gets the widest window of the
+// four while sending the fewest, because hers is one report with a chart in it
+// and that takes longer to take in than three short notifications do.
+// Any change here has to be mirrored in scenes.js — the room behind the phone
+// runs off the same p, and the two disagreeing about the time is the one bug
+// this whole section can have.
+const PHONE_FEED = {
+  dali: { from: 0.04, until: 0.22 },
+  vira: { from: 0.25, until: 0.42 },
+  // the afternoon is the owner's: one card from Ора, who is not in the room
+  ora: { from: 0.45, until: 0.56 },
+  eho: { from: 0.59, until: 0.74 },
+  nova: { from: 0.76, until: 0.9 },
+  done: { from: 0.92 },
+};
+// How close together cards in one group arrive. Tighter than it looks like it
+// should be on purpose: every card in a group fades out together, so the last
+// one to arrive is always the one with least time on screen, and buying it a
+// beat costs the earlier cards nothing they need.
+// A fraction of the run, not seconds: 0.024 × 42s is the one-second cadence the
+// feed had at 34s. Raising DAY_SECONDS without lowering this lengthens every
+// stack and eats the read time of the last card in each group.
+const PHONE_STEP = 0.024;
+// The last screen has less runway than the others: the summary and the door
+// in must both be fully up before the pin lets go at p = 1.
+const PHONE_DONE_STEP = 0.02;
+
+function phoneGroupAt(p) {
+  if (p >= PHONE_FEED.done.from) return "done";
+  return Object.keys(PHONE_FEED).find((k) => p >= PHONE_FEED[k].from && p <= (PHONE_FEED[k].until ?? 1)) || null;
+}
+
+// A per-frame ticking clock reads as a slot machine. This steps in five
+// minutes and hard-snaps to the three real timestamps inside the holds.
+function PhoneTime({ progress }) {
+  const [label, setLabel] = React.useState(DAY_MOMENTS[0].time);
+  const read = React.useCallback((p) => {
+    const hold = DAY_MOMENTS.find((m) => p >= m.from && p <= m.to);
+    if (hold) return hold.time;
+    if (p >= PHONE_FEED.ora.from && p <= PHONE_FEED.ora.until) return "13:30";
+    if (p >= PHONE_FEED.nova.from && p <= PHONE_FEED.nova.until) return "19:40";
+    if (p >= PHONE_FEED.done.from) return "21:00";
+    const h = dayHour(p);
+    let hh = Math.floor(h);
+    let mm = Math.round(((h - hh) * 60) / 5) * 5;
+    if (mm === 60) { mm = 0; hh += 1; }
+    return `${String(hh % 24).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  }, []);
+  React.useEffect(() => setLabel(read(progress.get())), [progress, read]);
+  useMotionValueEvent(progress, "change", (p) => setLabel(read(p)));
+  return <span className="tabular-nums">{label}</span>;
+}
+
+// The app icon on a notification: the agent's pixel head, or the customer's
+// initial. No logos of other companies.
+function PhoneIcon({ who, name }) {
+  if (STAFF_LIVE[who] !== undefined) {
+    return (
+      <span className="flex h-[22px] w-[22px] shrink-0 items-start justify-center overflow-hidden rounded-[6px] bg-white/[0.08]" aria-hidden>
+        <StaffAvatar id={who} size={1} className="-mt-[27px]" />
+      </span>
+    );
+  }
+  if (who === "call") {
+    return (
+      <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px] bg-sky-400/15 text-sky-400" aria-hidden>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
+      </span>
+    );
+  }
+  if (who === "summary") {
+    return <span className="h-[22px] w-[22px] shrink-0 rounded-[6px] bg-gradient-to-br from-sky-400 to-brand-500" aria-hidden />;
+  }
+  return (
+    <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px] bg-brand-500/25 text-[11px] font-semibold text-sky-300" aria-hidden>
+      {name.slice(0, 1)}
+    </span>
+  );
+}
+
+function PhoneCard({ progress, at, until, span = PHONE_STEP, who, name, time, title, children, className = "" }) {
+  const { t } = useTranslation();
+  const rise = progress ? { progress, at, until, span } : null;
+  // A card from one of the four who are not built yet says so (founder, 2026-09-26): the
+  // phone shows a day with the whole team, and only Дали works today.
+  const soon = STAFF_LIVE[who] === false;
+  const body = (
+    <div className={["rounded-[14px] border border-white/[0.09] bg-[#111A3A]/95 px-3 py-2.5 shadow-[0_6px_22px_rgba(0,0,0,0.35)] backdrop-blur-[6px]", className].join(" ")}>
+      <div className="flex items-center gap-2">
+        <PhoneIcon who={who} name={name} />
+        <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-fg-muted">{name}</span>
+        {soon && <span className="shrink-0 rounded-full border border-amber-300/40 px-1.5 text-[10px] font-semibold text-amber-200">{t("office.status.soon")}</span>}
+        {time && <span className="shrink-0 text-[10.5px] tabular-nums text-fg-dim">{time}</span>}
+      </div>
+      {title && <p className="mt-1.5 text-[13px] font-semibold leading-[1.3] text-fg">{title}</p>}
+      {children}
+    </div>
+  );
+  return rise ? <Rise {...rise}>{body}</Rise> : body;
+}
+
+const phoneText = "mt-1 text-[12.5px] leading-[1.42] text-fg/85";
+
+// Вира's report card: the same four bars the scene draws on her screen.
+function PhoneReport({ progress, at, until, report, feed }) {
+  // hooks run unconditionally; at rest the bars are simply full
+  const one = useMotionValue(1);
+  const grow = useTransform(progress ?? one, progress ? [at + 0.01, at + 0.1] : [0, 1], [0, 1]);
+  return (
+    <PhoneCard progress={progress} at={at} until={until} who="vira" name={feed.vira.from} time="09:00" title={feed.vira.title}>
+      <div className="mt-2.5 flex h-[54px] items-end gap-1.5" aria-hidden>
+        {report.values.map((v, i) => (
+          <ReportBar key={i} value={v} index={i} count={report.values.length} grow={grow} last={i === report.values.length - 1} />
+        ))}
+      </div>
+      <div className="mt-1 grid grid-cols-4 gap-1.5 text-[9.5px] text-fg-dim">
+        {report.weeks.map((w) => <span key={w} className="truncate text-center">{w}</span>)}
+      </div>
+      <p className={phoneText}>{feed.vira.body}</p>
+    </PhoneCard>
+  );
+}
+
+function PhoneWave() {
+  const reduced = useReducedMotion();
+  return (
+    <span className="flex h-[22px] w-[22px] shrink-0 items-end justify-center gap-[2px] rounded-[6px] bg-sky-400/15 pb-[6px]" aria-hidden>
+      {[0, 1, 2, 3].map((i) => (
+        <span
+          key={i}
+          className={["w-[2px] rounded-full bg-sky-400", reduced ? "" : "animate-[staffWave_1.1s_ease-in-out_infinite]"].join(" ")}
+          style={{ height: 4 + (i % 2) * 4, animationDelay: `${i * 0.14}s` }}
+        />
+      ))}
+    </span>
+  );
+}
+
+// Every card of the day, in the order they land. `progress` undefined draws
+// the whole feed at rest, which is what the static variant and screen readers
+// get.
+function PhoneFeed({ progress, group }) {
+  const { t } = useTranslation();
+  const { open: openDemoRequest } = useDemoRequest();
+  const feed = t("day.phone", { returnObjects: true });
+  const report = t("office.chapters.vira.report", { returnObjects: true });
+  const one = useMotionValue(1);
+  const g = (k) => PHONE_FEED[k];
+  const step = (k, i) => g(k).from + i * PHONE_STEP;
+  const groupCls = progress ? "absolute inset-x-0 top-0 flex flex-col gap-2" : "flex flex-col gap-2";
+  const show = (k) => !progress || group === k;
+  return (
+    <>
+      <div className={groupCls} aria-hidden={!show("dali")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneCard progress={progress} at={step("dali", 0)} until={g("dali").until} who="customer" name={feed.customer} time="02:14">
+          <p className={phoneText}>{feed.dali.in}</p>
+        </PhoneCard>
+        <PhoneCard progress={progress} at={step("dali", 1)} until={g("dali").until} who="dali" name={feed.dali.from} time="02:14">
+          <p className={phoneText}>{feed.dali.reply}</p>
+        </PhoneCard>
+        <PhoneCard progress={progress} at={step("dali", 2)} until={g("dali").until} who="customer" name={feed.customer} time="02:15">
+          <p className={phoneText}>{feed.dali.pick}</p>
+        </PhoneCard>
+        <PhoneCard progress={progress} at={step("dali", 3)} until={g("dali").until} who="dali" name={feed.dali.from} time="02:15" title={feed.dali.booked} className="border-sky-400/30">
+          <p className={phoneText}>{feed.dali.bookedBody}</p>
+        </PhoneCard>
+      </div>
+
+      <div className={groupCls} aria-hidden={!show("vira")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneReport progress={progress} at={step("vira", 0)} until={g("vira").until} report={report} feed={feed} />
+      </div>
+
+      <div className={groupCls} aria-hidden={!show("ora")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneCard progress={progress} at={step("ora", 0)} until={g("ora").until} who="ora" name={feed.ora.from} time="13:30" title={feed.ora.title} className="border-sky-400/30">
+          <p className={phoneText}>{feed.ora.body}</p>
+        </PhoneCard>
+      </div>
+
+      <div className={groupCls} aria-hidden={!show("eho")} style={progress ? { pointerEvents: "none" } : undefined}>
+        <PhoneCard progress={progress} at={step("eho", 0)} until={g("eho").until} who="call" name={feed.eho.incoming} time="18:05">
+          <p className={phoneText}>{feed.eho.number}</p>
+        </PhoneCard>
+        <PhoneCard progress={progress} at={step("eho", 1)} until={g("eho").until} who="eho" name={feed.eho.from} time="18:05" title={feed.eho.answered}>
+          <div className="mt-1.5 flex items-center gap-2">
+            <PhoneWave />
+            <p className="text-[12.5px] leading-[1.42] text-fg/85">{feed.eho.line}</p>
+          </div>
+        </PhoneCard>
+        <PhoneCard progress={progress} at={step("eho", 2)} until={g("eho").until} who="eho" name={feed.eho.from} time="18:08" title={feed.eho.booked} className="border-sky-400/30">
+          <p className={phoneText}>{feed.eho.bookedBody}</p>
+        </PhoneCard>
+      </div>
+
+      <div className={groupCls} aria-hidden={!show("nova")} style={progress ? { pointerEvents: "none" } : undefined}>
+        {feed.nova.items.map((n, i) => (
+          <PhoneCard key={n.title} progress={progress} at={g("nova").from + i * 0.022} span={0.025} until={g("nova").until} who="nova" name={feed.nova.from} time={n.time} title={n.title} className={i === feed.nova.items.length - 1 ? "border-sky-400/30" : ""}>
+            <p className={phoneText}>{n.body}</p>
+          </PhoneCard>
+        ))}
+      </div>
+
+      {/* the last screen is the product: what the day added up to, and the door in */}
+      <div className={groupCls} aria-hidden={!show("done")} style={progress ? { pointerEvents: show("done") ? "auto" : "none" } : undefined}>
+        <PhoneCard progress={progress} at={step("done", 0)} span={PHONE_DONE_STEP} who="summary" name={feed.summary.app} time="21:00" title={feed.summary.title}>
+          <ul className="mt-2 flex flex-col gap-1.5 text-[12.5px] leading-[1.35] text-fg/85">
+            {feed.summary.rows.map((r) => (
+              <li key={r} className="flex items-center gap-2">
+                <span aria-hidden className="h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+                {r}
+              </li>
+            ))}
+          </ul>
+        </PhoneCard>
+        <Rise progress={progress ?? one} at={progress ? step("done", 0) + PHONE_DONE_STEP : 0} span={PHONE_DONE_STEP}>
+          <button
+            type="button"
+            onClick={() => openDemoRequest()}
+            className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
+          >
+            {feed.cta}
+            <span aria-hidden>→</span>
+          </button>
+          <p className="mt-2 text-center text-[11px] text-fg-dim">{feed.ctaHint}</p>
+        </Rise>
+      </div>
+    </>
+  );
+}
+
+// The device: a plain frame, no brand marks, no wallpaper. The screen is the
+// dark page colour so the cards are the only thing on it.
+function OwnerPhone({ progress, group, className = "" }) {
+  const { t } = useTranslation();
+  return (
+    <div className={["relative w-[240px] sm:w-[270px]", className].join(" ")} role="group" aria-label={t("day.phone.alt")}>
+      <div className="day-phone rounded-[42px] border border-white/[0.14] bg-[#0B1022] p-[7px] shadow-[0_30px_80px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(255,255,255,0.04)]">
+        {/* at rest the whole feed is on screen, so the screen grows to hold it */}
+        <div className={["relative overflow-hidden rounded-[36px] bg-[#070C1F]", progress ? "h-[500px] sm:h-[560px]" : "min-h-[500px] pb-8 sm:min-h-[560px]"].join(" ")}>
+          {/* status bar */}
+          <div className="flex items-center justify-between px-6 pt-4 text-[12px] font-semibold text-fg/90">
+            <span>{progress ? <PhoneTime progress={progress} /> : "21:00"}</span>
+            <span className="flex items-center gap-1.5" aria-hidden>
+              <span className="flex items-end gap-[2px]">
+                {[3, 5, 7, 9].map((h) => <span key={h} className="w-[3px] rounded-[1px] bg-fg/85" style={{ height: h }} />)}
+              </span>
+              <span className="ml-1 h-[10px] w-[20px] rounded-[3px] border border-fg/60 p-[1.5px]"><span className="block h-full w-[70%] rounded-[1px] bg-fg/85" /></span>
+            </span>
+          </div>
+          <span aria-hidden className="absolute left-1/2 top-[11px] h-[22px] w-[74px] -translate-x-1/2 rounded-full bg-black" />
+
+          <div className="relative mx-3 mt-5">
+            <PhoneFeed progress={progress} group={group} />
+          </div>
+
+          <span aria-hidden className="absolute bottom-2 left-1/2 h-[4px] w-[96px] -translate-x-1/2 rounded-full bg-fg/40" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// The day plays on a clock, not on the scrollbar. It used to be a 340vh
+// sticky scene: scrolling up replayed the whole sequence backwards and a
+// visitor who had already seen it had three screens to climb before the page
+// moved on. Now the section is ordinary height, the sequence starts when it
+// comes into view, plays once, and rests on the last screen with the button
+// on it. Scrolling past is just scrolling.
+// 42, not 34: Ора's afternoon card was added without shortening anyone else's
+// hold — every existing group keeps at least the seconds it had.
+const DAY_SECONDS = 42;
+
+function useTimedProgress(ref, seconds, disabled) {
+  const progress = useMotionValue(0);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (disabled || !el) return undefined;
+
+    let raf = 0;
+    let running = false;
+    let visible = false;
+    let finished = false;
+    let startedAt = 0;
+    let elapsed = 0; // survives a pause, so leaving and returning resumes
+
+    const frame = (now) => {
+      raf = 0;
+      if (!running) return;
+      const p = Math.min(1, (elapsed + (now - startedAt)) / (seconds * 1000));
+      progress.set(p);
+      if (p >= 1) {
+        running = false;
+        finished = true;
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    };
+
+    const update = () => {
+      const should = visible && !document.hidden && !finished;
+      if (should && !running) {
+        running = true;
+        startedAt = performance.now();
+        raf = requestAnimationFrame(frame);
+      } else if (!should && running) {
+        running = false;
+        elapsed += performance.now() - startedAt;
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    // -12%: the sequence waits until the scene is properly on screen rather
+    // than starting while its first pixel row is still under the fold
+    const io = new IntersectionObserver((entries) => {
+      visible = entries.some((e) => e.isIntersecting);
+      update();
+    }, { rootMargin: "-12% 0px" });
+    io.observe(el);
+    document.addEventListener("visibilitychange", update);
+
+    return () => {
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+      io.disconnect();
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, [ref, seconds, disabled, progress]);
+  return progress;
+}
+
+function WorkingDay() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const { error } = useStaffAtlas();
+  const dayRef = React.useRef(null);
+  const still = useMotionValue(0.4);
+  const progress = useTimedProgress(dayRef, DAY_SECONDS, reduced || !!error);
+
+  const [group, setGroup] = React.useState(() => phoneGroupAt(0));
+  useMotionValueEvent(progress, "change", (p) => {
+    const g = phoneGroupAt(p);
+    if (g !== group) setGroup(g);
+  });
+
+  const heading = (
+    <Container>
+      <h2 className="max-w-[18ch] font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px] lg:text-[44px]">
+        {t("day.title")}
+      </h2>
+      <p className="mt-4 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px]">{t("day.lead")}</p>
+    </Container>
+  );
+
+  const closing = (
+    <Container>
+      <div className="mt-14 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <p className="max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
+        <MagneticButton href="#demo" variant="primary">{t("day.phone.cta")}</MagneticButton>
+      </div>
+    </Container>
+  );
+
+  // Reduced motion, or no atlas: the room held at nine in the morning and the
+  // whole feed at rest, in document order. Every card is in the DOM, so this
+  // reads correctly even if no canvas ever appears.
+  if (reduced || error) {
+    return (
+      <section className="py-20 md:py-28">
+        {heading}
+        <div className="relative mt-10">
+          {!error && (
+            <div className="day-band">
+              <PixelStage draw={drawWorkingDay} logicalH={DAY_H} scale={DAY_SCALE} minW={STAFF_HERO_MIN_W} progress={still} label={t("day.sceneAlt")} />
+            </div>
+          )}
+          <Container className="mt-8 flex justify-center">
+            <OwnerPhone />
+          </Container>
+        </div>
+        {closing}
+      </section>
+    );
+  }
+
+  return (
+    <section className="relative pb-20 pt-10 md:pb-28 md:pt-14">
+      {heading}
+
+      <div ref={dayRef} className="relative mt-10 lg:min-h-[640px] lg:py-10">
+        <div className="relative lg:absolute lg:inset-x-0 lg:top-1/2 lg:-translate-y-1/2">
+          <div className="day-band">
+            <PixelStage
+              draw={drawWorkingDay}
+              logicalH={DAY_H}
+              scale={DAY_SCALE}
+              minW={STAFF_HERO_MIN_W}
+              progress={progress}
+              label={t("day.sceneAlt")}
+            />
+          </div>
+
+          {/* the phone: under the room on a phone, in front of it on a desk */}
+          <div className="relative -mt-14 flex justify-center lg:absolute lg:inset-0 lg:mt-0 lg:block">
+            <Container className="lg:relative lg:h-full">
+              <div className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
+                <OwnerPhone progress={progress} group={group} />
+              </div>
+            </Container>
+          </div>
+        </div>
+      </div>
+
+      {closing}
+    </section>
+  );
+}
+
+// The four, named once. Not cards: the owner's complaint was that the same
+// priced, profiled cards appeared again and again down the page. Prices live
+// on /pricing and the job descriptions on /office, so this is a type list —
+// portrait, name, role, and whether they are in service yet.
+function TheFour() {
+  const { t } = useTranslation();
+  return (
+    <section className="py-20 md:py-28">
+      <Container>
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <h2 className="font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px]">
+            {t("theFour.title")}
+          </h2>
+          <Link to="/office" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
+            {t("hero.buttons.seeWork")}
+            <span aria-hidden>&rsaquo;</span>
+          </Link>
+        </div>
+        {/* the one split that matters on this list: four face the customers, one faces the owner */}
+        <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.55] text-fg-muted">{t("theFour.lead")}</p>
+
+        <StaggerGroup className="mt-8 md:mt-10" stagger={0.06}>
+          {ALL_STAFF.map((id) => (
+            <StaffRow key={id} id={id} />
+          ))}
+        </StaggerGroup>
+      </Container>
+    </section>
+  );
+}
+
+function StaffRow({ id }) {
+  const { t } = useTranslation();
+  const live = STAFF_LIVE[id];
+  return (
+    <StaggerItem y={12}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[88px] sm:flex-nowrap sm:py-0">
+        <span className="flex h-[44px] w-[40px] shrink-0 items-start justify-center overflow-hidden rounded-[10px] bg-white/[0.05]">
+          <StaffAvatar id={id} size={2} className="-mt-[58px]" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
+            {t(`office.agents.${id}.name`)}
+          </span>
+          <span className="block text-[13px] text-fg-muted">{t(`office.agents.${id}.role`)}</span>
+        </span>
+        {/* the live dot is this section's one accent */}
+        <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-dim">
+          <span aria-hidden className={["h-1 w-1 rounded-full", live ? "bg-sky-400" : "bg-fg-dim"].join(" ")} />
+          {t(live ? "office.status.live" : "office.status.soon")}
+        </span>
+      </div>
+    </StaggerItem>
   );
 }
 
@@ -3169,935 +4330,19 @@ function NotFoundPage() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// The homepage. One argument, in the order a buyer asks it: what is this (hero),
-// why do I need it (messages at night), how does it work, who is on the staff,
-// what about a website, what does it cost, is there a deal, how do we start, is
-// my data safe, the rest of my questions, and how do I reach you.
-//
-// Every price and every line marked approved in PROGRESS.md is copied from
-// Дали's own prompt (dalatech-chatbot, api/chat.js), so the page and the chat
-// quote the same numbers in the same words. The 21st.dev pieces live in
-// src/components/ui/, each with its source and its local changes noted.
-
-const FACEBOOK_PAGE = "https://www.facebook.com/profile.php?id=61586065058744";
-
-// The «Анхны 10 бизнест» offer's seat counter. It is a real count, not a
-// countdown: change it by hand when a business signs, and take the offer down
-// at zero. Never animate it below its true value.
-const FIRST_TEN_SEATS_LEFT = 10;
-const FIRST_TEN_SEATS_TOTAL = 10;
-
-// Monthly fee per staff member in tugrik, as Дали quotes it (null: not announced).
-const HOME_MONTHLY = Object.fromEntries(Object.entries(OFFICE_AGENTS).map(([id, a]) => [id, a.monthly]));
-const HOME_STAFF = ["dali", "vira", "nova", "ora", "eho"];
-
-// Smooth-scroll to a section on this page, clear of the fixed navbar.
-function scrollToSection(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const y = el.getBoundingClientRect().top + window.scrollY - 64;
-  window.scrollTo({ top: y, behavior: reduce ? "auto" : "smooth" });
-}
-
-function HomeEyebrow({ children, className = "" }) {
-  return (
-    <p className={["text-[11.5px] font-semibold uppercase tracking-[0.18em] text-accent/90", className].join(" ")}>
-      {children}
-    </p>
-  );
-}
-
-function HomeHeader({ eyebrow, title, lead, align = "left", className = "" }) {
-  const center = align === "center";
-  return (
-    <BlurFade inView className={[center ? "mx-auto text-center" : "", "max-w-[720px]", className].join(" ")}>
-      <HomeEyebrow>{eyebrow}</HomeEyebrow>
-      <h2 className="mt-4 font-display text-[32px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
-        {title}
-      </h2>
-      {lead && (
-        <p className={["mt-5 text-[16px] leading-[1.6] text-fg-muted sm:text-[17px]", center ? "mx-auto max-w-[36rem]" : "max-w-[36rem]"].join(" ")}>
-          {lead}
-        </p>
-      )}
-    </BlurFade>
-  );
-}
-
-// A pixel portrait cropped to the head and shoulders. The atlas frame is 32×64
-// with the character standing in its lower half.
-// `from` is the first atlas row shown, `rows` how many.
-function StaffBust({ id, size = 2, from = 26, rows = 36, className = "" }) {
-  return (
-    <span
-      aria-hidden
-      className={["block shrink-0 overflow-hidden", className].join(" ")}
-      style={{ width: 32 * size, height: rows * size }}
-    >
-      <span className="block" style={{ marginTop: -from * size }}>
-        <StaffAvatar id={id} size={size} />
-      </span>
-    </span>
-  );
-}
-
-// ------------------------------------------------------------------ 1 hero
-function HomeHero() {
-  const { t } = useTranslation();
-  const channels = t("home.hero.channels", { returnObjects: true });
-  return (
-    <section id="top" className="relative overflow-hidden pb-20 pt-32 md:pb-28 md:pt-44">
-      <Spotlight className="-top-40 left-0 md:-top-24 md:left-40" fill="#60C8FF" />
-      {/* the navy under the light: a floor so the page below starts clean */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink-950" />
-
-      <Container className="relative z-[2]">
-        <div className="mx-auto max-w-[880px] text-center">
-          <BlurFade delay={0.05}>
-            <HomeEyebrow className="text-fg-muted">{t("home.hero.eyebrow")}</HomeEyebrow>
-          </BlurFade>
-
-          <h1 className="mt-6 font-display text-[40px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[56px] lg:text-[70px]">
-            <span className="sr-only">{t("home.hero.titleA11y")}</span>
-            <span aria-hidden className="block text-accent">
-              <WordRotate words={Array.isArray(channels) ? channels : []} staticText={t("home.hero.channelsStatic")} duration={2600} />
-            </span>
-            <span aria-hidden className="block">{t("home.hero.titleAfter")}</span>
-          </h1>
-
-          {/* no entrance on the lead: it is the page's largest paint on a
-              phone, and fading it in pushed LCP from ~1.0 s to ~2.0 s */}
-          <p className="mx-auto mt-7 max-w-[40rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[18px]">
-            {t("home.hero.lead")}
-          </p>
-
-          <BlurFade delay={0.35}>
-            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-6">
-              <MagneticButton href="#demo" variant="primary" demoServices={["dali"]} className="w-full sm:w-auto">
-                {t("home.hero.primary")}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </MagneticButton>
-              <button
-                type="button"
-                onClick={() => scrollToSection("pricing")}
-                className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-accent transition-colors hover:text-fg"
-              >
-                {t("home.hero.secondary")}
-                <span aria-hidden>&rsaquo;</span>
-              </button>
-            </div>
-          </BlurFade>
-
-          {/* the one live product, named with its price, under the buttons */}
-          <BlurFade delay={0.45}>
-            <div className="mx-auto mt-12 inline-flex items-center gap-3 rounded-full border border-white/[0.08] bg-ink-900/80 py-1.5 pl-1.5 pr-4 text-left">
-              <span className="flex h-10 w-10 items-end justify-center overflow-hidden rounded-full bg-accent/10 ring-1 ring-inset ring-accent/25">
-                <StaffBust id="dali" size={1} from={24} rows={40} />
-              </span>
-              <span className="leading-tight">
-                <span className="flex items-center gap-1.5 text-[13px] font-semibold text-fg">
-                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-accent" />
-                  {t("home.hero.daliStatus")}
-                </span>
-                <span className="mt-0.5 block text-[12.5px] text-fg-muted">{t("home.hero.daliPrice")}</span>
-              </span>
-            </div>
-          </BlurFade>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-// ---------------------------------------------------- 2 messages at night
-function ChannelGlyph({ kind, className = "h-5 w-5" }) {
-  if (kind === "messenger") {
-    return (
-      <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
-        <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.35.27.57l.05 1.78c.02.57.6.94 1.12.71l1.99-.88c.17-.07.36-.09.53-.04.91.25 1.89.39 2.9.39 5.64 0 10-4.13 10-9.7S17.64 2 12 2Zm6 7.46-2.94 4.66a1.5 1.5 0 0 1-2.17.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66a1.5 1.5 0 0 1 2.17-.4l2.34 1.75a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63Z" />
-      </svg>
-    );
-  }
-  if (kind === "facebook") {
-    return (
-      <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
-        <path d="M22 12a10 10 0 1 0-11.6 9.9V14.9H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3V22A10 10 0 0 0 22 12z" />
-      </svg>
-    );
-  }
-  if (kind === "instagram") {
-    return (
-      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-        <rect x="3" y="3" width="18" height="18" rx="5" />
-        <circle cx="12" cy="12" r="4" />
-        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-      </svg>
-    );
-  }
-  if (kind === "website") {
-    return (
-      <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" />
-      </svg>
-    );
-  }
-  // telegram
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
-      <path d="M21.9 4.6 18.8 19.3c-.2 1-.8 1.3-1.7.8l-4.6-3.4-2.2 2.1c-.2.2-.5.5-1 .5l.4-4.7 8.5-7.7c.4-.3-.1-.5-.6-.2L7.1 13.3l-4.5-1.4c-1-.3-1-1 .2-1.4L20.5 3.6c.8-.3 1.6.2 1.4 1Z" />
-    </svg>
-  );
-}
-
-function PhoneNote({ icon, from, time, title, children, tone = "default" }) {
-  return (
-    <div
-      className={[
-        "rounded-[20px] border px-3.5 py-3 text-left shadow-[0_12px_30px_-18px_rgba(0,0,0,0.9)]",
-        tone === "lead" ? "border-accent/30 bg-ink-800" : "border-white/[0.07] bg-ink-800/90",
-      ].join(" ")}
-    >
-      <div className="flex items-center gap-2.5">
-        {icon}
-        <p className="min-w-0 flex-1 truncate text-[11.5px] font-medium uppercase tracking-[0.08em] text-fg-dim">{from}</p>
-        <p className="shrink-0 text-[11.5px] text-fg-dim">{time}</p>
-      </div>
-      {title && <p className="mt-2 text-[14px] font-semibold leading-[1.35] text-fg">{title}</p>}
-      <p className={["text-[14px] leading-[1.45] text-fg/85", title ? "mt-0.5" : "mt-2"].join(" ")}>{children}</p>
-    </div>
-  );
-}
-
-function NightPhone() {
-  const { t } = useTranslation();
-  const ref = React.useRef(null);
-  // Starts once the phone is mostly on screen, then plays through and stays.
-  const inView = useInView(ref, { once: true, amount: 0.45 });
-  const iconBox = "flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px]";
-  return (
-    <div
-      ref={ref}
-      role="img"
-      aria-label={t("home.night.phoneLabel")}
-      className="relative mx-auto w-full max-w-[340px] rounded-[48px] border border-white/[0.1] bg-ink-900 p-3 shadow-[0_40px_100px_-40px_rgba(96,200,255,0.28)]"
-    >
-      <div className="relative h-[590px] overflow-hidden rounded-[38px] bg-gradient-to-b from-ink-800 via-ink-900 to-ink-950 px-3.5">
-        <div aria-hidden className="absolute left-1/2 top-3 h-[26px] w-[92px] -translate-x-1/2 rounded-full bg-ink-950" />
-        <div aria-hidden className="pt-12 text-center">
-          <p className="text-[13px] font-medium text-fg-muted">{t("home.night.date")}</p>
-          <p className="font-display text-[56px] font-semibold leading-none tracking-tight text-fg/95 tabular-nums">{t("home.night.clock")}</p>
-        </div>
-        <div aria-hidden className="mt-5">
-          <AnimatedList delay={1500} play={inView}>
-            <PhoneNote
-              key="question"
-              icon={<span className={[iconBox, "bg-gradient-to-br from-[#2E8BFF] to-[#A34DFF] text-white"].join(" ")}><ChannelGlyph kind="messenger" className="h-4 w-4" /></span>}
-              from={`${t("home.night.channel")} · ${t("home.night.customer")}`}
-              time={t("home.night.time")}
-            >
-              {t("home.night.question")}
-            </PhoneNote>
-            <PhoneNote
-              key="answer"
-              icon={<span className={[iconBox, "items-end overflow-hidden bg-accent/15"].join(" ")}><StaffBust id="dali" size={1} from={27} rows={28} /></span>}
-              from={`${t("home.night.daliFrom")} → ${t("home.night.customer")}`}
-              time={t("home.night.time")}
-            >
-              {t("home.night.answer")}
-            </PhoneNote>
-            <PhoneNote
-              key="lead"
-              tone="lead"
-              icon={<span className={[iconBox, "bg-[#2AABEE] text-white"].join(" ")}><ChannelGlyph kind="telegram" className="h-4 w-4" /></span>}
-              from={t("home.night.leadFrom")}
-              time={t("home.night.now")}
-              title={t("home.night.leadTitle")}
-            >
-              {t("home.night.leadBody")}
-            </PhoneNote>
-          </AnimatedList>
-        </div>
-        <div aria-hidden className="absolute bottom-2.5 left-1/2 h-1 w-28 -translate-x-1/2 rounded-full bg-white/25" />
-      </div>
-    </div>
-  );
-}
-
-function HomeNight() {
-  const { t } = useTranslation();
-  const points = t("home.night.points", { returnObjects: true });
-  return (
-    <section id="night" className="relative py-20 md:py-32">
-      <Container>
-        <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-20">
-          <div>
-            <HomeHeader eyebrow={t("home.night.eyebrow")} title={t("home.night.title")} lead={t("home.night.lead")} />
-            <BlurFade inView delay={0.1}>
-              <ul className="mt-10 max-w-[36rem]">
-                {(Array.isArray(points) ? points : []).map((p) => (
-                  <li key={p} className="flex gap-3 border-t border-white/[0.07] py-4 text-[15px] leading-[1.5] text-fg/90">
-                    <CheckIcon />
-                    <span>{p}</span>
-                  </li>
-                ))}
-              </ul>
-            </BlurFade>
-          </div>
-          <div>
-            <ErrorBoundary fallback={null}>
-              <NightPhone />
-            </ErrorBoundary>
-            <p className="mt-4 text-center text-[12.5px] text-fg-dim">{t("home.night.note")}</p>
-          </div>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-// ------------------------------------------------------------ 3 how it works
-const BEAM_COLORS = { pathColor: "#8B9FC4", pathOpacity: 0.18, gradientStartColor: "#60C8FF", gradientStopColor: "#2563EB" };
-
-function BeamNode({ nodeRef, label, size = "sm", children, highlight = false }) {
-  return (
-    <div className="relative z-10 flex flex-col items-center gap-2">
-      <div
-        ref={nodeRef}
-        className={[
-          "flex items-center justify-center rounded-full border",
-          size === "lg" ? "h-[76px] w-[76px] sm:h-[92px] sm:w-[92px]" : "h-12 w-12 sm:h-14 sm:w-14",
-          highlight ? "border-accent/40 bg-ink-800 shadow-[0_0_40px_-8px_rgba(96,200,255,0.55)]" : "border-white/10 bg-ink-900 text-fg-muted",
-        ].join(" ")}
-      >
-        {children}
-      </div>
-      <span className="text-center text-[12px] font-medium leading-tight text-fg-muted sm:text-[13px]">{label}</span>
-    </div>
-  );
-}
-
-function ChannelBeams() {
-  const { t } = useTranslation();
-  const reduced = useReducedMotion();
-  const containerRef = React.useRef(null);
-  const fbRef = React.useRef(null);
-  const igRef = React.useRef(null);
-  const webRef = React.useRef(null);
-  const daliRef = React.useRef(null);
-  const tgRef = React.useRef(null);
-  // The light only runs while the diagram is on screen.
-  const inView = useInView(containerRef, { amount: 0.3 });
-  const animate = inView && !reduced;
-  return (
-    <div
-      ref={containerRef}
-      role="img"
-      aria-label={t("home.how.diagramLabel")}
-      className="relative mx-auto flex h-[300px] w-full max-w-[760px] items-center justify-between px-1 sm:h-[340px] sm:px-6"
-    >
-      <div className="flex h-full flex-col justify-between py-2">
-        <BeamNode nodeRef={fbRef} label="Facebook"><ChannelGlyph kind="facebook" /></BeamNode>
-        <BeamNode nodeRef={igRef} label="Instagram"><ChannelGlyph kind="instagram" /></BeamNode>
-        <BeamNode nodeRef={webRef} label={t("home.how.website")}><ChannelGlyph kind="website" /></BeamNode>
-      </div>
-      <BeamNode nodeRef={daliRef} label={t("home.how.dali")} size="lg" highlight>
-        <span className="flex h-full w-full items-end justify-center overflow-hidden rounded-full">
-          <StaffBust id="dali" size={2} from={24} rows={40} />
-        </span>
-      </BeamNode>
-      <BeamNode nodeRef={tgRef} label={t("home.how.telegram")}>
-        <span className="text-[#2AABEE]"><ChannelGlyph kind="telegram" /></span>
-      </BeamNode>
-
-      <AnimatedBeam containerRef={containerRef} fromRef={fbRef} toRef={daliRef} curvature={-40} endYOffset={-10} duration={4} animate={animate} {...BEAM_COLORS} />
-      <AnimatedBeam containerRef={containerRef} fromRef={igRef} toRef={daliRef} duration={4} delay={0.6} animate={animate} {...BEAM_COLORS} />
-      <AnimatedBeam containerRef={containerRef} fromRef={webRef} toRef={daliRef} curvature={40} endYOffset={10} duration={4} delay={1.2} animate={animate} {...BEAM_COLORS} />
-      <AnimatedBeam containerRef={containerRef} fromRef={daliRef} toRef={tgRef} duration={3} delay={2} animate={animate} {...BEAM_COLORS} />
-    </div>
-  );
-}
-
-function HomeHow() {
-  const { t } = useTranslation();
-  const steps = t("home.how.steps", { returnObjects: true });
-  return (
-    <section id="how" className="relative py-20 md:py-32">
-      <Container>
-        <HomeHeader align="center" eyebrow={t("home.how.eyebrow")} title={t("home.how.title")} lead={t("home.how.lead")} />
-        <BlurFade inView delay={0.1} className="mt-12 md:mt-16">
-          <ErrorBoundary fallback={null}>
-            <ChannelBeams />
-          </ErrorBoundary>
-        </BlurFade>
-        <div className="mx-auto mt-10 grid max-w-[980px] gap-px overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.07] md:mt-14 md:grid-cols-3">
-          {(Array.isArray(steps) ? steps : []).map((s, i) => (
-            <BlurFade key={s.title} inView delay={0.08 * i} className="bg-ink-950 p-6 sm:p-7">
-              <p className="font-display text-[13px] font-semibold tabular-nums text-accent">{String(i + 1).padStart(2, "0")}</p>
-              <h3 className="mt-3 font-display text-[18px] font-semibold tracking-tight text-fg">{s.title}</h3>
-              <p className="mt-2 text-[14.5px] leading-[1.55] text-fg-muted">{s.body}</p>
-            </BlurFade>
-          ))}
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-// ------------------------------------------------------------- 4 AI staff
-function StaffStatusPill({ live }) {
-  const { t } = useTranslation();
-  return (
-    <span
-      className={[
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold",
-        live ? "bg-accent/12 text-accent ring-1 ring-inset ring-accent/30" : "bg-white/[0.04] text-fg-muted ring-1 ring-inset ring-white/10",
-      ].join(" ")}
-    >
-      <span aria-hidden className={["h-1.5 w-1.5 rounded-full", live ? "bg-accent" : "bg-fg-dim"].join(" ")} />
-      {t(live ? "home.staff.live" : "home.staff.soon")}
-    </span>
-  );
-}
-
-function StaffTile({ id }) {
-  const { t } = useTranslation();
-  const { open } = useDemoRequest();
-  const live = STAFF_LIVE[id];
-  const p = (k) => t(`home.staff.people.${id}.${k}`);
-  const monthly = HOME_MONTHLY[id];
-
-  if (live) {
-    const features = t("home.pricing.features.dali", { returnObjects: true });
-    // the two lines about nights and limits; the channels are the chips above
-    const daliPoints = Array.isArray(features) ? features.slice(1, 3) : [];
-    return (
-      <BentoCard className="col-span-2 lg:row-span-2">
-        <BorderBeam size={260} duration={12} colorFrom="#60C8FF" colorTo="#2563EB" borderWidth={1.5} />
-        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/[0.08] blur-3xl" />
-        <div className="relative flex h-full flex-col p-6 sm:p-8">
-          <div className="flex items-start justify-between gap-4">
-            <StaffStatusPill live />
-            <StaffBust id={id} size={2} from={24} rows={40} className="-mr-1 -mt-1 sm:hidden" />
-          </div>
-          <div className="mt-6 flex items-end gap-6">
-            <div className="min-w-0 flex-1">
-              <h3 className="font-display text-[40px] font-semibold leading-none tracking-tightest text-fg sm:text-[52px]">{p("name")}</h3>
-              <p className="mt-2 text-[16px] text-accent">{p("role")}</p>
-            </div>
-            <StaffBust id={id} size={4} from={24} rows={40} className="hidden sm:block" />
-          </div>
-          <p className="mt-5 max-w-[34rem] text-[15.5px] leading-[1.6] text-fg-muted">{p("job")}</p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {[["facebook", "Facebook"], ["instagram", "Instagram"], ["website", t("home.how.website")]].map(([kind, label]) => (
-              <span key={kind} className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] px-3 py-1.5 text-[12.5px] text-fg/85 ring-1 ring-inset ring-white/[0.08]">
-                <ChannelGlyph kind={kind} className="h-3.5 w-3.5 text-fg-muted" />
-                {label}
-              </span>
-            ))}
-          </div>
-          <ul className="mt-6 hidden max-w-[34rem] space-y-2.5 sm:block">
-            {daliPoints.map((line) => (
-              <li key={line} className="flex gap-3 text-[14px] leading-[1.5] text-fg/85">
-                <CheckIcon />
-                <span>{line}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-auto flex flex-col gap-5 pt-8 sm:flex-row sm:items-end sm:justify-between">
-            <p>
-              <span className="font-display text-[30px] font-semibold tracking-tight text-fg tabular-nums">{p("price")}</span>
-              <span className="text-[14px] text-fg-muted">{t("home.staff.perMonth")}</span>
-              <span className="block text-[13.5px] text-fg-muted">{t("home.staff.setup")}</span>
-            </p>
-            <MagneticButton href="#demo" variant="primary" demoServices={[id]} className="w-full sm:w-auto">
-              {t("home.staff.hire")}
-            </MagneticButton>
-          </div>
-        </div>
-      </BentoCard>
-    );
-  }
-
-  return (
-    <BentoCard>
-      <div className="flex h-full flex-col p-4 md:p-6">
-        <div className="flex flex-col-reverse items-start justify-between gap-3 md:flex-row">
-          <div className="min-w-0">
-            <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg md:text-[22px]">{p("name")}</h3>
-            <p className="text-[13.5px] leading-snug text-fg-muted md:text-[14px]">{p("role")}</p>
-          </div>
-          <span className="flex h-12 w-14 shrink-0 items-end justify-center overflow-hidden rounded-xl bg-white/[0.04] opacity-80">
-            <StaffBust id={id} size={2} from={29} rows={24} />
-          </span>
-        </div>
-        {/* a line, not a pill: in a narrow tile the long label wraps cleanly */}
-        <p className="mt-3 flex items-start gap-2 text-[12.5px] font-medium leading-[1.4] text-fg-muted">
-          <span aria-hidden className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-fg-dim" />
-          {t("home.staff.soon")}
-        </p>
-        <p className="mt-4 hidden text-[14px] leading-[1.55] text-fg-muted md:block">{p("job")}</p>
-        <div className="mt-auto pt-4 md:pt-6">
-          {monthly ? (
-            <p className="leading-tight">
-              <span className="whitespace-nowrap">
-                <span className="font-display text-[20px] font-semibold text-fg tabular-nums">{p("price")}</span>
-                <span className="text-[13px] text-fg-muted">{t("home.staff.perMonth")}</span>
-              </span>
-              <span className="block text-[12.5px] text-fg-dim">{t("home.staff.setup")}</span>
-            </p>
-          ) : (
-            <p className="text-[13px] leading-tight text-fg-dim">{t("home.staff.noPrice")}</p>
-          )}
-          <button
-            type="button"
-            onClick={() => open([id])}
-            className="pressable mt-4 hidden min-h-[44px] w-full items-center justify-center rounded-xl md:inline-flex px-3.5 text-[13.5px] font-semibold text-fg ring-1 ring-inset ring-white/12 transition-colors hover:bg-white/[0.06]"
-          >
-            {t("home.staff.preregister")}
-          </button>
-        </div>
-      </div>
-    </BentoCard>
-  );
-}
-
-function HomeStaff() {
-  const { t } = useTranslation();
-  return (
-    <section id="staff" className="relative py-20 md:py-32">
-      <Container>
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <HomeHeader eyebrow={t("home.staff.eyebrow")} title={t("home.staff.title")} lead={t("home.staff.lead")} />
-          <Link to="/office" className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 text-[16px] text-accent transition-colors hover:text-fg">
-            {t("home.staff.more")}
-            <span aria-hidden>&rsaquo;</span>
-          </Link>
-        </div>
-        <BlurFade inView delay={0.08} className="mt-12">
-          {/* phones get two compact tiles a row for the four to come; what
-              each one does is in the price list below, card by card */}
-          <BentoGrid className="grid-cols-2 gap-3 md:grid-cols-2 md:gap-4 lg:grid-cols-4">
-            {HOME_STAFF.map((id) => <StaffTile key={id} id={id} />)}
-          </BentoGrid>
-        </BlurFade>
-      </Container>
-    </section>
-  );
-}
-
-// ------------------------------------------------------ 5 website + add-ons
-function HomeWebsite() {
-  const { t } = useTranslation();
-  const bullets = t("home.website.bullets", { returnObjects: true });
-  const addons = t("home.website.addons", { returnObjects: true });
-  return (
-    <section id="website" className="relative py-20 md:py-32">
-      <Container>
-        <HomeHeader eyebrow={t("home.website.eyebrow")} title={t("home.website.title")} lead={t("home.website.lead")} />
-        <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">
-          <BlurFade inView delay={0.05} className="lg:sticky lg:top-28 lg:self-start">
-            {/* the client is not named on this site, so the frame is not a link */}
-            <Safari url={t("home.website.url")} className="drop-shadow-[0_40px_60px_rgba(2,6,23,0.6)]">
-              <SalonPreview />
-            </Safari>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <Pill>{t("portfolio.case.pills.website")}</Pill>
-              <Pill>{t("portfolio.case.pills.chatbot")}</Pill>
-              <Pill>{t("portfolio.case.pills.productQA")}</Pill>
-              <Pill>{t("portfolio.case.pills.availability")}</Pill>
-            </div>
-          </BlurFade>
-
-          <BlurFade inView delay={0.12}>
-            <div className="rounded-3xl border border-white/[0.08] bg-ink-900 p-6 sm:p-8">
-              <h3 className="font-display text-[20px] font-semibold text-fg">{t("home.website.name")}</h3>
-              <p className="mt-3 font-display text-[38px] font-semibold leading-none tracking-tight text-fg tabular-nums">{t("home.website.price")}</p>
-              <p className="mt-2 text-[14px] text-fg-muted">{t("home.website.priceNote")}</p>
-              <ul className="mt-6 space-y-3">
-                {(Array.isArray(bullets) ? bullets : []).map((b) => (
-                  <li key={b} className="flex gap-3 text-[14.5px] leading-[1.5] text-fg/90">
-                    <CheckIcon />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-8 text-[11.5px] font-semibold uppercase tracking-[0.16em] text-fg-dim">{t("home.website.addonsTitle")}</p>
-              <ul className="mt-3">
-                {(Array.isArray(addons) ? addons : []).map((a) => (
-                  <li key={a.name} className="flex items-baseline justify-between gap-4 border-t border-white/[0.07] py-3 text-[14.5px]">
-                    <span className="text-fg/90">{a.name}</span>
-                    <span className="font-medium text-fg tabular-nums">{a.price}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-5 rounded-2xl bg-accent/[0.06] px-4 py-3 text-[13.5px] leading-[1.5] text-fg/85 ring-1 ring-inset ring-accent/15">
-                {t("home.website.daliNote")}
-              </p>
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <MagneticButton href="https://app.dalatech.online" variant="primary" className="w-full sm:w-auto">{t("home.website.demo")}</MagneticButton>
-                <MagneticButton href="#demo" variant="ghost" demoServices={WEBSITE_DEMO_SERVICES} className="w-full sm:w-auto">{t("home.website.request")}</MagneticButton>
-              </div>
-              <p className="mt-4 text-[12.5px] leading-[1.5] text-fg-dim">{t("home.website.demoNote")}</p>
-            </div>
-          </BlurFade>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-// ----------------------------------------------------------------- 6 prices
-function TeamDiscount() {
-  const { t } = useTranslation();
-  const tiers = t("home.pricing.teamTiers", { returnObjects: true });
-  const pct = [10, 15, 20];
-  return (
-    <div className="mt-6 rounded-3xl border border-white/[0.08] bg-ink-900 p-6 sm:p-8">
-      <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:items-center">
-        <div>
-          <h3 className="font-display text-[20px] font-semibold text-fg">{t("home.pricing.teamTitle")}</h3>
-          <p className="mt-2 text-[14.5px] leading-[1.55] text-fg-muted">{t("home.pricing.teamLine")}</p>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          {pct.map((n, i) => (
-            <div key={n} className="rounded-2xl bg-white/[0.03] px-3 py-4 text-center ring-1 ring-inset ring-white/[0.06]">
-              <p className="whitespace-nowrap font-display text-[24px] font-semibold leading-none text-fg sm:text-[36px]">
-                −<NumberTicker value={n} className="tracking-tight" />%
-              </p>
-              <p className="mt-2 text-[12.5px] text-fg-muted">{Array.isArray(tiers) ? tiers[i] : ""}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      <p className="mt-6 border-t border-white/[0.07] pt-4 text-[13.5px] text-fg-muted">{t("home.pricing.noStack")}</p>
-    </div>
-  );
-}
-
-function HomePricing() {
-  const { t } = useTranslation();
-  const { open } = useDemoRequest();
-  const list = (key) => {
-    const v = t(key, { returnObjects: true });
-    return Array.isArray(v) ? v : [];
-  };
-  const tiers = HOME_STAFF.map((id) => {
-    const live = STAFF_LIVE[id];
-    const monthly = HOME_MONTHLY[id];
-    return {
-      id,
-      name: t(`home.staff.people.${id}.name`),
-      role: t(`home.staff.people.${id}.role`),
-      badge: live ? t("home.pricing.liveBadge") : t("home.pricing.soonBadge"),
-      highlight: live,
-      className: live ? "md:col-span-2" : "",
-      wide: live,
-      price: monthly ? { monthly: formatTugrik(monthly), yearly: formatTugrik(monthly * 10) } : null,
-      noPrice: t("home.staff.noPrice"),
-      setup: monthly ? t("home.pricing.setup") : null,
-      yearlyHint: t("home.pricing.yearlyHint"),
-      extras: list(`home.pricing.extras.${id}`),
-      features: list(`home.pricing.features.${id}`),
-      icon: (
-        <span className={["flex h-12 w-14 shrink-0 items-end justify-center overflow-hidden rounded-xl", live ? "bg-accent/12" : "bg-white/[0.04] opacity-80"].join(" ")}>
-          <StaffBust id={id} size={2} from={29} rows={24} />
-        </span>
-      ),
-      cta: { label: live ? t("home.staff.hire") : t("home.staff.preregister"), onClick: () => open([id]) },
-    };
-  });
-  const terms = t("home.pricing.terms", { returnObjects: true });
-
-  return (
-    <section id="pricing" className="relative py-20 md:py-32">
-      <Container>
-        <HomeHeader align="center" eyebrow={t("home.pricing.eyebrow")} title={t("home.pricing.title")} lead={t("home.pricing.lead")} />
-        <BlurFade inView delay={0.08} className="mt-10">
-          <PricingSection
-            tiers={tiers}
-            labels={{
-              periodLabel: t("home.pricing.period"),
-              monthly: t("home.pricing.monthly"),
-              yearly: t("home.pricing.yearly"),
-              yearlyNote: t("home.pricing.yearlyNote"),
-              perMonth: t("home.pricing.perMonth"),
-              perYear: t("home.pricing.perYear"),
-            }}
-            footer={<TeamDiscount />}
-          />
-        </BlurFade>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {(Array.isArray(terms) ? terms : []).map((term) => (
-            <div key={term.title} className="rounded-2xl border border-white/[0.07] p-5">
-              <h3 className="text-[14px] font-semibold text-fg">{term.title}</h3>
-              <p className="mt-2 text-[13.5px] leading-[1.55] text-fg-muted">{term.body}</p>
-            </div>
-          ))}
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-// ----------------------------------------------------------------- 7 offers
-// Gold appears on this page only here.
-const GOLD_SHIMMER = { shimmerColor: "#F4D78F", background: "linear-gradient(180deg, #2A2210 0%, #16120A 100%)", borderRadius: "14px" };
-
-function OfferCard({ name, price, items, after, children, cta, onCta }) {
-  return (
-    <div className="relative flex flex-col overflow-hidden rounded-3xl border border-gold-400/25 bg-gradient-to-b from-gold-400/[0.07] to-ink-900 p-6 sm:p-8">
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-300/60 to-transparent" />
-      <h3 className="font-display text-[22px] font-semibold tracking-tight text-gold-300">{name}</h3>
-      {price && <p className="mt-3 font-display text-[44px] font-semibold leading-none tracking-tight text-fg tabular-nums">{price}</p>}
-      {children}
-      <ul className="mt-6 space-y-3">
-        {items.map((it) => (
-          <li key={it} className="flex gap-3 text-[15px] leading-[1.5] text-fg/90">
-            <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-gold-400" />
-            <span>{it}</span>
-          </li>
-        ))}
-      </ul>
-      {after && <p className="mt-5 text-[14px] text-fg-muted">{after}</p>}
-      <div className="mt-auto pt-8">
-        <ShimmerButton {...GOLD_SHIMMER} onClick={onCta} className="min-h-[50px] w-full border-gold-400/35 text-[15px] font-semibold text-gold-300">
-          {cta}
-        </ShimmerButton>
-      </div>
-    </div>
-  );
-}
-
-function HomeOffers() {
-  const { t } = useTranslation();
-  const { open } = useDemoRequest();
-  const list = (key) => {
-    const v = t(key, { returnObjects: true });
-    return Array.isArray(v) ? v : [];
-  };
-  return (
-    <section id="offers" className="relative py-20 md:py-28">
-      <Container>
-        <div className="max-w-[720px]">
-          <BlurFade inView>
-            <p className="text-[11.5px] font-semibold uppercase tracking-[0.18em] text-gold-400">{t("home.offers.eyebrow")}</p>
-            <h2 className="mt-4 font-display text-[32px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px]">{t("home.offers.title")}</h2>
-          </BlurFade>
-        </div>
-        <BlurFade inView delay={0.08} className="mt-10 grid gap-5 md:grid-cols-2 md:gap-6">
-          <OfferCard
-            name={t("home.offers.bundle.name")}
-            price={t("home.offers.bundle.price")}
-            items={list("home.offers.bundle.items")}
-            after={t("home.offers.bundle.after")}
-            cta={t("home.offers.bundle.cta")}
-            onCta={() => open(WEBSITE_DALI_DEMO_SERVICES)}
-          />
-          <OfferCard
-            name={t("home.offers.first.name")}
-            items={list("home.offers.first.items")}
-            cta={t("home.offers.first.cta")}
-            onCta={() => open(["dali"])}
-          >
-            <p className="mt-3 flex items-baseline gap-2">
-              <span className="font-display text-[44px] font-semibold leading-none text-fg">
-                <NumberTicker value={FIRST_TEN_SEATS_LEFT} />
-              </span>
-              <span className="font-display text-[22px] font-semibold text-fg-muted">{t("home.offers.first.of")}</span>
-              <span className="ml-1 text-[14px] text-fg-muted">{t("home.offers.first.seats")}</span>
-            </p>
-            <div aria-hidden className="mt-4 flex gap-1">
-              {Array.from({ length: FIRST_TEN_SEATS_TOTAL }, (_, i) => (
-                <span key={i} className={["h-1.5 flex-1 rounded-full", i < FIRST_TEN_SEATS_LEFT ? "bg-gold-400/80" : "bg-white/10"].join(" ")} />
-              ))}
-            </div>
-          </OfferCard>
-        </BlurFade>
-        <p className="mt-5 text-[13px] text-fg-dim">{t("home.offers.fine")}</p>
-      </Container>
-    </section>
-  );
-}
-
-// ---------------------------------------------------------------- 8 3 steps
-function HomeSteps() {
-  const { t } = useTranslation();
-  const items = t("home.steps.items", { returnObjects: true });
-  return (
-    <section id="steps" className="relative py-20 md:py-28">
-      <Container>
-        <HomeHeader eyebrow={t("home.steps.eyebrow")} title={t("home.steps.title")} />
-        <ol className="mt-12 grid gap-8 md:grid-cols-3 md:gap-6">
-          {(Array.isArray(items) ? items : []).map((s, i) => (
-            <BlurFade as="li" key={s.title} inView delay={0.08 * i} className="relative border-t border-white/[0.1] pt-6">
-              <span aria-hidden className="absolute -top-px left-0 h-px w-12 bg-accent" />
-              <p className="font-display text-[44px] font-semibold leading-none text-fg/15 tabular-nums">{i + 1}</p>
-              <h3 className="mt-4 font-display text-[20px] font-semibold tracking-tight text-fg">{s.title}</h3>
-              <p className="mt-2 text-[15px] leading-[1.55] text-fg-muted">{s.body}</p>
-            </BlurFade>
-          ))}
-        </ol>
-      </Container>
-    </section>
-  );
-}
-
-// -------------------------------------------------------- 9 data protection
-function HomeData() {
-  const { t } = useTranslation();
-  const items = t("home.data.items", { returnObjects: true });
-  return (
-    <section id="data" className="relative py-20 md:py-28">
-      <Container>
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
-          <div>
-            <HomeHeader eyebrow={t("home.data.eyebrow")} title={t("home.data.title")} />
-            <BlurFade inView delay={0.1} className="mt-10 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-white/[0.08] bg-ink-900 p-5">
-                <p className="font-display text-[40px] font-semibold leading-none text-fg">
-                  <NumberTicker value={72} /> <span className="text-[16px] font-medium text-fg-muted">{t("home.data.breachUnit")}</span>
-                </p>
-                <p className="mt-3 text-[13.5px] leading-[1.5] text-fg-muted">{t("home.data.breach")}</p>
-              </div>
-              <div className="rounded-2xl border border-white/[0.08] bg-ink-900 p-5">
-                <p className="font-display text-[40px] font-semibold leading-none text-fg">
-                  <NumberTicker value={30} /> <span className="text-[16px] font-medium text-fg-muted">{t("home.data.deleteUnit")}</span>
-                </p>
-                <p className="mt-3 text-[13.5px] leading-[1.5] text-fg-muted">{t("home.data.delete")}</p>
-              </div>
-            </BlurFade>
-          </div>
-          <BlurFade inView delay={0.12}>
-            <ul>
-              {(Array.isArray(items) ? items : []).map((it) => (
-                <li key={it.title} className="flex gap-4 border-t border-white/[0.07] py-5 first:border-t-0 lg:first:border-t">
-                  <span aria-hidden className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent ring-1 ring-inset ring-accent/20">
-                    <LockIcon className="h-4 w-4" />
-                  </span>
-                  <span>
-                    <span className="block text-[15.5px] font-semibold text-fg">{it.title}</span>
-                    <span className="mt-1 block text-[14.5px] leading-[1.55] text-fg-muted">{it.body}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <a href="/privacy/" className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 text-[15px] text-accent transition-colors hover:text-fg">
-              {t("home.data.policy")}
-              <span aria-hidden>&rsaquo;</span>
-            </a>
-          </BlurFade>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-// ------------------------------------------------------------------- 10 FAQ
-function HomeFaq() {
-  const { t } = useTranslation();
-  const items = t("home.faq.items", { returnObjects: true });
-  return (
-    <section id="faq" className="relative py-20 md:py-28">
-      <Container>
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
-          <div className="lg:sticky lg:top-28 lg:self-start">
-            <HomeHeader eyebrow={t("home.faq.eyebrow")} title={t("home.faq.title")} />
-            <p className="mt-5 max-w-[26rem] text-[14.5px] leading-[1.55] text-fg-muted">{t("home.faq.more")}</p>
-          </div>
-          <BlurFade inView delay={0.08}>
-            <Accordion transition={{ type: "spring", stiffness: 140, bounce: 0, duration: 0.3 }} className="border-b border-white/[0.08]">
-              {(Array.isArray(items) ? items : []).map((it, i) => (
-                <AccordionItem key={it.q} value={`q${i}`} className="border-t border-white/[0.08]">
-                  <AccordionTrigger className="flex min-h-[60px] w-full items-center justify-between gap-6 py-4 text-left text-[15.5px] font-medium text-fg transition-colors hover:text-white sm:text-[16.5px]">
-                    <span>{it.q}</span>
-                    <span aria-hidden className="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full ring-1 ring-inset ring-white/15 transition-colors group-data-[expanded]:bg-accent/15 group-data-[expanded]:ring-accent/40">
-                      <span className="absolute h-px w-2.5 bg-current" />
-                      <span className="absolute h-2.5 w-px bg-current transition-transform duration-200 group-data-[expanded]:scale-y-0" />
-                    </span>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <p className="max-w-[40rem] pb-5 pr-10 text-[15px] leading-[1.6] text-fg-muted">{it.a}</p>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </BlurFade>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-// ------------------------------------------------------ 11 final call to action
-function CtaTile({ href, external, icon, title, note }) {
-  return (
-    <a
-      href={href}
-      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className="pressable group flex min-h-[44px] items-start gap-4 rounded-2xl border border-white/[0.08] bg-ink-900 p-5 text-left transition-colors hover:border-accent/35 hover:bg-ink-800"
-    >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent ring-1 ring-inset ring-accent/20">{icon}</span>
-      <span className="min-w-0">
-        <span className="flex items-center gap-1.5 text-[16px] font-semibold text-fg">
-          {title}
-          <span aria-hidden className="text-accent transition-transform duration-200 group-hover:translate-x-0.5">&rsaquo;</span>
-        </span>
-        <span className="mt-1 block text-[13.5px] leading-[1.5] text-fg-muted">{note}</span>
-      </span>
-    </a>
-  );
-}
-
-function HomeCta() {
-  const { t } = useTranslation();
-  const { open } = useDemoRequest();
-  return (
-    <section id="contact" className="relative overflow-hidden py-24 md:py-36">
-      <div aria-hidden className="pointer-events-none absolute left-1/2 top-0 h-[28rem] w-[46rem] -translate-x-1/2 rounded-full bg-accent/[0.07] blur-3xl" />
-      <Container className="relative">
-        <HomeHeader align="center" eyebrow="DalaTech" title={t("home.cta.title")} lead={t("home.cta.lead")} />
-        <BlurFade inView delay={0.1} className="mx-auto mt-12 grid max-w-[980px] gap-4 md:grid-cols-3">
-          <CtaTile href={DEMO_MESSENGER} external icon={<ChannelGlyph kind="messenger" />} title={t("home.cta.messenger")} note={t("home.cta.messengerNote")} />
-          <CtaTile href={FACEBOOK_PAGE} external icon={<span className="font-display text-[18px] font-bold">1</span>} title={t("home.cta.comment")} note={t("home.cta.commentNote")} />
-          <CtaTile href="https://app.dalatech.online" external icon={<ChannelGlyph kind="website" />} title={t("home.cta.demo")} note={t("home.cta.demoNote")} />
-        </BlurFade>
-        <div className="mt-8 text-center">
-          <button
-            type="button"
-            onClick={() => open(null)}
-            className="inline-flex min-h-[44px] items-center gap-1.5 text-[15.5px] text-fg-muted transition-colors hover:text-fg"
-          >
-            {t("home.cta.request")}
-            <span aria-hidden>&rsaquo;</span>
-          </button>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
 const LandingPage = React.memo(function LandingPage() {
   usePageMeta("/");
   return (
     <>
-      <HomeHero />
-      <HomeNight />
-      <HomeHow />
-      {/* the live chat demo belongs to "how it works": the same Дали, answering */}
+      <Hero />
+      {/* one day in one room: the page's argument, made once, in pictures */}
+      <ErrorBoundary fallback={null}>
+        <WorkingDay />
+      </ErrorBoundary>
+      <TheFour />
       <LiveDemo />
-      <HomeStaff />
-      <HomeWebsite />
-      <HomePricing />
-      <HomeOffers />
-      <HomeSteps />
-      <HomeData />
-      <HomeFaq />
-      <HomeCta />
+      <Portfolio />
+      <Contact />
     </>
   );
 });
@@ -4135,8 +4380,7 @@ const PricingPage = React.memo(function PricingPage() {
   usePageMeta("/pricing");
   return (
     <PageShell>
-      <HomePricing />
-      <HomeOffers />
+      <Pricing />
     </PageShell>
   );
 });
@@ -4145,7 +4389,7 @@ const FAQPage = React.memo(function FAQPage() {
   usePageMeta("/faq");
   return (
     <PageShell>
-      <HomeFaq />
+      <FAQ />
     </PageShell>
   );
 });
@@ -4255,6 +4499,49 @@ function useDampedProgress(ref, offset, spring = CHAPTER_SPRING) {
   const { scrollYProgress } = useScroll({ target: ref, offset });
   const smooth = useSpring(scrollYProgress, spring);
   return reduced ? scrollYProgress : smooth;
+}
+
+// One line that rises into place as the scroll passes `at`.
+function Rise({ progress, at, span: rawSpan = 0.08, until, className = "", ariaHidden = false, children }) {
+  const reduced = useReducedMotion();
+  // A span that runs past `until` used to turn the exit ramp off silently:
+  // useUntil below is false, the element rises and then never leaves. Clamp
+  // instead, so passing a window always produces one.
+  const span = until !== undefined && at + rawSpan >= until
+    ? Math.max(1e-3, (until - at) * 0.6)
+    : rawSpan;
+  // Without `until` a line rises once and stays, which is what the chapters
+  // want. The pinned day scene needs the block to leave before the next
+  // moment arrives, so the ramp runs back down to zero at the far end.
+  //
+  // The exit ramp is a short fixed fade, not another `span`: a late line in a
+  // staggered group can start after `until - span`, and useTransform requires
+  // strictly increasing inputs — a non-monotonic stop list silently produced a
+  // broken transform and the card never appeared.
+  const OUT = 0.04;
+  const inEnd = at + span;
+  const outStart = Math.max(inEnd + 1e-4, Math.min(until - OUT, until - 1e-4));
+  const useUntil = until !== undefined && until > inEnd;
+  const stops = useUntil ? [at, inEnd, outStart, until] : [at, inEnd];
+  // Opacity is ramped over a third of the travel, not over all of it. A chat
+  // row is a dark plate with a light timestamp beside it: over a night scene
+  // the plate disappears at half opacity while the stamp is still perfectly
+  // legible, so a long cross-fade left bare times floating on the pixel art
+  // with nothing under them. The movement keeps the full ramp.
+  const fadeIn = at + span * 0.34;
+  const fadeOut = useUntil ? outStart + (until - outStart) * 0.66 : 0;
+  const opacityStops = useUntil ? [at, fadeIn, fadeOut, until] : [at, fadeIn];
+  const opacity = useTransform(progress, opacityStops, useUntil ? [0, 1, 1, 0] : [0, 1]);
+  const y = useTransform(
+    progress,
+    stops,
+    useUntil ? [reduced ? 0 : 14, 0, 0, reduced ? 0 : -10] : [reduced ? 0 : 14, 0]
+  );
+  return (
+    <motion.div style={{ opacity, y }} className={className} aria-hidden={ariaHidden || undefined}>
+      {children}
+    </motion.div>
+  );
 }
 
 // One scale and one height, deliberately not branched on width. The stage
@@ -4587,7 +4874,7 @@ function StaffPrice({ id, align = "left" }) {
   if (a.monthly == null) {
     return (
       <div className={align === "center" ? "text-center" : ""}>
-        <p className="text-[15px] font-medium text-fg-muted">{t("home.staff.noPrice")}</p>
+        <p className="text-[15px] font-medium text-fg-muted">{t("office.price.notAnnounced")}</p>
       </div>
     );
   }
@@ -4629,6 +4916,20 @@ function StaffChat({ lines, step }) {
         );
       })}
     </CueGroup>
+  );
+}
+
+// The scroll-driven bar, still used by the phone feed in the pinned day
+// scene: that timeline is scrubbed on purpose, so its cards follow the scroll.
+function ReportBar({ value, index, count, grow, last }) {
+  const scaleY = useTransform(grow, (g) => Math.min(1, Math.max(0, g * count - index)));
+  return (
+    <div className="flex flex-1 items-end" style={{ height: "100%" }}>
+      <motion.div
+        style={{ height: `${value * 100}%`, scaleY, transformOrigin: "bottom" }}
+        className={["w-full rounded-t-[3px]", last ? "bg-sky-400" : "bg-brand-500/70"].join(" ")}
+      />
+    </div>
   );
 }
 
@@ -4990,7 +5291,7 @@ function StaffTeam({ onHire }) {
                     {a.monthly != null ? (
                       <span className="mt-1 block text-[13px] font-medium tabular-nums text-fg">{formatTugrik(a.monthly)}<span className="font-normal text-fg-muted">{t("office.price.perMonth")}</span></span>
                     ) : (
-                      <span className="mt-1 block text-[12px] text-fg-muted">{t("home.staff.noPrice")}</span>
+                      <span className="mt-1 block text-[12px] text-fg-muted">{t("office.price.notAnnounced")}</span>
                     )}
                   </span>
                 </button>

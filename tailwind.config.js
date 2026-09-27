@@ -21,7 +21,7 @@ export default {
         accent: {
           DEFAULT: "#60C8FF",
         },
-        // Offers only (the two gold cards on the homepage). Nowhere else.
+        // The launch offer only (off by default, see LAUNCH_OFFER in App.jsx).
         gold: {
           300: "#F4D78F",
           400: "#E8BE62",
@@ -77,9 +77,6 @@ export default {
           "0%": { opacity: "0", transform: "translate(-72%, -62%) scale(0.5)" },
           "100%": { opacity: "1", transform: "translate(-50%, -40%) scale(1)" },
         },
-        "border-beam": {
-          "100%": { "offset-distance": "100%" },
-        },
         "shimmer-slide": {
           to: { transform: "translate(calc(100cqw - 100%), 0)" },
         },
@@ -96,7 +93,6 @@ export default {
         gridPulse: "gridPulse 6s ease-in-out infinite",
         floatY: "floatY 6s ease-in-out infinite",
         spotlight: "spotlight 2s ease 0.75s 1 forwards",
-        "border-beam": "border-beam calc(var(--duration) * 1s) infinite linear",
         "shimmer-slide": "shimmer-slide var(--speed) ease-in-out infinite alternate",
         "spin-around": "spin-around calc(var(--speed) * 2) infinite linear",
       },

@@ -177,6 +177,14 @@ html.nav-menu-open #dt-chat-frame {
   }
 }
 
+.word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
 .field {
   background: rgba(255,255,255,0.025);
   border: 1px solid rgba(255,255,255,0.08);
@@ -257,6 +265,54 @@ html.nav-menu-open #dt-chat-frame {
   }
 }
 
+/* Contact section — orbiting points around a glowing core. */
+@keyframes contactOrbDrift {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.05); }
+}
+@keyframes contactOrbit {
+  to { transform: rotate(360deg); }
+}
+@keyframes contactOrbitReverse {
+  to { transform: rotate(-360deg); }
+}
+.contact-orb-glow {
+  animation: contactOrbDrift 11s ease-in-out infinite;
+  will-change: transform;
+}
+.contact-orbit {
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+.contact-orbit-1 {
+  animation: contactOrbit 26s linear infinite;
+}
+.contact-orbit-2 {
+  animation: contactOrbitReverse 38s linear infinite;
+}
+.contact-orbit-3 {
+  animation: contactOrbit 18s linear infinite;
+}
+.contact-arrow {
+  transition: transform 220ms var(--ease-out-quart);
+}
+.group:hover .contact-arrow {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-orb-glow,
+  .contact-orbit-1,
+  .contact-orbit-2,
+  .contact-orbit-3 {
+    animation: none !important;
+  }
+  .contact-arrow {
+    transition: none !important;
+  }
+}
+
 /* Demo request dialog — a bottom sheet on phones, a centred card from sm up. */
 .demo-sheet {
   max-height: 92vh;
@@ -301,6 +357,57 @@ html.demo-dialog-open #dt-chat-frame {
 @keyframes staffWave {
   0%, 100% { transform: scaleY(0.5); }
   50% { transform: scaleY(1.5); }
+}
+
+.day-band {
+  overflow: hidden;
+}
+
+/* on a short phone the room gives up height before the text does */
+@media (max-height: 700px) {
+  .day-band canvas {
+    max-height: 170px;
+  }
+}
+
+/* the owner's phone over the room: breathes when the scroll stops */
+.day-phone {
+  animation: dayPhoneFloat 5.5s ease-in-out infinite alternate;
+}
+@keyframes dayPhoneFloat {
+  from { transform: translateY(0); }
+  to { transform: translateY(-7px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .day-phone { animation: none; }
+}
+
+/* the first screen's day ring: a moment lights as the hand reaches it */
+.ring-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0.55);
+  transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ring-dot .dot { fill: #24325A; transition: fill 340ms ease; }
+.ring-dot .halo { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.ring-dot.is-lit { transform: scale(1); }
+.ring-dot.is-lit .dot { fill: #38BDF8; }
+.ring-dot.is-lit .halo { animation: ringHalo 1200ms cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes ringHalo {
+  0% { opacity: 0.5; transform: scale(0.6); }
+  100% { opacity: 0; transform: scale(3); }
+}
+/* each new moment arrives rather than swapping, so the eye catches the change */
+.ring-caption { animation: ringCaption 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes ringCaption {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ring-dot { transition: none; }
+  .ring-dot .halo { animation: none !important; }
+  .ring-caption { animation: none; }
 }
 
 /* ------------------------------------------------ the office page's opening
@@ -702,15 +809,4 @@ html.demo-dialog-open .marquee-track,
 html.demo-dialog-open .day-phone,
 html.demo-dialog-open .ring-dot .halo {
   animation-play-state: paused;
-}
-
-/* ------------------------------------------------------------------ homepage
-   21st.dev Spotlight: under reduced motion it does not sweep in, it is simply
-   there, at the position its animation would have ended on. */
-@media (prefers-reduced-motion: reduce) {
-  .animate-spotlight {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: translate(-50%, -40%) scale(1);
-  }
 }
