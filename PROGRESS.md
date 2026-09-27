@@ -29,7 +29,11 @@ site's structure, pages and look, and brings over only what the founder listed.
 | 14 | /office: Вира «маркетинг менежер», Нова «сануулга, SMS», sales descriptions, head icons | done |
 
 ## Next
-- Founder review of the drafts and the open questions below.
+- Founder approved the copy (2026-09-27) with fixes, now applied: Дали sends the booking link and does not
+  register bookings (hero, pixel office title, bundle, Дали's /office chat, privacy §2/§6); «секундын дотор»
+  is «хэдхэн секундэд» everywhere; FAQ «AI-ийн ашиглалт». Legal pages: Вира «маркетинг менежер», Нова
+  «сануулга, SMS», «Вира зөвхөн өөр ажилтантай хамт» removed; Telegram/Gmail stay in the privacy processor
+  list; Вира's weekly report stays; yearly totals confirmed. Still preview only.
 
 ## Code review (round 2)
 A review workflow over `git diff main...HEAD`: 4 reviewers (runtime, visitor UX, content truth,

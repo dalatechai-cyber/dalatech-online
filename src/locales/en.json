@@ -15,7 +15,7 @@
   },
   "hero": {
     "badge": "In Mongolian, with no extra headcount",
-    "description": "Nights and weekends, no customer of yours goes unanswered. Dali answers questions on your Facebook page, Instagram and website in Mongolian, within seconds, and records the booking — using only the prices, hours and services you provide. No extra headcount, shift or leave costs. Vira, Eho, Nova and Ora join soon; you can pre-register now.",
+    "description": "Nights and weekends, no customer of yours goes unanswered. Dali answers questions on your Facebook page, Instagram and website in Mongolian, in seconds, and sends the booking link — using only the prices, hours and services you provide. No extra headcount, shift or leave costs. Vira, Eho, Nova and Ora join soon; you can pre-register now.",
     "buttons": {
       "request": "Send a request",
       "seeWork": "Meet your AI team"
@@ -97,7 +97,7 @@
     "titleA11y": "Facebook, Instagram and website messages answered 24/7 by an AI staff member."
   },
   "day": {
-    "title": "Bookings are recorded even while you sleep.",
+    "title": "Bookings come in even while you sleep.",
     "lead": "From morning to night, Dali answers your customers, and only what matters reaches you.",
     "closing": "Send a request today and Dali starts answering your customers within 1–2 weeks.",
     "sceneAlt": "The office from night to evening: Dali sits at her desk and answers every message. The other desks are ready for the staff joining soon.",
@@ -295,7 +295,7 @@
         "was": "925,000₮",
         "price": "800,000₮",
         "subLine": "Includes the website, Dali's setup and 50% off Dali's first month. From the second month, Dali is 250,000₮/month.",
-        "description": "From the day your new website opens, Dali answers every customer and records bookings.",
+        "description": "From the day your new website opens, Dali answers every customer and helps you take bookings.",
         "bullets": [
           "Smart website — 750,000₮",
           "Dali's setup — 50,000₮",
@@ -599,17 +599,12 @@
           },
           {
             "from": "staff",
-            "text": "Hello. Tomorrow we have 11:00 and 15:30 free. Which suits you?",
+            "text": "Hello. We are open 10:00–20:00 tomorrow. Please pick a time that suits you with this link.",
             "time": "02:14"
           },
           {
             "from": "customer",
-            "text": "15:30",
-            "time": "02:15"
-          },
-          {
-            "from": "staff",
-            "text": "You are booked for tomorrow at 15:30. A confirmation message has been sent.",
+            "text": "Thanks, booking now.",
             "time": "02:15"
           }
         ]
