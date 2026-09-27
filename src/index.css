@@ -291,6 +291,9 @@ html.nav-menu-open #dt-chat-frame {
 .contact-orbit-2 {
   animation: contactOrbitReverse 38s linear infinite;
 }
+.contact-orbit-3 {
+  animation: contactOrbit 18s linear infinite;
+}
 .contact-arrow {
   transition: transform 220ms var(--ease-out-quart);
 }
@@ -301,7 +304,8 @@ html.nav-menu-open #dt-chat-frame {
 @media (prefers-reduced-motion: reduce) {
   .contact-orb-glow,
   .contact-orbit-1,
-  .contact-orbit-2 {
+  .contact-orbit-2,
+  .contact-orbit-3 {
     animation: none !important;
   }
   .contact-arrow {
