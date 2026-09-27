@@ -34,6 +34,8 @@ import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStages
 import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, deskCentres, DAY_CARDS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
+// TEMPORARY: the founder's avatar pick; remove with src/AvatarOptions.jsx
+const AvatarOptions = React.lazy(() => import("./AvatarOptions"));
 const Globe = React.lazy(() => import("./Globe"));
 
 const EASE_OUT = [0.16, 1, 0.3, 1];
@@ -5708,6 +5710,14 @@ function Shell() {
                   element={
                     <React.Suspense fallback={<div className="min-h-screen bg-ink-950" />}>
                       <Setup />
+                    </React.Suspense>
+                  }
+                />
+                <Route
+                  path="/avatar-options"
+                  element={
+                    <React.Suspense fallback={<div className="min-h-screen bg-ink-950" />}>
+                      <AvatarOptions />
                     </React.Suspense>
                   }
                 />
