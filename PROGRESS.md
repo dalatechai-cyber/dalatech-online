@@ -160,4 +160,22 @@ Preview v1 = branch commit `bdaac15` (the full redesign). Live = `main` (`037731
 (filled in when item 11 lands)
 
 ## Open questions for the founder
-(filled in at the end of round 2)
+1. **Telegram in the privacy policy.** "No Telegram anywhere a customer can see" is done on the site itself.
+   Privacy §3 and §8 still name Telegram (and Gmail) as the services that carry a demo request to us. That is
+   the processor list a privacy policy has to disclose, so it was left as is. Removing it would make the
+   policy untrue. Say if you want it reworded, e.g. «мессенжер үйлчилгээ».
+2. **Old role text in the legal pages.** Privacy §1–§2 and terms §3 still say Вира «бизнес аналитик» and Нова
+   «харилцагчийн менежер». Terms §3 still has «Вира зөвхөн өөр ажилтантай хамт ажиллана». Privacy §8
+   names Gemini as the AI provider. Legal wording was not rewritten without approval.
+3. **Hero day ring.** The live 24-hour ring stays next to the headline ("live hero, plus only…"). It can
+   be removed in one line.
+4. **Yearly prices.** Yearly = 10 months for 12. Дали 2,500,000₮, Вира 3,500,000₮, Нова 1,500,000₮,
+   Ора 2,500,000₮. Эхо has no price. Please confirm these totals.
+5. **Prices differ from live.** The preview uses the approved list (`facts.js`): setup 50,000₮ and
+   Вира 350,000₮. The live site still shows setup 150,000₮/200,000₮ and Вира 150,000₮.
+6. **Pixel scenes.** Every *picture* of a staff member is now a head icon. The pixel office scenes on
+   `/` and `/office` still show the characters at their desks, because they are rooms, not portraits.
+7. **Launch offer and Дали.** When `VITE_LAUNCH_OFFER=on`, the site shows «Анхны 10 бизнест». Дали's
+   Messenger prompt in dalatech-chatbot does not know about the offer, so she cannot answer questions
+   about it on launch day.
+8. **«1» comment.** The site says it works on any DalaTech Facebook post, Facebook only (not Instagram).
