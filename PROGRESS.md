@@ -36,6 +36,8 @@ Names: «Вира — маркетинг менежер», «Эхо — утас
 4. Merge dalatech-chatbot and dalatech-online.
 
 Until step 2, the website shows today's states (the read 404s and the page keeps its defaults).
+Undo at any point: `scripts/provision/dalatech-launch-switches-2026-09-27-revert.sql`, then publish
+(forward → revert → forward round-trips byte-identical on a replica).
 
 ## Verified
 
@@ -50,6 +52,18 @@ Until step 2, the website shows today's states (the read 404s and the page keeps
   of `main`); phone 390 px and desktop 1440 px in off / Вира-only / all-live; no page errors, no
   horizontal overflow; the animated day plays in sync.
 
+## Code review (two independent reviewers) — addressed
+
+- Flip is crash-safe: restore SQL printed before the first write; a throw or failed publish puts the
+  switches back only if the new revision is not live; NFC name match.
+- Malformed launch rows refuse the publish; the tenant #0 script asserts the exact rows it rewrites
+  and that no live document mentions pre-registration; revert script added.
+- Website: a stored answer lasts 24 h and is dropped the moment a read fails (a switch turned off can
+  never keep showing live); preview switches only on `*.vercel.app` and localhost; English copy made
+  number-neutral; alt text neutral; chatbot prompt no longer says «зөвхөн тантай» twice for Ора.
+- Deploy order (0063 before code) is the one hard rule: check the columns exist on the project
+  (`pg_attribute`), not only the ledger, before merging dala-ai.
+
 ## Open items for the founder
 
 - **Эхо has no approved price.** Live mode still says «Үнийг хараахан зарлаагүй». Set the price
@@ -60,6 +74,8 @@ Until step 2, the website shows today's states (the read 404s and the page keeps
 - **Reply cases:** the 16 strings «X одоо ажиллаж байна / байгаа / идэвхтэй …» move out of the
   generic must-not lists into one case per staff member per state (true only while X is coming soon).
 - **Model check:** run the `--with-model` dry run above; this session has no key.
+- **Name lists:** Mongolian joins names with commas only («Дали, Вира өнөөдрөөс, Эхо, Нова, Ора
+  удахгүй»). Say if you want «ба» before the last name.
 
 ## Wording audit — every changed line (old → new), for approval
 

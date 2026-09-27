@@ -4693,8 +4693,9 @@ function StaffLiveProvider({ children }) {
   });
   React.useEffect(() => {
     let alive = true;
+    // A failed read drops even a stored answer: only today's states survive a failure.
     fetchLaunch().then((states) => {
-      if (alive && states) setKnown(states);
+      if (alive) setKnown(states);
     });
     return () => { alive = false; };
   }, []);

@@ -10,9 +10,10 @@
 // below, which are the states of 2026-09-27: only Дали is live. A failure can therefore only
 // ever show a live staff member as «Удахгүй», never claim one works before its switch is on.
 //
-// The last good answer is kept in localStorage so a returning visitor does not see a live
-// staff member flicker to «Удахгүй» and back while the read is in flight. A stored answer
-// that has since changed is corrected by the read a moment later.
+// The last good answer is kept in localStorage for a day, so a returning visitor does not
+// see a live staff member flicker to «Удахгүй» and back while the read is in flight. It is
+// only a first paint: if the read then fails, the page drops it and shows today's states, so
+// a switch turned off can never keep showing as live from a visitor's own storage.
 
 export const DEFAULT_LIVE = Object.freeze({ dali: true, vira: false, eho: false, nova: false, ora: false });
 
@@ -26,6 +27,7 @@ export const LAUNCH_URL = `https://api.dalatech.online/api/web/launch/${WEB_CHAN
 const BY_NAME = { "Дали": "dali", "Вира": "vira", "Эхо": "eho", "Нова": "nova", "Ора": "ora" };
 
 const STORE_KEY = "dt-staff-live";
+const STORE_MS = 24 * 60 * 60 * 1000;
 const TIMEOUT_MS = 5000;
 
 /** The read's body → { id: boolean } for the staff it names, or null when it is not one. */
@@ -50,7 +52,10 @@ export function merge(known) {
 export function readStored() {
   try {
     const raw = window.localStorage.getItem(STORE_KEY);
-    return raw ? parseLaunch(JSON.parse(raw)) : null;
+    if (!raw) return null;
+    const stored = JSON.parse(raw);
+    if (!stored || typeof stored.at !== "number" || Date.now() - stored.at > STORE_MS) return null;
+    return parseLaunch(stored);
   } catch (e) {
     // Private mode, blocked storage, a corrupt value: the page keeps today's states.
     console.warn("[launch] stored states unreadable", e);
@@ -60,7 +65,7 @@ export function readStored() {
 
 function store(body) {
   try {
-    window.localStorage.setItem(STORE_KEY, JSON.stringify({ services: body.services }));
+    window.localStorage.setItem(STORE_KEY, JSON.stringify({ services: body.services, at: Date.now() }));
   } catch (e) {
     console.warn("[launch] states not stored", e);
   }
@@ -96,14 +101,17 @@ export async function fetchLaunch(fetchImpl = fetch) {
 }
 
 // ---------------------------------------------------------------- preview only
-// On a preview deployment (any host but the production domains) the founder can switch each
+// On a preview deployment (Vercel's *.vercel.app, or localhost) the founder can switch each
 // staff member on and off to see both states. Production never shows the switches and never
 // reads an override: the only way to change what a visitor sees there is Dala AI's switch.
-const PRODUCTION_HOSTS = new Set(["dalatech.online", "www.dalatech.online"]);
+// Only hosts that are certainly ours and certainly not production: this machine and Vercel's
+// preview deployments. Anything else (production, a translate proxy, an archive, a future
+// domain) never shows the switches.
 const PREVIEW_KEY = "dt-preview-live";
 
 export function isPreviewHost(hostname) {
-  return typeof hostname === "string" && hostname !== "" && !PRODUCTION_HOSTS.has(hostname);
+  if (typeof hostname !== "string") return false;
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".vercel.app");
 }
 
 /** `?live=vira,nova`, `?live=all`, `?live=none` → an override, or null. Preview hosts only. */

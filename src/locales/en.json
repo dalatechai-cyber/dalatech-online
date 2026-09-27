@@ -995,16 +995,16 @@
     "lastSep": " and ",
     "hero": {
       "lead": "Dali answers every question in seconds and sends the booking link.",
-      "live": "{{names}} are working too.",
-      "soon": "{{names}} join soon."
+      "live": "Also at work: {{names}}.",
+      "soon": "Joining soon: {{names}}."
     },
     "day": {
       "lead": "Day and night Dali answers your customers, and only what matters reaches you.",
-      "live": "{{names}} work alongside her.",
-      "soon": "{{names}} join soon.",
-      "altRoom": "The office: Dali, Vira, Eho and Nova at work at their desks.",
+      "live": "Working alongside her: {{names}}.",
+      "soon": "Joining soon: {{names}}.",
+      "altRoom": "The office: Dali, Vira, Eho and Nova at their desks.",
       "altLive": "Today {{names}} are at work.",
-      "altSoon": "{{names}} join soon."
+      "altSoon": "Joining soon: {{names}}."
     },
     "theFour": {
       "titleSome": "{{names}} today. The full team soon.",
@@ -1016,7 +1016,7 @@
         "nova": "Nova reminders"
       },
       "live": "{{clauses}}.",
-      "soon": "Soon {{clauses}}.",
+      "soon": "Coming soon: {{clauses}}.",
       "oraLive": "Ora works with you alone.",
       "oraSoon": "Ora, coming soon, works with you alone."
     },
@@ -1046,15 +1046,15 @@
     "oraIntro": {
       "some": "{{live}} from today, and soon {{soon}}, work for your customers.",
       "all": "{{names}} work for your customers.",
-      "oraSoon": "Ora, also coming soon, doesn't talk to customers: it takes charge of the work on your desk and gives you your time back.",
+      "oraSoon": "Ora, coming soon, doesn't talk to customers: it takes charge of the work on your desk and gives you your time back.",
       "oraLive": "Ora doesn't talk to customers: it takes charge of the work on your desk and gives you your time back."
     },
     "team": {
-      "soon": "{{names}} start soon. Pre-register now and we'll tell you as soon as they launch."
+      "soon": "Starting soon: {{names}}. Pre-register now and we'll tell you at launch."
     },
     "owner": {
-      "soon": "{{names}} will soon start serving your customers.",
-      "oraSoon": "Ora, also coming soon, helps you with documents, presentations, deadlines and decisions in a chat only you open.",
+      "soon": "Starting to serve your customers soon: {{names}}.",
+      "oraSoon": "Ora, coming soon, helps you with documents, presentations, deadlines and decisions in a chat only you open.",
       "oraLive": "Ora helps you with documents, presentations, deadlines and decisions in a chat only you open."
     }
   }

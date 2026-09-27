@@ -146,7 +146,7 @@ the same snapshot from `GET https://api.dalatech.online/api/web/launch/<web chan
 `src/office/staffCopy.js` from `staffText.*` in the locales; the landing day's timeline is
 `dayPlan()` in `src/office/scenes.js`. On any failure the page shows the states of
 2026-09-27 (only Дали live), so an outage can never claim a staff member works early.
-Preview deployments (any host but dalatech.online) show a switch panel bottom-left and accept
+Preview deployments (*.vercel.app, localhost) show a switch panel bottom-left and accept
 `?live=vira,nova`, `?live=all`, `?live=none`; production never does.
 
 ## Deployment
