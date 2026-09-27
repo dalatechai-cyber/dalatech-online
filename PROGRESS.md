@@ -24,10 +24,11 @@ If a session stops, read this file top to bottom and continue from "Next".
 | 12 | Nav «Үнэ» / «Асуулт» scroll to the homepage sections; /pricing and /faq render the new sections | done |
 | 13 | Vercel preview check (phone + desktop) | done: renders, Manrope/Inter load, no console errors, no horizontal scroll |
 | 14 | /office prices brought to the approved list (`src/office/agents.js`); Эхо shows «Үнийг хараахан зарлаагүй.» and is left out of totals | done |
-| 15 | Full code review of every changed file | todo |
+| 15 | Full code review of every changed file (plus a separate reviewer pass): no defects left; dead CSS of removed pieces deleted | done |
 
 ## Next
-- Full review pass of every changed file, clean dead CSS, then the final report.
+- Nothing left in this brief. Waiting for the founder's review of the preview, the draft
+  copy below and the open questions. Do not merge PR #49 before that.
 
 ## Decisions
 - **Source of truth for prices and approved wording** is Дали's own prompt in
@@ -75,6 +76,13 @@ If a session stops, read this file top to bottom and continue from "Next".
   hand when a business signs.
 - Fonts: Manrope (display) + Inter (body), both Cyrillic, unchanged. The page uses the
   existing navy tokens; new tokens `accent` (#60C8FF, the logo blue) and `gold` (offers only).
+
+## Measurements (phone profile, 4× CPU throttle, local production build)
+- LCP ~1.2 s (main: ~1.05 s). The hero lead is rendered without an entrance for this
+  reason — fading it in pushed LCP to ~2.0 s.
+- Start-up main-thread blocking ~680 ms vs ~490 ms on main (more sections mount at once);
+  no long tasks while scrolling the whole page; CLS 0.001.
+- JS +19 KB gzip (tailwind-merge/clsx and the new copy in both locales).
 
 ## New Mongolian copy waiting for approval (drafts)
 Everything not listed here is copied word for word from Дали's prompt or from copy

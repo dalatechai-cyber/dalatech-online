@@ -688,7 +688,7 @@
       "cta": "Send a request",
       "ctaPreorder": "Send a request",
       "ownerNote": "Ora works with you, not with your customers.",
-      "ehoNoPrice": "Echo's price hasn't been announced, so it isn't in the total."
+      "ehoNoPrice": "Eho's price hasn't been announced, so it isn't in the total."
     },
     "steps": {
       "title": "Three steps to launch",
@@ -885,7 +885,7 @@
     "staff": {
       "eyebrow": "AI STAFF",
       "title": "Dali is working. Four more are coming soon.",
-      "lead": "Dali talks to your customers from today. Vira, Echo and Nova join soon; Ora works only with you.",
+      "lead": "Dali talks to your customers from today. Vira, Eho and Nova join soon; Ora works only with you.",
       "live": "Live",
       "soon": "Coming soon — pre-registration",
       "hire": "Send a request",
@@ -920,7 +920,7 @@
           "price": "250,000₮"
         },
         "eho": {
-          "name": "Echo",
+          "name": "Eho",
           "role": "phone operator",
           "job": "Talks on the phone like a person, answers questions and records bookings.",
           "price": ""
