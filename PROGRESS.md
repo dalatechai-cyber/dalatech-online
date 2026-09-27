@@ -71,7 +71,90 @@ site's structure, pages and look, and brings over only what the founder listed.
   Safari, Accordion.
 
 ## Inventory — what preview v1 removed and changed vs live
-(see the section below this line; kept for the record)
+(made by a 5-reader workflow plus a completeness critic, before round 2 changed anything)
+
+Preview v1 = branch commit `bdaac15` (the full redesign). Live = `main` (`037731f`).
+
+### Navigation and pages
+- «Үнэ» and «Асуулт» in the navbar (desktop and phone menu) no longer opened their own pages. They jumped to sections on the homepage, and their active underline never showed.
+- /pricing and /faq still loaded, but they showed the new homepage sections instead of the live pages. Footer links still went to /pricing and /faq.
+- The homepage grew from 6 to 12 sections. The website case study ("Бидний хийсэн вэбсайт") moved off the homepage into a new website section.
+
+### Homepage `/`
+- **Hero**
+  - Removed: the 24-hour clock ring (DayRing) with its 7 Дали moments, and the two-column layout. It became one centred column.
+  - Changed: the headline became a rotating word (Facebook / Instagram / вэбсайт) + «дээрх зурваст 24/7 хариулах AI ажилтан.». It was set larger (40/56/70 px, live 36/48/58).
+  - Changed: the lead was cut to its first sentence, dropping «Вира, Эхо, Нова, Ора удахгүй нэгдэнэ…» and «Нэмэлт орон тоо…».
+  - Changed: the second link became «Үнийг харах». Live had «Ажилтнуудтай танилцах».
+  - Changed: the background light became the Spotlight sweep.
+  - Added: a chip «Дали · Идэвхтэй · Үнэ: 250,000₮/сар…» with a full-body Дали.
+- **Pixel office + iPhone (WorkingDay)**
+  - Removed entirely: the pixel room and the owner's phone feed with Дали, Вира's report, Ора, Эхо's call, Нова's discount and reminder cards, and the summary.
+  - Replaced by a «ШӨНИЙН ЗУРВАС» section: a lock-screen phone with 3 cards (a customer, Дали, and a Telegram lead) and 3 check points.
+- **Added «АЖИЛЛАХ ЗАРЧИМ»**
+  - An animated beam from FB/IG/website to Дали to «Таны Telegram», plus 3 steps.
+  - Telegram was named in the title, the diagram and step 3.
+- **LiveDemo**: unchanged, moved to 4th place.
+- **AI staff**
+  - Removed: the live thin list (head icon, name, role, status, no prices).
+  - Replaced by big Bento cards. Дали had a large card with a border beam, a full-body figure, the price and a button. The other four had prices and «Урьдчилан бүртгүүлэх».
+- **Website**
+  - The live Portfolio case study (browser mock, "Гүйцэтгэсэн ажил / Үр дүн" boxes) was replaced by a Safari frame, a 750,000₮ price card and an add-ons list.
+  - A booking strip and a Дали bubble were added inside the salon mock, which /portfolio also shows.
+- **Added on the homepage**
+  - Full prices (monthly/yearly), the team discount and 3 term cards.
+  - «ОНЦГОЙ САНАЛ»: gold «Вэбсайт + Дали» and «Анхны 10 бизнест» with a 10/10 counter.
+  - «ЭХЛЭХ» 3 steps.
+  - «МЭДЭЭЛЛИЙН ХАМГААЛАЛТ» with 72/30 counters.
+  - A 12-question accordion FAQ.
+- **Contact**
+  - Removed: the orb background and the 40–80 px title.
+  - Buttons changed to three tiles: Messenger, «1» comment, and demo. Live had request, demo and email.
+  - The lead mentioned Facebook «1».
+- **Animations**
+  - Blur-fade on 18 blocks: content sat at opacity 0 until scrolled into view. This is the black gap you saw.
+  - Endless word rotate, beams and border beam were added.
+- **Staff pictures**: full-body figures (to the feet) in the hero chip, the how-it-works Дали node and the big Дали card. Live used face-and-shoulder crops only.
+- **Type**: six text sizes live never used (7, 7.5, 16.5, 24, 52, 70 px), the hero set larger (40/56/70 px), and section labels in a new accent colour #60C8FF, uppercase and bolder.
+
+### /pricing
+- Removed:
+  - the live layout: «AI ажилтнууд» header with the discount text, 4 staff cards, Ора's own row «Зөвхөн танд», the «Вэбсайт» block with the 750,000₮ card, the bundle card with the price crossed out, and the payment-terms box with its button and note.
+  - the «Featured» chip.
+- Replaced by 5 big tier cards with a toggle, a discount box, 3 term cards and the gold offers section. The bundle lost its crossed-out price, and the website had no price card on /pricing.
+- Prices changed to the approved list: setup 50,000₮ (live 150,000₮/200,000₮), Вира 350,000₮ (live 150,000₮), Эхо «Үнийг хараахан зарлаагүй.» (live 250,000₮ + per minute). The ₮ sign moved after the number.
+
+### /faq
+- The live two-column card grid and the «Нэмэлт асуулт» box were removed.
+- Replaced by a sticky left header and a 12-item accordion. Six answers were reworded to Дали's approved lines, and six questions were added.
+
+### /office
+- Unchanged except the prices:
+  - agents.js prices changed: setup 50,000₮, Вира 350,000₮, Эхо not announced.
+  - The «Вира зөвхөн өөр ажилтантай хамт» rule and the Эхо per-minute note were removed.
+  - Totals now skip Эхо.
+- Still old in preview v1:
+  - roles (Вира «Бизнес аналитик», Нова «Харилцагчийн менежер») and job lines
+  - the hero lead
+  - the board lanes («Сарын тоо», «Алга болсон харилцагч»)
+  - the Вира chapter (a sales report chart)
+  - the Нова chapter (feedback / win-back chat)
+  - the Ора intro
+  - the demo-form service lines («Сарын тайлан», «Харилцагчтай эргэн холбогдоно»)
+- The staff head icons were unchanged.
+
+### Also found by the checker
+- Two classes in preview v1 (`bg-accent/12`, `ring-white/12`) produced no CSS: the Дали «Идэвхтэй» pill and the tile buttons lost their tint and ring.
+- The number counters showed «0 цаг», «0 хоног» and «−0%» until they were scrolled into view.
+- The salon mock's new booking strip was hardcoded Mongolian, not in the locale files.
+
+### Other
+- New packages clsx and tailwind-merge. New colour tokens accent and gold. Keyframes for spotlight, border beam and shimmer.
+- 12 vendored 21st components.
+- CSS for the ring, the working day and the contact orbs was deleted.
+- Dead copy: hero.*, day.*, theFour.*, contact.* and most pricing.* / faq.* were left unused. pricing.cards.bundle was deleted.
+- No change to index.html, vercel.json, the privacy / terms / data-deletion pages, or the chatbot.
+- Measured cost: JS +19 KB gzip. Phone LCP ~1.2 s against ~1.05 s on live.
 
 ## New Mongolian copy waiting for approval
 (filled in when item 11 lands)
