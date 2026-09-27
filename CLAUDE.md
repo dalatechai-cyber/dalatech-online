@@ -137,6 +137,18 @@ nothing** (founder's rule, 2026-09-25): a name, business or note starting with
 `.github/workflows/` submit such requests. These variables must hold the **DalaTech**
 bot and chat — on 2026-08-23 a request from this form landed in the Core Language chat.
 
+## Staff launch switches (D-154 in dala-ai)
+Which AI staff are live is NOT set in this repo. One switch per staff member lives in Dala AI
+(`services.launch_state`, flipped with `scripts/publish/tenant.ts --launch "<name>=live"`);
+the publish freezes it into the snapshot that Дали's chat answers from, and this page reads
+the same snapshot from `GET https://api.dalatech.online/api/web/launch/<web channel>`
+(`src/office/launch.js`). Every sentence that depends on it is composed in
+`src/office/staffCopy.js` from `staffText.*` in the locales; the landing day's timeline is
+`dayPlan()` in `src/office/scenes.js`. On any failure the page shows the states of
+2026-09-27 (only Дали live), so an outage can never claim a staff member works early.
+Preview deployments (*.vercel.app, localhost) show a switch panel bottom-left and accept
+`?live=vira,nova`, `?live=all`, `?live=none`; production never does.
+
 ## Deployment
 Vercel project `dalatech-online`, live at **https://dalatech.online**
 (`www.dalatech.online` also attached). Pushes to `main` deploy to production.

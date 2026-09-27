@@ -31,7 +31,12 @@ import { ShimmerButton } from "./components/ui/shimmer-button";
 import { Safari } from "./components/ui/safari";
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, deskCentres, DAY_CARDS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, deskCentres, dayPlan, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { DEFAULT_LIVE, fetchLaunch, isPreviewHost, merge as mergeLaunch, overrideFromQuery, readPreview, readStored, writePreview } from "./office/launch";
+import {
+  boardCaption, dayLead, daySceneAlt, heroDescription, officeLead, officeTitle, oraIntroLead, ownerDescription,
+  teamSoonNote, theFourLead, theFourTitle,
+} from "./office/staffCopy";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -919,16 +924,33 @@ const RING_OPEN = [10, 20]; // the hours a typical shop has someone at the count
 
 const RING_SECONDS = 36; // one whole day per revolution, at a constant rate
 
-// Every moment is Дали's: the ring shows what works today, not the team to come.
-const RING_EVENTS = [
-  { at: 2 + 14 / 60, time: "02:14", who: "dali" },
-  { at: 6 + 40 / 60, time: "06:40", who: "dali" },
-  { at: 9, time: "09:00", who: "dali" },
-  { at: 13 + 25 / 60, time: "13:25", who: "dali" },
-  { at: 18 + 5 / 60, time: "18:05", who: "dali" },
-  { at: 21 + 30 / 60, time: "21:30", who: "dali" },
-  { at: 23 + 50 / 60, time: "23:50", who: "dali" },
+// Дали's seven moments; `line` is the caption's index in hero.ring.events. With only Дали
+// live the ring shows exactly these, as it always has.
+const RING_DALI = [
+  { at: 2 + 14 / 60, time: "02:14", who: "dali", line: 0 },
+  { at: 6 + 40 / 60, time: "06:40", who: "dali", line: 1 },
+  { at: 9, time: "09:00", who: "dali", line: 2 },
+  { at: 13 + 25 / 60, time: "13:25", who: "dali", line: 3 },
+  { at: 18 + 5 / 60, time: "18:05", who: "dali", line: 4 },
+  { at: 21 + 30 / 60, time: "21:30", who: "dali", line: 5 },
+  { at: 23 + 50 / 60, time: "23:50", who: "dali", line: 6 },
 ];
+// One moment per other staff member, shown only while their switch is on (the ring must never
+// show a staff member working before they are live). Same hours as the phone's day.
+const RING_STAFF = {
+  vira: { at: 10.5, time: "10:30", who: "vira" },
+  ora: { at: 16 + 10 / 60, time: "16:10", who: "ora" },
+  nova: { at: 18, time: "18:00", who: "nova" },
+  eho: { at: 20 + 40 / 60, time: "20:40", who: "eho" },
+};
+
+function ringEvents(live) {
+  const extra = Object.keys(RING_STAFF).filter((id) => live[id]);
+  if (extra.length === 0) return RING_DALI;
+  // Нова's 18:00 reminder would sit on top of Дали's 18:05 hand-over, so that one gives way.
+  const dali = RING_DALI.filter((e) => !(live.nova && e.time === "18:05"));
+  return [...dali, ...extra.map((id) => RING_STAFF[id])].sort((a, b) => a.at - b.at);
+}
 
 function ringPoint(hour, radius = RING_R) {
   const a = ((hour / 24) * 360 - 90) * (Math.PI / 180);
@@ -953,8 +975,12 @@ const ringClock = (hour) => {
 function DayRing({ className = "" }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
+  const staffLive = useStaffLive();
+  const RING_EVENTS = React.useMemo(() => ringEvents(staffLive), [staffLive]);
+  const team = RING_EVENTS !== RING_DALI;
   const captions = t("hero.ring.events", { returnObjects: true });
   const labels = Array.isArray(captions) ? captions : [];
+  const caption = (e) => (e.who === "dali" ? labels[e.line] || "" : t(`staffText.ring.${e.who}`));
 
   const hostRef = React.useRef(null);
   const handRef = React.useRef(null);
@@ -967,6 +993,15 @@ function DayRing({ className = "" }) {
   const spinRef = React.useRef("");
   const litRef = React.useRef(-2);
   const [active, setActive] = React.useState(RING_EVENTS.length - 1);
+
+  // A switch flipped in the preview changes the moments: start the day over with the new set.
+  React.useEffect(() => {
+    shownRef.current = -1;
+    clockRef.current = "";
+    spinRef.current = "";
+    litRef.current = -2;
+    setActive(RING_EVENTS.length - 1);
+  }, [RING_EVENTS]);
 
   React.useEffect(() => {
     if (reduced || !hostRef.current) return undefined;
@@ -1057,7 +1092,7 @@ function DayRing({ className = "" }) {
       io.disconnect();
       document.removeEventListener("visibilitychange", update);
     };
-  }, [reduced]);
+  }, [reduced, RING_EVENTS]);
 
   const event = RING_EVENTS[active] || RING_EVENTS[0];
   const openArc = ringArc(RING_OPEN[0], RING_OPEN[1]);
@@ -1066,7 +1101,7 @@ function DayRing({ className = "" }) {
   return (
     <div ref={hostRef} className={["relative w-full max-w-[380px]", className].join(" ")}>
       <div className="relative">
-        <svg viewBox="0 0 300 300" className="block w-full" role="img" aria-label={t("hero.ring.alt")}>
+        <svg viewBox="0 0 300 300" className="block w-full" role="img" aria-label={team ? t("staffText.ring.alt", { n: RING_EVENTS.length }) : t("hero.ring.alt")}>
           {/* the whole day: what the four cover */}
           <circle cx={RING_CX} cy={RING_CX} r={RING_R} fill="none" stroke="rgba(56,189,248,0.16)" strokeWidth="10" />
           {/* the hours someone is at the counter */}
@@ -1148,7 +1183,7 @@ function DayRing({ className = "" }) {
             </span>
           </span>
           <span key={`line-${active}`} className="ring-caption mt-2 text-[12.5px] leading-[1.4] text-fg-muted" aria-live="off">
-            {labels[active] || ""}
+            {caption(event)}
           </span>
         </div>
       </div>
@@ -1161,7 +1196,7 @@ function DayRing({ className = "" }) {
         </span>
         <span className="inline-flex items-center gap-2">
           <span aria-hidden className="h-1.5 w-5 rounded-full bg-sky-400" />
-          {t("hero.ring.closed", { hours: closedHours })}
+          {t(team ? "staffText.ring.closed" : "hero.ring.closed", { hours: closedHours })}
         </span>
       </div>
     </div>
@@ -1170,6 +1205,7 @@ function DayRing({ className = "" }) {
 
 function Hero() {
   const { t } = useTranslation();
+  const staffLive = useStaffLive();
   const channels = t("hero.channels", { returnObjects: true });
   const heroChannels = React.useMemo(() => (Array.isArray(channels) ? channels : []), [channels]);
 
@@ -1213,7 +1249,7 @@ function Hero() {
               transition={{ ...SPRING_REVEAL, delay: 0.5 }}
               className="mx-auto mt-6 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px] lg:mx-0 lg:text-[18px]"
             >
-              {t("hero.description")}
+              {heroDescription(t, staffLive)}
             </motion.p>
 
             <motion.div
@@ -2223,7 +2259,7 @@ function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, prima
 // office page, in the pricing page's own frame.
 function StaffPriceCard({ id, yearly = false }) {
   const { t } = useTranslation();
-  const live = STAFF_LIVE[id];
+  const live = useStaffLive()[id];
   return (
     <StaggerItem className="h-full">
       <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
@@ -2303,6 +2339,7 @@ function LaunchOffer() {
 
 function Pricing() {
   const { t } = useTranslation();
+  const staffLive = useStaffLive();
   const terms = t("pricing.paymentTerms.terms", { returnObjects: true });
   const [yearly, setYearly] = React.useState(false);
   return (
@@ -2341,7 +2378,7 @@ function Pricing() {
           <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
             <div className="lg:pt-2">
               <SectionLabel>{t("pricing.staff.ownerTitle")}</SectionLabel>
-              <p className="mt-3 max-w-[440px] text-[15px] leading-[1.55] text-fg-muted">{t("pricing.staff.ownerDescription")}</p>
+              <p className="mt-3 max-w-[440px] text-[15px] leading-[1.55] text-fg-muted">{ownerDescription(t, staffLive)}</p>
             </div>
             <StaggerGroup className="grid">
               <StaffPriceCard id="ora" yearly={yearly} />
@@ -2712,6 +2749,7 @@ const DEMO_INPUT_CLASS =
 
 function DemoRequestDialog({ isOpen, onClose, preset }) {
   const { t, i18n } = useTranslation();
+  const staffLive = useStaffLive();
   const location = useLocation();
   const isMobile = useIsMobile();
   const reduced = useReducedMotion();
@@ -3134,7 +3172,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                           <div className="mt-4 grid grid-cols-2 gap-2.5">
                             {DEMO_SERVICES.map((service, i) => {
                               const active = values.services.includes(service);
-                              const agent = STAFF_LIVE[service] !== undefined;
+                              const agent = staffLive[service] !== undefined;
                               // an odd count leaves the last card alone on its row; let it take the row
                               const wide = DEMO_SERVICES.length % 2 === 1 && i === DEMO_SERVICES.length - 1;
                               return (
@@ -3167,7 +3205,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                                       {t(`demoForm.serviceCards.${service}.title`)}
                                     </span>
                                     <span className="mt-0.5 block text-[11.5px] leading-tight text-fg-dim">
-                                      {agent && !STAFF_LIVE[service] ? t("office.status.soon") : t(`demoForm.serviceCards.${service}.line`)}
+                                      {agent && !staffLive[service] ? t("office.status.soon") : t(`demoForm.serviceCards.${service}.line`)}
                                     </span>
                                   </span>
                                 </button>
@@ -3599,10 +3637,9 @@ function Contact() {
             </div>
           </StaggerItem>
 
-          {/* the Facebook comment route, and the email, as one quiet line under the buttons */}
+          {/* the Facebook page and the email, as one quiet line under the buttons */}
           <StaggerItem>
-            <p className="mx-auto mt-8 max-w-[54ch] text-[15px] leading-[1.55] text-fg-muted">{t("contact.commentLine")}</p>
-            <p className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-[15px]">
+            <p className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-[15px]">
               <a href={FACEBOOK_PAGE} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center gap-1.5 text-sky-400 transition-colors hover:text-sky-300">
                 {t("contact.facebookLink")} <span aria-hidden>&rsaquo;</span>
               </a>
@@ -3812,7 +3849,7 @@ const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 
 // The owner's phone, over the room. It shows only what Дали does today: four
 // real moments from one day and the evening summary, on the timeline the room
-// is drawn from (DAY_CARDS in scenes.js).
+// is drawn from (the day plan in scenes.js).
 //
 // It is a notification stack, newest on top, never cleared: the old version
 // emptied the screen between groups of cards, which read as a blank phone in
@@ -3821,27 +3858,28 @@ const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 // the bottom once four are showing.
 const FEED_VISIBLE = 4;
 
-function cardsLandedAt(p) {
+function cardsLandedAt(p, cards) {
   // the first card is up from the start, so the screen is never empty
   let n = 1;
-  for (let i = 1; i < DAY_CARDS.length; i++) if (p >= DAY_CARDS[i].at) n = i + 1;
+  for (let i = 1; i < cards.length; i++) if (p >= cards[i].at) n = i + 1;
   return n;
 }
 
 // The status-bar clock: the time of the newest card on the screen. It only
-// ever moves forward (DAY_CARDS is in time order) and changes when a card
+// ever moves forward (a plan's cards are in time order) and changes when a card
 // lands, never per frame: a ticking clock reads as a slot machine, and one
 // that runs ahead of the next card has to jump back when that card lands.
-function feedClock(p) {
-  return DAY_CARDS[cardsLandedAt(p) - 1].time;
+function feedClock(p, cards) {
+  return cards[cardsLandedAt(p, cards) - 1].time;
 }
 
 // The app icon on a notification: Дали's head, the customer's initial, or
 // the business's own app for what reaches the owner. No other company's logo.
 function PhoneIcon({ who, name }) {
-  if (who === "dali") {
+  // a staff member's own face on their own work
+  if (STAFF_IDS.has(who)) {
     return (
-      <StaffAvatar id="dali" zoom={1} />
+      <StaffAvatar id={who} zoom={1} />
     );
   }
   if (who === "owner" || who === "summary") {
@@ -3855,10 +3893,22 @@ function PhoneIcon({ who, name }) {
 }
 
 const phoneText = "mt-1 text-[12.5px] leading-[1.42] text-fg/85";
+const STAFF_IDS = new Set(["dali", "vira", "eho", "nova", "ora"]);
+// The order the team summary lists the others' work in, after Дали's.
+const SUMMARY_EXTRAS = ["vira", "ora", "nova", "eho"];
 
-function PhoneCard({ card }) {
+function PhoneCard({ card, plan }) {
   const { t } = useTranslation();
-  const c = t(`day.feed.${card.key}`, { returnObjects: true });
+  const staffLive = useStaffLive();
+  const raw = t(`day.feed.${card.key}`, { returnObjects: true });
+  // The team's evening summary: Дали's rows, then one row for each other staff
+  // member at work today — the same set whose moments the day just showed.
+  const c = card.key === "summaryTeam" && raw && typeof raw === "object"
+    ? { ...raw, rows: [
+        ...(t("day.feed.summaryTeam.dali", { returnObjects: true, n: plan ? plan.daliCount : 4 }) || []),
+        ...SUMMARY_EXTRAS.filter((id) => staffLive[id]).map((id) => t(`day.feed.summaryTeam.extra.${id}`)),
+      ] }
+    : raw;
   const lit = card.who === "owner" || card.who === "summary";
   return (
     <div className={["rounded-[14px] border bg-[#111A3A]/95 px-3 py-2.5 shadow-[0_6px_22px_rgba(0,0,0,0.35)]", lit ? "border-sky-400/30" : "border-white/[0.09]"].join(" ")}>
@@ -3887,17 +3937,17 @@ function PhoneCard({ card }) {
 // At rest (reduced motion, or no pixel room) nothing plays, so the whole day
 // is on the screen at once: the summary on top counts cards the visitor can
 // read, and so does a screen reader.
-function PhoneFeed({ count, animate }) {
+function PhoneFeed({ count, animate, cards, plan }) {
   if (!animate) {
     return (
       <div className="flex flex-col gap-2">
-        {DAY_CARDS.slice().reverse().map((card) => <PhoneCard key={card.key} card={card} />)}
+        {cards.slice().reverse().map((card) => <PhoneCard key={card.key} card={card} plan={plan} />)}
       </div>
     );
   }
   // one card fewer once the summary lands, to leave room for the button under it
-  const visible = count >= DAY_CARDS.length ? FEED_VISIBLE - 1 : FEED_VISIBLE;
-  const shown = DAY_CARDS.slice(Math.max(0, count - visible), count).reverse();
+  const visible = count >= cards.length ? FEED_VISIBLE - 1 : FEED_VISIBLE;
+  const shown = cards.slice(Math.max(0, count - visible), count).reverse();
   return (
     <div className="flex flex-col gap-2">
       <AnimatePresence initial={false} mode="popLayout">
@@ -3910,7 +3960,7 @@ function PhoneFeed({ count, animate }) {
             exit={{ opacity: 0, y: 12 }}
             transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.7 }}
           >
-            <PhoneCard card={card} />
+            <PhoneCard card={card} plan={plan} />
           </motion.div>
         ))}
       </AnimatePresence>
@@ -3920,28 +3970,37 @@ function PhoneFeed({ count, animate }) {
 
 // The device: a plain frame, no brand marks, no wallpaper. `progress`
 // undefined is the phone at rest on the end of the day (reduced motion).
-function OwnerPhone({ progress, className = "" }) {
+function OwnerPhone({ progress, plan, className = "" }) {
   const { t } = useTranslation();
   const { open: openDemoRequest } = useDemoRequest();
+  const cards = plan.cards;
+  // a team at work: the owner chooses which staff to ask about, so nothing is preset
+  const team = plan.summaryKey === "summaryTeam";
   const animate = !!progress;
   const atRest = useMotionValue(1);
-  const [count, setCount] = React.useState(() => (progress ? cardsLandedAt(progress.get()) : DAY_CARDS.length));
-  const [clock, setClock] = React.useState(() => (progress ? feedClock(progress.get()) : DAY_CARDS[DAY_CARDS.length - 1].time));
+  const [count, setCount] = React.useState(() => (progress ? cardsLandedAt(progress.get(), cards) : cards.length));
+  const [clock, setClock] = React.useState(() => (progress ? feedClock(progress.get(), cards) : cards[cards.length - 1].time));
+  // A new plan (a switch changed while the page was open) starts the phone over with it.
+  React.useEffect(() => {
+    const p = progress ? progress.get() : 1;
+    setCount(progress ? cardsLandedAt(p, cards) : cards.length);
+    setClock(progress ? feedClock(p, cards) : cards[cards.length - 1].time);
+  }, [cards, progress]);
   useMotionValueEvent(progress ?? atRest, "change", (p) => {
     if (!progress) return;
-    const n = cardsLandedAt(p);
+    const n = cardsLandedAt(p, cards);
     setCount((c) => (c === n ? c : n));
-    const label = feedClock(p);
+    const label = feedClock(p, cards);
     setClock((l) => (l === label ? l : label));
   });
-  const done = count >= DAY_CARDS.length;
+  const done = count >= cards.length;
   // the same preset as the section's own «Хүсэлт илгээх» under the phone
   const cta = (
     <>
       <button
         type="button"
         tabIndex={done ? 0 : -1}
-        onClick={() => openDemoRequest(["dali"])}
+        onClick={() => openDemoRequest(team ? [] : ["dali"])}
         className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
       >
         {t("day.phone.cta")}
@@ -3967,7 +4026,7 @@ function OwnerPhone({ progress, className = "" }) {
           <span aria-hidden className="absolute left-1/2 top-[11px] h-[22px] w-[74px] -translate-x-1/2 rounded-full bg-black" />
 
           <div className="relative mx-3 mt-5">
-            <PhoneFeed count={count} animate={animate} />
+            <PhoneFeed count={count} animate={animate} cards={cards} plan={plan} />
           </div>
 
           {animate ? (
@@ -3998,14 +4057,16 @@ function OwnerPhone({ progress, className = "" }) {
 // The day plays on a clock, not on the scrollbar: the section is ordinary
 // height, the sequence starts when it comes into view, plays once, and rests
 // on the summary with the button on it. Scrolling past is just scrolling.
-const DAY_SECONDS = 36;
-
-function useTimedProgress(ref, seconds, disabled) {
+// A plan (scenes.js dayPlan) sets its own length: 36 s for today's day, a little
+// longer for each staff member whose work it adds, at the same pace per card.
+// A new plan restarts the day from the beginning.
+function useTimedProgress(ref, seconds, disabled, restartKey) {
   const progress = useMotionValue(0);
   React.useEffect(() => {
     const el = ref.current;
     if (disabled || !el) return undefined;
 
+    progress.set(0);
     let raf = 0;
     let running = false;
     let visible = false;
@@ -4055,7 +4116,7 @@ function useTimedProgress(ref, seconds, disabled) {
       io.disconnect();
       document.removeEventListener("visibilitychange", update);
     };
-  }, [ref, seconds, disabled, progress]);
+  }, [ref, seconds, disabled, progress, restartKey]);
   return progress;
 }
 
@@ -4068,10 +4129,11 @@ const DESK_TAG_Y = 4;
 
 function DeskTags({ geom, rowRightCss }) {
   const { t } = useTranslation();
+  const staffLive = useStaffLive();
   // the same sum the scene does with it, so tag and desk agree
   const rowRight = rowRightCss != null ? rowRightCss / geom.scale : Infinity;
   return deskCentres(geom.W, rowRight).map(({ id, x }) => {
-    const live = STAFF_LIVE[id];
+    const live = staffLive[id];
     return (
       <span
         key={id}
@@ -4134,18 +4196,26 @@ function usePhoneEdge(bandRef, phoneRef) {
 
 function WorkingDay() {
   const { t } = useTranslation();
+  const staffLive = useStaffLive();
+  // who works today follows the launch switches; with only Дали live this is the
+  // day the section has always shown
+  const plan = dayPlan(staffLive);
+  const team = plan.summaryKey === "summaryTeam";
   const reduced = useReducedMotion();
   const { error } = useStaffAtlas();
   const dayRef = React.useRef(null);
   const still = useMotionValue(0.93);
-  const progress = useTimedProgress(dayRef, DAY_SECONDS, reduced || !!error);
+  const progress = useTimedProgress(dayRef, plan.seconds, reduced || !!error, plan);
   const bandRef = React.useRef(null);
   const phoneRef = React.useRef(null);
   const phoneEdge = usePhoneEdge(bandRef, phoneRef);
   // read on every frame through a ref, so the stage is not rebuilt on resize
   const edgeRef = React.useRef(phoneEdge);
   edgeRef.current = phoneEdge;
-  const drawDay = React.useCallback((ctx, img, view) => drawWorkingDay(ctx, img, { ...view, rowRightCss: edgeRef.current }), []);
+  const planRef = React.useRef(plan);
+  planRef.current = plan;
+  const drawDay = React.useCallback((ctx, img, view) => drawWorkingDay(ctx, img, { ...view, rowRightCss: edgeRef.current, plan: planRef.current }), []);
+  const drawStill = React.useCallback((ctx, img, view) => drawWorkingDay(ctx, img, { ...view, plan: planRef.current }), []);
   const tags = React.useCallback((geom) => <DeskTags geom={geom} rowRightCss={phoneEdge} />, [phoneEdge]);
 
   const heading = (
@@ -4153,15 +4223,15 @@ function WorkingDay() {
       <h2 className="max-w-[18ch] font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px] lg:text-[44px]">
         {t("day.title")}
       </h2>
-      <p className="mt-4 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px]">{t("day.lead")}</p>
+      <p className="mt-4 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px]">{dayLead(t, staffLive)}</p>
     </Container>
   );
 
   const closing = (
     <Container>
       <div className="mt-14 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
-        <MagneticButton href="#demo" variant="primary" demoServices={["dali"]}>{t("day.phone.cta")}</MagneticButton>
+        <p className="max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">{t(team ? "staffText.day.closing" : "day.closing")}</p>
+        <MagneticButton href="#demo" variant="primary" demoServices={team ? undefined : ["dali"]}>{t("day.phone.cta")}</MagneticButton>
       </div>
     </Container>
   );
@@ -4176,11 +4246,11 @@ function WorkingDay() {
         <div className="relative mt-10">
           {!error && (
             <div className="day-band">
-              <PixelStage draw={drawWorkingDay} logicalH={DAY_H} scale={DAY_SCALE} minW={STAFF_HERO_MIN_W} progress={still} label={t("day.sceneAlt")} overlay={tags} />
+              <PixelStage draw={drawStill} logicalH={DAY_H} scale={DAY_SCALE} minW={STAFF_HERO_MIN_W} progress={still} label={daySceneAlt(t, staffLive)} overlay={tags} />
             </div>
           )}
           <Container className="mt-8 flex justify-center">
-            <OwnerPhone />
+            <OwnerPhone plan={plan} />
           </Container>
         </div>
         {closing}
@@ -4201,7 +4271,7 @@ function WorkingDay() {
               scale={DAY_SCALE}
               minW={STAFF_HERO_MIN_W}
               progress={progress}
-              label={t("day.sceneAlt")}
+              label={daySceneAlt(t, staffLive)}
               overlay={tags}
             />
           </div>
@@ -4210,7 +4280,7 @@ function WorkingDay() {
           <div className="relative -mt-14 flex justify-center lg:absolute lg:inset-0 lg:mt-0 lg:block">
             <Container className="lg:relative lg:h-full">
               <div ref={phoneRef} className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
-                <OwnerPhone progress={progress} />
+                <OwnerPhone progress={progress} plan={plan} />
               </div>
             </Container>
           </div>
@@ -4228,12 +4298,13 @@ function WorkingDay() {
 // portrait, name, role, and whether they are in service yet.
 function TheFour() {
   const { t } = useTranslation();
+  const staffLive = useStaffLive();
   return (
     <section className="py-20 md:py-28">
       <Container>
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <h2 className="font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px]">
-            {t("theFour.title")}
+            {theFourTitle(t, staffLive)}
           </h2>
           <Link to="/office" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
             {t("hero.buttons.seeWork")}
@@ -4241,7 +4312,7 @@ function TheFour() {
           </Link>
         </div>
         {/* the one split that matters on this list: four face the customers, one faces the owner */}
-        <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.55] text-fg-muted">{t("theFour.lead")}</p>
+        <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.55] text-fg-muted">{theFourLead(t, staffLive)}</p>
 
         <StaggerGroup className="mt-8 md:mt-10" stagger={0.06}>
           {ALL_STAFF.map((id) => (
@@ -4255,7 +4326,7 @@ function TheFour() {
 
 function StaffRow({ id }) {
   const { t } = useTranslation();
-  const live = STAFF_LIVE[id];
+  const live = useStaffLive()[id];
   return (
     <StaggerItem y={12}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[96px] sm:flex-nowrap sm:py-0">
@@ -4633,8 +4704,100 @@ const FAQPage = React.memo(function FAQPage() {
 // over the scene, a team builder on paper, three steps. The canvas engine
 // lives in src/office/pixel.js, the scenes in src/office/scenes.js.
 
-// Only Дали is built. The other four are pre-registration only (founder, 2026-09-25).
-const STAFF_LIVE = { dali: true, vira: false, eho: false, nova: false, ora: false };
+// Which staff are live comes from Dala AI's launch switches (src/office/launch.js):
+// one switch per staff member, flipped by the founder, read by Дали's chat and by
+// this page from the same published record. Until the read answers, and whenever
+// it cannot, the page shows the states of 2026-09-27: only Дали is live.
+const StaffLiveContext = React.createContext(DEFAULT_LIVE);
+
+function useStaffLive() {
+  return React.useContext(StaffLiveContext);
+}
+
+function StaffLiveProvider({ children }) {
+  const preview = typeof window !== "undefined" && isPreviewHost(window.location.hostname);
+  const [known, setKnown] = React.useState(() => (typeof window === "undefined" ? null : readStored()));
+  // Preview deployments only: the founder's own switches, from `?live=` or this tab.
+  const [override, setOverride] = React.useState(() => {
+    if (!preview) return null;
+    const fromQuery = overrideFromQuery(window.location.search);
+    if (fromQuery) writePreview(fromQuery);
+    return fromQuery || readPreview();
+  });
+  React.useEffect(() => {
+    let alive = true;
+    // A failed read drops even a stored answer: only today's states survive a failure.
+    fetchLaunch().then((states) => {
+      if (alive) setKnown(states);
+    });
+    return () => { alive = false; };
+  }, []);
+  const live = React.useMemo(() => ({ ...mergeLaunch(known), ...(override || {}), dali: true }), [known, override]);
+  const change = React.useCallback((next) => {
+    writePreview(next);
+    setOverride(next);
+  }, []);
+  return (
+    <StaffLiveContext.Provider value={live}>
+      {children}
+      {preview && (
+        <ErrorBoundary fallback={null}>
+          <PreviewSwitches live={live} override={override} onChange={change} />
+        </ErrorBoundary>
+      )}
+    </StaffLiveContext.Provider>
+  );
+}
+
+// A preview-deployment tool for the founder, never rendered on dalatech.online:
+// switch each staff member on and off to see the page in both states. «Бодит»
+// drops the override and shows what Dala AI's switches say.
+function PreviewSwitches({ live, override, onChange }) {
+  const [open, setOpen] = React.useState(false);
+  const ids = ["vira", "eho", "nova", "ora"];
+  const names = { vira: "Вира", eho: "Эхо", nova: "Нова", ora: "Ора" };
+  return (
+    <div className="fixed bottom-4 left-4 z-[60] text-[12px] text-fg" data-preview-switches>
+      {open ? (
+        <div className="w-[216px] rounded-[14px] border border-white/15 bg-ink-900/95 p-3 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold">Preview · staff switches</span>
+            <button type="button" onClick={() => setOpen(false)} className="min-h-[32px] px-2 text-fg-muted hover:text-fg" aria-label="Close">×</button>
+          </div>
+          <ul className="mt-2 flex flex-col gap-1">
+            {ids.map((id) => (
+              <li key={id}>
+                <label className="flex min-h-[36px] cursor-pointer items-center justify-between gap-3 rounded-[10px] px-2 hover:bg-white/[0.05]">
+                  <span>{names[id]}</span>
+                  <span className="flex items-center gap-2">
+                    <span className={live[id] ? "text-sky-300" : "text-fg-dim"}>{live[id] ? "live" : "off"}</span>
+                    <input
+                      type="checkbox"
+                      checked={!!live[id]}
+                      onChange={(e) => onChange({ ...Object.fromEntries(ids.map((x) => [x, !!live[x]])), [id]: e.target.checked })}
+                      className="h-4 w-4 accent-sky-400"
+                    />
+                  </span>
+                </label>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-2 flex gap-2">
+            <button type="button" onClick={() => onChange(Object.fromEntries(ids.map((x) => [x, true])))} className="min-h-[32px] flex-1 rounded-[8px] border border-white/15 hover:bg-white/[0.06]">All live</button>
+            <button type="button" onClick={() => onChange(Object.fromEntries(ids.map((x) => [x, false])))} className="min-h-[32px] flex-1 rounded-[8px] border border-white/15 hover:bg-white/[0.06]">All off</button>
+          </div>
+          <button type="button" disabled={!override} onClick={() => onChange(null)} className="mt-2 min-h-[32px] w-full rounded-[8px] text-fg-muted hover:text-fg disabled:opacity-40">
+            Use the real switches
+          </button>
+        </div>
+      ) : (
+        <button type="button" onClick={() => setOpen(true)} className="min-h-[36px] rounded-full border border-white/15 bg-ink-900/90 px-3 shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur hover:bg-ink-800">
+          Preview: {ids.filter((id) => live[id]).map((id) => names[id]).join(", ") || "all off"}
+        </button>
+      )}
+    </div>
+  );
+}
 
 // Everyone on the payroll. STAFF_ORDER is the four in the pixel room; Ора is
 // not in that room — she works for the owner, not their customers, in her own
@@ -4839,7 +5002,7 @@ const BOARD_BARS = [0.46, 0.64, 0.5, 1]; // four weeks; the last one is the poin
 
 function BoardLane({ id, dir, step, onPick, onEnter }) {
   const { t } = useTranslation();
-  const live = STAFF_LIVE[id];
+  const live = useStaffLive()[id];
   return (
     <li className="board-cell">
       {/* The lane is the way in to this agent's chapter. It used to be an inert
@@ -4939,6 +5102,7 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
 
 function ShiftBoard({ onPick, className = "" }) {
   const { t } = useTranslation();
+  const staffLive = useStaffLive();
   const reduced = useReducedMotion();
   const ref = React.useRef(null);
 
@@ -4996,7 +5160,7 @@ function ShiftBoard({ onPick, className = "" }) {
         <BoardLane id="ora" dir={BOARD_DIR.ora} step={STAFF_ORDER.length} onPick={onPick} onEnter={onEnter} />
       </ul>
       <p className="mx-auto mt-5 max-w-[540px] text-center text-[13px] leading-[1.5] text-fg-muted">
-        {t("office.board.caption")}
+        {boardCaption(t, staffLive)}
       </p>
     </div>
   );
@@ -5004,6 +5168,7 @@ function ShiftBoard({ onPick, className = "" }) {
 
 function StaffHero({ onHire, onSee, onPick }) {
   const { t } = useTranslation();
+  const staffLive = useStaffLive();
   return (
     <section className="relative overflow-hidden pb-6 pt-[96px] md:pb-10 md:pt-[124px]">
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -5022,7 +5187,7 @@ function StaffHero({ onHire, onSee, onPick }) {
               transition={SPRING_HEADLINE}
               className="mt-4 font-display text-[38px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[50px] md:text-[56px]"
             >
-              {t("office.hero.title")}
+              {officeTitle(t, staffLive)}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 14 }}
@@ -5030,7 +5195,7 @@ function StaffHero({ onHire, onSee, onPick }) {
               transition={{ ...SPRING_REVEAL, delay: 0.08 }}
               className="mx-auto mt-5 max-w-[620px] text-[17px] leading-[1.5] text-fg-muted"
             >
-              {t("office.hero.lead")}
+              {officeLead(t, staffLive)}
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -5182,7 +5347,7 @@ function StaffChapter({ id, index, onHire }) {
   const ref = React.useRef(null);
   const progress = useDampedProgress(ref, ["start end", "end start"]);
   const draw = React.useMemo(() => drawStaffChapter(id), [id]);
-  const live = STAFF_LIVE[id];
+  const live = useStaffLive()[id];
   const base = `office.chapters.${id}`;
   const flip = index % 2 === 1;
 
@@ -5295,13 +5460,14 @@ function OraPanel({ panel, step }) {
 // The one sentence the page needs between the four and the fifth.
 function OraIntro() {
   const { t } = useTranslation();
+  const staffLive = useStaffLive();
   return (
     <section className="pb-2 pt-16 md:pt-24">
       <Container>
         <Reveal className="mx-auto max-w-[680px] border-t border-white/[0.08] pt-10 text-center md:pt-14">
           <SectionLabel>{t("office.chapters.oraIntro.eyebrow")}</SectionLabel>
           <h2 className="mt-4 font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px] md:text-[44px]">{t("office.chapters.oraIntro.title")}</h2>
-          <p className="mx-auto mt-4 max-w-[46ch] text-[16px] leading-[1.55] text-fg-muted sm:text-[17px]">{t("office.chapters.oraIntro.lead")}</p>
+          <p className="mx-auto mt-4 max-w-[46ch] text-[16px] leading-[1.55] text-fg-muted sm:text-[17px]">{oraIntroLead(t, staffLive)}</p>
         </Reveal>
       </Container>
     </section>
@@ -5333,7 +5499,7 @@ function OraChapter({ onHire }) {
   const draw = React.useMemo(() => drawOraRoom(), []);
   const id = "ora";
   const base = `office.chapters.${id}`;
-  const live = STAFF_LIVE[id];
+  const live = useStaffLive()[id];
   const panel = t(`${base}.panel`, { returnObjects: true });
   const does = t(`${base}.does`, { returnObjects: true });
 
@@ -5421,6 +5587,7 @@ function StaffAvatar({ id, zoom = 3, className = "" }) {
 
 function StaffTeam({ onHire }) {
   const { t } = useTranslation();
+  const staffLive = useStaffLive();
   const [picked, setPicked] = React.useState(() => new Set(["dali"]));
   const ids = ALL_STAFF;
   const toggle = (id) =>
@@ -5438,7 +5605,8 @@ function StaffTeam({ onHire }) {
   const monthlyFull = priced.reduce((s, id) => s + OFFICE_AGENTS[id].monthly, 0);
   const monthly = Math.round(monthlyFull * (1 - discount));
   const setup = priced.reduce((s, id) => s + OFFICE_AGENTS[id].setup, 0);
-  const anyLive = chosen.some((id) => STAFF_LIVE[id]);
+  const anyLive = chosen.some((id) => staffLive[id]);
+  const chosenSoon = chosen.filter((id) => !staffLive[id]);
   const blocked = chosen.length === 0;
   // only Эхо picked: there is no announced price to add up, so no «0₮»
   const unpriced = chosen.length > 0 && priced.length === 0;
@@ -5477,7 +5645,7 @@ function StaffTeam({ onHire }) {
                         {on && <svg viewBox="0 0 16 16" className="h-full w-full text-ink-950"><path d="M4 8.3l2.6 2.6L12 5.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                       </span>
                     </span>
-                    <span className="block text-[12px] text-fg-muted">{t(`office.agents.${id}.role`)}{!STAFF_LIVE[id] && <> · {t("office.status.soon")}</>}</span>
+                    <span className="block text-[12px] text-fg-muted">{t(`office.agents.${id}.role`)}{!staffLive[id] && <> · {t("office.status.soon")}</>}</span>
                     {a.monthly != null ? (
                       <span className="mt-1 block text-[13px] font-medium tabular-nums text-fg">{formatTugrik(a.monthly)}<span className="font-normal text-fg-muted">{t("office.price.perMonth")}</span></span>
                     ) : (
@@ -5513,7 +5681,7 @@ function StaffTeam({ onHire }) {
               {chosen.length === 0 && <p>{t("office.team.empty")}</p>}
               {!blocked && picked.has("eho") && <p>{t("office.team.ehoNoPrice")}</p>}
               {!blocked && picked.has("ora") && <p>{t("office.team.ownerNote")}</p>}
-              {!blocked && chosen.some((id) => !STAFF_LIVE[id]) && <p>{t("office.team.soonNote")}</p>}
+              {!blocked && chosenSoon.length > 0 && <p>{teamSoonNote(t, chosenSoon)}</p>}
             </div>
             <button
               type="button"
@@ -5728,10 +5896,13 @@ function Shell() {
 export default function App() {
   return (
     <BrowserRouter>
-      {/* Inside the router: the dialog records which page the request came from. */}
-      <DemoRequestProvider>
-        <Shell />
-      </DemoRequestProvider>
+      {/* Outside everything that shows a staff member: one set of launch states for the whole page. */}
+      <StaffLiveProvider>
+        {/* Inside the router: the dialog records which page the request came from. */}
+        <DemoRequestProvider>
+          <Shell />
+        </DemoRequestProvider>
+      </StaffLiveProvider>
     </BrowserRouter>
   );
 }
