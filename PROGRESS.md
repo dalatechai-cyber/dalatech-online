@@ -23,14 +23,13 @@ site's structure, pages and look, and brings over only what the founder listed.
 | 8 | «МЭДЭЭЛЛИЙН ХАМГААЛАЛТ» kept | done |
 | 9 | FAQ page in the live two-column format, approved answers | done |
 | 10 | Only live text sizes/weights | done (checked by script: no size outside the live set) |
-| 11 | Sales copy for headlines and every staff description (drafts) | in progress |
+| 11 | Sales copy for headlines and every staff description (drafts) | done (drafts, for approval) |
 | 12 | Privacy policy: deletion within 30 days after the contract ends; 72-hour breach notice | done |
 | 13 | «1 гэж коммент» — Facebook only | done |
-| 14 | /office: Вира «маркетинг менежер», Нова «сануулга, SMS», sales descriptions, head icons | in progress (with 11) |
+| 14 | /office: Вира «маркетинг менежер», Нова «сануулга, SMS», sales descriptions, head icons | done |
 
 ## Next
-- Apply the sales-copy workflow output (item 11/14), verify side by side with live at 390/1440,
-  run the review workflow, push, report.
+- Run the code review over `git diff main...HEAD`, fix what it confirms, push, report.
 
 ## Decisions (round 2)
 - **Restored from `main`**: `src/App.jsx`, `src/index.css`, `src/locales/*.json`, then re-applied only the
