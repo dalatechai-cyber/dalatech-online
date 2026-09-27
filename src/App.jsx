@@ -34,8 +34,6 @@ import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStages
 import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, deskCentres, DAY_CARDS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
-// TEMPORARY: the founder's avatar pick; remove with src/AvatarOptions.jsx
-const AvatarOptions = React.lazy(() => import("./AvatarOptions"));
 const Globe = React.lazy(() => import("./Globe"));
 
 const EASE_OUT = [0.16, 1, 0.3, 1];
@@ -1144,7 +1142,7 @@ function DayRing({ className = "" }) {
             {event.time}
           </span>
           <span key={`who-${active}`} className="ring-caption mt-2.5 flex items-center gap-1.5">
-            <StaffAvatar id={event.who} size={0.625} />
+            <StaffAvatar id={event.who} zoom={1} />
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-300">
               {t(`office.agents.${event.who}.name`)}
             </span>
@@ -2230,7 +2228,7 @@ function StaffPriceCard({ id, yearly = false }) {
     <StaggerItem className="h-full">
       <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
         <div className="flex items-center gap-3">
-          <StaffAvatar id={id} size={2} />
+          <StaffAvatar id={id} zoom={3} />
           <div className="min-w-0">
             <p className="font-display text-[18px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</p>
             <p className="text-[12.5px] text-fg-muted">{t(`office.agents.${id}.role`)}</p>
@@ -3154,7 +3152,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                                   ].join(" ")}
                                 >
                                   {agent ? (
-                                    <StaffAvatar id={service} size={1.5} />
+                                    <StaffAvatar id={service} zoom={2} />
                                   ) : (
                                     <span className="flex h-[36px] w-[32px] shrink-0 items-center justify-center rounded-[9px] bg-white/[0.06] text-fg-muted" aria-hidden>
                                       {service === "website" ? (
@@ -3843,7 +3841,7 @@ function feedClock(p) {
 function PhoneIcon({ who, name }) {
   if (who === "dali") {
     return (
-      <StaffAvatar id="dali" size={0.625} />
+      <StaffAvatar id="dali" zoom={1} />
     );
   }
   if (who === "owner" || who === "summary") {
@@ -4261,7 +4259,7 @@ function StaffRow({ id }) {
   return (
     <StaggerItem y={12}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[96px] sm:flex-nowrap sm:py-0">
-        <StaffAvatar id={id} size={2} />
+        <StaffAvatar id={id} zoom={3} />
         <span className="min-w-0 flex-1">
           <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
             {t(`office.agents.${id}.name`)}
@@ -4484,7 +4482,7 @@ function ChannelBeams() {
         <FlowNode nodeRef={web} label={t("how.website")}><FlowGlyph kind="website" /></FlowNode>
       </div>
       <FlowNode nodeRef={dali} label={t("office.agents.dali.name")} big lit>
-        <StaffAvatar id="dali" size={1.75} />
+        <StaffAvatar id="dali" zoom={3} />
       </FlowNode>
       <FlowNode nodeRef={owner} label={t("how.owner")} lit>
         <FlowGlyph kind="owner" />
@@ -4864,7 +4862,7 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
       >
         <div className="board-who">
           {/* the same pixel face as the scenes below: four people, not four bars */}
-          <StaffAvatar id={id} size={1.5} />
+          <StaffAvatar id={id} zoom={2} />
           <span className="min-w-0">
             <span className="board-name">
               {t(`office.agents.${id}.name`)}
@@ -5389,39 +5387,35 @@ function OraChapter({ onHire }) {
   );
 }
 
-// The one staff picture on the site: a square tile with the head and
-// shoulders, cut from the atlas with CSS (founder, 2026-09-27: the /pricing
-// card's avatar everywhere, never a full figure). The atlas frame is 32×64
-// with the person standing in it; rows 16–51 hold the hair down to the
-// shoulders for all five. The tile is 36 units square and the 32-wide frame
-// sits in its middle: widening the crop instead would show a sliver of the
-// neighbouring frame in the strip. `size` scales it, and nothing else
-// changes with it: every staff picture is the /pricing card's tile.
-const AVATAR_TOP = 16;
-const AVATAR_ROWS = 36;
+// The one staff picture on the site: the /pricing card's avatar as it was on
+// main at 037731f (founder, 2026-09-27). There the whole 32×64 figure was
+// drawn at 3× inside a 60×66 box with rounded corners, centred and pulled up
+// 90px, so the box showed atlas columns 6–25 and rows 30–51: a strip of hair
+// across the top, the eyes in the middle, the collar across the bottom, skin
+// filling the rest, and no background showing. This is that window, at any
+// whole zoom: `zoom` 3 is the old /pricing box exactly (60×66, 12px corner).
+const FACE_X = 6;
+const FACE_Y = 30;
+const FACE_W = 20;
+const FACE_H = 22;
 
-function StaffAvatar({ id, size = 1, className = "" }) {
+function StaffAvatar({ id, zoom = 3, className = "" }) {
   const a = STAFF_CHARS[id].idle;
-  const box = AVATAR_ROWS * size;
   return (
     <span
       aria-hidden
-      className={["flex shrink-0 items-end justify-center overflow-hidden bg-white/[0.06]", className].join(" ")}
-      style={{ width: box, height: box, borderRadius: Math.max(5, Math.round(size * 6)) }}
-    >
-      <span
-        className="block shrink-0"
-        style={{
-          width: a.w * size,
-          height: box,
-          backgroundImage: `url(${STAFF_ATLAS.url})`,
-          backgroundSize: `${STAFF_ATLAS.w * size}px ${STAFF_ATLAS.h * size}px`,
-          backgroundPosition: `-${a.x * size}px -${(a.y + AVATAR_TOP) * size}px`,
-          backgroundRepeat: "no-repeat",
-          imageRendering: "pixelated",
-        }}
-      />
-    </span>
+      className={["block shrink-0 overflow-hidden bg-white/[0.06]", className].join(" ")}
+      style={{
+        width: FACE_W * zoom,
+        height: FACE_H * zoom,
+        borderRadius: 4 * zoom,
+        backgroundImage: `url(${STAFF_ATLAS.url})`,
+        backgroundSize: `${STAFF_ATLAS.w * zoom}px ${STAFF_ATLAS.h * zoom}px`,
+        backgroundPosition: `-${(a.x + FACE_X) * zoom}px -${(a.y + FACE_Y) * zoom}px`,
+        backgroundRepeat: "no-repeat",
+        imageRendering: "pixelated",
+      }}
+    />
   );
 }
 
@@ -5475,7 +5469,7 @@ function StaffTeam({ onHire }) {
                     on ? "border-sky-400/80 shadow-[0_0_0_1px_rgba(56,189,248,0.6),0_16px_40px_-24px_rgba(56,189,248,0.5)]" : "border-white/[0.08] hover:border-white/[0.22]",
                   ].join(" ")}
                 >
-                  <StaffAvatar id={id} size={2} />
+                  <StaffAvatar id={id} zoom={3} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
                       <span className="font-display text-[17px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</span>
@@ -5710,14 +5704,6 @@ function Shell() {
                   element={
                     <React.Suspense fallback={<div className="min-h-screen bg-ink-950" />}>
                       <Setup />
-                    </React.Suspense>
-                  }
-                />
-                <Route
-                  path="/avatar-options"
-                  element={
-                    <React.Suspense fallback={<div className="min-h-screen bg-ink-950" />}>
-                      <AvatarOptions />
                     </React.Suspense>
                   }
                 />
