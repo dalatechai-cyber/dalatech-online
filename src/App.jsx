@@ -3152,7 +3152,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                                   ].join(" ")}
                                 >
                                   {agent ? (
-                                    <StaffAvatar id={service} size={1} />
+                                    <StaffAvatar id={service} size={1.5} />
                                   ) : (
                                     <span className="flex h-[36px] w-[32px] shrink-0 items-center justify-center rounded-[9px] bg-white/[0.06] text-fg-muted" aria-hidden>
                                       {service === "website" ? (
@@ -3511,49 +3511,7 @@ function DemoRequestProvider({ children }) {
   );
 }
 
-// The rings and orbiting lights the closing section used to show on their
-// own. They read as a globe that never finished drawing (founder, 2026-09-27),
-// so now they are only the fallback: for a phone with no WebGL, and while the
-// globe's code is still loading.
-function ContactRings() {
-  return (
-    <div className="absolute inset-0">
-      <svg className="absolute inset-0 h-full w-full" viewBox="-200 -200 400 400">
-        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
-        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
-        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
-      </svg>
-      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-2 w-2 rounded-full bg-sky-300"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
-        />
-      </div>
-      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
-        />
-      </div>
-    </div>
-  );
-}
-
 function ContactOrbField() {
-  const reduced = useReducedMotion();
-  // three.js is 130 KB gzipped plus two textures: fetched only when the
-  // section is about to scroll into view, never as part of the first load
-  const boxRef = React.useRef(null);
-  const [near, setNear] = React.useState(false);
-  React.useEffect(() => {
-    const el = boxRef.current;
-    if (!el || near) return undefined;
-    const io = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting)) setNear(true);
-    }, { rootMargin: "600px 0px" });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [near]);
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 bg-grid opacity-[0.55]" />
@@ -3567,21 +3525,33 @@ function ContactOrbField() {
         }}
       />
 
-      {/* Ulaanbaatar, turning slowly behind the words: dimmed and centred so
-          the heading and buttons stay the brightest things on screen */}
-      <div ref={boxRef} className="absolute left-1/2 top-1/2 aspect-square w-[min(40rem,115vw)] -translate-x-1/2 -translate-y-1/2">
-        {near ? (
-          <ErrorBoundary fallback={<ContactRings />}>
-            <React.Suspense fallback={<ContactRings />}>
-              <Globe decorative reducedMotion={reduced} className="opacity-[0.42]" />
-            </React.Suspense>
-          </ErrorBoundary>
-        ) : (
-          <ContactRings />
-        )}
+      <svg
+        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2"
+        viewBox="-200 -200 400 400"
+      >
+        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
+        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
+        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
+      </svg>
+
+      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-2 w-2 rounded-full bg-sky-300"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
+        />
       </div>
-      {/* keep the text legible over the lit side of the globe */}
-      <div className="absolute inset-0" style={{ background: "radial-gradient(60% 45% at 50% 50%, rgba(5,10,24,0.55) 0%, rgba(5,10,24,0) 100%)" }} />
+      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
+        />
+      </div>
+      <div className="contact-orbit contact-orbit-3 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-1 w-1 rounded-full bg-white/85"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(190px)", boxShadow: "0 0 14px 2px rgba(255,255,255,0.55)" }}
+        />
+      </div>
 
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink-950 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink-950 to-transparent" />
@@ -4288,8 +4258,8 @@ function StaffRow({ id }) {
   const live = STAFF_LIVE[id];
   return (
     <StaggerItem y={12}>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[88px] sm:flex-nowrap sm:py-0">
-        <StaffAvatar id={id} size={1.5} />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[96px] sm:flex-nowrap sm:py-0">
+        <StaffAvatar id={id} size={2} />
         <span className="min-w-0 flex-1">
           <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
             {t(`office.agents.${id}.name`)}
@@ -4512,7 +4482,7 @@ function ChannelBeams() {
         <FlowNode nodeRef={web} label={t("how.website")}><FlowGlyph kind="website" /></FlowNode>
       </div>
       <FlowNode nodeRef={dali} label={t("office.agents.dali.name")} big lit>
-        <StaffAvatar id="dali" size={2} bare />
+        <StaffAvatar id="dali" size={1.75} />
       </FlowNode>
       <FlowNode nodeRef={owner} label={t("how.owner")} lit>
         <FlowGlyph kind="owner" />
@@ -4892,7 +4862,7 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
       >
         <div className="board-who">
           {/* the same pixel face as the scenes below: four people, not four bars */}
-          <StaffAvatar id={id} size={1.25} />
+          <StaffAvatar id={id} size={1.5} />
           <span className="min-w-0">
             <span className="board-name">
               {t(`office.agents.${id}.name`)}
@@ -5423,19 +5393,19 @@ function OraChapter({ onHire }) {
 // with the person standing in it; rows 16–51 hold the hair down to the
 // shoulders for all five. The tile is 36 units square and the 32-wide frame
 // sits in its middle: widening the crop instead would show a sliver of the
-// neighbouring frame in the strip. `size` scales it; `bare` drops the tile
-// for a picture that already sits in a frame of its own.
+// neighbouring frame in the strip. `size` scales it, and nothing else
+// changes with it: every staff picture is the /pricing card's tile.
 const AVATAR_TOP = 16;
 const AVATAR_ROWS = 36;
 
-function StaffAvatar({ id, size = 1, bare = false, className = "" }) {
+function StaffAvatar({ id, size = 1, className = "" }) {
   const a = STAFF_CHARS[id].idle;
   const box = AVATAR_ROWS * size;
   return (
     <span
       aria-hidden
-      className={["flex shrink-0 items-end justify-center overflow-hidden", bare ? "" : "bg-white/[0.06]", className].join(" ")}
-      style={{ width: box, height: box, borderRadius: bare ? undefined : Math.max(5, Math.round(size * 6)) }}
+      className={["flex shrink-0 items-end justify-center overflow-hidden bg-white/[0.06]", className].join(" ")}
+      style={{ width: box, height: box, borderRadius: Math.max(5, Math.round(size * 6)) }}
     >
       <span
         className="block shrink-0"
@@ -5503,7 +5473,7 @@ function StaffTeam({ onHire }) {
                     on ? "border-sky-400/80 shadow-[0_0_0_1px_rgba(56,189,248,0.6),0_16px_40px_-24px_rgba(56,189,248,0.5)]" : "border-white/[0.08] hover:border-white/[0.22]",
                   ].join(" ")}
                 >
-                  <StaffAvatar id={id} size={1.75} />
+                  <StaffAvatar id={id} size={2} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
                       <span className="font-display text-[17px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</span>
