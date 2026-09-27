@@ -4092,7 +4092,9 @@ function useTimedProgress(ref, seconds, disabled) {
 // A name tag over each desk of the working-day room: Дали in service, the
 // other three «Удахгүй», so four people at work never reads as four in
 // service. Positioned from the stage's own geometry, in logical pixels.
-const DESK_TAG_Y = 32;
+// In the window band above the heads (the glass runs from 3 to 30), so a tag
+// never covers a face at any scale.
+const DESK_TAG_Y = 4;
 
 function DeskTags({ geom, rowRightCss }) {
   const { t } = useTranslation();
@@ -4112,7 +4114,7 @@ function DeskTags({ geom, rowRightCss }) {
         </span>
         <span className={["text-[10px] sm:text-[11px]", live ? "text-sky-300" : "text-fg-dim"].join(" ")}>
           <span aria-hidden className="hidden sm:inline">· </span>
-          {t(live ? "office.status.live" : "office.status.soon")}
+          {t(live ? "day.desk.live" : "day.desk.soon")}
         </span>
       </span>
     );
@@ -4123,13 +4125,10 @@ function DeskTags({ geom, rowRightCss }) {
 // room's left edge, or null when the phone sits under the room (below lg).
 // Measured, not derived from breakpoints: the stage is narrower than the
 // viewport by the scrollbar, which put a derived edge 15px wrong at 1024px.
-// It is measured again whenever the page lays out anew (resize, the next
-// frames after mount) and as the day plays: at mount the phone is not yet
-// where it ends up, and a size observer alone never hears that it moved.
-function usePhoneEdge(bandRef, phoneRef, progress) {
+// It is measured again whenever the page lays out anew: a resize, and the
+// first frames after mount, while fonts and the stage settle.
+function usePhoneEdge(bandRef, phoneRef) {
   const [edge, setEdge] = React.useState(null);
-  const measureRef = React.useRef(() => {});
-  useMotionValueEvent(progress, "change", () => measureRef.current());
   React.useLayoutEffect(() => {
     const band = bandRef.current;
     const phone = phoneRef.current;
@@ -4144,7 +4143,6 @@ function usePhoneEdge(bandRef, phoneRef, progress) {
       const next = covers ? Math.round(ph.left - b.left - 28) : null;
       setEdge((e) => (e === next ? e : next));
     };
-    measureRef.current = measure;
     const ro = new ResizeObserver(measure);
     ro.observe(band);
     ro.observe(phone);
@@ -4159,7 +4157,6 @@ function usePhoneEdge(bandRef, phoneRef, progress) {
       ro.disconnect();
       window.removeEventListener("resize", measure);
       cancelAnimationFrame(raf);
-      measureRef.current = () => {};
     };
   }, [bandRef, phoneRef]);
   return edge;
@@ -4174,7 +4171,7 @@ function WorkingDay() {
   const progress = useTimedProgress(dayRef, DAY_SECONDS, reduced || !!error);
   const bandRef = React.useRef(null);
   const phoneRef = React.useRef(null);
-  const phoneEdge = usePhoneEdge(bandRef, phoneRef, progress);
+  const phoneEdge = usePhoneEdge(bandRef, phoneRef);
   // read on every frame through a ref, so the stage is not rebuilt on resize
   const edgeRef = React.useRef(phoneEdge);
   edgeRef.current = phoneEdge;

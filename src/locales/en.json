@@ -158,6 +158,10 @@
           "Passed 1 question to you"
         ]
       }
+    },
+    "desk": {
+      "live": "Live",
+      "soon": "Soon"
     }
   },
   "theFour": {

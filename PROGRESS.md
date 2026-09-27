@@ -35,6 +35,14 @@ site's structure, pages and look, and brings over only what the founder listed.
   «сануулга, SMS», «Вира зөвхөн өөр ажилтантай хамт» removed; Telegram/Gmail stay in the privacy processor
   list; Вира's weekly report stays; yearly totals confirmed. Still preview only.
 
+## Round 3 (founder + advisor, 2026-09-27)
+All four staff at their desks with «Идэвхтэй»/«Удахгүй» tags; head-and-shoulders avatar tile everywhere;
+salon showcase back in the Safari frame with the booking open; a real three.js globe behind the closing call
+to action (lazy, paused off screen, still under reduced motion, rings as the no-WebGL fallback); hero lead
+cut to two sentences; /pricing website card «Нэг удаагийн төлбөр, жил бүр хостинг.». Review: 4 confirmed
+(tags over faces on phones, EN tags overlapping, a live CSS rule squashing the room on short screens, globe
+animating under reduced motion) — all fixed.
+
 ## Code review (round 2)
 A review workflow over `git diff main...HEAD`: 4 reviewers (runtime, visitor UX, content truth,
 consistency with live), each finding checked by 2 skeptics. 18 findings, 12 survived; fixed:

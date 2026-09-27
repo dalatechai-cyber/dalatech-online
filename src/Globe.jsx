@@ -100,6 +100,9 @@ export default function Globe({ className = "", reducedMotion = false, decorativ
     const earth = new THREE.Mesh(earthGeo, earthMat);
     globeGroup.add(earth);
 
+    // Asks for one more frame. Under reduced motion nothing loops, so a
+    // texture arriving or a resize has to draw itself; set once tick exists.
+    let wake = () => {};
     const loader = new THREE.TextureLoader();
     loader.load(
       EARTH_MAP_URL,
@@ -109,6 +112,7 @@ export default function Globe({ className = "", reducedMotion = false, decorativ
         earthMat.map = tex;
         earthMat.color.setHex(0xffffff);
         earthMat.needsUpdate = true;
+        wake();
       },
       undefined,
       () => {
@@ -122,6 +126,7 @@ export default function Globe({ className = "", reducedMotion = false, decorativ
       (tex) => {
         earthMat.bumpMap = tex;
         earthMat.needsUpdate = true;
+        wake();
       },
       undefined,
       () => {
@@ -248,7 +253,8 @@ export default function Globe({ className = "", reducedMotion = false, decorativ
         globeGroup.rotation.y += speed;
       }
 
-      const cycle = ((now - start) % 2200) / 2200;
+      // reduced motion: the pin's ring and halo hold still, mid-pulse
+      const cycle = reducedMotion ? 0.35 : ((now - start) % 2200) / 2200;
       const eased = 1 - Math.pow(1 - cycle, 3);
       const ringScale = 1 + eased * 1.9;
       ring.scale.setScalar(ringScale);
@@ -275,9 +281,13 @@ export default function Globe({ className = "", reducedMotion = false, decorativ
       }
 
       renderer.render(scene, camera);
-      raf = requestAnimationFrame(tick);
+      // reduced motion draws one frame and stops; wake() draws the next
+      raf = reducedMotion ? 0 : requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
+    wake = () => {
+      if (!raf && onScreen) raf = requestAnimationFrame(tick);
+    };
 
     const onResize = () => {
       const w = mount.clientWidth || 1;
@@ -286,6 +296,7 @@ export default function Globe({ className = "", reducedMotion = false, decorativ
       camera.aspect = 1;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      wake();
     };
     const ro = new ResizeObserver(onResize);
     ro.observe(mount);

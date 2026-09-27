@@ -359,12 +359,6 @@ html.demo-dialog-open #dt-chat-frame {
   overflow: hidden;
 }
 
-/* on a short phone the room gives up height before the text does */
-@media (max-height: 700px) {
-  .day-band canvas {
-    max-height: 170px;
-  }
-}
 
 /* the owner's phone over the room: breathes when the scroll stops */
 .day-phone {
