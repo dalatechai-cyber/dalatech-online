@@ -26,6 +26,7 @@ import {
 
 import { Spotlight } from "./components/ui/spotlight";
 import { WordRotate } from "./components/ui/word-rotate";
+import { AnimatedBeam } from "./components/ui/animated-beam";
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
 import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
@@ -4342,6 +4343,162 @@ function NotFoundPage() {
   );
 }
 
+// -------------------------------------------------------- how it works
+// Three channels in, Дали in the middle, the owner out the far side. Kept
+// from the redesign preview (founder, 2026-09-27) in the live site's own type
+// and spacing. What reaches the owner is named «танд»: the channel the
+// details travel by is an internal detail and never shown to a customer.
+const FLOW_BEAM = { pathColor: "#8B9FC4", pathOpacity: 0.18, gradientStartColor: "#60C8FF", gradientStopColor: "#2563EB" };
+
+function FlowGlyph({ kind }) {
+  if (kind === "facebook") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+        <path d="M22 12a10 10 0 1 0-11.6 9.9V14.9H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3V22A10 10 0 0 0 22 12z" />
+      </svg>
+    );
+  }
+  if (kind === "instagram") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+  if (kind === "website") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" />
+      </svg>
+    );
+  }
+  // the owner: a person, not an app
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+    </svg>
+  );
+}
+
+function FlowNode({ nodeRef, label, big = false, lit = false, children }) {
+  return (
+    <div className="relative z-10 flex flex-col items-center gap-2">
+      <div
+        ref={nodeRef}
+        className={[
+          "flex items-center justify-center overflow-hidden rounded-full border",
+          big ? "h-[72px] w-[72px] sm:h-[84px] sm:w-[84px]" : "h-12 w-12 sm:h-14 sm:w-14",
+          lit ? "border-sky-400/40 bg-ink-800 text-sky-400 shadow-[0_0_40px_-10px_rgba(56,189,248,0.6)]" : "border-white/10 bg-ink-900 text-fg-muted",
+        ].join(" ")}
+      >
+        {children}
+      </div>
+      <span className="text-center text-[13px] leading-tight text-fg-muted">{label}</span>
+    </div>
+  );
+}
+
+function ChannelBeams() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const box = React.useRef(null);
+  const fb = React.useRef(null);
+  const ig = React.useRef(null);
+  const web = React.useRef(null);
+  const dali = React.useRef(null);
+  const owner = React.useRef(null);
+  // the light runs only while the diagram is on screen
+  const inView = useInView(box, { amount: 0.3 });
+  const animate = inView && !reduced;
+  return (
+    <div ref={box} role="img" aria-label={t("how.diagramLabel")} className="relative mx-auto flex h-[280px] w-full max-w-[720px] items-center justify-between px-1 sm:h-[320px] sm:px-8">
+      <div className="flex h-full flex-col justify-between py-1">
+        <FlowNode nodeRef={fb} label="Facebook"><FlowGlyph kind="facebook" /></FlowNode>
+        <FlowNode nodeRef={ig} label="Instagram"><FlowGlyph kind="instagram" /></FlowNode>
+        <FlowNode nodeRef={web} label={t("how.website")}><FlowGlyph kind="website" /></FlowNode>
+      </div>
+      <FlowNode nodeRef={dali} label={t("office.agents.dali.name")} big lit>
+        <StaffHead id="dali" size={2} />
+      </FlowNode>
+      <FlowNode nodeRef={owner} label={t("how.owner")} lit>
+        <FlowGlyph kind="owner" />
+      </FlowNode>
+
+      <AnimatedBeam containerRef={box} fromRef={fb} toRef={dali} curvature={-40} endYOffset={-10} duration={4} animate={animate} {...FLOW_BEAM} />
+      <AnimatedBeam containerRef={box} fromRef={ig} toRef={dali} duration={4} delay={0.6} animate={animate} {...FLOW_BEAM} />
+      <AnimatedBeam containerRef={box} fromRef={web} toRef={dali} curvature={40} endYOffset={10} duration={4} delay={1.2} animate={animate} {...FLOW_BEAM} />
+      <AnimatedBeam containerRef={box} fromRef={dali} toRef={owner} duration={3} delay={2} animate={animate} {...FLOW_BEAM} />
+    </div>
+  );
+}
+
+function ChannelFlow() {
+  const { t } = useTranslation();
+  const steps = t("how.steps", { returnObjects: true });
+  return (
+    <section id="how" className="py-20 md:py-28">
+      <Container>
+        <SectionHeader eyebrow={t("how.section")} title={t("how.title")} description={t("how.description")} />
+        <div className="mt-10 md:mt-14">
+          <ErrorBoundary fallback={null}>
+            <ChannelBeams />
+          </ErrorBoundary>
+        </div>
+        <ol className="mx-auto mt-10 grid max-w-[980px] gap-x-8 md:mt-14 md:grid-cols-3">
+          {(Array.isArray(steps) ? steps : []).map((s, i) => (
+            <li key={s.title} className="border-t border-white/[0.07] py-5">
+              <span className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-dim">
+                <span aria-hidden className="h-1 w-1 rounded-full bg-sky-400" />
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 className="mt-2 font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">{s.title}</h3>
+              <p className="mt-2 text-[15px] leading-[1.55] text-fg-muted">{s.body}</p>
+            </li>
+          ))}
+        </ol>
+      </Container>
+    </section>
+  );
+}
+
+// ------------------------------------------------------- data protection
+// Kept from the preview (founder, 2026-09-27). Rows in the staff list's own
+// shape; the two timed promises say their number in words, not a counter.
+function DataProtection() {
+  const { t } = useTranslation();
+  const items = t("dataProtection.items", { returnObjects: true });
+  return (
+    <section id="data" className="py-20 md:py-28">
+      <Container>
+        <SectionHeader eyebrow={t("dataProtection.section")} title={t("dataProtection.title")} description={t("dataProtection.description")} />
+        <ul className="mx-auto mt-10 grid max-w-[980px] gap-x-10 md:mt-14 md:grid-cols-2">
+          {(Array.isArray(items) ? items : []).map((it) => (
+            <li key={it.title} className="flex gap-4 border-t border-white/[0.07] py-5">
+              <span aria-hidden className="flex h-[44px] w-[40px] shrink-0 items-center justify-center rounded-[10px] bg-white/[0.05] text-sky-400">
+                <LockIcon className="h-4 w-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">{it.title}</span>
+                <span className="mt-1 block text-[15px] leading-[1.55] text-fg-muted">{it.body}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-8 text-center">
+          <a href="/privacy/" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
+            {t("dataProtection.policy")}
+            <span aria-hidden>&rsaquo;</span>
+          </a>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 const LandingPage = React.memo(function LandingPage() {
   usePageMeta("/");
   return (
@@ -4351,9 +4508,11 @@ const LandingPage = React.memo(function LandingPage() {
       <ErrorBoundary fallback={null}>
         <WorkingDay />
       </ErrorBoundary>
+      <ChannelFlow />
       <TheFour />
       <LiveDemo />
       <Portfolio />
+      <DataProtection />
       <Contact />
     </>
   );

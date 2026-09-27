@@ -836,5 +836,59 @@
     "body": "That page does not exist. The link may be out of date, or the address may be wrong.",
     "home": "Home",
     "staff": "AI staff"
+  },
+  "how": {
+    "section": "HOW IT WORKS",
+    "title": "Three channels. One Dali. Every customer to you.",
+    "description": "Works on your website too: Facebook, Instagram and website are all in one price.",
+    "diagramLabel": "Messages from Facebook, Instagram and your website reach Dali; the customer's details reach you",
+    "website": "Website",
+    "owner": "You",
+    "steps": [
+      {
+        "title": "A customer writes",
+        "body": "On Facebook, Instagram or your website, any time of day."
+      },
+      {
+        "title": "Dali answers",
+        "body": "Replies straight away with your prices, hours and services."
+      },
+      {
+        "title": "The customer reaches you",
+        "body": "The name and contact details of a customer who wants to book reach you directly."
+      }
+    ]
+  },
+  "dataProtection": {
+    "section": "DATA PROTECTION",
+    "title": "Your data works only for you.",
+    "description": "How we treat your data and your customers' data.",
+    "items": [
+      {
+        "title": "Only for the service",
+        "body": "Your data and your customers' data is used only to serve you."
+      },
+      {
+        "title": "Never sold",
+        "body": "Never sold, never used to train other AI."
+      },
+      {
+        "title": "Kept separate",
+        "body": "Each business's data is stored apart from everyone else's."
+      },
+      {
+        "title": "Encrypted keys",
+        "body": "The access keys to your page and channels are encrypted."
+      },
+      {
+        "title": "Told within 72 hours",
+        "body": "If data is ever exposed, we tell you within 72 hours."
+      },
+      {
+        "title": "Deleted within 30 days",
+        "body": "Your data is deleted within 30 days after the contract ends."
+      }
+    ],
+    "policy": "Privacy policy"
   }
 }
