@@ -3189,9 +3189,8 @@ const FIRST_TEN_SEATS_LEFT = 10;
 const FIRST_TEN_SEATS_TOTAL = 10;
 
 // Monthly fee per staff member in tugrik, as Дали quotes it (null: not announced).
-const HOME_MONTHLY = { dali: 250000, vira: 350000, nova: 150000, ora: 250000, eho: null };
+const HOME_MONTHLY = Object.fromEntries(Object.entries(OFFICE_AGENTS).map(([id, a]) => [id, a.monthly]));
 const HOME_STAFF = ["dali", "vira", "nova", "ora", "eho"];
-const formatMnt = (n) => `${n.toLocaleString("en-US")}₮`;
 
 // Smooth-scroll to a section on this page, clear of the fixed navbar.
 function scrollToSection(id) {
@@ -3798,7 +3797,7 @@ function HomePricing() {
       highlight: live,
       className: live ? "md:col-span-2" : "",
       wide: live,
-      price: monthly ? { monthly: formatMnt(monthly), yearly: formatMnt(monthly * 10) } : null,
+      price: monthly ? { monthly: formatTugrik(monthly), yearly: formatTugrik(monthly * 10) } : null,
       noPrice: t("home.staff.noPrice"),
       setup: monthly ? t("home.pricing.setup") : null,
       yearlyHint: t("home.pricing.yearlyHint"),
@@ -4446,10 +4445,12 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
 
         <div className="board-end">
           <span className="board-chip">{t(`office.board.lanes.${id}.end`)}</span>
-          <span className="board-price">
-            {formatTugrik(OFFICE_AGENTS[id].monthly)}
-            <span className="board-per">{t("office.price.perMonth")}</span>
-          </span>
+          {OFFICE_AGENTS[id].monthly != null && (
+            <span className="board-price">
+              {formatTugrik(OFFICE_AGENTS[id].monthly)}
+              <span className="board-per">{t("office.price.perMonth")}</span>
+            </span>
+          )}
         </div>
       </button>
     </li>
@@ -4583,17 +4584,20 @@ function StaffHero({ onHire, onSee, onPick }) {
 function StaffPrice({ id, align = "left" }) {
   const { t } = useTranslation();
   const a = OFFICE_AGENTS[id];
+  if (a.monthly == null) {
+    return (
+      <div className={align === "center" ? "text-center" : ""}>
+        <p className="text-[15px] font-medium text-fg-muted">{t("home.staff.noPrice")}</p>
+      </div>
+    );
+  }
   return (
     <div className={align === "center" ? "text-center" : ""}>
       <p className="font-display text-[22px] font-semibold tracking-tight text-fg">
         {formatTugrik(a.monthly)}
         <span className="text-[14px] font-normal text-fg-muted">{t("office.price.perMonth")}</span>
-        {a.perMinute && <span className="text-[13px] font-normal text-fg-muted"> {t("office.price.plusPerMinute")}</span>}
       </p>
-      <p className="mt-1 text-[13px] text-fg-muted">
-        {t("office.price.setup", { price: formatTugrik(a.setup) })}
-        {a.addOnOnly && <> · {t("office.price.addOnOnly")}</>}
-      </p>
+      <p className="mt-1 text-[13px] text-fg-muted">{t("office.price.setup", { price: formatTugrik(a.setup) })}</p>
     </div>
   );
 }
@@ -4935,14 +4939,16 @@ function StaffTeam({ onHire }) {
       return n;
     });
   const chosen = ids.filter((id) => picked.has(id));
-  const bundle = OFFICE_BUNDLES.find((b) => b.agents === chosen.length);
+  // Only priced staff are summed and counted for the team discount: Эхо has no
+  // announced price, so a total "with Эхо" would be a number nobody approved.
+  const priced = chosen.filter((id) => OFFICE_AGENTS[id].monthly != null);
+  const bundle = OFFICE_BUNDLES.find((b) => b.agents === priced.length);
   const discount = bundle ? bundle.discount : 0;
-  const monthlyFull = chosen.reduce((s, id) => s + OFFICE_AGENTS[id].monthly, 0);
+  const monthlyFull = priced.reduce((s, id) => s + OFFICE_AGENTS[id].monthly, 0);
   const monthly = Math.round(monthlyFull * (1 - discount));
-  const setup = chosen.reduce((s, id) => s + OFFICE_AGENTS[id].setup, 0);
-  const viraAlone = chosen.length === 1 && chosen[0] === "vira";
+  const setup = priced.reduce((s, id) => s + OFFICE_AGENTS[id].setup, 0);
   const anyLive = chosen.some((id) => STAFF_LIVE[id]);
-  const blocked = chosen.length === 0 || viraAlone;
+  const blocked = chosen.length === 0;
 
   return (
     <section id="team" className="py-16 md:py-24">
@@ -4981,7 +4987,11 @@ function StaffTeam({ onHire }) {
                       </span>
                     </span>
                     <span className="block text-[12px] text-fg-muted">{t(`office.agents.${id}.role`)}{!STAFF_LIVE[id] && <> · {t("office.status.soon")}</>}</span>
-                    <span className="mt-1 block text-[13px] font-medium tabular-nums text-fg">{formatTugrik(a.monthly)}<span className="font-normal text-fg-muted">{t("office.price.perMonth")}</span></span>
+                    {a.monthly != null ? (
+                      <span className="mt-1 block text-[13px] font-medium tabular-nums text-fg">{formatTugrik(a.monthly)}<span className="font-normal text-fg-muted">{t("office.price.perMonth")}</span></span>
+                    ) : (
+                      <span className="mt-1 block text-[12px] text-fg-muted">{t("home.staff.noPrice")}</span>
+                    )}
                   </span>
                 </button>
               );
@@ -4993,7 +5003,7 @@ function StaffTeam({ onHire }) {
               <div className="flex items-baseline justify-between gap-4 sm:block">
                 <dt className="text-[13px] text-fg-muted">{t("office.team.monthly")}</dt>
                 <dd className="text-right sm:mt-1 sm:text-left">
-                  <span className="font-display text-[30px] font-semibold leading-none tracking-tight tabular-nums text-fg">{formatTugrik(chosen.length ? monthly : 0)}</span>
+                  <span className="font-display text-[30px] font-semibold leading-none tracking-tight tabular-nums text-fg">{formatTugrik(priced.length ? monthly : 0)}</span>
                   <span className="text-[14px] text-fg-muted">{t("office.price.perMonth")}</span>
                   {discount > 0 && (
                     <span className="ml-2 inline-flex items-center gap-1.5 align-middle text-[13px] tabular-nums text-fg-muted">
@@ -5010,8 +5020,7 @@ function StaffTeam({ onHire }) {
             </dl>
             <div className="mt-4 min-h-[20px] text-[12.5px] leading-[1.5] text-fg-muted" aria-live="polite">
               {chosen.length === 0 && <p>{t("office.team.empty")}</p>}
-              {viraAlone && <p>{t("office.team.viraAlone")}</p>}
-              {!blocked && picked.has("eho") && <p>{t("office.team.perMinuteNote")}</p>}
+              {!blocked && picked.has("eho") && <p>{t("office.team.ehoNoPrice")}</p>}
               {!blocked && picked.has("ora") && <p>{t("office.team.ownerNote")}</p>}
               {!blocked && chosen.some((id) => !STAFF_LIVE[id]) && <p>{t("office.team.soonNote")}</p>}
             </div>

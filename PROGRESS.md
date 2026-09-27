@@ -22,14 +22,12 @@ If a session stops, read this file top to bottom and continue from "Next".
 | 10 | FAQ (Accordion) | done, checked |
 | 11 | Final call to action (Messenger, «1», free demo, request) | done, checked |
 | 12 | Nav «Үнэ» / «Асуулт» scroll to the homepage sections; /pricing and /faq render the new sections | done |
-| 13 | Vercel preview check (phone + desktop) | next |
-| 14 | /office team builder still uses the OLD prices (`src/office/agents.js`) | todo |
+| 13 | Vercel preview check (phone + desktop) | done: renders, Manrope/Inter load, no console errors, no horizontal scroll |
+| 14 | /office prices brought to the approved list (`src/office/agents.js`); Эхо shows «Үнийг хараахан зарлаагүй.» and is left out of totals | done |
 | 15 | Full code review of every changed file | todo |
 
 ## Next
-- Verify the Vercel preview deployment of this branch at phone and desktop widths.
-- Bring `src/office/agents.js` (the /office team builder) to the approved prices.
-- Full review pass, then the final report.
+- Full review pass of every changed file, clean dead CSS, then the final report.
 
 ## Decisions
 - **Source of truth for prices and approved wording** is Дали's own prompt in
@@ -119,6 +117,11 @@ already on the site. Keys are in `src/locales/mn.json` under `home`.
 14. The emoji 😊 was dropped from the approved demo sentence on the page (kept in the chat).
 
 ## Open questions for the founder
+0. **/office text is still the old roles.** Prices there now match, but its chapters still
+   describe Вира as «Бизнес аналитик» (monthly reports) and Нова as «Харилцагчийн менежер»
+   (win-back messages). Rewriting /office was outside this brief ("keep /office"); it
+   needs its own pass with approved wording. Вира is no longer "only with another staff
+   member" (Дали's prompt sells her alone at 350,000₮), so that rule was removed.
 1. **Дали does not know the «Анхны 10 бизнест» offer.** It is not in Дали's prompt
    (dalatech-chatbot `api/chat.js`) or its price guard (`lib/facts.js`). Before this page
    goes live the offer has to be added there, or Дали will contradict the page. I did not

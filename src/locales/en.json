@@ -286,20 +286,6 @@
           "Admin panel for managing content"
         ],
         "cta": "Send a request"
-      },
-      "bundle": {
-        "title": "Website + Dali",
-        "badge": "100,000₮ discount",
-        "price": "800,000₮",
-        "subLine": "Separately 900,000₮ (website 750,000₮ + Dali setup 150,000₮). Together 800,000₮ · then Dali 250,000₮/month",
-        "description": "Your new website launches with Dali already answering.",
-        "bullets": [
-          "Smart website included",
-          "Dali answers on the website and on Messenger",
-          "100,000₮ discount on the setup"
-        ],
-        "cta": "Send a request",
-        "was": "900,000₮"
       }
     },
     "paymentTerms": {
@@ -701,7 +687,8 @@
       "soonNote": "Vira, Eho, Nova and Ora launch soon. Pre-register and we notify you at launch.",
       "cta": "Send a request",
       "ctaPreorder": "Send a request",
-      "ownerNote": "Ora works with you, not with your customers."
+      "ownerNote": "Ora works with you, not with your customers.",
+      "ehoNoPrice": "Echo's price hasn't been announced, so it isn't in the total."
     },
     "steps": {
       "title": "Three steps to launch",
