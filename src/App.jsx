@@ -3267,11 +3267,11 @@ function HomeHero() {
             <span aria-hidden className="block">{t("home.hero.titleAfter")}</span>
           </h1>
 
-          <BlurFade delay={0.25}>
-            <p className="mx-auto mt-7 max-w-[40rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[18px]">
-              {t("home.hero.lead")}
-            </p>
-          </BlurFade>
+          {/* no entrance on the lead: it is the page's largest paint on a
+              phone, and fading it in pushed LCP from ~1.0 s to ~2.0 s */}
+          <p className="mx-auto mt-7 max-w-[40rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[18px]">
+            {t("home.hero.lead")}
+          </p>
 
           <BlurFade delay={0.35}>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-6">
