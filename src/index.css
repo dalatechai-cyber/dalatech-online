@@ -810,3 +810,14 @@ html.demo-dialog-open .day-phone,
 html.demo-dialog-open .ring-dot .halo {
   animation-play-state: paused;
 }
+
+/* ------------------------------------------------------------------ homepage
+   21st.dev Spotlight: under reduced motion it does not sweep in, it is simply
+   there, at the position its animation would have ended on. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spotlight {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: translate(-50%, -40%) scale(1);
+  }
+}
