@@ -619,68 +619,184 @@ export function drawOraRoom() {
 // ------------------------------------------------------------ a working day
 // The landing page's room behind the owner's phone, over one day. All four
 // customer-facing staff sit at their desks, as on the live site (founder,
-// 2026-09-27), but only Дали works today: the page tags the other three
-// «Удахгүй», and the phone shows Дали alone. The day is four real Дали moments — a booking
-// asked for at night, a price question in the morning, a discount request she
-// hands to the owner, a message after closing — and one evening summary.
+// 2026-09-27). Who WORKS today follows the launch switches (src/office/launch.js):
+// Дали always, and each of the others once their switch is on. The page tags
+// the rest «Удахгүй», and the phone shows only the work of the ones who are live.
 //
-// DAY_CARDS is the single timeline for both halves of the section: the phone
-// in App.jsx lands each card at its `at`, and the room below lights Дали's
-// desk, shows the waiting message over her screen and answers it on the same
+// With only Дали live, the day is exactly the one the site has shown since
+// 2026-09-27 — four real Дали moments (a booking asked for at night, a price
+// question in the morning, a discount request she hands to the owner, a message
+// after closing) and one evening summary — down to the same timings.
+// Each staff member whose switch is on adds one moment of their own, at their
+// own hour: Вира's post in the morning, Ора's document in the afternoon, Нова's
+// reminder at six, Эхо's call after closing. Ора has no desk in this room (she
+// works for the owner, in her own window), so her moment is on the phone only.
+//
+// A plan is the single timeline for both halves of the section: the phone in
+// App.jsx lands each card at its `at`, and the room lights the desk of whoever is
+// working, shows the job waiting over their screen and completes it on the same
 // clock. Progress is 0..1 over the whole run.
-export const DAY_CARDS = [
-  { key: "nightAsk", at: 0.02, who: "customer", time: "02:14" },
-  { key: "nightReply", at: 0.09, who: "dali", time: "02:14" },
-  { key: "nightBooked", at: 0.16, who: "owner", time: "02:15" },
-  { key: "priceAsk", at: 0.3, who: "customer", time: "09:40" },
-  { key: "priceReply", at: 0.37, who: "dali", time: "09:40" },
-  { key: "discountAsk", at: 0.51, who: "customer", time: "13:25" },
-  { key: "discountReply", at: 0.58, who: "dali", time: "13:25" },
-  { key: "discountHandoff", at: 0.64, who: "owner", time: "13:26" },
-  { key: "lateAsk", at: 0.77, who: "customer", time: "21:30" },
-  { key: "lateReply", at: 0.84, who: "dali", time: "21:30" },
-  { key: "summary", at: 0.93, who: "summary", time: "21:45" },
+const DALI_DAY = [
+  { who: "dali", hour: 2.2, cards: [
+    { key: "nightAsk", who: "customer", time: "02:14" },
+    { key: "nightReply", who: "dali", time: "02:14" },
+    { key: "nightBooked", who: "owner", time: "02:15" },
+  ] },
+  { who: "dali", hour: 9.6, cards: [
+    { key: "priceAsk", who: "customer", time: "09:40" },
+    { key: "priceReply", who: "dali", time: "09:40" },
+  ] },
+  { who: "dali", hour: 13.35, cards: [
+    { key: "discountAsk", who: "customer", time: "13:25" },
+    { key: "discountReply", who: "dali", time: "13:25" },
+    { key: "discountHandoff", who: "owner", time: "13:26" },
+  ] },
+  { who: "dali", hour: 21.45, cards: [
+    { key: "lateAsk", who: "customer", time: "21:30" },
+    { key: "lateReply", who: "dali", time: "21:30" },
+  ] },
 ];
 
-// [progress, hour]: the hour holds while a moment plays and moves between
-// moments, eased, so the light never jumps.
-const DAY_KEYS = [
-  [0.0, 2.2], [0.2, 2.3], [0.28, 9.6], [0.44, 9.75], [0.5, 13.35],
-  [0.7, 13.5], [0.75, 21.45], [0.9, 21.55], [1.0, 21.75],
-];
-const smoothstep = (t) => t * t * (3 - 2 * t);
+// One moment per staff member whose switch is on: the work, as it reaches the phone.
+const STAFF_DAY = {
+  vira: { who: "vira", hour: 10.5, cards: [{ key: "viraPost", who: "vira", time: "10:30" }] },
+  ora: { who: "ora", hour: 16.1, cards: [{ key: "oraDoc", who: "ora", time: "16:10" }] },
+  nova: { who: "nova", hour: 18.0, cards: [{ key: "novaReminder", who: "nova", time: "18:00" }] },
+  eho: { who: "eho", hour: 20.65, cards: [{ key: "ehoCall", who: "eho", time: "20:40" }] },
+};
 
-export function dayHour(p) {
-  const x = Math.min(1, Math.max(0, p));
-  for (let i = 1; i < DAY_KEYS.length; i++) {
-    const [p0, h0] = DAY_KEYS[i - 1];
-    const [p1, h1] = DAY_KEYS[i];
-    if (x <= p1) return h0 + (h1 - h0) * smoothstep((x - p0) / (p1 - p0));
-  }
-  return DAY_KEYS[DAY_KEYS.length - 1][1];
+// Today's day, as tuned by hand on 2026-09-27. Kept verbatim so that with only
+// Дали live nothing about the section moves by a frame.
+const DALI_ONLY = {
+  cards: [
+    { key: "nightAsk", at: 0.02, who: "customer", time: "02:14" },
+    { key: "nightReply", at: 0.09, who: "dali", time: "02:14" },
+    { key: "nightBooked", at: 0.16, who: "owner", time: "02:15" },
+    { key: "priceAsk", at: 0.3, who: "customer", time: "09:40" },
+    { key: "priceReply", at: 0.37, who: "dali", time: "09:40" },
+    { key: "discountAsk", at: 0.51, who: "customer", time: "13:25" },
+    { key: "discountReply", at: 0.58, who: "dali", time: "13:25" },
+    { key: "discountHandoff", at: 0.64, who: "owner", time: "13:26" },
+    { key: "lateAsk", at: 0.77, who: "customer", time: "21:30" },
+    { key: "lateReply", at: 0.84, who: "dali", time: "21:30" },
+    { key: "summary", at: 0.93, who: "summary", time: "21:45" },
+  ],
+  // [progress, hour]: the hour holds while a moment plays and moves between
+  // moments, eased, so the light never jumps.
+  keys: [
+    [0.0, 2.2], [0.2, 2.3], [0.28, 9.6], [0.44, 9.75], [0.5, 13.35],
+    [0.7, 13.5], [0.75, 21.45], [0.9, 21.55], [1.0, 21.75],
+  ],
+  // The moments, as the room sees them: a question waits over Дали's screen
+  // from `ask` until she answers at `reply`.
+  moments: [
+    { who: "dali", ask: 0.02, reply: 0.09, end: 0.2 },
+    { who: "dali", ask: 0.3, reply: 0.37, end: 0.44 },
+    { who: "dali", ask: 0.51, reply: 0.58, end: 0.7 },
+    { who: "dali", ask: 0.77, reply: 0.84, end: 0.9 },
+  ],
+  summaryKey: "summary",
+  seconds: 36,
+};
+
+// Card spacing, in the same units the hand-tuned day uses: 0.07 between cards of
+// one moment, a wider gap between moments, the summary last.
+const STEP = 0.07;
+const GAP = 0.14;
+const plans = new Map();
+
+/**
+ * The day for a set of live staff (`live` is { id: boolean }). Deterministic and
+ * cached per set, so the stage and the phone always read the same object.
+ */
+export function dayPlan(live = {}) {
+  const extra = ["vira", "ora", "nova", "eho"].filter((id) => live[id]);
+  const cacheKey = extra.join(",");
+  if (plans.has(cacheKey)) return plans.get(cacheKey);
+  if (extra.length === 0) { plans.set(cacheKey, DALI_ONLY); return DALI_ONLY; }
+
+  const day = [...DALI_DAY, ...extra.map((id) => STAFF_DAY[id])].sort((a, b) => a.hour - b.hour);
+  // Lay the cards out in raw units, then scale them into 0.02..0.93 as today's are.
+  const raw = [];
+  const rawMoments = [];
+  let x = 0;
+  day.forEach((m, i) => {
+    if (i > 0) x += GAP;
+    const first = x;
+    m.cards.forEach((c, j) => {
+      if (j > 0) x += STEP;
+      raw.push({ ...c, x });
+    });
+    rawMoments.push({ who: m.who, hour: m.hour, first, last: x, single: m.cards.length === 1 });
+  });
+  const span = x + GAP;
+  const at = (v) => Math.round((0.02 + (v / span) * 0.91) * 1000) / 1000;
+  const unit = 0.91 / span;
+  const cards = [...raw.map(({ x: v, ...c }) => ({ ...c, at: at(v) })), { key: "summaryTeam", at: 0.93, who: "summary", time: "21:45" }];
+  // Each moment holds its hour while it plays; the light moves in the gap to the
+  // next one, leaving 28% of the gap after the last card and arriving 14% before
+  // the next — the proportions of the hand-tuned day (0.16 → 0.20 … 0.28 → 0.30).
+  const firsts = rawMoments.map((m) => at(m.first));
+  const lasts = rawMoments.map((m) => at(m.last));
+  const summaryAt = 0.93;
+  const moments = rawMoments.map((m, i) => {
+    const first = firsts[i];
+    const last = lasts[i];
+    const next = i + 1 < rawMoments.length ? firsts[i + 1] : summaryAt;
+    const prevLast = i > 0 ? lasts[i - 1] : 0;
+    const arrive = i === 0 ? 0 : first - (first - prevLast) * 0.14;
+    const end = last + (next - last) * 0.28;
+    // A job of one card waits a beat over the desk before it lands on the phone.
+    const ask = m.single ? Math.max(arrive, first - unit * STEP) : first;
+    const reply = m.single ? first : Math.min(last, first + unit * STEP);
+    return { who: m.who, hour: m.hour, ask, reply, end, arrive };
+  });
+  const keys = [[0, moments[0].hour]];
+  moments.forEach((m, i) => {
+    if (i > 0) keys.push([m.arrive, m.hour]);
+    keys.push([m.end, m.hour + 0.1]);
+  });
+  keys.push([1.0, moments[moments.length - 1].hour + 0.3]);
+  const plan = {
+    cards,
+    keys,
+    moments: moments.map(({ who, ask, reply, end }) => ({ who, ask, reply, end })),
+    summaryKey: "summaryTeam",
+    // the same pace per card as today's day
+    seconds: Math.round((DALI_ONLY.seconds * cards.length) / DALI_ONLY.cards.length),
+  };
+  plans.set(cacheKey, plan);
+  return plan;
 }
 
-// The moments, as the room sees them: a question waits over Дали's screen
-// from `ask` until she answers at `reply`.
-const DALI_MOMENTS = [
-  { ask: 0.02, reply: 0.09, end: 0.2 },
-  { ask: 0.3, reply: 0.37, end: 0.44 },
-  { ask: 0.51, reply: 0.58, end: 0.7 },
-  { ask: 0.77, reply: 0.84, end: 0.9 },
-];
+// Today's cards, for anything that has no launch state to hand.
+export const DAY_CARDS = DALI_ONLY.cards;
 
-// How much the room is gathered on Дали's desk: eased in as a moment starts,
-// eased out after it, so the dim never snaps.
-export function focusAmountAt(p) {
+const smoothstep = (t) => t * t * (3 - 2 * t);
+
+export function dayHour(p, plan = DALI_ONLY) {
+  const x = Math.min(1, Math.max(0, p));
+  const keys = plan.keys;
+  for (let i = 1; i < keys.length; i++) {
+    const [p0, h0] = keys[i - 1];
+    const [p1, h1] = keys[i];
+    if (x <= p1) return h0 + (h1 - h0) * smoothstep((x - p0) / (p1 - p0));
+  }
+  return keys[keys.length - 1][1];
+}
+
+// How much the room is gathered on the working desk: eased in as a moment starts,
+// eased out after it, so the dim never snaps. Ора's moment has no desk here.
+export function focusAmountAt(p, plan = DALI_ONLY) {
   let a = 0;
-  for (const m of DALI_MOMENTS) {
+  for (const m of plan.moments) {
+    if (!STAFF.includes(m.who)) continue;
     const inn = smoothstep(Math.min(1, Math.max(0, (p - m.ask + 0.02) / 0.04)));
     const out = smoothstep(Math.min(1, Math.max(0, (m.end + 0.03 - p) / 0.04)));
     a = Math.max(a, Math.min(inn, out));
   }
   return a * 0.85;
 }
-
 // A speech bubble in art pixels over Дали's screen. While a message waits it
 // holds three dots that step in turn; the moment she answers it becomes a
 // tick and lifts away. `pop` is 0..1 and only scales the bubble's reveal, so
@@ -733,23 +849,28 @@ export function deskCentres(W, rowRight = Infinity) {
 }
 
 export function drawWorkingDay(ctx, img, view) {
+  const plan = view.plan ?? DALI_ONLY;
   const p = view.progress ?? 0;
-  const hour = dayHour(p);
-  const current = DALI_MOMENTS.find((m) => p >= m.ask && p < m.end + 0.02);
+  const hour = dayHour(p, plan);
+  const current = plan.moments.find((m) => STAFF.includes(m.who) && p >= m.ask && p < m.end + 0.02);
+  const who = current ? current.who : "dali";
   const stations = officeRoom(ctx, img, view, {
     hour,
-    // all four at their desks, as on the live site; only Дали is in service,
-    // and the page tags the other three «Удахгүй» over their desks
+    // all four at their desks, as on the live site; the page tags whoever is
+    // not live yet «Удахгүй» over their desk
     cast: STAFF,
     // the page passes where the owner's phone starts covering the room, in
     // CSS pixels from the stage's left edge; the desks stay left of it
     rowRight: view.rowRightCss != null ? view.rowRightCss / (view.css ?? 1) : Infinity,
-    focus: 0,
-    focusAmount: focusAmountAt(p),
-    // her screen brightens as she writes the reply
-    daliPhase: current && p >= current.reply - 0.03 && p < current.reply + 0.03 ? 3.1 : null,
+    focus: STAFF.indexOf(who),
+    focusAmount: focusAmountAt(p, plan),
+    // Дали's screen brightens as she writes the reply
+    daliPhase: current && who === "dali" && p >= current.reply - 0.03 && p < current.reply + 0.03 ? 3.1 : null,
+    // Эхо's phone rings until he answers; Вира's report builds and prints
+    ring: who === "eho" && current ? p < current.reply : null,
+    chartGrow: who === "vira" && current ? Math.min(1.25, Math.max(0, (p - current.ask) / Math.max(0.001, current.reply - current.ask))) : undefined,
   });
-  const m = stations.dali?.placed?.MONITOR_BACK;
+  const m = stations[who]?.placed?.MONITOR_BACK;
   if (!m || !current) return;
   const cx = m.x + Math.floor(m.w / 2);
   if (p < current.reply) {
