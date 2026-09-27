@@ -2475,14 +2475,18 @@ function FAQItem({ question, answer }) {
 
 function FAQ() {
   const { t } = useTranslation();
+  // The answers are Дали's approved wording (dalatech-chatbot api/chat.js), so
+  // the page and the chat never answer the same question two ways.
+  const items = t("faq.items", { returnObjects: true });
+  const faqItems = Array.isArray(items) ? items : [];
   return (
     <section id="faq" className="relative py-20 md:py-24">
       <Container>
         <SectionHeader eyebrow={t("faq.section")} title={t("faq.title")} description={t("faq.description")} />
 
         <StaggerGroup className="mt-12 grid gap-3.5 md:grid-cols-2">
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <FAQItem key={n} question={t(`faq.q${n}.question`)} answer={t(`faq.q${n}.answer`)} />
+          {faqItems.map((item) => (
+            <FAQItem key={item.q} question={item.q} answer={item.a} />
           ))}
         </StaggerGroup>
 

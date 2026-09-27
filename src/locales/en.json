@@ -359,33 +359,59 @@
     "section": "FAQ",
     "title": "Common questions",
     "description": "Below are answers to the questions asked most often about our AI staff and websites.",
-    "q1": {
-      "question": "Which businesses is this service for?",
-      "answer": "The service is built for small and medium businesses that take customer inquiries regularly. Stores, service centers, auto parts shops, and clinics are a typical fit."
-    },
-    "q2": {
-      "question": "Is technical knowledge required?",
-      "answer": "It is not required. We handle configuration and rollout end to end. You edit your content through a simple admin panel."
-    },
-    "q3": {
-      "question": "What does the monthly fee cover?",
-      "answer": "Servers, model usage, monitoring, knowledge updates, and support are covered by the monthly fee. Call minutes for Eho are the only extra charge."
-    },
-    "q4": {
-      "question": "Will AI staff replace employees?",
-      "answer": "They do not. Dali handles the daily messages: repeat questions, prices, hours and booking links. Anything sensitive or unusual is passed to your team."
-    },
-    "q5": {
-      "question": "What does Dali base its answers on?",
-      "answer": "Dali answers only from the information you supply: prices, hours, services, and terms. Anything outside that scope is passed to your team rather than guessed."
-    },
-    "q6": {
-      "question": "How long does rollout take?",
-      "answer": "AI staff go live within 1–2 weeks. A website is delivered within 7–10 working days."
-    },
     "stillHaveQuestions": "More questions",
     "contactPrompt": "Send us the rest. We call back with the answers.",
-    "talkToUs": "Send a request"
+    "talkToUs": "Send a request",
+    "items": [
+      {
+        "q": "What kind of business is this for?",
+        "a": "Small and medium businesses that get customer questions all the time: shops, salons, clinics, restaurants, car services, training centres and so on."
+      },
+      {
+        "q": "Do I need technical knowledge?",
+        "a": "None at all. We do all the setup and launch for you."
+      },
+      {
+        "q": "What does the monthly fee include?",
+        "a": "Servers, model usage, monitoring, information updates and support."
+      },
+      {
+        "q": "Does AI staff replace people?",
+        "a": "It does not replace your staff — it helps them. It takes the daily load of repeat questions, bookings, reminders and reports, and passes anything that needs a decision to your team."
+      },
+      {
+        "q": "What does Dali base its answers on?",
+        "a": "Only the information you give: prices, hours, services, terms. It does not guess outside that; it passes the question to your team."
+      },
+      {
+        "q": "How long does it take to launch?",
+        "a": "AI staff usually start within 1–2 weeks. A website is ready in 7–10 working days."
+      },
+      {
+        "q": "Is there a discount for several staff?",
+        "a": "Yes: two AI staff get 10% off the monthly fee, three get 15%, four or more 20%."
+      },
+      {
+        "q": "Is paying yearly cheaper?",
+        "a": "Prepay a year and get 2 months free — 12 months for the price of 10. This discount does not combine with others."
+      },
+      {
+        "q": "What is the minimum contract?",
+        "a": "3 months. After that you continue month to month, or cancel with 30 days' notice."
+      },
+      {
+        "q": "Do you issue a VAT receipt (e-barimt)?",
+        "a": "Not at the moment. No VAT is added, so you pay exactly the listed price."
+      },
+      {
+        "q": "How do I pay?",
+        "a": "Website: 50% on signing, 50% on delivery; hosting yearly. AI staff: setup once on signing, the monthly fee by the 5th of each month via QPay or bank transfer."
+      },
+      {
+        "q": "Can I see a free demo?",
+        "a": "Go to app.dalatech.online and enter your business details — your website demo is ready in 24 hours. That tool is for website demos only; for AI staff, send a request and we will contact you right away."
+      }
+    ]
   },
   "contact": {
     "title": "A setup shaped to your business",
