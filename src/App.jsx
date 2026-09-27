@@ -5036,7 +5036,10 @@ function StaffChat({ lines, step }) {
 // Вира's month, as the plan on her screen: what the package delivers, ticked
 // off in turn. Every line is the package itself, not an invented result.
 function StaffPlan({ plan }) {
-  const items = Array.isArray(plan.items) ? plan.items : [];
+  // A missing locale key comes back from t() as the key string, not an
+  // object: show no card rather than an empty dark box on her monitor.
+  const items = plan && Array.isArray(plan.items) ? plan.items : [];
+  if (!plan?.title || !items.length) return null;
   return (
     <div className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
       <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-fg-dim">{plan.tag}</p>
