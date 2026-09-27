@@ -414,7 +414,8 @@
     "demoCta": "Generate a demo website",
     "emailCta": "Email us",
     "messengerCta": "Write on Messenger",
-    "commentLine": "Comment «1» under any post on our Facebook page and we will contact you."
+    "commentLine": "Comment «1» under any post on our Facebook page and we will contact you.",
+    "facebookLink": "Facebook page"
   },
   "location": {
     "eyebrow": "LOCATION",

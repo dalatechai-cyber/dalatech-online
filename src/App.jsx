@@ -3611,12 +3611,12 @@ function Contact() {
 
           {/* the Facebook comment route, and the email, as one quiet line under the buttons */}
           <StaggerItem>
-            <p className="mx-auto mt-8 max-w-[54ch] text-[15px] leading-[1.55] text-fg-muted">
-              <a href={FACEBOOK_PAGE} target="_blank" rel="noopener noreferrer" className="text-fg underline decoration-white/25 underline-offset-4 transition-colors hover:text-white">
-                {t("contact.commentLine")}
+            <p className="mx-auto mt-8 max-w-[54ch] text-[15px] leading-[1.55] text-fg-muted">{t("contact.commentLine")}</p>
+            <p className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-[15px]">
+              <a href={FACEBOOK_PAGE} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center gap-1.5 text-sky-400 transition-colors hover:text-sky-300">
+                {t("contact.facebookLink")} <span aria-hidden>&rsaquo;</span>
               </a>
-              <span className="mx-2 text-fg-dim" aria-hidden>·</span>
-              <a href={mailtoHref} className="whitespace-nowrap transition-colors hover:text-fg">{DEMO_EMAIL}</a>
+              <a href={mailtoHref} className="inline-flex min-h-[44px] items-center text-fg-muted transition-colors hover:text-fg">{DEMO_EMAIL}</a>
             </p>
           </StaggerItem>
 
