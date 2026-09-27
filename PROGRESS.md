@@ -132,6 +132,10 @@ New Mongolian (DRAFT, for approval):
 
 ## English site, Дали in English — assessed, not built
 
+Founder, 2026-09-27: not built. Instead the English site shows one line at the top of the chat
+window, «Our assistant replies in Mongolian.» (`index.html`, shown by `<html lang="en">` only;
+the Mongolian site's chat window is unchanged to the pixel).
+
 Not small, and not safe to do quietly. Every fixed reply, canned line, KB document and signed
 platform block is Mongolian; the outbound guard refuses a reply that is not mostly Cyrillic; the
 widget is an iframe that is never told the site's language; and each English sentence Дали sends
