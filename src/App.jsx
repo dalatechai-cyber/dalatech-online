@@ -924,16 +924,33 @@ const RING_OPEN = [10, 20]; // the hours a typical shop has someone at the count
 
 const RING_SECONDS = 36; // one whole day per revolution, at a constant rate
 
-// Every moment is Дали's: the ring shows what works today, not the team to come.
-const RING_EVENTS = [
-  { at: 2 + 14 / 60, time: "02:14", who: "dali" },
-  { at: 6 + 40 / 60, time: "06:40", who: "dali" },
-  { at: 9, time: "09:00", who: "dali" },
-  { at: 13 + 25 / 60, time: "13:25", who: "dali" },
-  { at: 18 + 5 / 60, time: "18:05", who: "dali" },
-  { at: 21 + 30 / 60, time: "21:30", who: "dali" },
-  { at: 23 + 50 / 60, time: "23:50", who: "dali" },
+// Дали's seven moments; `line` is the caption's index in hero.ring.events. With only Дали
+// live the ring shows exactly these, as it always has.
+const RING_DALI = [
+  { at: 2 + 14 / 60, time: "02:14", who: "dali", line: 0 },
+  { at: 6 + 40 / 60, time: "06:40", who: "dali", line: 1 },
+  { at: 9, time: "09:00", who: "dali", line: 2 },
+  { at: 13 + 25 / 60, time: "13:25", who: "dali", line: 3 },
+  { at: 18 + 5 / 60, time: "18:05", who: "dali", line: 4 },
+  { at: 21 + 30 / 60, time: "21:30", who: "dali", line: 5 },
+  { at: 23 + 50 / 60, time: "23:50", who: "dali", line: 6 },
 ];
+// One moment per other staff member, shown only while their switch is on (the ring must never
+// show a staff member working before they are live). Same hours as the phone's day.
+const RING_STAFF = {
+  vira: { at: 10.5, time: "10:30", who: "vira" },
+  ora: { at: 16 + 10 / 60, time: "16:10", who: "ora" },
+  nova: { at: 18, time: "18:00", who: "nova" },
+  eho: { at: 20 + 40 / 60, time: "20:40", who: "eho" },
+};
+
+function ringEvents(live) {
+  const extra = Object.keys(RING_STAFF).filter((id) => live[id]);
+  if (extra.length === 0) return RING_DALI;
+  // Нова's 18:00 reminder would sit on top of Дали's 18:05 hand-over, so that one gives way.
+  const dali = RING_DALI.filter((e) => !(live.nova && e.time === "18:05"));
+  return [...dali, ...extra.map((id) => RING_STAFF[id])].sort((a, b) => a.at - b.at);
+}
 
 function ringPoint(hour, radius = RING_R) {
   const a = ((hour / 24) * 360 - 90) * (Math.PI / 180);
@@ -958,8 +975,12 @@ const ringClock = (hour) => {
 function DayRing({ className = "" }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
+  const staffLive = useStaffLive();
+  const RING_EVENTS = React.useMemo(() => ringEvents(staffLive), [staffLive]);
+  const team = RING_EVENTS !== RING_DALI;
   const captions = t("hero.ring.events", { returnObjects: true });
   const labels = Array.isArray(captions) ? captions : [];
+  const caption = (e) => (e.who === "dali" ? labels[e.line] || "" : t(`staffText.ring.${e.who}`));
 
   const hostRef = React.useRef(null);
   const handRef = React.useRef(null);
@@ -972,6 +993,15 @@ function DayRing({ className = "" }) {
   const spinRef = React.useRef("");
   const litRef = React.useRef(-2);
   const [active, setActive] = React.useState(RING_EVENTS.length - 1);
+
+  // A switch flipped in the preview changes the moments: start the day over with the new set.
+  React.useEffect(() => {
+    shownRef.current = -1;
+    clockRef.current = "";
+    spinRef.current = "";
+    litRef.current = -2;
+    setActive(RING_EVENTS.length - 1);
+  }, [RING_EVENTS]);
 
   React.useEffect(() => {
     if (reduced || !hostRef.current) return undefined;
@@ -1062,7 +1092,7 @@ function DayRing({ className = "" }) {
       io.disconnect();
       document.removeEventListener("visibilitychange", update);
     };
-  }, [reduced]);
+  }, [reduced, RING_EVENTS]);
 
   const event = RING_EVENTS[active] || RING_EVENTS[0];
   const openArc = ringArc(RING_OPEN[0], RING_OPEN[1]);
@@ -1071,7 +1101,7 @@ function DayRing({ className = "" }) {
   return (
     <div ref={hostRef} className={["relative w-full max-w-[380px]", className].join(" ")}>
       <div className="relative">
-        <svg viewBox="0 0 300 300" className="block w-full" role="img" aria-label={t("hero.ring.alt")}>
+        <svg viewBox="0 0 300 300" className="block w-full" role="img" aria-label={team ? t("staffText.ring.alt", { n: RING_EVENTS.length }) : t("hero.ring.alt")}>
           {/* the whole day: what the four cover */}
           <circle cx={RING_CX} cy={RING_CX} r={RING_R} fill="none" stroke="rgba(56,189,248,0.16)" strokeWidth="10" />
           {/* the hours someone is at the counter */}
@@ -1153,7 +1183,7 @@ function DayRing({ className = "" }) {
             </span>
           </span>
           <span key={`line-${active}`} className="ring-caption mt-2 text-[12.5px] leading-[1.4] text-fg-muted" aria-live="off">
-            {labels[active] || ""}
+            {caption(event)}
           </span>
         </div>
       </div>
@@ -1166,7 +1196,7 @@ function DayRing({ className = "" }) {
         </span>
         <span className="inline-flex items-center gap-2">
           <span aria-hidden className="h-1.5 w-5 rounded-full bg-sky-400" />
-          {t("hero.ring.closed", { hours: closedHours })}
+          {t(team ? "staffText.ring.closed" : "hero.ring.closed", { hours: closedHours })}
         </span>
       </div>
     </div>
@@ -3867,7 +3897,7 @@ const STAFF_IDS = new Set(["dali", "vira", "eho", "nova", "ora"]);
 // The order the team summary lists the others' work in, after Дали's.
 const SUMMARY_EXTRAS = ["vira", "ora", "nova", "eho"];
 
-function PhoneCard({ card }) {
+function PhoneCard({ card, plan }) {
   const { t } = useTranslation();
   const staffLive = useStaffLive();
   const raw = t(`day.feed.${card.key}`, { returnObjects: true });
@@ -3875,7 +3905,7 @@ function PhoneCard({ card }) {
   // member at work today — the same set whose moments the day just showed.
   const c = card.key === "summaryTeam" && raw && typeof raw === "object"
     ? { ...raw, rows: [
-        ...(t("day.feed.summary.rows", { returnObjects: true }) || []),
+        ...(t("day.feed.summaryTeam.dali", { returnObjects: true, n: plan ? plan.daliCount : 4 }) || []),
         ...SUMMARY_EXTRAS.filter((id) => staffLive[id]).map((id) => t(`day.feed.summaryTeam.extra.${id}`)),
       ] }
     : raw;
@@ -3907,11 +3937,11 @@ function PhoneCard({ card }) {
 // At rest (reduced motion, or no pixel room) nothing plays, so the whole day
 // is on the screen at once: the summary on top counts cards the visitor can
 // read, and so does a screen reader.
-function PhoneFeed({ count, animate, cards }) {
+function PhoneFeed({ count, animate, cards, plan }) {
   if (!animate) {
     return (
       <div className="flex flex-col gap-2">
-        {cards.slice().reverse().map((card) => <PhoneCard key={card.key} card={card} />)}
+        {cards.slice().reverse().map((card) => <PhoneCard key={card.key} card={card} plan={plan} />)}
       </div>
     );
   }
@@ -3930,7 +3960,7 @@ function PhoneFeed({ count, animate, cards }) {
             exit={{ opacity: 0, y: 12 }}
             transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.7 }}
           >
-            <PhoneCard card={card} />
+            <PhoneCard card={card} plan={plan} />
           </motion.div>
         ))}
       </AnimatePresence>
@@ -3944,6 +3974,8 @@ function OwnerPhone({ progress, plan, className = "" }) {
   const { t } = useTranslation();
   const { open: openDemoRequest } = useDemoRequest();
   const cards = plan.cards;
+  // a team at work: the owner chooses which staff to ask about, so nothing is preset
+  const team = plan.summaryKey === "summaryTeam";
   const animate = !!progress;
   const atRest = useMotionValue(1);
   const [count, setCount] = React.useState(() => (progress ? cardsLandedAt(progress.get(), cards) : cards.length));
@@ -3968,7 +4000,7 @@ function OwnerPhone({ progress, plan, className = "" }) {
       <button
         type="button"
         tabIndex={done ? 0 : -1}
-        onClick={() => openDemoRequest(["dali"])}
+        onClick={() => openDemoRequest(team ? [] : ["dali"])}
         className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
       >
         {t("day.phone.cta")}
@@ -3994,7 +4026,7 @@ function OwnerPhone({ progress, plan, className = "" }) {
           <span aria-hidden className="absolute left-1/2 top-[11px] h-[22px] w-[74px] -translate-x-1/2 rounded-full bg-black" />
 
           <div className="relative mx-3 mt-5">
-            <PhoneFeed count={count} animate={animate} cards={cards} />
+            <PhoneFeed count={count} animate={animate} cards={cards} plan={plan} />
           </div>
 
           {animate ? (
@@ -4168,6 +4200,7 @@ function WorkingDay() {
   // who works today follows the launch switches; with only Дали live this is the
   // day the section has always shown
   const plan = dayPlan(staffLive);
+  const team = plan.summaryKey === "summaryTeam";
   const reduced = useReducedMotion();
   const { error } = useStaffAtlas();
   const dayRef = React.useRef(null);
@@ -4197,8 +4230,8 @@ function WorkingDay() {
   const closing = (
     <Container>
       <div className="mt-14 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
-        <MagneticButton href="#demo" variant="primary" demoServices={["dali"]}>{t("day.phone.cta")}</MagneticButton>
+        <p className="max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">{t(team ? "staffText.day.closing" : "day.closing")}</p>
+        <MagneticButton href="#demo" variant="primary" demoServices={team ? undefined : ["dali"]}>{t("day.phone.cta")}</MagneticButton>
       </div>
     </Container>
   );

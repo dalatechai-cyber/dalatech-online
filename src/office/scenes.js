@@ -629,7 +629,8 @@ export function drawOraRoom() {
 // after closing) and one evening summary — down to the same timings.
 // Each staff member whose switch is on adds one moment of their own, at their
 // own hour: Вира's post in the morning, Ора's document in the afternoon, Нова's
-// reminder at six, Эхо's call after closing. Ора has no desk in this room (she
+// reminder at six, Эхо's call after closing. Дали then keeps two moments, not
+// four, so the team's work is on the phone from the first quarter of the day. Ора has no desk in this room (she
 // works for the owner, in her own window), so her moment is on the phone only.
 //
 // A plan is the single timeline for both halves of the section: the phone in
@@ -637,21 +638,21 @@ export function drawOraRoom() {
 // working, shows the job waiting over their screen and completes it on the same
 // clock. Progress is 0..1 over the whole run.
 const DALI_DAY = [
-  { who: "dali", hour: 2.2, cards: [
+  { who: "dali", key: "night", hour: 2.2, cards: [
     { key: "nightAsk", who: "customer", time: "02:14" },
     { key: "nightReply", who: "dali", time: "02:14" },
     { key: "nightBooked", who: "owner", time: "02:15" },
   ] },
-  { who: "dali", hour: 9.6, cards: [
+  { who: "dali", key: "price", hour: 9.6, cards: [
     { key: "priceAsk", who: "customer", time: "09:40" },
     { key: "priceReply", who: "dali", time: "09:40" },
   ] },
-  { who: "dali", hour: 13.35, cards: [
+  { who: "dali", key: "discount", hour: 13.35, cards: [
     { key: "discountAsk", who: "customer", time: "13:25" },
     { key: "discountReply", who: "dali", time: "13:25" },
     { key: "discountHandoff", who: "owner", time: "13:26" },
   ] },
-  { who: "dali", hour: 21.45, cards: [
+  { who: "dali", key: "late", hour: 21.45, cards: [
     { key: "lateAsk", who: "customer", time: "21:30" },
     { key: "lateReply", who: "dali", time: "21:30" },
   ] },
@@ -696,6 +697,7 @@ const DALI_ONLY = {
     { who: "dali", ask: 0.77, reply: 0.84, end: 0.9 },
   ],
   summaryKey: "summary",
+  daliCount: 4,
   seconds: 36,
 };
 
@@ -715,7 +717,12 @@ export function dayPlan(live = {}) {
   if (plans.has(cacheKey)) return plans.get(cacheKey);
   if (extra.length === 0) { plans.set(cacheKey, DALI_ONLY); return DALI_ONLY; }
 
-  const day = [...DALI_DAY, ...extra.map((id) => STAFF_DAY[id])].sort((a, b) => a.hour - b.hour);
+  // With a team at work, Дали keeps her two strongest moments (the booking at night and the
+  // discount she hands to the owner) so the others' work reaches the phone early and stays
+  // on it: her price answer goes, and so does her after-hours reply when Эхо is on the
+  // after-hours call himself.
+  const daliDay = DALI_DAY.filter((m) => m.key !== "price" && !(m.key === "late" && live.eho));
+  const day = [...daliDay, ...extra.map((id) => STAFF_DAY[id])].sort((a, b) => a.hour - b.hour);
   // Lay the cards out in raw units, then scale them into 0.02..0.93 as today's are.
   const raw = [];
   const rawMoments = [];
@@ -762,6 +769,8 @@ export function dayPlan(live = {}) {
     keys,
     moments: moments.map(({ who, ask, reply, end }) => ({ who, ask, reply, end })),
     summaryKey: "summaryTeam",
+    // how many customers Дали answered on this day, for the summary's first row
+    daliCount: daliDay.length,
     // the same pace per card as today's day
     seconds: Math.round((DALI_ONLY.seconds * cards.length) / DALI_ONLY.cards.length),
   };

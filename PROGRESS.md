@@ -66,22 +66,23 @@ Undo at any point: `scripts/provision/dalatech-launch-switches-2026-09-27-revert
 
 ## Open items for the founder
 
-- **Эхо has no approved price.** Live mode still says «Үнийг хараахан зарлаагүй». Set the price
-  (rows + `src/office/agents.js`) before flipping Эхо.
+- **Эхо has no approved price.** She stays off until the founder sets it (decided 2026-09-27).
+  The publish command now refuses to switch any service live that has no priced variant, so
+  Эхо cannot be flipped by mistake. Set the price (rows + `src/office/agents.js`) first.
 - **Legal pages** (`/privacy`, `/terms`, `/data-deletion`) state that Эхо/Нова process no calls or
   SMS yet and that the four are pre-registration only. Those are legal disclosures and must be
   rewritten with the real data handling before Эхо or Нова launches; not switched, not changed.
 - **Reply cases:** the 16 strings «X одоо ажиллаж байна / байгаа / идэвхтэй …» move out of the
   generic must-not lists into one case per staff member per state (true only while X is coming soon).
 - **Model check:** run the `--with-model` dry run above; this session has no key.
-- **Name lists:** Mongolian joins names with commas only («Дали, Вира өнөөдрөөс, Эхо, Нова, Ора
-  удахгүй»). Say if you want «ба» before the last name.
+- **Name lists:** commas only, no «ба» (decided 2026-09-27).
+- **English chat answers:** not built (see «English site, Дали in English» below).
 
 ## Wording audit — every changed line (old → new), for approval
 
 Website (mn):
 1. «DalaTech-ийн Facebook хуудасны аль ч постын доор «1» гэж коммент бичвэл бид тантай холбогдоно.» → removed
-2. «Шифрлэгдсэн түлхүүр» → «Хуудас тань хамгаалагдсан»
+2. «Шифрлэгдсэн түлхүүр» → «Нэвтрэх эрх шифрлэгдсэн» (founder, 2026-09-27: «Хуудас тань хамгаалагдсан» overclaimed)
 3. «Танай хуудас, сувагт нэвтрэх түлхүүрүүд шифрлэгдсэн байна.» → «Танай хуудсанд олгосон эрхийг шифрлэн хадгалж, зөвхөн харилцагчдад хариулахад ашиглана.»
 4. «Эзэнд нь шилжүүллээ» → «Танд шилжүүллээ»
 5. LiveDemo: «…илгээнэ. Таамаглахгүй, хөнгөлөлтийг өөрөө амлахгүй: шийдвэрийг танд шилжүүлнэ. Танай бизнест тохируулсан Далиг бид үзүүлнэ.» → «…илгээнэ. Танай бизнест тохируулсан Далиг бид танилцуулна.» (the no-discount point is already shown by the demo itself)
@@ -110,6 +111,35 @@ Chat widget (dalatech-chatbot):
 Дали (tenant #0, approved wording applied): Нова «…ТИЙМ/ҮГҮЙ хариуг хүлээн авдаг AI ажилтан…» →
 «Нова цагийн сануулгыг танай дугаараас SMS-ээр автоматаар илгээж, ирэхээ мартах харилцагчийг
 цөөлнө.»; Вира, Эхо, Ора descriptions use the site's approved lines (KB and fallback prompt).
+
+## Round 2 (2026-09-27): team day on the phone, clock ring, closing line
+
+- **Phone** («Та унтаж байхад ч захиалга орж ирнэ.»): with any staff live, Дали keeps two moments
+  (the 02:14 booking, the 13:25 discount hand-off) plus the 21:30 reply unless Эхо is live, so each
+  live staff member's card lands in the first half of the day and stays in view; the day ends on
+  the team summary. All off: the 36-second Дали day, unchanged frame for frame.
+- **Ring**: each live staff member adds a moment at the phone's hour; Дали's 18:05 hand-over gives
+  way to Нова's 18:00. All off: the seven Дали moments, unchanged.
+- **Closing line and its button**: with any staff live, the line speaks of the staff the owner
+  chooses and the request form opens with nothing preselected.
+
+New Mongolian (DRAFT, for approval):
+- Ring captions: Вира «Өнөөдрийн постыг нийтэллээ» · Ора «Гэрээний төслийг бэлэн болголоо» · Нова «Маргаашийн цагийг SMS-ээр сануулав» · Эхо «Хаасны дараах дуудлагад хариуллаа»
+- Ring legend: «Үлдсэн {{hours}} цагт Дали хариулна» → (any live) «Үлдсэн {{hours}} цагт AI ажилтнууд тань ажиллана»
+- Ring description (screen readers): «Нэг өдрийн хүрд: {{n}} мөч, тус бүр өөрийн цагтаа, AI ажилтан бүрийн хийсэн ажил.»
+- Closing: «Өнөөдөр хүсэлт илгээвэл Дали 1–2 долоо хоногийн дотор танай харилцагчдад хариулж эхэлнэ.» → (any live) «Өнөөдөр хүсэлт илгээвэл таны сонгосон AI ажилтан 1–2 долоо хоногийн дотор ажиллаж эхэлнэ.»
+- Team summary, Дали's first row counts what the day showed: «{{n}} харилцагчид хариулсан» (2 or 3)
+
+## English site, Дали in English — assessed, not built
+
+Not small, and not safe to do quietly. Every fixed reply, canned line, KB document and signed
+platform block is Mongolian; the outbound guard refuses a reply that is not mostly Cyrillic; the
+widget is an iframe that is never told the site's language; and each English sentence Дали sends
+would be customer-visible wording needing the founder's approval, with its own reply cases and a
+fact-gate entry so English prices cannot drift from the rows. What it would take: the widget
+passing the page language; an English copy of each approved row (reviewed); a per-language guard
+exception; a prompt rule to answer in the visitor's language; English reply cases in both launch
+states. Roughly a week, and it touches the path every Mongolian reply takes.
 
 ## New Mongolian copy (DRAFT, for approval)
 

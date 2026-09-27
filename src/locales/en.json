@@ -183,7 +183,12 @@
           "ora": "Prepared 1 contract draft",
           "nova": "Sent 1 reminder",
           "eho": "Answered 1 call"
-        }
+        },
+        "dali": [
+          "Answered {{n}} customers",
+          "Sent 1 booking link",
+          "Passed 1 question to you"
+        ]
       }
     },
     "desk": {
@@ -938,7 +943,7 @@
         "body": "Each business's data is stored apart from everyone else's."
       },
       {
-        "title": "Your page, protected",
+        "title": "Access encrypted",
         "body": "The access you grant to your page is stored encrypted and used only to answer your customers."
       },
       {
@@ -1004,7 +1009,8 @@
       "soon": "Joining soon: {{names}}.",
       "altRoom": "The office: Dali, Vira, Eho and Nova at their desks.",
       "altLive": "Today {{names}} are at work.",
-      "altSoon": "Joining soon: {{names}}."
+      "altSoon": "Joining soon: {{names}}.",
+      "closing": "Send a request today and the AI staff you choose start work within 1–2 weeks."
     },
     "theFour": {
       "titleSome": "{{names}} today. The full team soon.",
@@ -1056,6 +1062,14 @@
       "soon": "Starting to serve your customers soon: {{names}}.",
       "oraSoon": "Ora, coming soon, helps you with documents, presentations, deadlines and decisions in a chat only you open.",
       "oraLive": "Ora helps you with documents, presentations, deadlines and decisions in a chat only you open."
+    },
+    "ring": {
+      "alt": "A day as a ring: {{n}} moments, each at its own hour, each one an AI staff member's work.",
+      "closed": "Your AI staff work the other {{hours}} hours",
+      "vira": "Published today's post",
+      "ora": "Got the contract draft ready",
+      "nova": "Sent tomorrow's appointment reminder by SMS",
+      "eho": "Answered a call after closing"
     }
   }
 }
