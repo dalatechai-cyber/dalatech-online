@@ -104,8 +104,6 @@ const CUE_RISE = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } };
 // Reduced motion keeps the whole exchange, it just does not perform it: empty
 // variants leave each item at its resting style, which is visible.
 const CUE_STILL = { hidden: {}, show: {} };
-// A bar does not rise into place, it grows out of its own baseline.
-const BAR_GROW = { hidden: { scaleY: 0, opacity: 0.55 }, show: { scaleY: 1, opacity: 1 } };
 
 function useCue(ref, count, step = CUE_STEP, lead = CUE_LEAD) {
   const reduced = useReducedMotion();
@@ -2540,6 +2538,8 @@ const DEMO_DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
 
 const DEMO_EMAIL = "dalatech.ai@gmail.com";
 const DEMO_MESSENGER = "https://m.me/61586065058744";
+// The Facebook page itself: comment «1» under any post and we get in touch.
+const FACEBOOK_PAGE = "https://www.facebook.com/profile.php?id=61586065058744";
 
 const EMPTY_DEMO_FORM = {
   name: "",
@@ -3600,14 +3600,24 @@ function Contact() {
               <MagneticButton href="https://app.dalatech.online" variant="ghost">
                 {t("contact.demoCta")}
               </MagneticButton>
-              <MagneticButton href={mailtoHref} variant="ghost">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
-                  <path d="m3 7 9 6 9-6" />
+              <MagneticButton href={DEMO_MESSENGER} variant="ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.35.27.57l.05 1.78c.02.57.6.94 1.12.71l1.99-.88c.17-.07.36-.09.53-.04.91.25 1.89.39 2.9.39 5.64 0 10-4.13 10-9.7S17.64 2 12 2Zm6 7.46-2.94 4.66a1.5 1.5 0 0 1-2.17.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66a1.5 1.5 0 0 1 2.17-.4l2.34 1.75a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63Z" />
                 </svg>
-                {t("contact.emailCta")}
+                {t("contact.messengerCta")}
               </MagneticButton>
             </div>
+          </StaggerItem>
+
+          {/* the Facebook comment route, and the email, as one quiet line under the buttons */}
+          <StaggerItem>
+            <p className="mx-auto mt-8 max-w-[54ch] text-[15px] leading-[1.55] text-fg-muted">
+              <a href={FACEBOOK_PAGE} target="_blank" rel="noopener noreferrer" className="text-fg underline decoration-white/25 underline-offset-4 transition-colors hover:text-white">
+                {t("contact.commentLine")}
+              </a>
+              <span className="mx-2 text-fg-dim" aria-hidden>·</span>
+              <a href={mailtoHref} className="whitespace-nowrap transition-colors hover:text-fg">{DEMO_EMAIL}</a>
+            </p>
           </StaggerItem>
 
         </StaggerGroup>
@@ -3729,7 +3739,7 @@ function Footer() {
               </p>
               <div className="mt-6 flex items-center gap-2.5">
                 <a
-                  href="https://www.facebook.com/profile.php?id=61586065058744"
+                  href={FACEBOOK_PAGE}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="DalaTech on Facebook"
@@ -5023,30 +5033,23 @@ function StaffChat({ lines, step }) {
   );
 }
 
-// Вира's report. Her screen has its back to the room now, so this card is
-// where the four bars are actually read; they build in turn on the card's own
-// clock rather than as the page scrolls.
-function StaffReport({ report }) {
-  const last = report.values.length - 1;
+// Вира's month, as the plan on her screen: what the package delivers, ticked
+// off in turn. Every line is the package itself, not an invented result.
+function StaffPlan({ plan }) {
+  const items = Array.isArray(plan.items) ? plan.items : [];
   return (
-    <Reveal y={10} className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
-      <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-fg-dim">{report.tag}</p>
-      <p className="mt-1 text-[13px] font-semibold text-fg">{report.title}</p>
-      <CueGroup className="mt-3 flex h-[72px] items-end gap-2" step={170} lead={400} aria-hidden>
-        {report.values.map((v, i) => (
-          <CueItem
-            key={i}
-            variants={BAR_GROW}
-            style={{ height: `${v * 100}%` }}
-            className={["flex-1 origin-bottom rounded-t-[3px]", i === last ? "bg-sky-400" : "bg-brand-500/70"].join(" ")}
-          />
+    <div className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+      <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-fg-dim">{plan.tag}</p>
+      <p className="mt-1 text-[13px] font-semibold text-fg">{plan.title}</p>
+      <CueGroup as="ul" className="mt-3 flex flex-col gap-2" step={320} lead={300}>
+        {items.map((it) => (
+          <CueItem as="li" key={it} className="flex items-center gap-2 text-[12.5px] leading-[1.35] text-fg/85">
+            <CheckIcon />
+            <span>{it}</span>
+          </CueItem>
         ))}
       </CueGroup>
-      <div className="mt-1 grid grid-cols-4 gap-2 text-[10px] text-fg-dim">
-        {report.weeks.map((w) => <span key={w} className="truncate text-center">{w}</span>)}
-      </div>
-      <p className="mt-3 text-[12.5px] leading-[1.45] text-fg/85">{report.insight}</p>
-    </Reveal>
+    </div>
   );
 }
 
@@ -5095,7 +5098,7 @@ function StaffChapter({ id, index, onHire }) {
   const flip = index % 2 === 1;
 
   let overlay = null;
-  if (id === "vira") overlay = <StaffReport report={t(`${base}.report`, { returnObjects: true })} />;
+  if (id === "vira") overlay = <StaffPlan plan={t(`${base}.plan`, { returnObjects: true })} />;
   else if (id === "eho") overlay = <StaffCall call={t(`${base}.call`, { returnObjects: true })} />;
   else overlay = <StaffChat lines={t(`${base}.chat`, { returnObjects: true })} />;
 

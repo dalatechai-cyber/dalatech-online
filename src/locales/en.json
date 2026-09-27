@@ -412,7 +412,9 @@
     "description": "The form takes a minute. We call you back and show how the AI staff would work for your business. Your demo website will be ready within 24 hours.",
     "requestCta": "Send a request",
     "demoCta": "Generate a demo website",
-    "emailCta": "Email us"
+    "emailCta": "Email us",
+    "messengerCta": "Write on Messenger",
+    "commentLine": "Comment «1» under any post on our Facebook page and we will contact you."
   },
   "location": {
     "eyebrow": "LOCATION",
