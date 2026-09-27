@@ -28,9 +28,10 @@ import { WordRotate } from "./components/ui/word-rotate";
 import { AnimatedBeam } from "./components/ui/animated-beam";
 import { PeriodToggle } from "./components/ui/pricing-section";
 import { ShimmerButton } from "./components/ui/shimmer-button";
+import { Safari } from "./components/ui/safari";
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, DAY_CARDS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, deskCentres, DAY_CARDS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -806,41 +807,15 @@ function HeroWords({ text, delay = 0, stagger = 0.06 }) {
   );
 }
 
-function BrowserMockup({ url, children, className = "" }) {
-  return (
-    <div className={["group relative overflow-hidden rounded-[20px] border border-white/10 bg-ink-800/70 shadow-[0_30px_80px_-30px_rgba(8,12,28,0.85)] backdrop-blur-sm", className].join(" ")}>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -inset-px rounded-[20px] bg-gradient-to-br from-sky-400/18 via-transparent to-brand-500/12"
-        style={{ WebkitMask: "linear-gradient(black, transparent 70%)", mask: "linear-gradient(black, transparent 70%)" }}
-      />
-      <div className="relative flex items-center gap-2 border-b border-white/[0.06] bg-ink-900/85 px-3.5 py-3 sm:px-4">
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-        </div>
-        <div className="ml-3 flex flex-1 items-center justify-center gap-1.5 rounded-md bg-white/[0.04] px-3 py-1 text-[11px] tracking-tight text-fg-muted">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          <span className="truncate">{url}</span>
-        </div>
-        <div className="hidden h-6 w-6 shrink-0 items-center justify-center rounded-md text-fg-muted/70 sm:flex">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" />
-          </svg>
-        </div>
-      </div>
-      <div className="relative aspect-[16/10]">
-        {children}
-      </div>
-    </div>
-  );
-}
-
+// The client's salon site, as it looks: its first screen with the online
+// booking open beside the headline, and Дали answering in the corner. These
+// two are what the site was built to do, so the mock shows them working
+// rather than image placeholders. The copy is the site's own (salonMock.*).
 function SalonPreview() {
+  const { t } = useTranslation();
+  const nav = t("salonMock.nav", { returnObjects: true });
+  const services = t("salonMock.booking.services", { returnObjects: true });
+  const slots = ["10:00", "11:30", "14:00", "15:30"];
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div
@@ -851,7 +826,7 @@ function SalonPreview() {
             "radial-gradient(120% 80% at 75% 0%, rgba(52,211,153,0.20) 0%, rgba(52,211,153,0) 55%), radial-gradient(90% 70% at 10% 110%, rgba(20,118,90,0.30) 0%, rgba(20,118,90,0) 60%), linear-gradient(180deg, #0E1A1F 0%, #0A1418 60%, #07101A 100%)",
         }}
       />
-      <div className="relative flex items-center justify-between px-5 py-3 sm:px-6 sm:py-3.5">
+      <div className="relative flex items-center justify-between px-[4%] py-[2.5%]">
         <div className="flex items-center gap-2">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-400/15 ring-1 ring-emerald-400/30">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgb(110,231,183)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -859,51 +834,72 @@ function SalonPreview() {
               <path d="M12 11v8" />
             </svg>
           </div>
-          <span className="font-display text-[11.5px] font-semibold tracking-tight text-white sm:text-[13px]">Салон</span>
+          <span className="font-display text-[11.5px] font-semibold tracking-tight text-white sm:text-[13px]">{t("salonMock.brand")}</span>
         </div>
         <div className="hidden items-center gap-4 text-[10.5px] text-white/55 sm:flex">
-          <span>Үйлчилгээ</span>
-          <span>Үнэ</span>
-          <span>Бидний тухай</span>
+          {(Array.isArray(nav) ? nav : []).map((n) => <span key={n}>{n}</span>)}
         </div>
         <div className="rounded-md bg-emerald-400 px-2.5 py-1 font-display text-[9.5px] font-semibold tracking-tight text-emerald-950 sm:text-[10.5px]">
-          Захиалах
+          {t("salonMock.book")}
         </div>
       </div>
-      <div className="relative grid grid-cols-[1.05fr_0.95fr] gap-3 px-5 pb-5 pt-1 sm:gap-5 sm:px-6 sm:pb-6">
+      <div className="relative grid grid-cols-[1fr_1fr] items-center gap-[4%] px-[4%]">
         <div className="flex flex-col justify-center">
-          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-emerald-400/12 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-emerald-300 sm:px-2 sm:text-[9px]">
+          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-emerald-400/[0.12] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-emerald-300 sm:px-2 sm:text-[9px]">
             <span className="h-1 w-1 rounded-full bg-emerald-400" />
-            Eco · Modern
+            {t("salonMock.tag")}
           </span>
           <h3 className="mt-2 font-display text-[14px] font-semibold leading-[1.08] tracking-tight text-white sm:text-[18px] md:text-[22px]">
-            Байгальд ээлтэй
-            <br />орчин үеийн салон
+            {t("salonMock.title1")}
+            <br />
+            {t("salonMock.title2")}
           </h3>
-          <p className="mt-2 text-[8.5px] leading-[1.5] text-white/55 sm:text-[10.5px]">
-            Онлайн захиалга · QPay · AI туслах
-          </p>
+          <p className="mt-2 text-[8.5px] leading-[1.5] text-white/55 sm:text-[10.5px]">{t("salonMock.sub")}</p>
           <div className="mt-3 flex items-center gap-2">
-            <div className="rounded-md bg-emerald-400 px-2 py-1 font-display text-[9px] font-semibold text-emerald-950 sm:text-[10px]">Цаг авах</div>
-            <div className="rounded-md border border-white/15 bg-white/[0.03] px-2 py-1 font-display text-[9px] font-semibold text-white/85 sm:text-[10px]">Үйлчилгээ</div>
+            <div className="rounded-md bg-emerald-400 px-2 py-1 font-display text-[9px] font-semibold text-emerald-950 sm:text-[10px]">{t("salonMock.cta")}</div>
           </div>
         </div>
-        <div className="grid grid-cols-2 grid-rows-2 gap-1.5 sm:gap-2">
-          <div
-            className="row-span-2 rounded-md ring-1 ring-white/[0.04]"
-            style={{ background: "linear-gradient(150deg, rgba(110,231,183,0.32) 0%, rgba(20,90,65,0.75) 55%, rgba(8,30,25,0.92) 100%)" }}
-          />
-          <div
-            className="rounded-md ring-1 ring-white/[0.04]"
-            style={{ background: "linear-gradient(150deg, rgba(167,212,189,0.28) 0%, rgba(45,75,65,0.82) 100%)" }}
-          />
-          <div
-            className="rounded-md ring-1 ring-white/[0.04]"
-            style={{ background: "linear-gradient(150deg, rgba(52,211,153,0.18) 0%, rgba(15,45,35,0.85) 100%)" }}
-          />
+        {/* the booking, open: a service, tomorrow's times, pay with QPay */}
+        <div className="rounded-lg bg-white/[0.05] p-2 ring-1 ring-white/[0.08] sm:rounded-xl sm:p-3">
+          <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-emerald-300/85 sm:text-[9px]">{t("salonMock.booking.title")}</p>
+          <div className="mt-1.5 flex flex-wrap gap-1 sm:mt-2">
+            {(Array.isArray(services) ? services : []).map((sv, i) => (
+              <span
+                key={sv}
+                className={[
+                  "rounded px-1 py-0.5 text-[8px] font-medium sm:px-1.5 sm:text-[9.5px]",
+                  i === 0 ? "bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/40" : "bg-white/[0.06] text-white/65",
+                ].join(" ")}
+              >
+                {sv}
+              </span>
+            ))}
+          </div>
+          <p className="mt-1.5 text-[8px] text-white/55 sm:mt-2 sm:text-[9px]">{t("salonMock.booking.day")}</p>
+          <div className="mt-1 grid grid-cols-4 gap-1">
+            {slots.map((slot, i) => (
+              <span
+                key={slot}
+                className={[
+                  "rounded py-0.5 text-center font-display text-[8px] font-semibold tabular-nums sm:text-[9.5px]",
+                  i === 3 ? "bg-emerald-400 text-emerald-950" : "bg-white/[0.06] text-white/70",
+                ].join(" ")}
+              >
+                {slot}
+              </span>
+            ))}
+          </div>
+          <div className="mt-1.5 rounded-md bg-white py-1 text-center font-display text-[8px] font-semibold text-ink-950 sm:mt-2 sm:text-[9.5px]">
+            {t("salonMock.booking.pay")}
+          </div>
         </div>
       </div>
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-ink-950/45 to-transparent" />
+      {/* Дали on the site, answering; on a phone-width frame there is no
+          room left under the booking, so the pills below say it instead */}
+      <div className="absolute bottom-[5%] right-[4%] hidden max-w-[44%] sm:block rounded-lg rounded-br-sm bg-white/[0.09] px-2 py-1.5 ring-1 ring-white/[0.1] sm:px-3 sm:py-2">
+        <p className="text-[8px] font-semibold text-emerald-300/90 sm:text-[9px]">{t("salonMock.dali.name")}</p>
+        <p className="mt-0.5 text-[8px] leading-[1.35] text-white/85 sm:text-[10px]">{t("salonMock.dali.text")}</p>
+      </div>
     </div>
   );
 }
@@ -1146,9 +1142,7 @@ function DayRing({ className = "" }) {
             {event.time}
           </span>
           <span key={`who-${active}`} className="ring-caption mt-2.5 flex items-center gap-1.5">
-            <span className="flex h-[20px] w-[18px] shrink-0 items-center justify-center overflow-hidden rounded-[5px] bg-white/[0.07]" aria-hidden>
-              <StaffHead id={event.who} size={0.625} />
-            </span>
+            <StaffAvatar id={event.who} size={0.625} />
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-300">
               {t(`office.agents.${event.who}.name`)}
             </span>
@@ -1701,9 +1695,9 @@ function Portfolio() {
           <Reveal>
             {/* the client is not named on this site, so the mock is not a link */}
             <div className="relative">
-              <BrowserMockup url={t("portfolio.case.url")}>
+              <Safari url={t("portfolio.case.url")} className="drop-shadow-[0_40px_60px_rgba(2,6,23,0.6)]">
                 <SalonPreview />
-              </BrowserMockup>
+              </Safari>
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <Pill>{t("portfolio.case.pills.website")}</Pill>
@@ -2234,9 +2228,7 @@ function StaffPriceCard({ id, yearly = false }) {
     <StaggerItem className="h-full">
       <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
         <div className="flex items-center gap-3">
-          <span className="flex h-[66px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-            <StaffHead id={id} size={2} />
-          </span>
+          <StaffAvatar id={id} size={2} />
           <div className="min-w-0">
             <p className="font-display text-[18px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</p>
             <p className="text-[12.5px] text-fg-muted">{t(`office.agents.${id}.role`)}</p>
@@ -3160,9 +3152,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                                   ].join(" ")}
                                 >
                                   {agent ? (
-                                    <span className="flex h-[36px] w-[32px] shrink-0 items-center justify-center overflow-hidden rounded-[9px] bg-white/[0.06]">
-                                      <StaffHead id={service} size={1} />
-                                    </span>
+                                    <StaffAvatar id={service} size={1} />
                                   ) : (
                                     <span className="flex h-[36px] w-[32px] shrink-0 items-center justify-center rounded-[9px] bg-white/[0.06] text-fg-muted" aria-hidden>
                                       {service === "website" ? (
@@ -3521,7 +3511,49 @@ function DemoRequestProvider({ children }) {
   );
 }
 
+// The rings and orbiting lights the closing section used to show on their
+// own. They read as a globe that never finished drawing (founder, 2026-09-27),
+// so now they are only the fallback: for a phone with no WebGL, and while the
+// globe's code is still loading.
+function ContactRings() {
+  return (
+    <div className="absolute inset-0">
+      <svg className="absolute inset-0 h-full w-full" viewBox="-200 -200 400 400">
+        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
+        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
+        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
+      </svg>
+      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-2 w-2 rounded-full bg-sky-300"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
+        />
+      </div>
+      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function ContactOrbField() {
+  const reduced = useReducedMotion();
+  // three.js is 130 KB gzipped plus two textures: fetched only when the
+  // section is about to scroll into view, never as part of the first load
+  const boxRef = React.useRef(null);
+  const [near, setNear] = React.useState(false);
+  React.useEffect(() => {
+    const el = boxRef.current;
+    if (!el || near) return undefined;
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) setNear(true);
+    }, { rootMargin: "600px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near]);
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 bg-grid opacity-[0.55]" />
@@ -3535,33 +3567,21 @@ function ContactOrbField() {
         }}
       />
 
-      <svg
-        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2"
-        viewBox="-200 -200 400 400"
-      >
-        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
-        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
-        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
-      </svg>
-
-      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-2 w-2 rounded-full bg-sky-300"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
-        />
+      {/* Ulaanbaatar, turning slowly behind the words: dimmed and centred so
+          the heading and buttons stay the brightest things on screen */}
+      <div ref={boxRef} className="absolute left-1/2 top-1/2 aspect-square w-[min(40rem,115vw)] -translate-x-1/2 -translate-y-1/2">
+        {near ? (
+          <ErrorBoundary fallback={<ContactRings />}>
+            <React.Suspense fallback={<ContactRings />}>
+              <Globe decorative reducedMotion={reduced} className="opacity-[0.42]" />
+            </React.Suspense>
+          </ErrorBoundary>
+        ) : (
+          <ContactRings />
+        )}
       </div>
-      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
-        />
-      </div>
-      <div className="contact-orbit contact-orbit-3 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1 w-1 rounded-full bg-white/85"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(190px)", boxShadow: "0 0 14px 2px rgba(255,255,255,0.55)" }}
-        />
-      </div>
+      {/* keep the text legible over the lit side of the globe */}
+      <div className="absolute inset-0" style={{ background: "radial-gradient(60% 45% at 50% 50%, rgba(5,10,24,0.55) 0%, rgba(5,10,24,0) 100%)" }} />
 
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink-950 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink-950 to-transparent" />
@@ -3815,7 +3835,9 @@ function LocationBadge() {
 
 // Page wrappers: each route renders only its own sections.
 // ------------------------------------------------------------ a working day
-const DAY_SCALE = (w) => (w < 1024 ? 2 : w < 1280 ? 3 : 3.5);
+// Small enough on a desk-width screen that all four desks fit left of the
+// owner's phone, which stands over the right of the room from 1024px up.
+const DAY_SCALE = (w) => (w < 1280 ? 2 : 3);
 const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 
 // The owner's phone, over the room. It shows only what Дали does today: four
@@ -3849,9 +3871,7 @@ function feedClock(p) {
 function PhoneIcon({ who, name }) {
   if (who === "dali") {
     return (
-      <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center overflow-hidden rounded-[6px] bg-white/[0.08]" aria-hidden>
-        <StaffHead id="dali" size={0.7} />
-      </span>
+      <StaffAvatar id="dali" size={0.625} />
     );
   }
   if (who === "owner" || who === "summary") {
@@ -4069,6 +4089,82 @@ function useTimedProgress(ref, seconds, disabled) {
   return progress;
 }
 
+// A name tag over each desk of the working-day room: Дали in service, the
+// other three «Удахгүй», so four people at work never reads as four in
+// service. Positioned from the stage's own geometry, in logical pixels.
+const DESK_TAG_Y = 32;
+
+function DeskTags({ geom, rowRightCss }) {
+  const { t } = useTranslation();
+  // the same sum the scene does with it, so tag and desk agree
+  const rowRight = rowRightCss != null ? rowRightCss / geom.scale : Infinity;
+  return deskCentres(geom.W, rowRight).map(({ id, x }) => {
+    const live = STAFF_LIVE[id];
+    return (
+      <span
+        key={id}
+        className="absolute flex -translate-x-1/2 flex-col items-center whitespace-nowrap rounded-[8px] border border-white/[0.12] bg-ink-950/80 px-2 py-0.5 text-center leading-[1.3] backdrop-blur-sm sm:flex-row sm:gap-1 sm:rounded-full"
+        style={{ left: geom.left + x * geom.scale, top: DESK_TAG_Y * geom.scale }}
+      >
+        <span className="flex items-center gap-1 text-[11px] font-medium text-fg">
+          {live && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-sky-400" />}
+          {t(`office.agents.${id}.name`)}
+        </span>
+        <span className={["text-[10px] sm:text-[11px]", live ? "text-sky-300" : "text-fg-dim"].join(" ")}>
+          <span aria-hidden className="hidden sm:inline">· </span>
+          {t(live ? "office.status.live" : "office.status.soon")}
+        </span>
+      </span>
+    );
+  });
+}
+
+// Where the owner's phone starts covering the room, in CSS pixels from the
+// room's left edge, or null when the phone sits under the room (below lg).
+// Measured, not derived from breakpoints: the stage is narrower than the
+// viewport by the scrollbar, which put a derived edge 15px wrong at 1024px.
+// It is measured again whenever the page lays out anew (resize, the next
+// frames after mount) and as the day plays: at mount the phone is not yet
+// where it ends up, and a size observer alone never hears that it moved.
+function usePhoneEdge(bandRef, phoneRef, progress) {
+  const [edge, setEdge] = React.useState(null);
+  const measureRef = React.useRef(() => {});
+  useMotionValueEvent(progress, "change", () => measureRef.current());
+  React.useLayoutEffect(() => {
+    const band = bandRef.current;
+    const phone = phoneRef.current;
+    if (!band || !phone) return undefined;
+    const measure = () => {
+      // from the band, not the canvas: the canvas is sized only once the atlas
+      // arrives, and before that its box is a sliver in the middle. The two
+      // left edges differ by under one logical pixel once it is.
+      const b = band.getBoundingClientRect();
+      const ph = phone.getBoundingClientRect();
+      const covers = ph.width > 0 && ph.top < b.bottom && ph.bottom > b.top && ph.left > b.left + b.width / 2;
+      const next = covers ? Math.round(ph.left - b.left - 28) : null;
+      setEdge((e) => (e === next ? e : next));
+    };
+    measureRef.current = measure;
+    const ro = new ResizeObserver(measure);
+    ro.observe(band);
+    ro.observe(phone);
+    window.addEventListener("resize", measure);
+    measure();
+    let frames = 0;
+    let raf = requestAnimationFrame(function again() {
+      measure();
+      if (++frames < 30) raf = requestAnimationFrame(again);
+    });
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+      cancelAnimationFrame(raf);
+      measureRef.current = () => {};
+    };
+  }, [bandRef, phoneRef]);
+  return edge;
+}
+
 function WorkingDay() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
@@ -4076,6 +4172,14 @@ function WorkingDay() {
   const dayRef = React.useRef(null);
   const still = useMotionValue(0.93);
   const progress = useTimedProgress(dayRef, DAY_SECONDS, reduced || !!error);
+  const bandRef = React.useRef(null);
+  const phoneRef = React.useRef(null);
+  const phoneEdge = usePhoneEdge(bandRef, phoneRef, progress);
+  // read on every frame through a ref, so the stage is not rebuilt on resize
+  const edgeRef = React.useRef(phoneEdge);
+  edgeRef.current = phoneEdge;
+  const drawDay = React.useCallback((ctx, img, view) => drawWorkingDay(ctx, img, { ...view, rowRightCss: edgeRef.current }), []);
+  const tags = React.useCallback((geom) => <DeskTags geom={geom} rowRightCss={phoneEdge} />, [phoneEdge]);
 
   const heading = (
     <Container>
@@ -4105,7 +4209,7 @@ function WorkingDay() {
         <div className="relative mt-10">
           {!error && (
             <div className="day-band">
-              <PixelStage draw={drawWorkingDay} logicalH={DAY_H} scale={DAY_SCALE} minW={STAFF_HERO_MIN_W} progress={still} label={t("day.sceneAlt")} />
+              <PixelStage draw={drawWorkingDay} logicalH={DAY_H} scale={DAY_SCALE} minW={STAFF_HERO_MIN_W} progress={still} label={t("day.sceneAlt")} overlay={tags} />
             </div>
           )}
           <Container className="mt-8 flex justify-center">
@@ -4123,21 +4227,22 @@ function WorkingDay() {
 
       <div ref={dayRef} className="relative mt-10 lg:min-h-[640px] lg:py-10">
         <div className="relative lg:absolute lg:inset-x-0 lg:top-1/2 lg:-translate-y-1/2">
-          <div className="day-band">
+          <div ref={bandRef} className="day-band">
             <PixelStage
-              draw={drawWorkingDay}
+              draw={drawDay}
               logicalH={DAY_H}
               scale={DAY_SCALE}
               minW={STAFF_HERO_MIN_W}
               progress={progress}
               label={t("day.sceneAlt")}
+              overlay={tags}
             />
           </div>
 
           {/* the phone: under the room on a phone, in front of it on a desk */}
           <div className="relative -mt-14 flex justify-center lg:absolute lg:inset-0 lg:mt-0 lg:block">
             <Container className="lg:relative lg:h-full">
-              <div className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
+              <div ref={phoneRef} className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
                 <OwnerPhone progress={progress} />
               </div>
             </Container>
@@ -4187,9 +4292,7 @@ function StaffRow({ id }) {
   return (
     <StaggerItem y={12}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[88px] sm:flex-nowrap sm:py-0">
-        <span className="flex h-[44px] w-[40px] shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-white/[0.05]">
-          <StaffHead id={id} size={1.25} />
-        </span>
+        <StaffAvatar id={id} size={1.5} />
         <span className="min-w-0 flex-1">
           <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
             {t(`office.agents.${id}.name`)}
@@ -4412,7 +4515,7 @@ function ChannelBeams() {
         <FlowNode nodeRef={web} label={t("how.website")}><FlowGlyph kind="website" /></FlowNode>
       </div>
       <FlowNode nodeRef={dali} label={t("office.agents.dali.name")} big lit>
-        <StaffHead id="dali" size={2} />
+        <StaffAvatar id="dali" size={2} bare />
       </FlowNode>
       <FlowNode nodeRef={owner} label={t("how.owner")} lit>
         <FlowGlyph kind="owner" />
@@ -4590,7 +4693,10 @@ function useStaffAtlas() {
  * (0..1) the scene may read; `scale` is CSS pixels per art pixel for a given
  * width; `minW` keeps the scene's content inside the canvas on narrow screens.
  */
-function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, className = "" }) {
+// `overlay`, if given, renders HTML over the canvas: it is called with the
+// stage geometry ({ W, scale, left }: logical width, CSS pixels per logical
+// pixel, canvas left edge in the host), the same numbers createStage uses.
+function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, overlay, className = "" }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const { img, error } = useStaffAtlas();
@@ -4633,12 +4739,15 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
   // clamped value — so reserving `h * scale(hostW)` over-reserves wherever the
   // clamp bites. At 390 CSS px and dpr 3 that left an 85px band of bare
   // ink-900 under the hero on a phone.
-  const reserved = React.useMemo(() => {
-    if (!hostW) return undefined;
+  const geom = React.useMemo(() => {
+    if (!hostW) return null;
     const dpr = stageDpr(); // must match createStage, or the reserved height is wrong
     const sDev = Math.max(1, Math.min(Math.round(scale(hostW) * dpr), Math.floor((hostW * dpr) / minW)));
-    return (h * sDev) / dpr;
+    const W = Math.max(minW, Math.floor((hostW * dpr) / sDev));
+    const css = sDev / dpr;
+    return { W, scale: css, left: (hostW - W * css) / 2, height: h * css };
   }, [hostW, h, scale, minW]);
+  const reserved = geom ? geom.height : undefined;
 
   return (
     <div ref={hostRef} className={["relative flex items-center justify-center overflow-hidden bg-ink-900", className].join(" ")} style={{ minHeight: reserved }}>
@@ -4647,6 +4756,7 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
       ) : (
         <canvas ref={canvasRef} role="img" aria-label={label} className="block" style={{ imageRendering: "pixelated" }} />
       )}
+      {overlay && geom && img && !error && <div className="pointer-events-none absolute inset-0">{overlay(geom)}</div>}
     </div>
   );
 }
@@ -4785,9 +4895,7 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
       >
         <div className="board-who">
           {/* the same pixel face as the scenes below: four people, not four bars */}
-          <span className="board-face">
-            <StaffHead id={id} size={1} />
-          </span>
+          <StaffAvatar id={id} size={1.25} />
           <span className="min-w-0">
             <span className="board-name">
               {t(`office.agents.${id}.name`)}
@@ -5312,31 +5420,39 @@ function OraChapter({ onHire }) {
   );
 }
 
-// A pixel portrait cut from the atlas with CSS, idling in six frames.
-// Every staff picture on the site is a head, never a figure (founder,
-// 2026-09-27). The atlas frame is 32×64 with the person standing in it; rows
-// 15–45 hold the hair, the face and the neck for all five, so this window
-// crops the same head for everyone. `size` scales it; the box it sits in
-// centres it.
-const HEAD_TOP = 15;
-const HEAD_ROWS = 31;
+// The one staff picture on the site: a square tile with the head and
+// shoulders, cut from the atlas with CSS (founder, 2026-09-27: the /pricing
+// card's avatar everywhere, never a full figure). The atlas frame is 32×64
+// with the person standing in it; rows 16–51 hold the hair down to the
+// shoulders for all five. The tile is 36 units square and the 32-wide frame
+// sits in its middle: widening the crop instead would show a sliver of the
+// neighbouring frame in the strip. `size` scales it; `bare` drops the tile
+// for a picture that already sits in a frame of its own.
+const AVATAR_TOP = 16;
+const AVATAR_ROWS = 36;
 
-function StaffHead({ id, size = 1, className = "" }) {
+function StaffAvatar({ id, size = 1, bare = false, className = "" }) {
   const a = STAFF_CHARS[id].idle;
+  const box = AVATAR_ROWS * size;
   return (
     <span
       aria-hidden
-      className={["block shrink-0", className].join(" ")}
-      style={{
-        width: a.w * size,
-        height: HEAD_ROWS * size,
-        backgroundImage: `url(${STAFF_ATLAS.url})`,
-        backgroundSize: `${STAFF_ATLAS.w * size}px ${STAFF_ATLAS.h * size}px`,
-        backgroundPosition: `-${a.x * size}px -${(a.y + HEAD_TOP) * size}px`,
-        backgroundRepeat: "no-repeat",
-        imageRendering: "pixelated",
-      }}
-    />
+      className={["flex shrink-0 items-end justify-center overflow-hidden", bare ? "" : "bg-white/[0.06]", className].join(" ")}
+      style={{ width: box, height: box, borderRadius: bare ? undefined : Math.max(5, Math.round(size * 6)) }}
+    >
+      <span
+        className="block shrink-0"
+        style={{
+          width: a.w * size,
+          height: box,
+          backgroundImage: `url(${STAFF_ATLAS.url})`,
+          backgroundSize: `${STAFF_ATLAS.w * size}px ${STAFF_ATLAS.h * size}px`,
+          backgroundPosition: `-${a.x * size}px -${(a.y + AVATAR_TOP) * size}px`,
+          backgroundRepeat: "no-repeat",
+          imageRendering: "pixelated",
+        }}
+      />
+    </span>
   );
 }
 
@@ -5390,9 +5506,7 @@ function StaffTeam({ onHire }) {
                     on ? "border-sky-400/80 shadow-[0_0_0_1px_rgba(56,189,248,0.6),0_16px_40px_-24px_rgba(56,189,248,0.5)]" : "border-white/[0.08] hover:border-white/[0.22]",
                   ].join(" ")}
                 >
-                  <span className="flex h-[64px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-                    <StaffHead id={id} size={2} />
-                  </span>
+                  <StaffAvatar id={id} size={1.75} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
                       <span className="font-display text-[17px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</span>

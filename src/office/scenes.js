@@ -196,6 +196,13 @@ function actNova(ctx, img, s, t, lights, night) {
 }
 
 // ----------------------------------------------------------------- the room
+// The row of desks is centred, unless something on the page covers the right
+// of the room: then it moves left until it ends at `rowRight`, but never off
+// the left edge.
+function rowLeft(W, rowRight = Infinity) {
+  const centred = Math.floor((W - ROW_W) / 2);
+  return Math.max(Math.min(centred, 6), Math.min(centred, Math.floor(rowRight - ROW_W)));
+}
 // The whole office. Everything that varies between the hero, the chapters
 // and the landing scene is an option; the geometry is not.
 function officeRoom(ctx, img, { W, H, t }, {
@@ -206,12 +213,13 @@ function officeRoom(ctx, img, { W, H, t }, {
   focusAmount = 0,
   ring = null,
   daliPhase = null,
+  rowRight = Infinity,   // the row of desks ends left of this x (logical)
 }) {
   const night = nightAmount(hour);
   const floorY = FLOOR_Y;
   room(ctx, img, W, H, floorY);
 
-  const ox = Math.floor((W - ROW_W) / 2);
+  const ox = rowLeft(W, rowRight);
   const deskY = DESK_Y;
   // The glass runs over the desks. On a wide stage the wall continues past
   // the row at both ends, and that is where the office furniture lives.
@@ -609,9 +617,10 @@ export function drawOraRoom() {
 }
 
 // ------------------------------------------------------------ a working day
-// The landing page's room behind the owner's phone, over one day. Only Дали
-// works today (founder, 2026-09-25), so only Дали is at a desk: the other three
-// desks stand ready and dark. The day is four real Дали moments — a booking
+// The landing page's room behind the owner's phone, over one day. All four
+// customer-facing staff sit at their desks, as on the live site (founder,
+// 2026-09-27), but only Дали works today: the page tags the other three
+// «Удахгүй», and the phone shows Дали alone. The day is four real Дали moments — a booking
 // asked for at night, a price question in the morning, a discount request she
 // hands to the owner, a message after closing — and one evening summary.
 //
@@ -710,13 +719,31 @@ function daliBubble(ctx, cx, bottomY, t, state, pop) {
 }
 
 // Module-level so its identity is stable: PixelStage keys an effect on `draw`.
+// Where each desk of the working-day room sits across a stage W logical
+// pixels wide, the row ending left of `rowRight` (logical; the page measures
+// where the owner's phone covers the room): the centre of each station, for
+// the page's HTML tags.
+export function deskCentres(W, rowRight = Infinity) {
+  let x = rowLeft(W, rowRight);
+  return STAFF.map((id) => {
+    const c = x + STATION_W[id] / 2;
+    x += STATION_W[id];
+    return { id, x: c };
+  });
+}
+
 export function drawWorkingDay(ctx, img, view) {
   const p = view.progress ?? 0;
   const hour = dayHour(p);
   const current = DALI_MOMENTS.find((m) => p >= m.ask && p < m.end + 0.02);
   const stations = officeRoom(ctx, img, view, {
     hour,
-    cast: ["dali"],
+    // all four at their desks, as on the live site; only Дали is in service,
+    // and the page tags the other three «Удахгүй» over their desks
+    cast: STAFF,
+    // the page passes where the owner's phone starts covering the room, in
+    // CSS pixels from the stage's left edge; the desks stay left of it
+    rowRight: view.rowRightCss != null ? view.rowRightCss / (view.css ?? 1) : Infinity,
     focus: 0,
     focusAmount: focusAmountAt(p),
     // her screen brightens as she writes the reply

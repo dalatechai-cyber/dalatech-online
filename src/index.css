@@ -291,9 +291,6 @@ html.nav-menu-open #dt-chat-frame {
 .contact-orbit-2 {
   animation: contactOrbitReverse 38s linear infinite;
 }
-.contact-orbit-3 {
-  animation: contactOrbit 18s linear infinite;
-}
 .contact-arrow {
   transition: transform 220ms var(--ease-out-quart);
 }
@@ -304,8 +301,7 @@ html.nav-menu-open #dt-chat-frame {
 @media (prefers-reduced-motion: reduce) {
   .contact-orb-glow,
   .contact-orbit-1,
-  .contact-orbit-2,
-  .contact-orbit-3 {
+  .contact-orbit-2 {
     animation: none !important;
   }
   .contact-arrow {
@@ -488,7 +484,6 @@ html.demo-dialog-open #dt-chat-frame {
   }
   .board-who { grid-column: 1 / -1; }
   .board-rail { height: 24px; }
-  .board-face { width: 30px; height: 34px; border-radius: 8px; }
   .board-chip { font-size: 11px; padding: 4px 9px; }
 }
 
@@ -518,17 +513,6 @@ html.demo-dialog-open #dt-chat-frame {
 
 /* who */
 .board-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.board-face {
-  display: flex;
-  width: 34px;
-  height: 38px;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.06);
-}
 .board-name {
   display: flex;
   align-items: baseline;

@@ -473,6 +473,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
   let W = 0;
   let H = heightFor(canvas.parentElement ? canvas.parentElement.clientWidth : 0);
   let sDev = 1;
+  let css = 1; // CSS pixels per logical pixel
   let progress = 0;
   let raf = 0;
   let visible = false;
@@ -485,7 +486,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
     dirty = false; // whatever was recorded is on the canvas now
     ctx.setTransform(sDev, 0, 0, sDev, 0, 0);
     ctx.imageSmoothingEnabled = false;
-    draw(ctx, img, { W, H, t, progress });
+    draw(ctx, img, { W, H, t, progress, css });
   };
 
   const resize = () => {
@@ -496,6 +497,7 @@ export function createStage(canvas, { img, draw, logicalH, scale, minW = 64, red
     // never scale so far that the scene's content no longer fits the width
     sDev = Math.max(1, Math.min(Math.round(scale(cssW) * dpr), Math.floor((cssW * dpr) / minW)));
     W = Math.max(minW, Math.floor((cssW * dpr) / sDev));
+    css = sDev / dpr;
     H = heightFor(cssW);
     canvas.width = W * sDev;
     canvas.height = H * sDev;

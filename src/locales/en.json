@@ -15,7 +15,7 @@
   },
   "hero": {
     "badge": "In Mongolian, with no extra headcount",
-    "description": "Nights and weekends, no customer of yours goes unanswered. Dali answers questions on your Facebook page, Instagram and website in Mongolian, in seconds, and sends the booking link — using only the prices, hours and services you provide. No extra headcount, shift or leave costs. Vira, Eho, Nova and Ora join soon; you can pre-register now.",
+    "description": "Dali answers questions on your Facebook, Instagram and website in seconds and sends the booking link. Vira, Eho, Nova and Ora join soon.",
     "buttons": {
       "request": "Send a request",
       "seeWork": "Meet your AI team"
@@ -98,9 +98,9 @@
   },
   "day": {
     "title": "Bookings come in even while you sleep.",
-    "lead": "From morning to night, Dali answers your customers, and only what matters reaches you.",
+    "lead": "Day and night Dali answers your customers, and only what matters reaches you. Vira, Eho and Nova join soon.",
     "closing": "Send a request today and Dali starts answering your customers within 1–2 weeks.",
-    "sceneAlt": "The office from night to evening: Dali sits at her desk and answers every message. The other desks are ready for the staff joining soon.",
+    "sceneAlt": "The office: Dali, Vira, Eho and Nova at their desks. Today Dali answers every message; the others join soon.",
     "phone": {
       "alt": "Your phone: one day of Dali",
       "cta": "Send a request",
@@ -337,7 +337,7 @@
     },
     "website": {
       "title": "Website",
-      "description": "One-time build. No monthly fee."
+      "description": "A one-off payment, plus hosting each year."
     },
     "period": {
       "label": "Billing period",
@@ -933,5 +933,33 @@
     "seats": "Seats left: {{left}} / {{total}}",
     "cta": "Take a seat",
     "fine": "Minimum term 3 months. No VAT is added. Discounts do not stack."
+  },
+  "salonMock": {
+    "brand": "Salon",
+    "nav": [
+      "Services",
+      "Prices",
+      "About"
+    ],
+    "book": "Book",
+    "tag": "Eco · Modern",
+    "title1": "An eco-friendly,",
+    "title2": "modern salon",
+    "sub": "Online booking · QPay · AI assistant",
+    "cta": "Book a time",
+    "booking": {
+      "title": "Book a time",
+      "services": [
+        "Haircut",
+        "Manicure",
+        "Skin care"
+      ],
+      "day": "Tomorrow",
+      "pay": "Confirm with QPay"
+    },
+    "dali": {
+      "name": "Dali",
+      "text": "Hello. How can I help?"
+    }
   }
 }
