@@ -16,7 +16,6 @@ import {
   motion,
   AnimatePresence,
   useScroll,
-  useTransform,
   useSpring,
   useMotionValue,
   useMotionValueEvent,
@@ -24,9 +23,15 @@ import {
   useInView,
 } from "framer-motion";
 
+import { Spotlight } from "./components/ui/spotlight";
+import { WordRotate } from "./components/ui/word-rotate";
+import { AnimatedBeam } from "./components/ui/animated-beam";
+import { PeriodToggle } from "./components/ui/pricing-section";
+import { ShimmerButton } from "./components/ui/shimmer-button";
+import { Safari } from "./components/ui/safari";
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, dayHour, DAY_MOMENTS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, deskCentres, DAY_CARDS, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
 
 const Setup = React.lazy(() => import("./Setup"));
 const Globe = React.lazy(() => import("./Globe"));
@@ -69,36 +74,17 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-function Reveal({ children, delay = 0, y = 28, className = "", once = true, amount = 0.2 }) {
-  const reduced = useReducedMotion();
-  return (
-    <motion.div
-      initial={reduced ? false : { opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once, amount }}
-      transition={{ ...SPRING_REVEAL, delay }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
+// Content is never hidden waiting for the scroll. Reveal and the stagger pair
+// used to start every block at opacity 0 and fade it in once it crossed into
+// view; on a phone that read as a black screen for a second or two per
+// section, so they now render their children as they are. The names stay so
+// the call sites keep their structure.
+function Reveal({ children, className = "" }) {
+  return <div className={className}>{children}</div>;
 }
 
-function StaggerGroup({ children, className = "", stagger = 0.07, delay = 0, amount = 0.2 }) {
-  return (
-    <motion.div
-      className={className}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, amount }}
-      variants={{
-        hidden: {},
-        show: { transition: { staggerChildren: stagger, delayChildren: delay } },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
+function StaggerGroup({ children, className = "" }) {
+  return <div className={className}>{children}</div>;
 }
 
 // A conversation arrives on its own clock. The room overlays used to be driven
@@ -119,8 +105,6 @@ const CUE_RISE = { hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } };
 // Reduced motion keeps the whole exchange, it just does not perform it: empty
 // variants leave each item at its resting style, which is visible.
 const CUE_STILL = { hidden: {}, show: {} };
-// A bar does not rise into place, it grows out of its own baseline.
-const BAR_GROW = { hidden: { scaleY: 0, opacity: 0.55 }, show: { scaleY: 1, opacity: 1 } };
 
 function useCue(ref, count, step = CUE_STEP, lead = CUE_LEAD) {
   const reduced = useReducedMotion();
@@ -177,19 +161,8 @@ function CueItem({ as = "div", className = "", variants, style, cueShown = false
   );
 }
 
-function StaggerItem({ children, className = "", y = 24 }) {
-  const reduced = useReducedMotion();
-  return (
-    <motion.div
-      className={className}
-      variants={{
-        hidden: reduced ? { opacity: 1 } : { opacity: 0, y },
-        show: { opacity: 1, y: 0, transition: SPRING_REVEAL },
-      }}
-    >
-      {children}
-    </motion.div>
-  );
+function StaggerItem({ children, className = "" }) {
+  return <div className={className}>{children}</div>;
 }
 
 function useContactJump() {
@@ -834,41 +807,15 @@ function HeroWords({ text, delay = 0, stagger = 0.06 }) {
   );
 }
 
-function BrowserMockup({ url, children, className = "" }) {
-  return (
-    <div className={["group relative overflow-hidden rounded-[20px] border border-white/10 bg-ink-800/70 shadow-[0_30px_80px_-30px_rgba(8,12,28,0.85)] backdrop-blur-sm", className].join(" ")}>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -inset-px rounded-[20px] bg-gradient-to-br from-sky-400/18 via-transparent to-brand-500/12"
-        style={{ WebkitMask: "linear-gradient(black, transparent 70%)", mask: "linear-gradient(black, transparent 70%)" }}
-      />
-      <div className="relative flex items-center gap-2 border-b border-white/[0.06] bg-ink-900/85 px-3.5 py-3 sm:px-4">
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-        </div>
-        <div className="ml-3 flex flex-1 items-center justify-center gap-1.5 rounded-md bg-white/[0.04] px-3 py-1 text-[11px] tracking-tight text-fg-muted">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          <span className="truncate">{url}</span>
-        </div>
-        <div className="hidden h-6 w-6 shrink-0 items-center justify-center rounded-md text-fg-muted/70 sm:flex">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" />
-          </svg>
-        </div>
-      </div>
-      <div className="relative aspect-[16/10]">
-        {children}
-      </div>
-    </div>
-  );
-}
-
+// The client's salon site, as it looks: its first screen with the online
+// booking open beside the headline, and Дали answering in the corner. These
+// two are what the site was built to do, so the mock shows them working
+// rather than image placeholders. The copy is the site's own (salonMock.*).
 function SalonPreview() {
+  const { t } = useTranslation();
+  const nav = t("salonMock.nav", { returnObjects: true });
+  const services = t("salonMock.booking.services", { returnObjects: true });
+  const slots = ["10:00", "11:30", "14:00", "15:30"];
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div
@@ -879,7 +826,7 @@ function SalonPreview() {
             "radial-gradient(120% 80% at 75% 0%, rgba(52,211,153,0.20) 0%, rgba(52,211,153,0) 55%), radial-gradient(90% 70% at 10% 110%, rgba(20,118,90,0.30) 0%, rgba(20,118,90,0) 60%), linear-gradient(180deg, #0E1A1F 0%, #0A1418 60%, #07101A 100%)",
         }}
       />
-      <div className="relative flex items-center justify-between px-5 py-3 sm:px-6 sm:py-3.5">
+      <div className="relative flex items-center justify-between px-[4%] py-[2.5%]">
         <div className="flex items-center gap-2">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-400/15 ring-1 ring-emerald-400/30">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgb(110,231,183)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -887,51 +834,72 @@ function SalonPreview() {
               <path d="M12 11v8" />
             </svg>
           </div>
-          <span className="font-display text-[11.5px] font-semibold tracking-tight text-white sm:text-[13px]">Салон</span>
+          <span className="font-display text-[11.5px] font-semibold tracking-tight text-white sm:text-[13px]">{t("salonMock.brand")}</span>
         </div>
         <div className="hidden items-center gap-4 text-[10.5px] text-white/55 sm:flex">
-          <span>Үйлчилгээ</span>
-          <span>Үнэ</span>
-          <span>Бидний тухай</span>
+          {(Array.isArray(nav) ? nav : []).map((n) => <span key={n}>{n}</span>)}
         </div>
         <div className="rounded-md bg-emerald-400 px-2.5 py-1 font-display text-[9.5px] font-semibold tracking-tight text-emerald-950 sm:text-[10.5px]">
-          Захиалах
+          {t("salonMock.book")}
         </div>
       </div>
-      <div className="relative grid grid-cols-[1.05fr_0.95fr] gap-3 px-5 pb-5 pt-1 sm:gap-5 sm:px-6 sm:pb-6">
+      <div className="relative grid grid-cols-[1fr_1fr] items-center gap-[4%] px-[4%]">
         <div className="flex flex-col justify-center">
-          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-emerald-400/12 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-emerald-300 sm:px-2 sm:text-[9px]">
+          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-emerald-400/[0.12] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-emerald-300 sm:px-2 sm:text-[9px]">
             <span className="h-1 w-1 rounded-full bg-emerald-400" />
-            Eco · Modern
+            {t("salonMock.tag")}
           </span>
           <h3 className="mt-2 font-display text-[14px] font-semibold leading-[1.08] tracking-tight text-white sm:text-[18px] md:text-[22px]">
-            Байгальд ээлтэй
-            <br />орчин үеийн салон
+            {t("salonMock.title1")}
+            <br />
+            {t("salonMock.title2")}
           </h3>
-          <p className="mt-2 text-[8.5px] leading-[1.5] text-white/55 sm:text-[10.5px]">
-            Онлайн захиалга · QPay · AI туслах
-          </p>
+          <p className="mt-2 text-[8.5px] leading-[1.5] text-white/55 sm:text-[10.5px]">{t("salonMock.sub")}</p>
           <div className="mt-3 flex items-center gap-2">
-            <div className="rounded-md bg-emerald-400 px-2 py-1 font-display text-[9px] font-semibold text-emerald-950 sm:text-[10px]">Цаг авах</div>
-            <div className="rounded-md border border-white/15 bg-white/[0.03] px-2 py-1 font-display text-[9px] font-semibold text-white/85 sm:text-[10px]">Үйлчилгээ</div>
+            <div className="rounded-md bg-emerald-400 px-2 py-1 font-display text-[9px] font-semibold text-emerald-950 sm:text-[10px]">{t("salonMock.cta")}</div>
           </div>
         </div>
-        <div className="grid grid-cols-2 grid-rows-2 gap-1.5 sm:gap-2">
-          <div
-            className="row-span-2 rounded-md ring-1 ring-white/[0.04]"
-            style={{ background: "linear-gradient(150deg, rgba(110,231,183,0.32) 0%, rgba(20,90,65,0.75) 55%, rgba(8,30,25,0.92) 100%)" }}
-          />
-          <div
-            className="rounded-md ring-1 ring-white/[0.04]"
-            style={{ background: "linear-gradient(150deg, rgba(167,212,189,0.28) 0%, rgba(45,75,65,0.82) 100%)" }}
-          />
-          <div
-            className="rounded-md ring-1 ring-white/[0.04]"
-            style={{ background: "linear-gradient(150deg, rgba(52,211,153,0.18) 0%, rgba(15,45,35,0.85) 100%)" }}
-          />
+        {/* the booking, open: a service, tomorrow's times, pay with QPay */}
+        <div className="rounded-lg bg-white/[0.05] p-2 ring-1 ring-white/[0.08] sm:rounded-xl sm:p-3">
+          <p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-emerald-300/85 sm:text-[9px]">{t("salonMock.booking.title")}</p>
+          <div className="mt-1.5 flex flex-wrap gap-1 sm:mt-2">
+            {(Array.isArray(services) ? services : []).map((sv, i) => (
+              <span
+                key={sv}
+                className={[
+                  "rounded px-1 py-0.5 text-[8px] font-medium sm:px-1.5 sm:text-[9.5px]",
+                  i === 0 ? "bg-emerald-400/20 text-emerald-200 ring-1 ring-emerald-400/40" : "bg-white/[0.06] text-white/65",
+                ].join(" ")}
+              >
+                {sv}
+              </span>
+            ))}
+          </div>
+          <p className="mt-1.5 text-[8px] text-white/55 sm:mt-2 sm:text-[9px]">{t("salonMock.booking.day")}</p>
+          <div className="mt-1 grid grid-cols-4 gap-1">
+            {slots.map((slot, i) => (
+              <span
+                key={slot}
+                className={[
+                  "rounded py-0.5 text-center font-display text-[8px] font-semibold tabular-nums sm:text-[9.5px]",
+                  i === 3 ? "bg-emerald-400 text-emerald-950" : "bg-white/[0.06] text-white/70",
+                ].join(" ")}
+              >
+                {slot}
+              </span>
+            ))}
+          </div>
+          <div className="mt-1.5 rounded-md bg-white py-1 text-center font-display text-[8px] font-semibold text-ink-950 sm:mt-2 sm:text-[9.5px]">
+            {t("salonMock.booking.pay")}
+          </div>
         </div>
       </div>
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-ink-950/45 to-transparent" />
+      {/* Дали on the site, answering; on a phone-width frame there is no
+          room left under the booking, so the pills below say it instead */}
+      <div className="absolute bottom-[5%] right-[4%] hidden max-w-[44%] sm:block rounded-lg rounded-br-sm bg-white/[0.09] px-2 py-1.5 ring-1 ring-white/[0.1] sm:px-3 sm:py-2">
+        <p className="text-[8px] font-semibold text-emerald-300/90 sm:text-[9px]">{t("salonMock.dali.name")}</p>
+        <p className="mt-0.5 text-[8px] leading-[1.35] text-white/85 sm:text-[10px]">{t("salonMock.dali.text")}</p>
+      </div>
     </div>
   );
 }
@@ -1174,9 +1142,7 @@ function DayRing({ className = "" }) {
             {event.time}
           </span>
           <span key={`who-${active}`} className="ring-caption mt-2.5 flex items-center gap-1.5">
-            <span className="flex h-[20px] w-[18px] shrink-0 items-start justify-center overflow-hidden rounded-[5px] bg-white/[0.07]" aria-hidden>
-              <StaffAvatar id={event.who} size={1} className="-mt-[30px]" />
-            </span>
+            <StaffAvatar id={event.who} size={0.625} />
             <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-300">
               {t(`office.agents.${event.who}.name`)}
             </span>
@@ -1204,10 +1170,13 @@ function DayRing({ className = "" }) {
 
 function Hero() {
   const { t } = useTranslation();
+  const channels = t("hero.channels", { returnObjects: true });
+  const heroChannels = React.useMemo(() => (Array.isArray(channels) ? channels : []), [channels]);
 
   return (
     <section id="top" className="relative overflow-hidden pb-16 pt-24 md:pb-24 md:pt-32">
-      {/* one quiet pool of light behind the ring, nothing else */}
+      {/* the spotlight sweeps in once from the top left; the pool sits behind the ring */}
+      <Spotlight className="-top-40 left-0 md:-top-24 md:left-40" fill="#60C8FF" />
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
           className="absolute right-[-10%] top-[6%] h-[38rem] w-[38rem] rounded-full lg:right-[2%]"
@@ -1215,7 +1184,7 @@ function Hero() {
         />
       </div>
 
-      <Container className="relative">
+      <Container className="relative z-[2]">
         <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-16">
           <div className="text-center lg:text-left">
             <motion.p
@@ -1227,8 +1196,15 @@ function Hero() {
               {t("hero.badge")}
             </motion.p>
 
+            {/* the channel word rotates; screen readers get the whole line once */}
             <h1 className="mt-4 font-display text-[36px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[48px] lg:text-[58px]">
-              <HeroWords text={t("hero.title")} delay={0.15} stagger={0.045} />
+              <span className="sr-only">{t("hero.titleA11y")}</span>
+              <span aria-hidden className="block text-accent">
+                <WordRotate words={heroChannels} staticText={t("hero.channelsStatic")} duration={2600} />
+              </span>
+              <span aria-hidden className="block">
+                <HeroWords text={t("hero.titleAfter")} delay={0.15} stagger={0.045} />
+              </span>
             </h1>
 
             <motion.p
@@ -1719,9 +1695,9 @@ function Portfolio() {
           <Reveal>
             {/* the client is not named on this site, so the mock is not a link */}
             <div className="relative">
-              <BrowserMockup url={t("portfolio.case.url")}>
+              <Safari url={t("portfolio.case.url")} className="drop-shadow-[0_40px_60px_rgba(2,6,23,0.6)]">
                 <SalonPreview />
-              </BrowserMockup>
+              </Safari>
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <Pill>{t("portfolio.case.pills.website")}</Pill>
@@ -2177,13 +2153,15 @@ function LiveDemo() {
 }
 
 function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, primary, footnote, demoServices }) {
+  const { t } = useTranslation();
+  const featuredLabel = t("pricing.featured");
   return (
     <StaggerItem>
       <div className="relative h-full pt-3 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5">
         {primary && (
           <span className="absolute left-6 top-0 z-10 inline-flex items-center gap-1.5 rounded-full border border-sky-400/55 bg-sky-400/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-100 shadow-[0_8px_22px_-6px_rgba(56,189,248,0.7)] backdrop-blur">
             <span className="h-1 w-1 rounded-full bg-sky-300" />
-            Featured
+            {featuredLabel}
           </span>
         )}
         <div
@@ -2243,16 +2221,14 @@ function PriceCard({ title, badge, priceLine, subLine, desc, bullets, cta, prima
 
 // One card per AI staff member on the pricing page: the same facts as the
 // office page, in the pricing page's own frame.
-function StaffPriceCard({ id }) {
+function StaffPriceCard({ id, yearly = false }) {
   const { t } = useTranslation();
   const live = STAFF_LIVE[id];
   return (
     <StaggerItem className="h-full">
       <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-ink-800/45 p-6 transition-[border-color,box-shadow] duration-300 hover:border-white/20 hover:shadow-[0_24px_56px_-24px_rgba(8,12,28,0.7)]">
         <div className="flex items-center gap-3">
-          <span className="flex h-[66px] w-[60px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-            <StaffAvatar id={id} size={3} className="-mt-[90px]" />
-          </span>
+          <StaffAvatar id={id} size={2} />
           <div className="min-w-0">
             <p className="font-display text-[18px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</p>
             <p className="text-[12.5px] text-fg-muted">{t(`office.agents.${id}.role`)}</p>
@@ -2260,7 +2236,7 @@ function StaffPriceCard({ id }) {
         </div>
         <p className="mt-4 text-[13.5px] leading-[1.5] text-fg-muted">{t(`office.agents.${id}.job`)}</p>
         <div className="mt-6">
-          <StaffPrice id={id} />
+          <StaffPrice id={id} yearly={yearly} />
         </div>
         <div className="mt-4">
           <StaffStatus live={live} />
@@ -2275,13 +2251,74 @@ function StaffPriceCard({ id }) {
   );
 }
 
+// -------------------------------------------------------- launch-day offer
+// «Анхны 10 бизнест онцгой санал». Built, and switched OFF: nothing of it
+// renders anywhere until launch day (founder, 2026-09-27). To switch it on,
+// set VITE_LAUNCH_OFFER=on in the Vercel project's environment and redeploy;
+// no code change. Before that, Дали's prompt (dalatech-chatbot api/chat.js
+// and lib/facts.js) must learn the offer, or the chat will contradict the page.
+const LAUNCH_OFFER = import.meta.env.VITE_LAUNCH_OFFER === "on";
+
+// A real count, not a countdown: lower it by hand when a business signs, and
+// switch the offer off at zero.
+const LAUNCH_SEATS_LEFT = 10;
+const LAUNCH_SEATS_TOTAL = 10;
+
+// Gold appears on the site only here.
+const LAUNCH_SHIMMER = { shimmerColor: "#F4D78F", background: "linear-gradient(180deg, #2A2210 0%, #16120A 100%)", borderRadius: "12px" };
+
+function LaunchOffer() {
+  const { t } = useTranslation();
+  const { open } = useDemoRequest();
+  if (!LAUNCH_OFFER) return null;
+  const items = t("launchOffer.items", { returnObjects: true });
+  return (
+    <Reveal className="mt-10">
+      <div className="relative overflow-hidden rounded-2xl border border-gold-400/30 bg-gradient-to-b from-gold-400/[0.06] to-ink-800/65 p-6">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-gold-300/70 to-transparent" />
+        <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <p className="font-display text-[16px] font-semibold tracking-tight text-gold-300">{t("launchOffer.title")}</p>
+            <ul className="mt-4 space-y-2.5 text-[13.5px] leading-[1.55] text-fg/90">
+              {(Array.isArray(items) ? items : []).map((it) => (
+                <li key={it} className="flex items-start gap-2.5">
+                  <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-gold-400" />
+                  <span>{it}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 text-[13px] text-fg-muted">
+              {t("launchOffer.seats", { left: LAUNCH_SEATS_LEFT, total: LAUNCH_SEATS_TOTAL })}
+            </p>
+          </div>
+          <ShimmerButton {...LAUNCH_SHIMMER} onClick={() => open(["dali"])} className="min-h-[48px] border-gold-400/35 px-6 text-[14px] font-semibold text-gold-300">
+            {t("launchOffer.cta")}
+          </ShimmerButton>
+        </div>
+        <p className="mt-5 border-t border-white/[0.06] pt-4 text-[12.5px] leading-[1.55] text-fg-muted">{t("launchOffer.fine")}</p>
+      </div>
+    </Reveal>
+  );
+}
+
 function Pricing() {
   const { t } = useTranslation();
   const terms = t("pricing.paymentTerms.terms", { returnObjects: true });
+  const [yearly, setYearly] = React.useState(false);
   return (
     <section id="pricing" className="relative py-16 md:py-28">
       <Container>
         <SectionHeader eyebrow={t("pricing.section")} title={t("pricing.title")} description={t("pricing.description")} />
+
+        {/* monthly / yearly: changes the staff prices only; the website is a one-off */}
+        <div className="mt-8 flex flex-col items-center gap-3 text-center">
+          <PeriodToggle
+            yearly={yearly}
+            onChange={setYearly}
+            labels={{ group: t("pricing.period.label"), monthly: t("pricing.period.monthly"), yearly: t("pricing.period.yearly") }}
+          />
+          <p className="max-w-[560px] text-[13.5px] leading-[1.55] text-fg-muted">{t("pricing.period.note")}</p>
+        </div>
 
         <Reveal className="mt-14">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
@@ -2295,7 +2332,7 @@ function Pricing() {
           </div>
         </Reveal>
         <StaggerGroup className="mt-7 grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {STAFF_ORDER.map((id) => <StaffPriceCard key={id} id={id} />)}
+          {STAFF_ORDER.map((id) => <StaffPriceCard key={id} id={id} yearly={yearly} />)}
         </StaggerGroup>
 
         {/* Ора is priced like the four but sold to a different person: not a
@@ -2307,7 +2344,7 @@ function Pricing() {
               <p className="mt-3 max-w-[440px] text-[15px] leading-[1.55] text-fg-muted">{t("pricing.staff.ownerDescription")}</p>
             </div>
             <StaggerGroup className="grid">
-              <StaffPriceCard id="ora" />
+              <StaffPriceCard id="ora" yearly={yearly} />
             </StaggerGroup>
           </div>
         </Reveal>
@@ -2345,6 +2382,8 @@ function Pricing() {
             primary
           />
         </StaggerGroup>
+
+        <LaunchOffer />
 
         <Reveal className="mt-14">
           <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-800/45 p-7 transition-[border-color,box-shadow] duration-300 hover:border-sky-400/25 hover:shadow-[0_24px_60px_-24px_rgba(56,189,248,0.25)]">
@@ -2425,14 +2464,18 @@ function FAQItem({ question, answer }) {
 
 function FAQ() {
   const { t } = useTranslation();
+  // The answers are Дали's approved wording (dalatech-chatbot api/chat.js), so
+  // the page and the chat never answer the same question two ways.
+  const items = t("faq.items", { returnObjects: true });
+  const faqItems = Array.isArray(items) ? items : [];
   return (
     <section id="faq" className="relative py-20 md:py-24">
       <Container>
         <SectionHeader eyebrow={t("faq.section")} title={t("faq.title")} description={t("faq.description")} />
 
         <StaggerGroup className="mt-12 grid gap-3.5 md:grid-cols-2">
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <FAQItem key={n} question={t(`faq.q${n}.question`)} answer={t(`faq.q${n}.answer`)} />
+          {faqItems.map((item) => (
+            <FAQItem key={item.q} question={item.q} answer={item.a} />
           ))}
         </StaggerGroup>
 
@@ -2487,6 +2530,8 @@ const DEMO_DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
 
 const DEMO_EMAIL = "dalatech.ai@gmail.com";
 const DEMO_MESSENGER = "https://m.me/61586065058744";
+// The Facebook page itself: comment «1» under any post and we get in touch.
+const FACEBOOK_PAGE = "https://www.facebook.com/profile.php?id=61586065058744";
 
 const EMPTY_DEMO_FORM = {
   name: "",
@@ -3107,9 +3152,7 @@ function DemoRequestDialog({ isOpen, onClose, preset }) {
                                   ].join(" ")}
                                 >
                                   {agent ? (
-                                    <span className="flex h-[36px] w-[32px] shrink-0 items-start justify-center overflow-hidden rounded-[9px] bg-white/[0.06]">
-                                      <StaffAvatar id={service} size={2} className="-mt-[60px]" />
-                                    </span>
+                                    <StaffAvatar id={service} size={1} />
                                   ) : (
                                     <span className="flex h-[36px] w-[32px] shrink-0 items-center justify-center rounded-[9px] bg-white/[0.06] text-fg-muted" aria-hidden>
                                       {service === "website" ? (
@@ -3468,7 +3511,49 @@ function DemoRequestProvider({ children }) {
   );
 }
 
+// The rings and orbiting lights the closing section used to show on their
+// own. They read as a globe that never finished drawing (founder, 2026-09-27),
+// so now they are only the fallback: for a phone with no WebGL, and while the
+// globe's code is still loading.
+function ContactRings() {
+  return (
+    <div className="absolute inset-0">
+      <svg className="absolute inset-0 h-full w-full" viewBox="-200 -200 400 400">
+        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
+        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
+        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
+      </svg>
+      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-2 w-2 rounded-full bg-sky-300"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
+        />
+      </div>
+      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
+        <span
+          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
+          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function ContactOrbField() {
+  const reduced = useReducedMotion();
+  // three.js is 130 KB gzipped plus two textures: fetched only when the
+  // section is about to scroll into view, never as part of the first load
+  const boxRef = React.useRef(null);
+  const [near, setNear] = React.useState(false);
+  React.useEffect(() => {
+    const el = boxRef.current;
+    if (!el || near) return undefined;
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) setNear(true);
+    }, { rootMargin: "600px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [near]);
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       <div className="absolute inset-0 bg-grid opacity-[0.55]" />
@@ -3482,33 +3567,21 @@ function ContactOrbField() {
         }}
       />
 
-      <svg
-        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2"
-        viewBox="-200 -200 400 400"
-      >
-        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
-        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
-        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
-      </svg>
-
-      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-2 w-2 rounded-full bg-sky-300"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
-        />
+      {/* Ulaanbaatar, turning slowly behind the words: dimmed and centred so
+          the heading and buttons stay the brightest things on screen */}
+      <div ref={boxRef} className="absolute left-1/2 top-1/2 aspect-square w-[min(40rem,115vw)] -translate-x-1/2 -translate-y-1/2">
+        {near ? (
+          <ErrorBoundary fallback={<ContactRings />}>
+            <React.Suspense fallback={<ContactRings />}>
+              <Globe decorative reducedMotion={reduced} className="opacity-[0.42]" />
+            </React.Suspense>
+          </ErrorBoundary>
+        ) : (
+          <ContactRings />
+        )}
       </div>
-      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
-        />
-      </div>
-      <div className="contact-orbit contact-orbit-3 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1 w-1 rounded-full bg-white/85"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(190px)", boxShadow: "0 0 14px 2px rgba(255,255,255,0.55)" }}
-        />
-      </div>
+      {/* keep the text legible over the lit side of the globe */}
+      <div className="absolute inset-0" style={{ background: "radial-gradient(60% 45% at 50% 50%, rgba(5,10,24,0.55) 0%, rgba(5,10,24,0) 100%)" }} />
 
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink-950 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink-950 to-transparent" />
@@ -3547,14 +3620,24 @@ function Contact() {
               <MagneticButton href="https://app.dalatech.online" variant="ghost">
                 {t("contact.demoCta")}
               </MagneticButton>
-              <MagneticButton href={mailtoHref} variant="ghost">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
-                  <path d="m3 7 9 6 9-6" />
+              <MagneticButton href={DEMO_MESSENGER} variant="ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.35.27.57l.05 1.78c.02.57.6.94 1.12.71l1.99-.88c.17-.07.36-.09.53-.04.91.25 1.89.39 2.9.39 5.64 0 10-4.13 10-9.7S17.64 2 12 2Zm6 7.46-2.94 4.66a1.5 1.5 0 0 1-2.17.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66a1.5 1.5 0 0 1 2.17-.4l2.34 1.75a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63Z" />
                 </svg>
-                {t("contact.emailCta")}
+                {t("contact.messengerCta")}
               </MagneticButton>
             </div>
+          </StaggerItem>
+
+          {/* the Facebook comment route, and the email, as one quiet line under the buttons */}
+          <StaggerItem>
+            <p className="mx-auto mt-8 max-w-[54ch] text-[15px] leading-[1.55] text-fg-muted">{t("contact.commentLine")}</p>
+            <p className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-[15px]">
+              <a href={FACEBOOK_PAGE} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center gap-1.5 text-sky-400 transition-colors hover:text-sky-300">
+                {t("contact.facebookLink")} <span aria-hidden>&rsaquo;</span>
+              </a>
+              <a href={mailtoHref} className="inline-flex min-h-[44px] items-center text-fg-muted transition-colors hover:text-fg">{DEMO_EMAIL}</a>
+            </p>
           </StaggerItem>
 
         </StaggerGroup>
@@ -3619,7 +3702,6 @@ function FooterColumn({ heading, links }) {
 
 function Footer() {
   const { t } = useTranslation();
-  const reduced = useReducedMotion();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -3667,12 +3749,7 @@ function Footer() {
         className="pointer-events-none absolute inset-x-0 -top-32 h-32"
         style={{ background: "radial-gradient(50% 100% at 50% 100%, rgba(56,189,248,0.10) 0%, rgba(56,189,248,0) 70%)" }}
       />
-      <motion.div
-        initial={reduced ? false : { opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
-        transition={SPRING_REVEAL}
-      >
+      <div>
         <Container className="pt-16 pb-10">
           <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
             <div>
@@ -3682,7 +3759,7 @@ function Footer() {
               </p>
               <div className="mt-6 flex items-center gap-2.5">
                 <a
-                  href="https://www.facebook.com/profile.php?id=61586065058744"
+                  href={FACEBOOK_PAGE}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="DalaTech on Facebook"
@@ -3718,7 +3795,7 @@ function Footer() {
             </p>
           </div>
         </Container>
-      </motion.div>
+      </div>
     </footer>
   );
 }
@@ -3733,13 +3810,7 @@ function LocationBadge() {
       className="relative py-16 md:py-28"
     >
       <Container className="relative">
-        <motion.div
-          initial={reduced ? false : { opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={SPRING_REVEAL}
-          className="grid items-center gap-12 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-16"
-        >
+        <div className="grid items-center gap-12 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-16">
           <div className="mx-auto w-full max-w-[360px] sm:max-w-[420px] md:mx-0 md:max-w-[480px]">
             <ErrorBoundary fallback={<div className="aspect-square w-full" aria-hidden />}>
               <React.Suspense fallback={<div className="aspect-square w-full" aria-hidden />}>
@@ -3756,7 +3827,7 @@ function LocationBadge() {
               {t("location.tagline")}
             </p>
           </div>
-        </motion.div>
+        </div>
       </Container>
     </section>
   );
@@ -3764,86 +3835,46 @@ function LocationBadge() {
 
 // Page wrappers: each route renders only its own sections.
 // ------------------------------------------------------------ a working day
-const DAY_SCALE = (w) => (w < 1024 ? 2 : w < 1280 ? 3 : 3.5);
+// Small enough on a desk-width screen that all four desks fit left of the
+// owner's phone, which stands over the right of the room from 1024px up.
+const DAY_SCALE = (w) => (w < 1280 ? 2 : 3);
 const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
 
-// The owner's phone, over the room. Each group of notifications lands during
-// its own hold and leaves before the next moment's light arrives, so the
-// stack never holds two moments at once. Progress units; the times are the
-// scene's own timestamps.
-// Each group needs (n-1) steps to stack its cards, then enough left over for
-// the last one to be read. Sized by how long the group takes to READ, which is
-// not the same as how many cards it has: Вира gets the widest window of the
-// four while sending the fewest, because hers is one report with a chart in it
-// and that takes longer to take in than three short notifications do.
-// Any change here has to be mirrored in scenes.js — the room behind the phone
-// runs off the same p, and the two disagreeing about the time is the one bug
-// this whole section can have.
-const PHONE_FEED = {
-  dali: { from: 0.04, until: 0.22 },
-  vira: { from: 0.25, until: 0.42 },
-  // the afternoon is the owner's: one card from Ора, who is not in the room
-  ora: { from: 0.45, until: 0.56 },
-  eho: { from: 0.59, until: 0.74 },
-  nova: { from: 0.76, until: 0.9 },
-  done: { from: 0.92 },
-};
-// How close together cards in one group arrive. Tighter than it looks like it
-// should be on purpose: every card in a group fades out together, so the last
-// one to arrive is always the one with least time on screen, and buying it a
-// beat costs the earlier cards nothing they need.
-// A fraction of the run, not seconds: 0.024 × 42s is the one-second cadence the
-// feed had at 34s. Raising DAY_SECONDS without lowering this lengthens every
-// stack and eats the read time of the last card in each group.
-const PHONE_STEP = 0.024;
-// The last screen has less runway than the others: the summary and the door
-// in must both be fully up before the pin lets go at p = 1.
-const PHONE_DONE_STEP = 0.02;
+// The owner's phone, over the room. It shows only what Дали does today: four
+// real moments from one day and the evening summary, on the timeline the room
+// is drawn from (DAY_CARDS in scenes.js).
+//
+// It is a notification stack, newest on top, never cleared: the old version
+// emptied the screen between groups of cards, which read as a blank phone in
+// the middle of the section. Here the first card is on screen from the first
+// frame, a new card slides in above the others, and the oldest slides out at
+// the bottom once four are showing.
+const FEED_VISIBLE = 4;
 
-function phoneGroupAt(p) {
-  if (p >= PHONE_FEED.done.from) return "done";
-  return Object.keys(PHONE_FEED).find((k) => p >= PHONE_FEED[k].from && p <= (PHONE_FEED[k].until ?? 1)) || null;
+function cardsLandedAt(p) {
+  // the first card is up from the start, so the screen is never empty
+  let n = 1;
+  for (let i = 1; i < DAY_CARDS.length; i++) if (p >= DAY_CARDS[i].at) n = i + 1;
+  return n;
 }
 
-// A per-frame ticking clock reads as a slot machine. This steps in five
-// minutes and hard-snaps to the three real timestamps inside the holds.
-function PhoneTime({ progress }) {
-  const [label, setLabel] = React.useState(DAY_MOMENTS[0].time);
-  const read = React.useCallback((p) => {
-    const hold = DAY_MOMENTS.find((m) => p >= m.from && p <= m.to);
-    if (hold) return hold.time;
-    if (p >= PHONE_FEED.ora.from && p <= PHONE_FEED.ora.until) return "13:30";
-    if (p >= PHONE_FEED.nova.from && p <= PHONE_FEED.nova.until) return "19:40";
-    if (p >= PHONE_FEED.done.from) return "21:00";
-    const h = dayHour(p);
-    let hh = Math.floor(h);
-    let mm = Math.round(((h - hh) * 60) / 5) * 5;
-    if (mm === 60) { mm = 0; hh += 1; }
-    return `${String(hh % 24).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
-  }, []);
-  React.useEffect(() => setLabel(read(progress.get())), [progress, read]);
-  useMotionValueEvent(progress, "change", (p) => setLabel(read(p)));
-  return <span className="tabular-nums">{label}</span>;
+// The status-bar clock: the time of the newest card on the screen. It only
+// ever moves forward (DAY_CARDS is in time order) and changes when a card
+// lands, never per frame: a ticking clock reads as a slot machine, and one
+// that runs ahead of the next card has to jump back when that card lands.
+function feedClock(p) {
+  return DAY_CARDS[cardsLandedAt(p) - 1].time;
 }
 
-// The app icon on a notification: the agent's pixel head, or the customer's
-// initial. No logos of other companies.
+// The app icon on a notification: Дали's head, the customer's initial, or
+// the business's own app for what reaches the owner. No other company's logo.
 function PhoneIcon({ who, name }) {
-  if (STAFF_LIVE[who] !== undefined) {
+  if (who === "dali") {
     return (
-      <span className="flex h-[22px] w-[22px] shrink-0 items-start justify-center overflow-hidden rounded-[6px] bg-white/[0.08]" aria-hidden>
-        <StaffAvatar id={who} size={1} className="-mt-[27px]" />
-      </span>
+      <StaffAvatar id="dali" size={0.625} />
     );
   }
-  if (who === "call") {
-    return (
-      <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px] bg-sky-400/15 text-sky-400" aria-hidden>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
-      </span>
-    );
-  }
-  if (who === "summary") {
+  if (who === "owner" || who === "summary") {
     return <span className="h-[22px] w-[22px] shrink-0 rounded-[6px] bg-gradient-to-br from-sky-400 to-brand-500" aria-hidden />;
   }
   return (
@@ -3853,167 +3884,109 @@ function PhoneIcon({ who, name }) {
   );
 }
 
-function PhoneCard({ progress, at, until, span = PHONE_STEP, who, name, time, title, children, className = "" }) {
-  const { t } = useTranslation();
-  const rise = progress ? { progress, at, until, span } : null;
-  // A card from one of the four who are not built yet says so (founder, 2026-09-26): the
-  // phone shows a day with the whole team, and only Дали works today.
-  const soon = STAFF_LIVE[who] === false;
-  const body = (
-    <div className={["rounded-[14px] border border-white/[0.09] bg-[#111A3A]/95 px-3 py-2.5 shadow-[0_6px_22px_rgba(0,0,0,0.35)] backdrop-blur-[6px]", className].join(" ")}>
-      <div className="flex items-center gap-2">
-        <PhoneIcon who={who} name={name} />
-        <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-fg-muted">{name}</span>
-        {soon && <span className="shrink-0 rounded-full border border-amber-300/40 px-1.5 text-[10px] font-semibold text-amber-200">{t("office.status.soon")}</span>}
-        {time && <span className="shrink-0 text-[10.5px] tabular-nums text-fg-dim">{time}</span>}
-      </div>
-      {title && <p className="mt-1.5 text-[13px] font-semibold leading-[1.3] text-fg">{title}</p>}
-      {children}
-    </div>
-  );
-  return rise ? <Rise {...rise}>{body}</Rise> : body;
-}
-
 const phoneText = "mt-1 text-[12.5px] leading-[1.42] text-fg/85";
 
-// Вира's report card: the same four bars the scene draws on her screen.
-function PhoneReport({ progress, at, until, report, feed }) {
-  // hooks run unconditionally; at rest the bars are simply full
-  const one = useMotionValue(1);
-  const grow = useTransform(progress ?? one, progress ? [at + 0.01, at + 0.1] : [0, 1], [0, 1]);
+function PhoneCard({ card }) {
+  const { t } = useTranslation();
+  const c = t(`day.feed.${card.key}`, { returnObjects: true });
+  const lit = card.who === "owner" || card.who === "summary";
   return (
-    <PhoneCard progress={progress} at={at} until={until} who="vira" name={feed.vira.from} time="09:00" title={feed.vira.title}>
-      <div className="mt-2.5 flex h-[54px] items-end gap-1.5" aria-hidden>
-        {report.values.map((v, i) => (
-          <ReportBar key={i} value={v} index={i} count={report.values.length} grow={grow} last={i === report.values.length - 1} />
+    <div className={["rounded-[14px] border bg-[#111A3A]/95 px-3 py-2.5 shadow-[0_6px_22px_rgba(0,0,0,0.35)]", lit ? "border-sky-400/30" : "border-white/[0.09]"].join(" ")}>
+      <div className="flex items-center gap-2">
+        <PhoneIcon who={card.who} name={c.from || ""} />
+        <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-fg-muted">{c.from}</span>
+        <span className="shrink-0 text-[10.5px] tabular-nums text-fg-dim">{card.time}</span>
+      </div>
+      {c.title && <p className="mt-1.5 text-[13px] font-semibold leading-[1.3] text-fg">{c.title}</p>}
+      {c.body && <p className={phoneText}>{c.body}</p>}
+      {Array.isArray(c.rows) && (
+        <ul className="mt-2 flex flex-col gap-1.5 text-[12.5px] leading-[1.35] text-fg/85">
+          {c.rows.map((r) => (
+            <li key={r} className="flex items-center gap-2">
+              <span aria-hidden className="h-1 w-1 shrink-0 rounded-full bg-sky-400" />
+              {r}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// `count` cards have landed; the newest FEED_VISIBLE show, newest first.
+// At rest (reduced motion, or no pixel room) nothing plays, so the whole day
+// is on the screen at once: the summary on top counts cards the visitor can
+// read, and so does a screen reader.
+function PhoneFeed({ count, animate }) {
+  if (!animate) {
+    return (
+      <div className="flex flex-col gap-2">
+        {DAY_CARDS.slice().reverse().map((card) => <PhoneCard key={card.key} card={card} />)}
+      </div>
+    );
+  }
+  // one card fewer once the summary lands, to leave room for the button under it
+  const visible = count >= DAY_CARDS.length ? FEED_VISIBLE - 1 : FEED_VISIBLE;
+  const shown = DAY_CARDS.slice(Math.max(0, count - visible), count).reverse();
+  return (
+    <div className="flex flex-col gap-2">
+      <AnimatePresence initial={false} mode="popLayout">
+        {shown.map((card) => (
+          <motion.div
+            key={card.key}
+            layout
+            initial={{ opacity: 0, y: -14, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.7 }}
+          >
+            <PhoneCard card={card} />
+          </motion.div>
         ))}
-      </div>
-      <div className="mt-1 grid grid-cols-4 gap-1.5 text-[9.5px] text-fg-dim">
-        {report.weeks.map((w) => <span key={w} className="truncate text-center">{w}</span>)}
-      </div>
-      <p className={phoneText}>{feed.vira.body}</p>
-    </PhoneCard>
+      </AnimatePresence>
+    </div>
   );
 }
 
-function PhoneWave() {
-  const reduced = useReducedMotion();
-  return (
-    <span className="flex h-[22px] w-[22px] shrink-0 items-end justify-center gap-[2px] rounded-[6px] bg-sky-400/15 pb-[6px]" aria-hidden>
-      {[0, 1, 2, 3].map((i) => (
-        <span
-          key={i}
-          className={["w-[2px] rounded-full bg-sky-400", reduced ? "" : "animate-[staffWave_1.1s_ease-in-out_infinite]"].join(" ")}
-          style={{ height: 4 + (i % 2) * 4, animationDelay: `${i * 0.14}s` }}
-        />
-      ))}
-    </span>
-  );
-}
-
-// Every card of the day, in the order they land. `progress` undefined draws
-// the whole feed at rest, which is what the static variant and screen readers
-// get.
-function PhoneFeed({ progress, group }) {
+// The device: a plain frame, no brand marks, no wallpaper. `progress`
+// undefined is the phone at rest on the end of the day (reduced motion).
+function OwnerPhone({ progress, className = "" }) {
   const { t } = useTranslation();
   const { open: openDemoRequest } = useDemoRequest();
-  const feed = t("day.phone", { returnObjects: true });
-  const report = t("office.chapters.vira.report", { returnObjects: true });
-  const one = useMotionValue(1);
-  const g = (k) => PHONE_FEED[k];
-  const step = (k, i) => g(k).from + i * PHONE_STEP;
-  const groupCls = progress ? "absolute inset-x-0 top-0 flex flex-col gap-2" : "flex flex-col gap-2";
-  const show = (k) => !progress || group === k;
-  return (
+  const animate = !!progress;
+  const atRest = useMotionValue(1);
+  const [count, setCount] = React.useState(() => (progress ? cardsLandedAt(progress.get()) : DAY_CARDS.length));
+  const [clock, setClock] = React.useState(() => (progress ? feedClock(progress.get()) : DAY_CARDS[DAY_CARDS.length - 1].time));
+  useMotionValueEvent(progress ?? atRest, "change", (p) => {
+    if (!progress) return;
+    const n = cardsLandedAt(p);
+    setCount((c) => (c === n ? c : n));
+    const label = feedClock(p);
+    setClock((l) => (l === label ? l : label));
+  });
+  const done = count >= DAY_CARDS.length;
+  // the same preset as the section's own «Хүсэлт илгээх» under the phone
+  const cta = (
     <>
-      <div className={groupCls} aria-hidden={!show("dali")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneCard progress={progress} at={step("dali", 0)} until={g("dali").until} who="customer" name={feed.customer} time="02:14">
-          <p className={phoneText}>{feed.dali.in}</p>
-        </PhoneCard>
-        <PhoneCard progress={progress} at={step("dali", 1)} until={g("dali").until} who="dali" name={feed.dali.from} time="02:14">
-          <p className={phoneText}>{feed.dali.reply}</p>
-        </PhoneCard>
-        <PhoneCard progress={progress} at={step("dali", 2)} until={g("dali").until} who="customer" name={feed.customer} time="02:15">
-          <p className={phoneText}>{feed.dali.pick}</p>
-        </PhoneCard>
-        <PhoneCard progress={progress} at={step("dali", 3)} until={g("dali").until} who="dali" name={feed.dali.from} time="02:15" title={feed.dali.booked} className="border-sky-400/30">
-          <p className={phoneText}>{feed.dali.bookedBody}</p>
-        </PhoneCard>
-      </div>
-
-      <div className={groupCls} aria-hidden={!show("vira")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneReport progress={progress} at={step("vira", 0)} until={g("vira").until} report={report} feed={feed} />
-      </div>
-
-      <div className={groupCls} aria-hidden={!show("ora")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneCard progress={progress} at={step("ora", 0)} until={g("ora").until} who="ora" name={feed.ora.from} time="13:30" title={feed.ora.title} className="border-sky-400/30">
-          <p className={phoneText}>{feed.ora.body}</p>
-        </PhoneCard>
-      </div>
-
-      <div className={groupCls} aria-hidden={!show("eho")} style={progress ? { pointerEvents: "none" } : undefined}>
-        <PhoneCard progress={progress} at={step("eho", 0)} until={g("eho").until} who="call" name={feed.eho.incoming} time="18:05">
-          <p className={phoneText}>{feed.eho.number}</p>
-        </PhoneCard>
-        <PhoneCard progress={progress} at={step("eho", 1)} until={g("eho").until} who="eho" name={feed.eho.from} time="18:05" title={feed.eho.answered}>
-          <div className="mt-1.5 flex items-center gap-2">
-            <PhoneWave />
-            <p className="text-[12.5px] leading-[1.42] text-fg/85">{feed.eho.line}</p>
-          </div>
-        </PhoneCard>
-        <PhoneCard progress={progress} at={step("eho", 2)} until={g("eho").until} who="eho" name={feed.eho.from} time="18:08" title={feed.eho.booked} className="border-sky-400/30">
-          <p className={phoneText}>{feed.eho.bookedBody}</p>
-        </PhoneCard>
-      </div>
-
-      <div className={groupCls} aria-hidden={!show("nova")} style={progress ? { pointerEvents: "none" } : undefined}>
-        {feed.nova.items.map((n, i) => (
-          <PhoneCard key={n.title} progress={progress} at={g("nova").from + i * 0.022} span={0.025} until={g("nova").until} who="nova" name={feed.nova.from} time={n.time} title={n.title} className={i === feed.nova.items.length - 1 ? "border-sky-400/30" : ""}>
-            <p className={phoneText}>{n.body}</p>
-          </PhoneCard>
-        ))}
-      </div>
-
-      {/* the last screen is the product: what the day added up to, and the door in */}
-      <div className={groupCls} aria-hidden={!show("done")} style={progress ? { pointerEvents: show("done") ? "auto" : "none" } : undefined}>
-        <PhoneCard progress={progress} at={step("done", 0)} span={PHONE_DONE_STEP} who="summary" name={feed.summary.app} time="21:00" title={feed.summary.title}>
-          <ul className="mt-2 flex flex-col gap-1.5 text-[12.5px] leading-[1.35] text-fg/85">
-            {feed.summary.rows.map((r) => (
-              <li key={r} className="flex items-center gap-2">
-                <span aria-hidden className="h-1 w-1 shrink-0 rounded-full bg-sky-400" />
-                {r}
-              </li>
-            ))}
-          </ul>
-        </PhoneCard>
-        <Rise progress={progress ?? one} at={progress ? step("done", 0) + PHONE_DONE_STEP : 0} span={PHONE_DONE_STEP}>
-          <button
-            type="button"
-            onClick={() => openDemoRequest()}
-            className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
-          >
-            {feed.cta}
-            <span aria-hidden>→</span>
-          </button>
-          <p className="mt-2 text-center text-[11px] text-fg-dim">{feed.ctaHint}</p>
-        </Rise>
-      </div>
+      <button
+        type="button"
+        tabIndex={done ? 0 : -1}
+        onClick={() => openDemoRequest(["dali"])}
+        className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
+      >
+        {t("day.phone.cta")}
+        <span aria-hidden>→</span>
+      </button>
+      <p className="mt-2 text-center text-[11px] text-fg-dim">{t("day.phone.ctaHint")}</p>
     </>
   );
-}
-
-// The device: a plain frame, no brand marks, no wallpaper. The screen is the
-// dark page colour so the cards are the only thing on it.
-function OwnerPhone({ progress, group, className = "" }) {
-  const { t } = useTranslation();
   return (
     <div className={["relative w-[240px] sm:w-[270px]", className].join(" ")} role="group" aria-label={t("day.phone.alt")}>
       <div className="day-phone rounded-[42px] border border-white/[0.14] bg-[#0B1022] p-[7px] shadow-[0_30px_80px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(255,255,255,0.04)]">
-        {/* at rest the whole feed is on screen, so the screen grows to hold it */}
-        <div className={["relative overflow-hidden rounded-[36px] bg-[#070C1F]", progress ? "h-[500px] sm:h-[560px]" : "min-h-[500px] pb-8 sm:min-h-[560px]"].join(" ")}>
+        <div className={["relative overflow-hidden rounded-[36px] bg-[#070C1F]", animate ? "h-[500px] sm:h-[560px]" : "pb-8"].join(" ")}>
           {/* status bar */}
           <div className="flex items-center justify-between px-6 pt-4 text-[12px] font-semibold text-fg/90">
-            <span>{progress ? <PhoneTime progress={progress} /> : "21:00"}</span>
+            <span className="tabular-nums">{clock}</span>
             <span className="flex items-center gap-1.5" aria-hidden>
               <span className="flex items-end gap-[2px]">
                 {[3, 5, 7, 9].map((h) => <span key={h} className="w-[3px] rounded-[1px] bg-fg/85" style={{ height: h }} />)}
@@ -4024,8 +3997,26 @@ function OwnerPhone({ progress, group, className = "" }) {
           <span aria-hidden className="absolute left-1/2 top-[11px] h-[22px] w-[74px] -translate-x-1/2 rounded-full bg-black" />
 
           <div className="relative mx-3 mt-5">
-            <PhoneFeed progress={progress} group={group} />
+            <PhoneFeed count={count} animate={animate} />
           </div>
+
+          {animate ? (
+            <>
+              {/* the bottom of the stack fades out under the door in */}
+              <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#070C1F] via-[#070C1F]/85 to-transparent" />
+              <div
+                className={[
+                  "absolute inset-x-3 bottom-7 transition-[opacity,transform] duration-500 ease-out",
+                  done ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
+                ].join(" ")}
+                aria-hidden={!done}
+              >
+                {cta}
+              </div>
+            </>
+          ) : (
+            <div className="mx-3 mt-4">{cta}</div>
+          )}
 
           <span aria-hidden className="absolute bottom-2 left-1/2 h-[4px] w-[96px] -translate-x-1/2 rounded-full bg-fg/40" />
         </div>
@@ -4034,15 +4025,10 @@ function OwnerPhone({ progress, group, className = "" }) {
   );
 }
 
-// The day plays on a clock, not on the scrollbar. It used to be a 340vh
-// sticky scene: scrolling up replayed the whole sequence backwards and a
-// visitor who had already seen it had three screens to climb before the page
-// moved on. Now the section is ordinary height, the sequence starts when it
-// comes into view, plays once, and rests on the last screen with the button
-// on it. Scrolling past is just scrolling.
-// 42, not 34: Ора's afternoon card was added without shortening anyone else's
-// hold — every existing group keeps at least the seconds it had.
-const DAY_SECONDS = 42;
+// The day plays on a clock, not on the scrollbar: the section is ordinary
+// height, the sequence starts when it comes into view, plays once, and rests
+// on the summary with the button on it. Scrolling past is just scrolling.
+const DAY_SECONDS = 36;
 
 function useTimedProgress(ref, seconds, disabled) {
   const progress = useMotionValue(0);
@@ -4103,19 +4089,94 @@ function useTimedProgress(ref, seconds, disabled) {
   return progress;
 }
 
+// A name tag over each desk of the working-day room: Дали in service, the
+// other three «Удахгүй», so four people at work never reads as four in
+// service. Positioned from the stage's own geometry, in logical pixels.
+// In the window band above the heads (the glass runs from 3 to 30), so a tag
+// never covers a face at any scale.
+const DESK_TAG_Y = 4;
+
+function DeskTags({ geom, rowRightCss }) {
+  const { t } = useTranslation();
+  // the same sum the scene does with it, so tag and desk agree
+  const rowRight = rowRightCss != null ? rowRightCss / geom.scale : Infinity;
+  return deskCentres(geom.W, rowRight).map(({ id, x }) => {
+    const live = STAFF_LIVE[id];
+    return (
+      <span
+        key={id}
+        className="absolute flex -translate-x-1/2 flex-col items-center whitespace-nowrap rounded-[8px] border border-white/[0.12] bg-ink-950/80 px-2 py-0.5 text-center leading-[1.3] backdrop-blur-sm sm:flex-row sm:gap-1 sm:rounded-full"
+        style={{ left: geom.left + x * geom.scale, top: DESK_TAG_Y * geom.scale }}
+      >
+        <span className="flex items-center gap-1 text-[11px] font-medium text-fg">
+          {live && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-sky-400" />}
+          {t(`office.agents.${id}.name`)}
+        </span>
+        <span className={["text-[10px] sm:text-[11px]", live ? "text-sky-300" : "text-fg-dim"].join(" ")}>
+          <span aria-hidden className="hidden sm:inline">· </span>
+          {t(live ? "day.desk.live" : "day.desk.soon")}
+        </span>
+      </span>
+    );
+  });
+}
+
+// Where the owner's phone starts covering the room, in CSS pixels from the
+// room's left edge, or null when the phone sits under the room (below lg).
+// Measured, not derived from breakpoints: the stage is narrower than the
+// viewport by the scrollbar, which put a derived edge 15px wrong at 1024px.
+// It is measured again whenever the page lays out anew: a resize, and the
+// first frames after mount, while fonts and the stage settle.
+function usePhoneEdge(bandRef, phoneRef) {
+  const [edge, setEdge] = React.useState(null);
+  React.useLayoutEffect(() => {
+    const band = bandRef.current;
+    const phone = phoneRef.current;
+    if (!band || !phone) return undefined;
+    const measure = () => {
+      // from the band, not the canvas: the canvas is sized only once the atlas
+      // arrives, and before that its box is a sliver in the middle. The two
+      // left edges differ by under one logical pixel once it is.
+      const b = band.getBoundingClientRect();
+      const ph = phone.getBoundingClientRect();
+      const covers = ph.width > 0 && ph.top < b.bottom && ph.bottom > b.top && ph.left > b.left + b.width / 2;
+      const next = covers ? Math.round(ph.left - b.left - 28) : null;
+      setEdge((e) => (e === next ? e : next));
+    };
+    const ro = new ResizeObserver(measure);
+    ro.observe(band);
+    ro.observe(phone);
+    window.addEventListener("resize", measure);
+    measure();
+    let frames = 0;
+    let raf = requestAnimationFrame(function again() {
+      measure();
+      if (++frames < 30) raf = requestAnimationFrame(again);
+    });
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+      cancelAnimationFrame(raf);
+    };
+  }, [bandRef, phoneRef]);
+  return edge;
+}
+
 function WorkingDay() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const { error } = useStaffAtlas();
   const dayRef = React.useRef(null);
-  const still = useMotionValue(0.4);
+  const still = useMotionValue(0.93);
   const progress = useTimedProgress(dayRef, DAY_SECONDS, reduced || !!error);
-
-  const [group, setGroup] = React.useState(() => phoneGroupAt(0));
-  useMotionValueEvent(progress, "change", (p) => {
-    const g = phoneGroupAt(p);
-    if (g !== group) setGroup(g);
-  });
+  const bandRef = React.useRef(null);
+  const phoneRef = React.useRef(null);
+  const phoneEdge = usePhoneEdge(bandRef, phoneRef);
+  // read on every frame through a ref, so the stage is not rebuilt on resize
+  const edgeRef = React.useRef(phoneEdge);
+  edgeRef.current = phoneEdge;
+  const drawDay = React.useCallback((ctx, img, view) => drawWorkingDay(ctx, img, { ...view, rowRightCss: edgeRef.current }), []);
+  const tags = React.useCallback((geom) => <DeskTags geom={geom} rowRightCss={phoneEdge} />, [phoneEdge]);
 
   const heading = (
     <Container>
@@ -4130,13 +4191,13 @@ function WorkingDay() {
     <Container>
       <div className="mt-14 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">{t("day.closing")}</p>
-        <MagneticButton href="#demo" variant="primary">{t("day.phone.cta")}</MagneticButton>
+        <MagneticButton href="#demo" variant="primary" demoServices={["dali"]}>{t("day.phone.cta")}</MagneticButton>
       </div>
     </Container>
   );
 
-  // Reduced motion, or no atlas: the room held at nine in the morning and the
-  // whole feed at rest, in document order. Every card is in the DOM, so this
+  // Reduced motion, or no atlas: the room held at the evening and the phone
+  // at rest on the end of the day. Every card is text in the DOM, so this
   // reads correctly even if no canvas ever appears.
   if (reduced || error) {
     return (
@@ -4145,7 +4206,7 @@ function WorkingDay() {
         <div className="relative mt-10">
           {!error && (
             <div className="day-band">
-              <PixelStage draw={drawWorkingDay} logicalH={DAY_H} scale={DAY_SCALE} minW={STAFF_HERO_MIN_W} progress={still} label={t("day.sceneAlt")} />
+              <PixelStage draw={drawWorkingDay} logicalH={DAY_H} scale={DAY_SCALE} minW={STAFF_HERO_MIN_W} progress={still} label={t("day.sceneAlt")} overlay={tags} />
             </div>
           )}
           <Container className="mt-8 flex justify-center">
@@ -4163,22 +4224,23 @@ function WorkingDay() {
 
       <div ref={dayRef} className="relative mt-10 lg:min-h-[640px] lg:py-10">
         <div className="relative lg:absolute lg:inset-x-0 lg:top-1/2 lg:-translate-y-1/2">
-          <div className="day-band">
+          <div ref={bandRef} className="day-band">
             <PixelStage
-              draw={drawWorkingDay}
+              draw={drawDay}
               logicalH={DAY_H}
               scale={DAY_SCALE}
               minW={STAFF_HERO_MIN_W}
               progress={progress}
               label={t("day.sceneAlt")}
+              overlay={tags}
             />
           </div>
 
           {/* the phone: under the room on a phone, in front of it on a desk */}
           <div className="relative -mt-14 flex justify-center lg:absolute lg:inset-0 lg:mt-0 lg:block">
             <Container className="lg:relative lg:h-full">
-              <div className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
-                <OwnerPhone progress={progress} group={group} />
+              <div ref={phoneRef} className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
+                <OwnerPhone progress={progress} />
               </div>
             </Container>
           </div>
@@ -4227,9 +4289,7 @@ function StaffRow({ id }) {
   return (
     <StaggerItem y={12}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[88px] sm:flex-nowrap sm:py-0">
-        <span className="flex h-[44px] w-[40px] shrink-0 items-start justify-center overflow-hidden rounded-[10px] bg-white/[0.05]">
-          <StaffAvatar id={id} size={2} className="-mt-[58px]" />
-        </span>
+        <StaffAvatar id={id} size={1.5} />
         <span className="min-w-0 flex-1">
           <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
             {t(`office.agents.${id}.name`)}
@@ -4254,7 +4314,8 @@ function StaffRow({ id }) {
 function WebsiteOffer() {
   const { t } = useTranslation();
   const bullets = t("pricing.cards.website.bullets", { returnObjects: true });
-  const rows = [...(Array.isArray(bullets) ? bullets : []), t("websiteOffer.delivery")];
+  // the pricing card's bullets now carry the delivery line too: list it once
+  const rows = [...new Set([...(Array.isArray(bullets) ? bullets : []), t("websiteOffer.delivery")])];
   return (
     <section className="py-16 md:py-28">
       <Container>
@@ -4372,6 +4433,162 @@ function NotFoundPage() {
   );
 }
 
+// -------------------------------------------------------- how it works
+// Three channels in, Дали in the middle, the owner out the far side. Kept
+// from the redesign preview (founder, 2026-09-27) in the live site's own type
+// and spacing. What reaches the owner is named «танд»: the channel the
+// details travel by is an internal detail and never shown to a customer.
+const FLOW_BEAM = { pathColor: "#8B9FC4", pathOpacity: 0.18, gradientStartColor: "#60C8FF", gradientStopColor: "#2563EB" };
+
+function FlowGlyph({ kind }) {
+  if (kind === "facebook") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+        <path d="M22 12a10 10 0 1 0-11.6 9.9V14.9H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3V22A10 10 0 0 0 22 12z" />
+      </svg>
+    );
+  }
+  if (kind === "instagram") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+  if (kind === "website") {
+    return (
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" />
+      </svg>
+    );
+  }
+  // the owner: a person, not an app
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+    </svg>
+  );
+}
+
+function FlowNode({ nodeRef, label, big = false, lit = false, children }) {
+  return (
+    <div className="relative z-10 flex flex-col items-center gap-2">
+      <div
+        ref={nodeRef}
+        className={[
+          "flex items-center justify-center overflow-hidden rounded-full border",
+          big ? "h-[72px] w-[72px] sm:h-[84px] sm:w-[84px]" : "h-12 w-12 sm:h-14 sm:w-14",
+          lit ? "border-sky-400/40 bg-ink-800 text-sky-400 shadow-[0_0_40px_-10px_rgba(56,189,248,0.6)]" : "border-white/10 bg-ink-900 text-fg-muted",
+        ].join(" ")}
+      >
+        {children}
+      </div>
+      <span className="text-center text-[13px] leading-tight text-fg-muted">{label}</span>
+    </div>
+  );
+}
+
+function ChannelBeams() {
+  const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const box = React.useRef(null);
+  const fb = React.useRef(null);
+  const ig = React.useRef(null);
+  const web = React.useRef(null);
+  const dali = React.useRef(null);
+  const owner = React.useRef(null);
+  // the light runs only while the diagram is on screen
+  const inView = useInView(box, { amount: 0.3 });
+  const animate = inView && !reduced;
+  return (
+    <div ref={box} role="img" aria-label={t("how.diagramLabel")} className="relative mx-auto flex h-[280px] w-full max-w-[720px] items-center justify-between px-1 sm:h-[320px] sm:px-8">
+      <div className="flex h-full flex-col justify-between py-1">
+        <FlowNode nodeRef={fb} label="Facebook"><FlowGlyph kind="facebook" /></FlowNode>
+        <FlowNode nodeRef={ig} label="Instagram"><FlowGlyph kind="instagram" /></FlowNode>
+        <FlowNode nodeRef={web} label={t("how.website")}><FlowGlyph kind="website" /></FlowNode>
+      </div>
+      <FlowNode nodeRef={dali} label={t("office.agents.dali.name")} big lit>
+        <StaffAvatar id="dali" size={2} bare />
+      </FlowNode>
+      <FlowNode nodeRef={owner} label={t("how.owner")} lit>
+        <FlowGlyph kind="owner" />
+      </FlowNode>
+
+      <AnimatedBeam containerRef={box} fromRef={fb} toRef={dali} curvature={-40} endYOffset={-10} duration={4} animate={animate} {...FLOW_BEAM} />
+      <AnimatedBeam containerRef={box} fromRef={ig} toRef={dali} duration={4} delay={0.6} animate={animate} {...FLOW_BEAM} />
+      <AnimatedBeam containerRef={box} fromRef={web} toRef={dali} curvature={40} endYOffset={10} duration={4} delay={1.2} animate={animate} {...FLOW_BEAM} />
+      <AnimatedBeam containerRef={box} fromRef={dali} toRef={owner} duration={3} delay={2} animate={animate} {...FLOW_BEAM} />
+    </div>
+  );
+}
+
+function ChannelFlow() {
+  const { t } = useTranslation();
+  const steps = t("how.steps", { returnObjects: true });
+  return (
+    <section id="how" className="py-20 md:py-28">
+      <Container>
+        <SectionHeader eyebrow={t("how.section")} title={t("how.title")} description={t("how.description")} />
+        <div className="mt-10 md:mt-14">
+          <ErrorBoundary fallback={null}>
+            <ChannelBeams />
+          </ErrorBoundary>
+        </div>
+        <ol className="mx-auto mt-10 grid max-w-[980px] gap-x-8 md:mt-14 md:grid-cols-3">
+          {(Array.isArray(steps) ? steps : []).map((s, i) => (
+            <li key={s.title} className="border-t border-white/[0.07] py-5">
+              <span className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-dim">
+                <span aria-hidden className="h-1 w-1 rounded-full bg-sky-400" />
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 className="mt-2 font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">{s.title}</h3>
+              <p className="mt-2 text-[15px] leading-[1.55] text-fg-muted">{s.body}</p>
+            </li>
+          ))}
+        </ol>
+      </Container>
+    </section>
+  );
+}
+
+// ------------------------------------------------------- data protection
+// Kept from the preview (founder, 2026-09-27). Rows in the staff list's own
+// shape; the two timed promises say their number in words, not a counter.
+function DataProtection() {
+  const { t } = useTranslation();
+  const items = t("dataProtection.items", { returnObjects: true });
+  return (
+    <section id="data" className="py-20 md:py-28">
+      <Container>
+        <SectionHeader eyebrow={t("dataProtection.section")} title={t("dataProtection.title")} description={t("dataProtection.description")} />
+        <ul className="mx-auto mt-10 grid max-w-[980px] gap-x-10 md:mt-14 md:grid-cols-2">
+          {(Array.isArray(items) ? items : []).map((it) => (
+            <li key={it.title} className="flex gap-4 border-t border-white/[0.07] py-5">
+              <span aria-hidden className="flex h-[44px] w-[40px] shrink-0 items-center justify-center rounded-[10px] bg-white/[0.05] text-sky-400">
+                <LockIcon className="h-4 w-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">{it.title}</span>
+                <span className="mt-1 block text-[15px] leading-[1.55] text-fg-muted">{it.body}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-8 text-center">
+          <a href="/privacy/" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
+            {t("dataProtection.policy")}
+            <span aria-hidden>&rsaquo;</span>
+          </a>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 const LandingPage = React.memo(function LandingPage() {
   usePageMeta("/");
   return (
@@ -4381,9 +4598,11 @@ const LandingPage = React.memo(function LandingPage() {
       <ErrorBoundary fallback={null}>
         <WorkingDay />
       </ErrorBoundary>
+      <ChannelFlow />
       <TheFour />
       <LiveDemo />
       <Portfolio />
+      <DataProtection />
       <Contact />
     </>
   );
@@ -4471,7 +4690,10 @@ function useStaffAtlas() {
  * (0..1) the scene may read; `scale` is CSS pixels per art pixel for a given
  * width; `minW` keeps the scene's content inside the canvas on narrow screens.
  */
-function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, className = "" }) {
+// `overlay`, if given, renders HTML over the canvas: it is called with the
+// stage geometry ({ W, scale, left }: logical width, CSS pixels per logical
+// pixel, canvas left edge in the host), the same numbers createStage uses.
+function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, overlay, className = "" }) {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
   const { img, error } = useStaffAtlas();
@@ -4514,12 +4736,15 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
   // clamped value — so reserving `h * scale(hostW)` over-reserves wherever the
   // clamp bites. At 390 CSS px and dpr 3 that left an 85px band of bare
   // ink-900 under the hero on a phone.
-  const reserved = React.useMemo(() => {
-    if (!hostW) return undefined;
+  const geom = React.useMemo(() => {
+    if (!hostW) return null;
     const dpr = stageDpr(); // must match createStage, or the reserved height is wrong
     const sDev = Math.max(1, Math.min(Math.round(scale(hostW) * dpr), Math.floor((hostW * dpr) / minW)));
-    return (h * sDev) / dpr;
+    const W = Math.max(minW, Math.floor((hostW * dpr) / sDev));
+    const css = sDev / dpr;
+    return { W, scale: css, left: (hostW - W * css) / 2, height: h * css };
   }, [hostW, h, scale, minW]);
+  const reserved = geom ? geom.height : undefined;
 
   return (
     <div ref={hostRef} className={["relative flex items-center justify-center overflow-hidden bg-ink-900", className].join(" ")} style={{ minHeight: reserved }}>
@@ -4528,6 +4753,7 @@ function PixelStage({ draw, logicalH, scale, minW = 64, progress, label, classNa
       ) : (
         <canvas ref={canvasRef} role="img" aria-label={label} className="block" style={{ imageRendering: "pixelated" }} />
       )}
+      {overlay && geom && img && !error && <div className="pointer-events-none absolute inset-0">{overlay(geom)}</div>}
     </div>
   );
 }
@@ -4541,49 +4767,6 @@ function useDampedProgress(ref, offset, spring = CHAPTER_SPRING) {
   const { scrollYProgress } = useScroll({ target: ref, offset });
   const smooth = useSpring(scrollYProgress, spring);
   return reduced ? scrollYProgress : smooth;
-}
-
-// One line that rises into place as the scroll passes `at`.
-function Rise({ progress, at, span: rawSpan = 0.08, until, className = "", ariaHidden = false, children }) {
-  const reduced = useReducedMotion();
-  // A span that runs past `until` used to turn the exit ramp off silently:
-  // useUntil below is false, the element rises and then never leaves. Clamp
-  // instead, so passing a window always produces one.
-  const span = until !== undefined && at + rawSpan >= until
-    ? Math.max(1e-3, (until - at) * 0.6)
-    : rawSpan;
-  // Without `until` a line rises once and stays, which is what the chapters
-  // want. The pinned day scene needs the block to leave before the next
-  // moment arrives, so the ramp runs back down to zero at the far end.
-  //
-  // The exit ramp is a short fixed fade, not another `span`: a late line in a
-  // staggered group can start after `until - span`, and useTransform requires
-  // strictly increasing inputs — a non-monotonic stop list silently produced a
-  // broken transform and the card never appeared.
-  const OUT = 0.04;
-  const inEnd = at + span;
-  const outStart = Math.max(inEnd + 1e-4, Math.min(until - OUT, until - 1e-4));
-  const useUntil = until !== undefined && until > inEnd;
-  const stops = useUntil ? [at, inEnd, outStart, until] : [at, inEnd];
-  // Opacity is ramped over a third of the travel, not over all of it. A chat
-  // row is a dark plate with a light timestamp beside it: over a night scene
-  // the plate disappears at half opacity while the stamp is still perfectly
-  // legible, so a long cross-fade left bare times floating on the pixel art
-  // with nothing under them. The movement keeps the full ramp.
-  const fadeIn = at + span * 0.34;
-  const fadeOut = useUntil ? outStart + (until - outStart) * 0.66 : 0;
-  const opacityStops = useUntil ? [at, fadeIn, fadeOut, until] : [at, fadeIn];
-  const opacity = useTransform(progress, opacityStops, useUntil ? [0, 1, 1, 0] : [0, 1]);
-  const y = useTransform(
-    progress,
-    stops,
-    useUntil ? [reduced ? 0 : 14, 0, 0, reduced ? 0 : -10] : [reduced ? 0 : 14, 0]
-  );
-  return (
-    <motion.div style={{ opacity, y }} className={className} aria-hidden={ariaHidden || undefined}>
-      {children}
-    </motion.div>
-  );
 }
 
 // One scale and one height, deliberately not branched on width. The stage
@@ -4709,9 +4892,7 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
       >
         <div className="board-who">
           {/* the same pixel face as the scenes below: four people, not four bars */}
-          <span className="board-face">
-            <StaffAvatar id={id} size={2} className="-mt-[60px]" />
-          </span>
+          <StaffAvatar id={id} size={1.25} />
           <span className="min-w-0">
             <span className="board-name">
               {t(`office.agents.${id}.name`)}
@@ -4774,10 +4955,12 @@ function BoardLane({ id, dir, step, onPick, onEnter }) {
 
         <div className="board-end">
           <span className="board-chip">{t(`office.board.lanes.${id}.end`)}</span>
-          <span className="board-price">
-            {formatTugrik(OFFICE_AGENTS[id].monthly)}
-            <span className="board-per">{t("office.price.perMonth")}</span>
-          </span>
+          {OFFICE_AGENTS[id].monthly != null && (
+            <span className="board-price">
+              {formatTugrik(OFFICE_AGENTS[id].monthly)}
+              <span className="board-per">{t("office.price.perMonth")}</span>
+            </span>
+          )}
         </div>
       </button>
     </li>
@@ -4908,20 +5091,30 @@ function StaffHero({ onHire, onSee, onPick }) {
   );
 }
 
-function StaffPrice({ id, align = "left" }) {
+// `yearly`: the price for a year paid up front, which is ten months' fee for
+// twelve months (the approved rule, «10 сарын төлбөрөөр 12 сар»).
+function StaffPrice({ id, align = "left", yearly = false }) {
   const { t } = useTranslation();
   const a = OFFICE_AGENTS[id];
+  const extras = t(`pricing.staff.extras.${id}`, { returnObjects: true, defaultValue: [] });
+  if (a.monthly == null) {
+    return (
+      <div className={align === "center" ? "text-center" : ""}>
+        <p className="text-[15px] font-medium text-fg-muted">{t("office.price.notAnnounced")}</p>
+      </div>
+    );
+  }
   return (
     <div className={align === "center" ? "text-center" : ""}>
       <p className="font-display text-[22px] font-semibold tracking-tight text-fg">
-        {formatTugrik(a.monthly)}
-        <span className="text-[14px] font-normal text-fg-muted">{t("office.price.perMonth")}</span>
-        {a.perMinute && <span className="text-[13px] font-normal text-fg-muted"> {t("office.price.plusPerMinute")}</span>}
+        {formatTugrik(yearly ? a.monthly * 10 : a.monthly)}
+        <span className="text-[14px] font-normal text-fg-muted">{t(yearly ? "office.price.perYear" : "office.price.perMonth")}</span>
       </p>
-      <p className="mt-1 text-[13px] text-fg-muted">
-        {t("office.price.setup", { price: formatTugrik(a.setup) })}
-        {a.addOnOnly && <> · {t("office.price.addOnOnly")}</>}
-      </p>
+      {yearly && <p className="mt-1 text-[13px] text-sky-400">{t("pricing.period.yearlyHint")}</p>}
+      <p className="mt-1 text-[13px] text-fg-muted">{t("office.price.setup", { price: formatTugrik(a.setup) })}</p>
+      {Array.isArray(extras) && extras.map((line) => (
+        <p key={line} className="mt-1 text-[13px] text-fg-muted">{line}</p>
+      ))}
     </div>
   );
 }
@@ -4956,44 +5149,26 @@ function StaffChat({ lines, step }) {
   );
 }
 
-// The scroll-driven bar, still used by the phone feed in the pinned day
-// scene: that timeline is scrubbed on purpose, so its cards follow the scroll.
-function ReportBar({ value, index, count, grow, last }) {
-  const scaleY = useTransform(grow, (g) => Math.min(1, Math.max(0, g * count - index)));
+// Вира's month, as the plan on her screen: what the package delivers, ticked
+// off in turn. Every line is the package itself, not an invented result.
+function StaffPlan({ plan }) {
+  // A missing locale key comes back from t() as the key string, not an
+  // object: show no card rather than an empty dark box on her monitor.
+  const items = plan && Array.isArray(plan.items) ? plan.items : [];
+  if (!plan?.title || !items.length) return null;
   return (
-    <div className="flex flex-1 items-end" style={{ height: "100%" }}>
-      <motion.div
-        style={{ height: `${value * 100}%`, scaleY, transformOrigin: "bottom" }}
-        className={["w-full rounded-t-[3px]", last ? "bg-sky-400" : "bg-brand-500/70"].join(" ")}
-      />
-    </div>
-  );
-}
-
-// Вира's report. Her screen has its back to the room now, so this card is
-// where the four bars are actually read; they build in turn on the card's own
-// clock rather than as the page scrolls.
-function StaffReport({ report }) {
-  const last = report.values.length - 1;
-  return (
-    <Reveal y={10} className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
-      <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-fg-dim">{report.tag}</p>
-      <p className="mt-1 text-[13px] font-semibold text-fg">{report.title}</p>
-      <CueGroup className="mt-3 flex h-[72px] items-end gap-2" step={170} lead={400} aria-hidden>
-        {report.values.map((v, i) => (
-          <CueItem
-            key={i}
-            variants={BAR_GROW}
-            style={{ height: `${v * 100}%` }}
-            className={["flex-1 origin-bottom rounded-t-[3px]", i === last ? "bg-sky-400" : "bg-brand-500/70"].join(" ")}
-          />
+    <div className="rounded-[16px] border border-white/[0.1] bg-[#0F1633]/95 p-3.5 shadow-[0_2px_16px_rgba(0,0,0,0.3)]">
+      <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-fg-dim">{plan.tag}</p>
+      <p className="mt-1 text-[13px] font-semibold text-fg">{plan.title}</p>
+      <CueGroup as="ul" className="mt-3 flex flex-col gap-2" step={320} lead={300}>
+        {items.map((it) => (
+          <CueItem as="li" key={it} className="flex items-center gap-2 text-[12.5px] leading-[1.35] text-fg/85">
+            <CheckIcon />
+            <span>{it}</span>
+          </CueItem>
         ))}
       </CueGroup>
-      <div className="mt-1 grid grid-cols-4 gap-2 text-[10px] text-fg-dim">
-        {report.weeks.map((w) => <span key={w} className="truncate text-center">{w}</span>)}
-      </div>
-      <p className="mt-3 text-[12.5px] leading-[1.45] text-fg/85">{report.insight}</p>
-    </Reveal>
+    </div>
   );
 }
 
@@ -5042,7 +5217,7 @@ function StaffChapter({ id, index, onHire }) {
   const flip = index % 2 === 1;
 
   let overlay = null;
-  if (id === "vira") overlay = <StaffReport report={t(`${base}.report`, { returnObjects: true })} />;
+  if (id === "vira") overlay = <StaffPlan plan={t(`${base}.plan`, { returnObjects: true })} />;
   else if (id === "eho") overlay = <StaffCall call={t(`${base}.call`, { returnObjects: true })} />;
   else overlay = <StaffChat lines={t(`${base}.chat`, { returnObjects: true })} />;
 
@@ -5242,27 +5417,39 @@ function OraChapter({ onHire }) {
   );
 }
 
-// A pixel portrait cut from the atlas with CSS, idling in six frames.
-function StaffAvatar({ id, size = 2, className = "" }) {
-  // One still frame. The portraits used to step through the idle strip, which
-  // read as bobbing on a card; the pixel scenes carry the motion instead.
+// The one staff picture on the site: a square tile with the head and
+// shoulders, cut from the atlas with CSS (founder, 2026-09-27: the /pricing
+// card's avatar everywhere, never a full figure). The atlas frame is 32×64
+// with the person standing in it; rows 16–51 hold the hair down to the
+// shoulders for all five. The tile is 36 units square and the 32-wide frame
+// sits in its middle: widening the crop instead would show a sliver of the
+// neighbouring frame in the strip. `size` scales it; `bare` drops the tile
+// for a picture that already sits in a frame of its own.
+const AVATAR_TOP = 16;
+const AVATAR_ROWS = 36;
+
+function StaffAvatar({ id, size = 1, bare = false, className = "" }) {
   const a = STAFF_CHARS[id].idle;
+  const box = AVATAR_ROWS * size;
   return (
     <span
       aria-hidden
-      className={["block shrink-0 overflow-hidden", className].join(" ")}
-      style={{
-        width: a.w * size,
-        height: a.h * size,
-        backgroundImage: `url(${STAFF_ATLAS.url})`,
-        backgroundSize: `${STAFF_ATLAS.w * size}px ${STAFF_ATLAS.h * size}px`,
-        backgroundPosition: "var(--staff-x) var(--staff-y)",
-        backgroundRepeat: "no-repeat",
-        imageRendering: "pixelated",
-        "--staff-x": `-${a.x * size}px`,
-        "--staff-y": `-${a.y * size}px`,
-      }}
-    />
+      className={["flex shrink-0 items-end justify-center overflow-hidden", bare ? "" : "bg-white/[0.06]", className].join(" ")}
+      style={{ width: box, height: box, borderRadius: bare ? undefined : Math.max(5, Math.round(size * 6)) }}
+    >
+      <span
+        className="block shrink-0"
+        style={{
+          width: a.w * size,
+          height: box,
+          backgroundImage: `url(${STAFF_ATLAS.url})`,
+          backgroundSize: `${STAFF_ATLAS.w * size}px ${STAFF_ATLAS.h * size}px`,
+          backgroundPosition: `-${a.x * size}px -${(a.y + AVATAR_TOP) * size}px`,
+          backgroundRepeat: "no-repeat",
+          imageRendering: "pixelated",
+        }}
+      />
+    </span>
   );
 }
 
@@ -5277,14 +5464,18 @@ function StaffTeam({ onHire }) {
       return n;
     });
   const chosen = ids.filter((id) => picked.has(id));
-  const bundle = OFFICE_BUNDLES.find((b) => b.agents === chosen.length);
+  // Only priced staff are summed and counted for the team discount: Эхо has no
+  // announced price, so a total "with Эхо" would be a number nobody approved.
+  const priced = chosen.filter((id) => OFFICE_AGENTS[id].monthly != null);
+  const bundle = OFFICE_BUNDLES.find((b) => b.agents === priced.length);
   const discount = bundle ? bundle.discount : 0;
-  const monthlyFull = chosen.reduce((s, id) => s + OFFICE_AGENTS[id].monthly, 0);
+  const monthlyFull = priced.reduce((s, id) => s + OFFICE_AGENTS[id].monthly, 0);
   const monthly = Math.round(monthlyFull * (1 - discount));
-  const setup = chosen.reduce((s, id) => s + OFFICE_AGENTS[id].setup, 0);
-  const viraAlone = chosen.length === 1 && chosen[0] === "vira";
+  const setup = priced.reduce((s, id) => s + OFFICE_AGENTS[id].setup, 0);
   const anyLive = chosen.some((id) => STAFF_LIVE[id]);
-  const blocked = chosen.length === 0 || viraAlone;
+  const blocked = chosen.length === 0;
+  // only Эхо picked: there is no announced price to add up, so no «0₮»
+  const unpriced = chosen.length > 0 && priced.length === 0;
 
   return (
     <section id="team" className="py-16 md:py-24">
@@ -5312,9 +5503,7 @@ function StaffTeam({ onHire }) {
                     on ? "border-sky-400/80 shadow-[0_0_0_1px_rgba(56,189,248,0.6),0_16px_40px_-24px_rgba(56,189,248,0.5)]" : "border-white/[0.08] hover:border-white/[0.22]",
                   ].join(" ")}
                 >
-                  <span className="flex h-[64px] w-[64px] shrink-0 items-start justify-center overflow-hidden rounded-[12px] bg-white/[0.06]">
-                    <StaffAvatar id={id} size={2} className="-mt-7" />
-                  </span>
+                  <StaffAvatar id={id} size={1.75} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
                       <span className="font-display text-[17px] font-semibold tracking-tight text-fg">{t(`office.agents.${id}.name`)}</span>
@@ -5323,7 +5512,11 @@ function StaffTeam({ onHire }) {
                       </span>
                     </span>
                     <span className="block text-[12px] text-fg-muted">{t(`office.agents.${id}.role`)}{!STAFF_LIVE[id] && <> · {t("office.status.soon")}</>}</span>
-                    <span className="mt-1 block text-[13px] font-medium tabular-nums text-fg">{formatTugrik(a.monthly)}<span className="font-normal text-fg-muted">{t("office.price.perMonth")}</span></span>
+                    {a.monthly != null ? (
+                      <span className="mt-1 block text-[13px] font-medium tabular-nums text-fg">{formatTugrik(a.monthly)}<span className="font-normal text-fg-muted">{t("office.price.perMonth")}</span></span>
+                    ) : (
+                      <span className="mt-1 block text-[12px] text-fg-muted">{t("office.price.notAnnounced")}</span>
+                    )}
                   </span>
                 </button>
               );
@@ -5335,8 +5528,8 @@ function StaffTeam({ onHire }) {
               <div className="flex items-baseline justify-between gap-4 sm:block">
                 <dt className="text-[13px] text-fg-muted">{t("office.team.monthly")}</dt>
                 <dd className="text-right sm:mt-1 sm:text-left">
-                  <span className="font-display text-[30px] font-semibold leading-none tracking-tight tabular-nums text-fg">{formatTugrik(chosen.length ? monthly : 0)}</span>
-                  <span className="text-[14px] text-fg-muted">{t("office.price.perMonth")}</span>
+                  <span className="font-display text-[30px] font-semibold leading-none tracking-tight tabular-nums text-fg">{unpriced ? "—" : formatTugrik(priced.length ? monthly : 0)}</span>
+                  {!unpriced && <span className="text-[14px] text-fg-muted">{t("office.price.perMonth")}</span>}
                   {discount > 0 && (
                     <span className="ml-2 inline-flex items-center gap-1.5 align-middle text-[13px] tabular-nums text-fg-muted">
                       <s>{formatTugrik(monthlyFull)}</s>
@@ -5347,13 +5540,12 @@ function StaffTeam({ onHire }) {
               </div>
               <div className="flex items-baseline justify-between gap-4 sm:block">
                 <dt className="text-[13px] text-fg-muted">{t("office.team.setup")}</dt>
-                <dd className="text-right font-display text-[22px] font-semibold tracking-tight tabular-nums text-fg sm:mt-1 sm:text-left">{formatTugrik(setup)}</dd>
+                <dd className="text-right font-display text-[22px] font-semibold tracking-tight tabular-nums text-fg sm:mt-1 sm:text-left">{unpriced ? "—" : formatTugrik(setup)}</dd>
               </div>
             </dl>
             <div className="mt-4 min-h-[20px] text-[12.5px] leading-[1.5] text-fg-muted" aria-live="polite">
               {chosen.length === 0 && <p>{t("office.team.empty")}</p>}
-              {viraAlone && <p>{t("office.team.viraAlone")}</p>}
-              {!blocked && picked.has("eho") && <p>{t("office.team.perMinuteNote")}</p>}
+              {!blocked && picked.has("eho") && <p>{t("office.team.ehoNoPrice")}</p>}
               {!blocked && picked.has("ora") && <p>{t("office.team.ownerNote")}</p>}
               {!blocked && chosen.some((id) => !STAFF_LIVE[id]) && <p>{t("office.team.soonNote")}</p>}
             </div>

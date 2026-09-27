@@ -23,7 +23,9 @@ function latLngToVector3(lat, lng, radius) {
   );
 }
 
-export default function Globe({ className = "", reducedMotion = false }) {
+// `decorative`: a backdrop behind other content (the closing call to action),
+// so no label, no drag, and hidden from assistive tech.
+export default function Globe({ className = "", reducedMotion = false, decorative = false }) {
   const mountRef = React.useRef(null);
   const labelRef = React.useRef(null);
   const hoverRef = React.useRef(false);
@@ -98,6 +100,9 @@ export default function Globe({ className = "", reducedMotion = false }) {
     const earth = new THREE.Mesh(earthGeo, earthMat);
     globeGroup.add(earth);
 
+    // Asks for one more frame. Under reduced motion nothing loops, so a
+    // texture arriving or a resize has to draw itself; set once tick exists.
+    let wake = () => {};
     const loader = new THREE.TextureLoader();
     loader.load(
       EARTH_MAP_URL,
@@ -107,6 +112,7 @@ export default function Globe({ className = "", reducedMotion = false }) {
         earthMat.map = tex;
         earthMat.color.setHex(0xffffff);
         earthMat.needsUpdate = true;
+        wake();
       },
       undefined,
       () => {
@@ -120,6 +126,7 @@ export default function Globe({ className = "", reducedMotion = false }) {
       (tex) => {
         earthMat.bumpMap = tex;
         earthMat.needsUpdate = true;
+        wake();
       },
       undefined,
       () => {
@@ -232,14 +239,22 @@ export default function Globe({ className = "", reducedMotion = false }) {
     const pinWorldNormal = new THREE.Vector3();
     const projected = new THREE.Vector3();
 
+    // Drawn only while on screen: a phone should not spin a WebGL scene
+    // nobody can see. `raf` is 0 exactly when no frame is pending.
+    let onScreen = true;
     const tick = (now) => {
+      if (!onScreen) {
+        raf = 0;
+        return;
+      }
       if (!isDragging) {
         const target = hoverRef.current ? slowSpeed : baseSpeed;
         speed += (target - speed) * 0.06;
         globeGroup.rotation.y += speed;
       }
 
-      const cycle = ((now - start) % 2200) / 2200;
+      // reduced motion: the pin's ring and halo hold still, mid-pulse
+      const cycle = reducedMotion ? 0.35 : ((now - start) % 2200) / 2200;
       const eased = 1 - Math.pow(1 - cycle, 3);
       const ringScale = 1 + eased * 1.9;
       ring.scale.setScalar(ringScale);
@@ -266,9 +281,13 @@ export default function Globe({ className = "", reducedMotion = false }) {
       }
 
       renderer.render(scene, camera);
-      raf = requestAnimationFrame(tick);
+      // reduced motion draws one frame and stops; wake() draws the next
+      raf = reducedMotion ? 0 : requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
+    wake = () => {
+      if (!raf && onScreen) raf = requestAnimationFrame(tick);
+    };
 
     const onResize = () => {
       const w = mount.clientWidth || 1;
@@ -277,9 +296,20 @@ export default function Globe({ className = "", reducedMotion = false }) {
       camera.aspect = 1;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
+      wake();
     };
     const ro = new ResizeObserver(onResize);
     ro.observe(mount);
+    const io = new IntersectionObserver((entries) => {
+      const v = entries.some((e) => e.isIntersecting);
+      if (v && !onScreen) {
+        onScreen = true;
+        if (!raf) raf = requestAnimationFrame(tick);
+      } else if (!v) {
+        onScreen = false;
+      }
+    });
+    io.observe(mount);
 
     const onEnter = () => {
       hoverRef.current = true;
@@ -287,7 +317,7 @@ export default function Globe({ className = "", reducedMotion = false }) {
     const onLeave = () => {
       hoverRef.current = false;
     };
-    mount.addEventListener("pointerenter", onEnter);
+    if (!decorative) mount.addEventListener("pointerenter", onEnter);
     mount.addEventListener("pointerleave", onLeave);
 
     // Drag-to-spin: pointer events unify mouse and touch. While dragging we
@@ -296,7 +326,8 @@ export default function Globe({ className = "", reducedMotion = false }) {
     const DRAG_SENS = 0.005;
     const X_TILT_CLAMP = 0.6;
     const previousTouchAction = mount.style.touchAction;
-    mount.style.touchAction = "none";
+    // a backdrop must never swallow the page's vertical scroll
+    if (!decorative) mount.style.touchAction = "none";
 
     const onPointerDown = (e) => {
       if (isDragging) return;
@@ -339,6 +370,7 @@ export default function Globe({ className = "", reducedMotion = false }) {
     mount.addEventListener("pointercancel", endDrag);
 
     return () => {
+      io.disconnect();
       cancelAnimationFrame(raf);
       ro.disconnect();
       mount.removeEventListener("pointerenter", onEnter);
@@ -370,7 +402,7 @@ export default function Globe({ className = "", reducedMotion = false }) {
       antennaMat.dispose();
       renderer.dispose();
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, decorative]);
 
   return (
     <div
@@ -379,9 +411,11 @@ export default function Globe({ className = "", reducedMotion = false }) {
         "relative aspect-square w-full select-none",
         className,
       ].join(" ")}
-      role="img"
-      aria-label="Interactive globe with a pin marking Ulaanbaatar, Mongolia"
+      role={decorative ? undefined : "img"}
+      aria-hidden={decorative || undefined}
+      aria-label={decorative ? undefined : "Interactive globe with a pin marking Ulaanbaatar, Mongolia"}
     >
+      {!decorative && (
       <div
         ref={labelRef}
         className="pointer-events-none absolute left-0 top-0 z-10"
@@ -401,6 +435,7 @@ export default function Globe({ className = "", reducedMotion = false }) {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

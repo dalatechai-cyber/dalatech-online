@@ -17,6 +17,16 @@ export default {
         sky: {
           400: "#38BDF8",
         },
+        // The logo's light blue. The homepage's one accent.
+        accent: {
+          DEFAULT: "#60C8FF",
+        },
+        // The launch offer only (off by default, see LAUNCH_OFFER in App.jsx).
+        gold: {
+          300: "#F4D78F",
+          400: "#E8BE62",
+          500: "#C99A36",
+        },
         brand: {
           500: "#2563EB",
           400: "#3B82F6",
@@ -61,12 +71,30 @@ export default {
           "0%, 100%": { transform: "translate3d(0, 0, 0)" },
           "50%": { transform: "translate3d(0, -8px, 0)" },
         },
+        // 21st.dev components (src/components/ui): the keyframes their pages
+        // ship in the component's compiled CSS / Tailwind config.
+        spotlight: {
+          "0%": { opacity: "0", transform: "translate(-72%, -62%) scale(0.5)" },
+          "100%": { opacity: "1", transform: "translate(-50%, -40%) scale(1)" },
+        },
+        "shimmer-slide": {
+          to: { transform: "translate(calc(100cqw - 100%), 0)" },
+        },
+        "spin-around": {
+          "0%": { transform: "translateZ(0) rotate(0)" },
+          "15%, 35%": { transform: "translateZ(0) rotate(90deg)" },
+          "65%, 85%": { transform: "translateZ(0) rotate(270deg)" },
+          "100%": { transform: "translateZ(0) rotate(360deg)" },
+        },
       },
       animation: {
         meshShift: "meshShift 14s ease-in-out infinite",
         meshShift2: "meshShift2 18s ease-in-out infinite",
         gridPulse: "gridPulse 6s ease-in-out infinite",
         floatY: "floatY 6s ease-in-out infinite",
+        spotlight: "spotlight 2s ease 0.75s 1 forwards",
+        "shimmer-slide": "shimmer-slide var(--speed) ease-in-out infinite alternate",
+        "spin-around": "spin-around calc(var(--speed) * 2) infinite linear",
       },
     },
   },

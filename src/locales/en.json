@@ -14,12 +14,11 @@
     "requestDemo": "Send a request"
   },
   "hero": {
-    "badge": "AI staff for Mongolian businesses",
-    "title": "An AI staff member that answers customer messages 24/7.",
-    "description": "Dali answers customer questions on your Facebook Page, Instagram and website, around the clock, in Mongolian — prices, hours and services, only from the information you give. Vira, Eho, Nova and Ora join soon; pre-register now. No headcount, shift or leave costs.",
+    "badge": "In Mongolian, with no extra headcount",
+    "description": "Dali answers every question in seconds and sends the booking link. Vira, Eho, Nova and Ora join soon.",
     "buttons": {
       "request": "Send a request",
-      "seeWork": "Meet the staff"
+      "seeWork": "Meet your AI team"
     },
     "switchboard": {
       "incoming": [
@@ -87,81 +86,87 @@
         "Answered a message after closing",
         "Answered a message from the website"
       ]
-    }
+    },
+    "channels": [
+      "Facebook",
+      "Instagram",
+      "website"
+    ],
+    "channelsStatic": "Facebook, Instagram and website",
+    "titleAfter": "messages answered 24/7 by an AI staff member.",
+    "titleA11y": "Facebook, Instagram and website messages answered 24/7 by an AI staff member."
   },
   "day": {
-    "title": "Work does not stop while you sleep.",
-    "lead": "Watch what reaches your phone over one day once the full team has joined. Today Dali is working; the others are coming soon.",
-    "closing": "Today Dali is working. Vira, Eho, Nova and Ora join soon, and the five will work as one team. Send a request and we will show how it would work for your business.",
-    "sceneAlt": "An office from night to evening: Dali works through the night. Vira, Eho and Ora join soon.",
+    "title": "Bookings come in even while you sleep.",
+    "lead": "Day and night Dali answers your customers, and only what matters reaches you. Vira, Eho and Nova join soon.",
+    "closing": "Send a request today and Dali starts answering your customers within 1–2 weeks.",
+    "sceneAlt": "The office: Dali, Vira, Eho and Nova at their desks. Today Dali answers every message; the others join soon.",
     "phone": {
-      "alt": "Your phone: the notifications of one day",
-      "customer": "Bold",
-      "dali": {
-        "from": "Dali · DalaTech",
-        "in": "Hello, could I book a time for tomorrow?",
-        "reply": "Hello. Pick a time that suits you and book it with this link.",
-        "pick": "15:30",
-        "booked": "Booking link sent",
-        "bookedBody": "Bold · asked at 01:40. Dali answered on the spot."
+      "alt": "Your phone: one day of Dali",
+      "cta": "Send a request",
+      "ctaHint": "A one-minute form. We call you back."
+    },
+    "feed": {
+      "nightAsk": {
+        "from": "Bold · Messenger",
+        "body": "Hello, can I book a time for tomorrow?"
       },
-      "vira": {
-        "from": "Vira · DalaTech",
-        "title": "September report is ready",
-        "body": "Sales, customers, returning customers. Next month's recommendations attached."
+      "nightReply": {
+        "from": "Dali · to Bold",
+        "body": "Hello. Choose a time that suits you with this link and book."
       },
-      "eho": {
-        "from": "Eho · DalaTech",
-        "incoming": "Incoming call",
-        "number": "+976 •••• ••••",
-        "answered": "Call answered",
-        "line": "Hello, Dala Store. How can I help?",
-        "booked": "Booking recorded",
-        "bookedBody": "By phone · tomorrow 12:00 · 2 people."
+      "nightBooked": {
+        "from": "DalaTech · To you",
+        "title": "A customer who wants to book",
+        "body": "Bold asked for a time tomorrow. Dali sent the booking link at 02:14."
       },
-      "nova": {
-        "from": "Nova · DalaTech",
-        "items": [
-          {
-            "time": "19:30",
-            "title": "Discount notice sent",
-            "body": "Messaged 10 customers about this month’s discount. 4 have replied."
-          },
-          {
-            "time": "19:35",
-            "title": "Booking reminder sent",
-            "body": "Reminded Bold about tomorrow at 15:30. Bold confirmed."
-          },
-          {
-            "time": "19:40",
-            "title": "Customer won back",
-            "body": "Invited Saraa, who had not been in for 2 months. She booked tomorrow at 12:00."
-          }
-        ]
+      "priceAsk": {
+        "from": "Saraa · Instagram",
+        "body": "Can I get your prices?"
+      },
+      "priceReply": {
+        "from": "Dali · to Saraa",
+        "body": "Of course. I have sent the price list."
+      },
+      "discountAsk": {
+        "from": "Nomin · Messenger",
+        "body": "Can you do 30% off?"
+      },
+      "discountReply": {
+        "from": "Dali · to Nomin",
+        "body": "Our team will get back to you on this question."
+      },
+      "discountHandoff": {
+        "from": "DalaTech · To you",
+        "title": "A question passed to you",
+        "body": "Nomin: “Can you do 30% off?” Dali never promises a discount on her own — the decision is yours."
+      },
+      "lateAsk": {
+        "from": "Temuulen · Website",
+        "body": "Are you open tomorrow?"
+      },
+      "lateReply": {
+        "from": "Dali · to Temuulen",
+        "body": "Hello. We are open tomorrow from 10:00 to 20:00."
       },
       "summary": {
-        "app": "DalaTech",
-        "title": "Today",
+        "from": "DalaTech",
+        "title": "Dali today",
         "rows": [
-          "3 questions answered overnight",
-          "1 report ready",
-          "1 meeting prepared",
-          "1 call answered",
-          "10 customers notified"
+          "Answered 4 customers",
+          "Sent 1 booking link",
+          "Passed 1 question to you"
         ]
-      },
-      "cta": "Send a request",
-      "ctaHint": "A one-minute form. We call you back.",
-      "ora": {
-        "from": "Ora · DalaTech",
-        "title": "Tomorrow's meeting is ready",
-        "body": "The deck, the figures and five questions to ask are prepared. The English contract is translated into Mongolian."
       }
+    },
+    "desk": {
+      "live": "Live",
+      "soon": "Soon"
     }
   },
   "theFour": {
-    "title": "Dali is working. Four more join soon.",
-    "lead": "Dali talks to your customers from today. Vira, Eho and Nova join soon; Ora works with you alone."
+    "title": "Dali today. The full team soon.",
+    "lead": "Dali answers your customers from today. Soon Vira takes marketing, Eho calls and Nova reminders, and Ora works with you alone."
   },
   "websiteOffer": {
     "title": "Staff by the month. A website once.",
@@ -207,8 +212,8 @@
   },
   "portfolio": {
     "section": "WEBSITE",
-    "title": "A website we built",
-    "description": "A website built for a beauty salon: online booking, QPay payments, and Dali integrated.",
+    "title": "A website that takes bookings",
+    "description": "A website built for a beauty salon. Customers book online, pay with QPay and get their questions answered by Dali straight away.",
     "getDemo": "Send a request",
     "case": {
       "url": "Client website",
@@ -240,8 +245,8 @@
   },
   "liveDemo": {
     "section": "LIVE EXAMPLE",
-    "title": "When a customer writes, Dali answers like this.",
-    "description": "A Messenger conversation at a sample salon. Dali answers the questions, sends the booking link, and hands the owner what she does not know. Send a request and we will show Dali configured on your own business.",
+    "title": "The moment a customer asks, Dali answers.",
+    "description": "An example salon conversation on Messenger. Dali answers from the information you give and sends the booking link. It doesn't guess or promise discounts on its own: decisions are passed to you. We'll show you Dali set up for your business.",
     "ctaLabel": "Send a request",
     "widget": {
       "businessName": "Beauty salon",
@@ -270,100 +275,149 @@
   },
   "pricing": {
     "section": "PRICING",
-    "title": "Clear prices, clear terms",
-    "description": "Each AI staff member carries a flat monthly fee and a one-time setup. The website is a one-time build. No hidden fees.",
+    "title": "Transparent prices. No hidden fees.",
+    "description": "No headcount, shift or leave costs. Each AI staff member has a fixed monthly fee and a one-off setup; the website is a one-off payment.",
     "cards": {
       "website": {
         "title": "Smart website",
         "badge": "One-time",
         "price": "750,000₮",
-        "subLine": "Modern design • 5 pages • Mobile responsive • Admin panel",
-        "description": "A five-page website, built for mobile, with an admin panel.",
+        "subLine": "Hosting 150,000₮/year. Add-ons: QPay payments 200,000₮, online booking 300,000₮.",
+        "description": "5 mobile-friendly pages. Update your information yourself from the admin panel.",
         "bullets": [
           "Modern design (UI/UX)",
-          "5 core pages (Home, About, Contact, and others)",
-          "Mobile responsive",
-          "Admin panel for managing content"
+          "5 core pages (Home, About, Contact and more)",
+          "Fully mobile-friendly",
+          "Admin panel to manage content",
+          "Delivered in 7–10 working days"
         ],
         "cta": "Send a request"
       },
       "bundle": {
         "title": "Website + Dali",
-        "badge": "100,000₮ discount",
+        "badge": "125,000₮ off",
+        "was": "925,000₮",
         "price": "800,000₮",
-        "subLine": "Separately 900,000₮ (website 750,000₮ + Dali setup 150,000₮). Together 800,000₮ · then Dali 250,000₮/month",
-        "description": "Your new website launches with Dali already answering.",
+        "subLine": "Includes the website, Dali's setup and 50% off Dali's first month. From the second month, Dali is 250,000₮/month.",
+        "description": "From the day your new website opens, Dali answers every customer and helps you take bookings.",
         "bullets": [
-          "Smart website included",
-          "Dali answers on the website and on Messenger",
-          "100,000₮ discount on the setup"
+          "Smart website — 750,000₮",
+          "Dali's setup — 50,000₮",
+          "Dali's first month at 50% off — 125,000₮"
         ],
-        "cta": "Send a request",
-        "was": "900,000₮"
+        "cta": "Send a request"
       }
     },
     "paymentTerms": {
       "title": "Payment terms",
       "terms": [
-        "Website: 50% on signing, 50% on handover; delivery in 7–10 working days",
-        "AI staff: setup once, monthly fee at the start of each month",
-        "AI staff go live within 1–2 weeks"
+        "Website: 50% on signing, 50% on delivery; hosting is paid yearly.",
+        "AI staff: setup once on signing, the monthly fee by the 5th of each month via QPay or bank transfer.",
+        "The minimum term is 3 months. After that you continue month to month, or cancel with 30 days' notice."
       ],
-      "note": "A tailored quote is prepared from your sector and the work you want to automate.",
+      "note": "No VAT is added, so you pay exactly the listed price. Custom quotes depend on your business and the work to automate.",
       "cta": "Send a request"
     },
     "staff": {
-      "title": "AI staff",
-      "description": "Monthly fee, one-time setup. Two staff −10%, three −15%, four or more −20%; the discount applies to the monthly fee.",
+      "title": "Your AI staff",
+      "description": "Two AI staff: 10% off the monthly fee. Three: 15%. Four or more: 20%. Discounts do not stack.",
       "teamLink": "Team composition and pricing",
       "hire": "Send a request",
-      "preorder": "Send a request",
+      "preorder": "Pre-register",
       "ownerTitle": "Yours alone",
-      "ownerDescription": "Dali talks to your customers today; Vira, Eho and Nova join soon. Ora works with you alone: documents, presentations, dates, decisions. In her own closed chat."
+      "ownerDescription": "Start with Dali now and add the others as they launch. Vira, Eho and Nova will soon start serving your customers. Ora, also coming soon, helps you with documents, presentations, deadlines and decisions in a chat only you open.",
+      "extras": {
+        "vira": [
+          "Ad budget not included."
+        ],
+        "nova": [
+          "1,000 SMS a month included, 50₮ per extra SMS"
+        ],
+        "ora": [
+          "1,500 messages a month included; extra 500 messages 49,000₮",
+          "Each extra user has their own 1,500 messages: 2nd user 200,000₮, 3rd 175,000₮, from the 4th 150,000₮ each, monthly"
+        ]
+      }
     },
     "website": {
       "title": "Website",
-      "description": "One-time build. No monthly fee."
-    }
+      "description": "A one-off payment, plus hosting each year."
+    },
+    "period": {
+      "label": "Billing period",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "note": "Prepay a year and get 2 months free — 12 months for the price of 10.",
+      "yearlyHint": "12 months for the price of 10"
+    },
+    "featured": "Featured"
   },
   "faq": {
     "section": "FAQ",
     "title": "Common questions",
-    "description": "Below are answers to the questions asked most often about our AI staff and websites.",
-    "q1": {
-      "question": "Which businesses is this service for?",
-      "answer": "The service is built for small and medium businesses that take customer inquiries regularly. Stores, service centers, auto parts shops, and clinics are a typical fit."
-    },
-    "q2": {
-      "question": "Is technical knowledge required?",
-      "answer": "It is not required. We handle configuration and rollout end to end. You edit your content through a simple admin panel."
-    },
-    "q3": {
-      "question": "What does the monthly fee cover?",
-      "answer": "Servers, model usage, monitoring, knowledge updates, and support are covered by the monthly fee. Call minutes for Eho are the only extra charge."
-    },
-    "q4": {
-      "question": "Will AI staff replace employees?",
-      "answer": "They do not. Dali handles the daily messages: repeat questions, prices, hours and booking links. Anything sensitive or unusual is passed to your team."
-    },
-    "q5": {
-      "question": "What does Dali base its answers on?",
-      "answer": "Dali answers only from the information you supply: prices, hours, services, and terms. Anything outside that scope is passed to your team rather than guessed."
-    },
-    "q6": {
-      "question": "How long does rollout take?",
-      "answer": "AI staff go live within 1–2 weeks. A website is delivered within 7–10 working days."
-    },
+    "description": "The questions usually asked before starting. If your answer is not here, write to us.",
     "stillHaveQuestions": "More questions",
     "contactPrompt": "Send us the rest. We call back with the answers.",
-    "talkToUs": "Send a request"
+    "talkToUs": "Send a request",
+    "items": [
+      {
+        "q": "What kind of business is this for?",
+        "a": "Small and medium businesses that get customer questions all the time: shops, salons, clinics, restaurants, car services, training centres and so on."
+      },
+      {
+        "q": "Do I need technical knowledge?",
+        "a": "None at all. We do all the setup and launch for you."
+      },
+      {
+        "q": "What does the monthly fee include?",
+        "a": "Servers, model usage, monitoring, information updates and support."
+      },
+      {
+        "q": "Does AI staff replace people?",
+        "a": "It does not replace your staff — it helps them. It takes the daily load of repeat questions, bookings, reminders and reports, and passes anything that needs a decision to your team."
+      },
+      {
+        "q": "What does Dali base its answers on?",
+        "a": "Only the information you give: prices, hours, services, terms. It does not guess outside that; it passes the question to your team."
+      },
+      {
+        "q": "How long does it take to launch?",
+        "a": "AI staff usually start within 1–2 weeks. A website is ready in 7–10 working days."
+      },
+      {
+        "q": "Is there a discount for several staff?",
+        "a": "Yes: two AI staff get 10% off the monthly fee, three get 15%, four or more 20%."
+      },
+      {
+        "q": "Is paying yearly cheaper?",
+        "a": "Prepay a year and get 2 months free — 12 months for the price of 10. This discount does not combine with others."
+      },
+      {
+        "q": "What is the minimum contract?",
+        "a": "3 months. After that you continue month to month, or cancel with 30 days' notice."
+      },
+      {
+        "q": "Do you issue a VAT receipt (e-barimt)?",
+        "a": "Not at the moment. No VAT is added, so you pay exactly the listed price."
+      },
+      {
+        "q": "How do I pay?",
+        "a": "Website: 50% on signing, 50% on delivery; hosting yearly. AI staff: setup once on signing, the monthly fee by the 5th of each month via QPay or bank transfer."
+      },
+      {
+        "q": "Can I see a free demo?",
+        "a": "Go to app.dalatech.online and enter your business details — your website demo is ready in 24 hours. That tool is for website demos only; for AI staff, send a request and we will contact you right away."
+      }
+    ]
   },
   "contact": {
-    "title": "A setup shaped to your business",
-    "description": "The form takes a minute. We call you back and show how the AI staff would work for your business. Your demo website will be ready within 24 hours.",
+    "title": "Every customer gets an answer at once",
+    "description": "Leave a request. We call you and explain how an AI staff member would work in your business. If you are interested in a website, your free demo is ready within 24 hours.",
     "requestCta": "Send a request",
     "demoCta": "Generate a demo website",
-    "emailCta": "Email us"
+    "messengerCta": "Message us on Messenger",
+    "commentLine": "Comment «1» under any post on DalaTech's Facebook page and we'll contact you.",
+    "facebookLink": "Facebook page"
   },
   "location": {
     "eyebrow": "LOCATION",
@@ -473,32 +527,32 @@
     "back": "Back",
     "serviceCards": {
       "dali": {
-        "title": "Дали",
-        "line": "Answers every message"
+        "title": "Dali",
+        "line": "Answers every message 24/7"
       },
       "vira": {
-        "title": "Вира",
-        "line": "The monthly report"
+        "title": "Vira",
+        "line": "Videos, posts, boosted ads"
       },
       "eho": {
-        "title": "Эхо",
-        "line": "Answers the phone"
+        "title": "Eho",
+        "line": "No missed calls"
       },
       "nova": {
-        "title": "Нова",
-        "line": "Follows up with customers"
+        "title": "Nova",
+        "line": "Appointment reminders by SMS"
       },
       "website": {
         "title": "Website",
-        "line": "A one-time build"
+        "line": "Ready in 7–10 working days"
       },
       "unsure": {
         "title": "Not decided yet",
-        "line": "We work it out together"
+        "line": "We'll choose what fits together"
       },
       "ora": {
         "title": "Ora",
-        "line": "Documents, decks, deadlines"
+        "line": "Documents, deadlines, decisions"
       }
     },
     "sectors": {
@@ -517,8 +571,8 @@
   "office": {
     "section": "AI STAFF",
     "hero": {
-      "title": "An AI team for your business: Dali is working, four more soon.",
-      "lead": "Dali answers every message from today. Coming soon: Eho answers calls, Vira prepares the monthly report and Nova follows up with customers. Ora works for you alone: documents, presentations, dates, decisions. No new headcount, one fixed monthly fee.",
+      "title": "An AI team with no extra headcount: Dali from today, four more staff soon.",
+      "lead": "Messages, calls, posts, reminders: you will no longer have to do them yourself. Dali answers every message from today. Soon Eho answers calls, Vira handles your content and boosted ads, and Nova sends appointment reminders by SMS from your own number. Ora, also coming soon, is yours alone: documents, deadlines, decisions.",
       "hire": "Send a request",
       "see": "See them at work",
       "sceneAlt": "Four AI staff at their desks in an evening office, under one long window.",
@@ -531,14 +585,14 @@
     "price": {
       "perMonth": "/month",
       "setup": "{{price}} setup",
-      "plusPerMinute": "+ per call minute",
-      "addOnOnly": "Only alongside another staff member."
+      "notAnnounced": "Price not announced yet.",
+      "perYear": "/year"
     },
     "chapters": {
       "dali": {
-        "eyebrow": "Dali · Receptionist",
-        "title": "Every message, within seconds.",
-        "body": "Dali replies at once to messages on Facebook, Instagram and your website: prices, hours, services, and the link to book. A customer left waiting goes to a competitor. Dali closes that leak.",
+        "eyebrow": "Dali · AI receptionist",
+        "title": "Not one message goes unanswered.",
+        "body": "A customer left waiting often moves on to a competitor. Dali answers Facebook, Instagram and website messages within seconds, gives the prices, hours and services you provided, and sends the booking link. It never promises a discount on its own and leaves decisions to you.",
         "cta": "Send a request",
         "sceneAlt": "Dali at the desk at night, answering messages.",
         "chat": [
@@ -549,49 +603,38 @@
           },
           {
             "from": "staff",
-            "text": "Hello. Tomorrow we have 11:00 and 15:30 free. Which suits you?",
+            "text": "Hello. We are open 10:00–20:00 tomorrow. Please pick a time that suits you with this link.",
             "time": "02:14"
           },
           {
             "from": "customer",
-            "text": "15:30",
-            "time": "02:15"
-          },
-          {
-            "from": "staff",
-            "text": "You are booked for tomorrow at 15:30. A confirmation message has been sent.",
+            "text": "Thanks, booking now.",
             "time": "02:15"
           }
         ]
       },
       "vira": {
-        "eyebrow": "Vira · Business analyst",
-        "title": "See each month in numbers.",
-        "body": "The report is ready on the first day of the month. Which service grew and which customers went quiet, you know from figures, not guesses.",
+        "eyebrow": "Vira · marketing manager",
+        "title": "You'll no longer have to think about what to post.",
+        "body": "If you never find the time to keep your page active, Vira takes charge of it: short videos, posts and boosted ads.",
         "cta": "Send a request",
-        "sceneAlt": "Vira in the morning behind two screens, preparing the monthly report.",
-        "report": {
-          "tag": "Sample",
-          "title": "September · Report",
-          "weeks": [
-            "Week 1",
-            "Week 2",
-            "Week 3",
-            "Week 4"
-          ],
-          "values": [
-            0.5,
-            0.62,
-            0.48,
-            0.9
-          ],
-          "insight": "Week 4 had the highest sales. The full figures and next month’s recommendations are in the report."
+        "sceneAlt": "Vira at two screens in the morning, preparing the month's content plan.",
+        "plan": {
+          "tag": "Every month",
+          "title": "Vira's package",
+          "items": [
+            "3 short videos",
+            "8 posts",
+            "A content plan",
+            "Ad (boost) management",
+            "A weekly report"
+          ]
         }
       },
       "eho": {
-        "eyebrow": "Eho · Phone operator",
-        "title": "Every call, even at closing.",
-        "body": "Eho speaks on the phone like a person, answers the questions and records the order. After hours and at peak times, no call is lost. Every missed call is a missed order.",
+        "eyebrow": "Eho · phone operator",
+        "title": "Picks up even after closing time.",
+        "body": "A missed call is often a lost booking. Eho talks on the phone like a person, answers questions and records the booking. After hours or at busy times, no call goes unanswered.",
         "cta": "Send a request",
         "sceneAlt": "Eho with a headset, answering an incoming call.",
         "call": {
@@ -602,33 +645,33 @@
         }
       },
       "nova": {
-        "eyebrow": "Nova · Customer manager",
-        "title": "A first-time customer comes back.",
-        "body": "Asks for feedback after each visit. Reminds about appointments and payments. Calls back customers who stopped coming. Keeping a customer costs less than finding one.",
+        "eyebrow": "Nova · reminders, SMS",
+        "title": "Fewer customers forget to come.",
+        "body": "A customer who forgets leaves an empty slot and lost income. Nova reminds every booked appointment automatically by SMS from your own number. You don't have to write a single message.",
         "cta": "Send a request",
-        "sceneAlt": "Nova in the afternoon, writing to customers.",
+        "sceneAlt": "Nova in the afternoon, sending tomorrow's reminders.",
         "chat": [
           {
             "from": "staff",
-            "text": "Hello Bold. How was yesterday's visit?",
-            "time": "19:30"
+            "text": "Hello, Bold. You have an appointment tomorrow at 11:00.",
+            "time": "18:00"
           },
           {
             "from": "customer",
-            "text": "Good, thank you",
-            "time": "19:41"
+            "text": "Thank you, I had forgotten.",
+            "time": "18:07"
           },
           {
             "from": "staff",
-            "text": "Thank you. You will receive a reminder for your next appointment on 12 October.",
-            "time": "19:41"
+            "text": "Good morning, Bold. We look forward to seeing you today at 11:00.",
+            "time": "09:00"
           }
         ]
       },
       "ora": {
-        "eyebrow": "Ora · Personal assistant",
-        "title": "Reads, prepares, reminds, and thinks it through with you.",
-        "body": "Ora works with you alone. Neither your customers nor your team deal with her, so anything from the documents stacked on your desk to the decision you keep putting off can go to her. She works in her own chat, open only to you — not Messenger.",
+        "eyebrow": "Ora · personal assistant",
+        "title": "The work on your desk gets lighter.",
+        "body": "Contracts, official letters, reports and presentations take your time. Ora reads them, drafts them in formal language and reminds you before a deadline passes. It translates English documents into Mongolian and weighs decisions with you. Your customers and staff never deal with it: it works in a chat only you open. It does not give legal advice.",
         "cta": "Send a request",
         "sceneAlt": "Ora's room: a closed room with no window, where she reads a document at her desk. A presentation board on the wall, a pinboard of reminders beside it, and her files behind her.",
         "panel": {
@@ -683,25 +726,24 @@
       },
       "oraIntro": {
         "eyebrow": "THE FIFTH MEMBER OF STAFF",
-        "title": "Four work with your customers. One works only with you.",
-        "lead": "Dali, Vira, Eho and Nova talk to your customers. Ora talks to none of them — she takes the work that piles up on your own desk."
+        "title": "Four for your customers. One only for you.",
+        "lead": "Dali from today, and soon Vira, Eho and Nova, work for your customers. Ora, also coming soon, doesn't talk to customers: it takes charge of the work on your desk and gives you your time back."
       }
     },
     "team": {
       "eyebrow": "TEAM PRICING",
-      "title": "The monthly fee falls as the team grows.",
+      "title": "The more staff you add, the bigger the discount.",
       "description": "Two staff −10%, three −15%, four or more −20%. The discount applies to the monthly fee.",
       "pick": "Choose staff",
       "monthly": "Monthly fee",
       "setup": "Setup, one time",
       "discount": "{{percent}}% discount",
-      "perMinuteNote": "Eho call minutes carry an additional charge.",
-      "viraAlone": "Vira works only alongside another staff member. Select one more.",
       "empty": "Select at least one staff member.",
-      "soonNote": "Vira, Eho, Nova and Ora launch soon. Pre-register and we notify you at launch.",
+      "soonNote": "Vira, Eho, Nova and Ora start soon. Pre-register now and we'll tell you as soon as they launch.",
       "cta": "Send a request",
       "ctaPreorder": "Send a request",
-      "ownerNote": "Ora works with you, not with your customers."
+      "ownerNote": "Ora works with you, not with your customers.",
+      "ehoNoPrice": "Eho's price has not been announced, so it is not in the total."
     },
     "steps": {
       "title": "Three steps to launch",
@@ -725,27 +767,27 @@
       "dali": {
         "name": "Dali",
         "role": "Receptionist",
-        "job": "Answers every Facebook, Instagram and website message within seconds, and sends the booking link."
+        "job": "Answers every Facebook, Instagram and website message day and night within seconds, and sends the booking link."
       },
       "nova": {
         "name": "Nova",
-        "role": "Customer manager",
-        "job": "Asks for feedback, sends reminders, and brings back customers who went quiet."
+        "role": "Reminders, SMS",
+        "job": "Sends appointment reminders automatically by SMS from your own number, so fewer customers forget to come."
       },
       "vira": {
         "name": "Vira",
-        "role": "Business analyst",
-        "job": "Prepares the monthly report and says, in numbers, what to change."
+        "role": "Marketing manager",
+        "job": "Frees you from thinking up posts: every month 3 short videos, 8 posts and boosted ads."
       },
       "eho": {
         "name": "Eho",
         "role": "Phone operator",
-        "job": "Answers every incoming call, handles the questions, and records the order."
+        "job": "Answers every call, after closing and at busy times, and records the booking."
       },
       "ora": {
         "name": "Ora",
         "role": "Personal assistant",
-        "job": "Reads and drafts documents, builds presentations, keeps your dates, translates from English and thinks a decision through with you. Works with you, not with your customers."
+        "job": "Takes charge of the work piling up on your desk: drafts contracts and official letters, prepares presentations, reminds you of deadlines, translates English documents and weighs decisions with you. Works with you alone."
       }
     },
     "artCredit": "Pixel art on this page by",
@@ -761,27 +803,27 @@
     },
     "board": {
       "label": "How the work is split",
-      "caption": "Four different kinds of work, one member of staff for each, on the customer's side. The fifth is on yours. Today Dali is working; the others are coming soon.",
+      "caption": "The work you carry alone, shared across five staff: four on the customer side, one only on your side. Dali is working today; the rest are coming soon.",
       "lanes": {
         "dali": {
-          "end": "Incoming messages",
-          "dir": "Work that arrives"
+          "end": "Every message",
+          "dir": "Incoming work"
         },
         "eho": {
-          "end": "Incoming calls",
-          "dir": "Work that arrives"
+          "end": "Every call",
+          "dir": "Incoming work"
         },
         "vira": {
-          "end": "The month's numbers",
-          "dir": "Work done at the desk"
+          "end": "The month's content",
+          "dir": "Desk work"
         },
         "nova": {
-          "end": "Customers who went quiet",
-          "dir": "Goes out and comes back"
+          "end": "Booked appointments",
+          "dir": "A reminder goes out, the customer comes in"
         },
         "ora": {
           "end": "The work on your desk",
-          "dir": "From you, back to you"
+          "dir": "Comes from you, returns to you"
         }
       },
       "owner": "Yours alone"
@@ -790,15 +832,15 @@
   "meta": {
     "/": {
       "title": "AI staff for Mongolian businesses",
-      "desc": "AI staff + a smart website. Your business answers customers even while you sleep."
+      "desc": "Every customer gets an answer, even while you sleep. AI staff and smart websites for Mongolian businesses."
     },
     "/office": {
       "title": "AI staff",
-      "desc": "Dali, Vira, Eho, Nova and Ora. What each one does, how they work, and which of them works with your customers and which with you."
+      "desc": "An AI team that shares the work with no new headcount. Dali answers every customer from today; Vira, Eho, Nova and Ora are coming soon."
     },
     "/pricing": {
       "title": "Pricing",
-      "desc": "Monthly fee and setup for AI staff, and the price of a website. Team discounts and payment terms."
+      "desc": "No new headcount, one fixed monthly fee. AI staff and website prices, team discounts, payment terms."
     },
     "/portfolio": {
       "title": "Website",
@@ -830,5 +872,98 @@
     "body": "That page does not exist. The link may be out of date, or the address may be wrong.",
     "home": "Home",
     "staff": "AI staff"
+  },
+  "how": {
+    "section": "HOW IT WORKS",
+    "title": "Three channels. One Dali.",
+    "description": "Whichever channel a customer writes on, Dali answers. Facebook, Instagram and your website are all in one price.",
+    "diagramLabel": "Messages from Facebook, Instagram and your website reach Dali; the customer's details reach you",
+    "website": "Website",
+    "owner": "You",
+    "steps": [
+      {
+        "title": "A customer writes",
+        "body": "On Facebook, Instagram or your website, in the middle of the night or on a day off."
+      },
+      {
+        "title": "Dali answers at once",
+        "body": "Answers within seconds from the prices, hours and services you gave, and sends the booking link. It never guesses what it doesn't know."
+      },
+      {
+        "title": "Booking details reach you",
+        "body": "The details of a customer who wants to book, and questions that need your decision, land straight in your hands."
+      }
+    ]
+  },
+  "dataProtection": {
+    "section": "DATA PROTECTION",
+    "title": "Your data serves you alone.",
+    "description": "Your customers trust you. We protect that trust by these principles.",
+    "items": [
+      {
+        "title": "Only for the service",
+        "body": "Your data and your customers' data is used only to serve you."
+      },
+      {
+        "title": "Never sold",
+        "body": "Never sold, never used to train other AI."
+      },
+      {
+        "title": "Kept separate",
+        "body": "Each business's data is stored apart from everyone else's."
+      },
+      {
+        "title": "Encrypted keys",
+        "body": "The access keys to your page and channels are encrypted."
+      },
+      {
+        "title": "Told within 72 hours",
+        "body": "If data is ever exposed, we tell you within 72 hours."
+      },
+      {
+        "title": "Deleted within 30 days",
+        "body": "Your data is deleted within 30 days after the contract ends."
+      }
+    ],
+    "policy": "Privacy policy"
+  },
+  "launchOffer": {
+    "title": "Special offer for the first 10 businesses",
+    "items": [
+      "Free setup",
+      "50% off the first month",
+      "Price locked for 1 year"
+    ],
+    "seats": "Seats left: {{left}} / {{total}}",
+    "cta": "Take a seat",
+    "fine": "Minimum term 3 months. No VAT is added. Discounts do not stack."
+  },
+  "salonMock": {
+    "brand": "Salon",
+    "nav": [
+      "Services",
+      "Prices",
+      "About"
+    ],
+    "book": "Book",
+    "tag": "Eco · Modern",
+    "title1": "An eco-friendly,",
+    "title2": "modern salon",
+    "sub": "Online booking · QPay · AI assistant",
+    "cta": "Book a time",
+    "booking": {
+      "title": "Book a time",
+      "services": [
+        "Haircut",
+        "Hair colouring",
+        "Skin care"
+      ],
+      "day": "Tomorrow",
+      "pay": "Confirm with QPay"
+    },
+    "dali": {
+      "name": "Dali",
+      "text": "Hello. How can I help?"
+    }
   }
 }
