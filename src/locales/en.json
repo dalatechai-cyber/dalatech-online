@@ -358,18 +358,63 @@
       "preorder": "Pre-register",
       "ownerTitle": "Yours alone",
       "ownerDescription": "Start with Dali now and add the others as they launch. Vira, Eho and Nova will soon start serving your customers. Ora, also coming soon, helps you with documents, presentations, deadlines and decisions in a chat only you open.",
-      "extras": {
-        "vira": [
-          "Ad budget not included."
+      "includes": {
+        "dali": [
+          "Answers messages on Messenger, Instagram and your website 24/7, in Mongolian",
+          "Answers questions about prices, services, address and opening hours instantly",
+          "Sends the booking link",
+          "Replies to comments on your Facebook posts",
+          "Alerts your staff straight away to complaints and requests to talk to a person",
+          "We update it when your prices or details change",
+          "Monthly report, data protection, technical support"
         ],
         "nova": [
-          "1,000 SMS a month included, 50₮ per extra SMS"
+          "1,000 SMS a month included (extra SMS 50₮)",
+          "Sends reminders to customers who booked",
+          "Invites back customers who haven't visited in a while",
+          "Reports, technical support"
+        ],
+        "vira": [
+          "Prepares the videos and posts you want, following the monthly content plan",
+          "Posts with Mongolian captions",
+          "Monthly content plan (you approve it)",
+          "Boost management (ad budget paid to Meta separately)",
+          "Weekly report"
         ],
         "ora": [
-          "1,500 messages a month included; extra 500 messages 49,000₮",
-          "Each extra user has their own 1,500 messages: 2nd user 200,000₮, 3rd 175,000₮, from the 4th 150,000₮ each, monthly"
+          "≈1,500 questions a month (Ora Expert and large files use more)",
+          "New users get +500 bonus questions in their first month",
+          "Two models: Ora Quick and Ora Expert (Expert and large files use more of the allowance)",
+          "Reads documents, drafts contracts and official letters (Word)",
+          "Makes presentations (PowerPoint), translates from English",
+          "Remembers your business and keeps learning; works project by project",
+          "Data protection; alerts you at 80%; extra allowance +25% — 49,000₮",
+          "Extra users can be added — ask us"
         ]
-      }
+      },
+      "summary": {
+        "dali": [
+          "Answers 24/7 in Mongolian",
+          "Messenger, Instagram, website",
+          "Sends the booking link"
+        ],
+        "nova": [
+          "1,000 SMS a month",
+          "Appointment reminders",
+          "Invites customers back"
+        ],
+        "vira": [
+          "The videos and posts you want",
+          "Monthly content plan",
+          "Boost management, reports"
+        ],
+        "ora": [
+          "1,500 questions a month",
+          "Contracts, official letters, presentations",
+          "Reads documents, translates"
+        ]
+      },
+      "more": "Details"
     },
     "website": {
       "title": "Website",
@@ -615,9 +660,10 @@
     },
     "price": {
       "perMonth": "/month",
-      "setup": "{{price}} setup",
+      "setup": "Setup {{price}} (one-time)",
       "notAnnounced": "Price not announced yet.",
-      "perYear": "/year"
+      "perYear": "/year",
+      "vat": "Not a VAT payer"
     },
     "chapters": {
       "dali": {
@@ -654,11 +700,11 @@
           "tag": "Every month",
           "title": "Vira's package",
           "items": [
-            "3 short videos",
-            "8 posts",
-            "A content plan",
-            "Ad (boost) management",
-            "A weekly report"
+            "Videos and posts",
+            "Posts with Mongolian captions",
+            "Monthly content plan",
+            "Boost management",
+            "Weekly report"
           ]
         }
       },
@@ -807,7 +853,7 @@
       "vira": {
         "name": "Vira",
         "role": "Marketing manager",
-        "job": "Frees you from thinking up posts: every month 3 short videos, 8 posts and boosted ads."
+        "job": "Frees you from thinking up posts: prepares the videos and posts you want, following the monthly content plan, and manages your boosts."
       },
       "eho": {
         "name": "Eho",

@@ -2,7 +2,8 @@
 // live in the locale files; this is only what does not translate.
 //
 // Prices in tugrik, exactly as Дали quotes them (dalatech-chatbot,
-// dalatech-messenger/lib/facts.js, founder-approved 2026-09-27): setup is
+// dalatech-messenger/lib/facts.js, founder-approved 2026-09-27; Вира 250,000₮
+// from 2026-10-01): setup is
 // 50,000₮ for every staff member. Эхо's price has not been announced, so both
 // of its amounts are null and every screen that shows a price says so instead.
 // Ора works for the owner rather than their customers; commercially she is one
@@ -10,7 +11,7 @@
 export const AGENTS = {
   dali: { setup: 50000, monthly: 250000 },
   nova: { setup: 50000, monthly: 150000 },
-  vira: { setup: 50000, monthly: 350000 },
+  vira: { setup: 50000, monthly: 250000 },
   eho: { setup: null, monthly: null },
   ora: { setup: 50000, monthly: 250000 },
 };
