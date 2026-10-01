@@ -2272,14 +2272,13 @@ function StaffPriceCard({ id, yearly = false }) {
             <p className="text-[12.5px] text-fg-muted">{t(`office.agents.${id}.role`)}</p>
           </div>
         </div>
-        <p className="mt-4 text-[13.5px] leading-[1.5] text-fg-muted">{t(`office.agents.${id}.job`)}</p>
-        <div className="mt-6">
+        <div className="mt-5">
           <StaffPrice id={id} yearly={yearly} />
         </div>
-        <div className="mt-4">
+        <div className="mt-2">
           <StaffStatus live={live} />
         </div>
-        <div className="mt-auto pt-6">
+        <div className="mt-auto pt-5">
           <MagneticButton href="#demo" variant={live ? "primary" : "ghost"} className="w-full" demoServices={[id]}>
             {live ? t("pricing.staff.hire") : t("pricing.staff.preorder")}
           </MagneticButton>
@@ -2370,7 +2369,7 @@ function Pricing() {
             </Link>
           </div>
         </Reveal>
-        <StaggerGroup className="mt-7 grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <StaggerGroup className="mt-7 grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STAFF_ORDER.map((id) => <StaffPriceCard key={id} id={id} yearly={yearly} />)}
         </StaggerGroup>
 
@@ -2386,6 +2385,7 @@ function Pricing() {
               <StaffPriceCard id="ora" yearly={yearly} />
             </StaggerGroup>
           </div>
+          <StaffTerms className="mt-6" />
         </Reveal>
 
         <div id="website" className="scroll-mt-24" />
@@ -5230,33 +5230,40 @@ function StaffHero({ onHire, onSee, onPick }) {
 
 // `yearly`: the price for a year paid up front, which is ten months' fee for
 // twelve months (the approved rule, «10 сарын төлбөрөөр 12 сар»).
-function StaffPrice({ id, align = "left", yearly = false }) {
+//
+// Short by design: the price, then at most three lines a visitor on a phone
+// takes in at a glance. The full founder-approved list of what the fee buys
+// sits behind «Дэлгэрэнгүй», closed until asked for. The setup fee and the
+// VAT note are the same for everyone, so they are said once under all the
+// prices (StaffTerms), not repeated here.
+function StaffPrice({ id, yearly = false }) {
   const { t } = useTranslation();
+  const reduced = useReducedMotion();
+  const [open, setOpen] = React.useState(false);
+  const listId = React.useId();
   const a = OFFICE_AGENTS[id];
-  // What the monthly fee buys, in the founder-approved wording. A missing
-  // key comes back from t() as the key string, so anything but an array
-  // renders no list rather than a stray line.
-  const includes = t(`pricing.staff.includes.${id}`, { returnObjects: true, defaultValue: [] });
+  // A missing key comes back from t() as the key string, so anything but an
+  // array renders no list rather than a stray line.
+  const asList = (key) => {
+    const v = t(key, { returnObjects: true, defaultValue: [] });
+    return Array.isArray(v) ? v : [];
+  };
+  const summary = asList(`pricing.staff.summary.${id}`);
+  const includes = asList(`pricing.staff.includes.${id}`);
   if (a.monthly == null) {
-    return (
-      <div className={align === "center" ? "text-center" : ""}>
-        <p className="text-[15px] font-medium text-fg-muted">{t("office.price.notAnnounced")}</p>
-      </div>
-    );
+    return <p className="text-[15px] font-medium text-fg-muted">{t("office.price.notAnnounced")}</p>;
   }
+  const ease = [0.16, 1, 0.3, 1];
   return (
-    <div className={align === "center" ? "text-center" : ""}>
+    <div>
       <p className="font-display text-[22px] font-semibold tracking-tight text-fg">
         {formatTugrik(yearly ? a.monthly * 10 : a.monthly)}
         <span className="text-[14px] font-normal text-fg-muted">{t(yearly ? "office.price.perYear" : "office.price.perMonth")}</span>
       </p>
       {yearly && <p className="mt-1 text-[13px] text-sky-400">{t("pricing.period.yearlyHint")}</p>}
-      <p className="mt-1 text-[13px] text-fg-muted">
-        {t("office.price.setup", { price: formatTugrik(a.setup) })} · {t("office.price.vat")}
-      </p>
-      {Array.isArray(includes) && includes.length > 0 && (
-        <ul className={["mt-4 space-y-2 text-[13.5px] leading-[1.5] text-fg/90", align === "center" ? "mx-auto max-w-[36ch] text-left" : ""].join(" ")}>
-          {includes.map((line) => (
+      {summary.length > 0 && (
+        <ul className="mt-3 space-y-1.5 text-[14px] leading-[1.45] text-fg/90">
+          {summary.map((line) => (
             <li key={line} className="flex items-start gap-2.5">
               <CheckIcon />
               <span>{line}</span>
@@ -5264,7 +5271,72 @@ function StaffPrice({ id, align = "left", yearly = false }) {
           ))}
         </ul>
       )}
+      {includes.length > 0 && (
+        <>
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-controls={open ? listId : undefined}
+            data-cursor="hover"
+            className="pressable -ml-1 mt-1.5 inline-flex min-h-[44px] items-center gap-1.5 rounded-md px-1 text-[13.5px] font-medium text-sky-400 hover:text-sky-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70"
+          >
+            {t("pricing.staff.more")}
+            <svg
+              aria-hidden
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={["transition-transform duration-200 motion-reduce:transition-none", open ? "rotate-180" : ""].join(" ")}
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <AnimatePresence initial={false}>
+            {open && (
+              <motion.div
+                id={listId}
+                key="includes"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={
+                  reduced
+                    ? { duration: 0 }
+                    : { height: { duration: 0.26, ease }, opacity: { duration: 0.18, ease } }
+                }
+                className="overflow-hidden"
+              >
+                <ul className="space-y-2 border-t border-white/[0.08] pb-1 pt-3 text-[13px] leading-[1.5] text-fg-muted">
+                  {includes.map((line) => (
+                    <li key={line} className="flex items-start gap-2.5">
+                      <span aria-hidden className="mt-[0.6em] h-1 w-1 shrink-0 rounded-full bg-fg-dim" />
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </div>
+  );
+}
+
+// The terms every priced staff member shares, said once under all of them.
+function StaffTerms({ className = "" }) {
+  const { t } = useTranslation();
+  const setup = OFFICE_AGENTS.dali.setup;
+  return (
+    <p className={["text-[13px] leading-[1.5] text-fg-muted", className].join(" ")}>
+      {t("office.price.setup", { price: formatTugrik(setup) })} · {t("office.price.vat")}
+    </p>
   );
 }
 
@@ -5792,6 +5864,10 @@ const OfficePage = React.memo(function OfficePage() {
           owner, in her own interface, and is shown in it */}
       <OraIntro />
       <OraChapter onHire={hire} />
+      {/* said once, under every staff member's price, not on each of them */}
+      <Container>
+        <StaffTerms className="pb-4" />
+      </Container>
       <StaffTeam onHire={hire} />
       <StaffLimits />
       <StaffSteps />

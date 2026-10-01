@@ -382,7 +382,8 @@
           "Weekly report"
         ],
         "ora": [
-          "100% monthly usage allowance (≈ 50 simple questions a day)",
+          "≈1,500 questions a month (Ora Expert and large files use more)",
+          "New users get +500 bonus questions in their first month",
           "Two models: Ora Quick and Ora Expert (Expert and large files use more of the allowance)",
           "Reads documents, drafts contracts and official letters (Word)",
           "Makes presentations (PowerPoint), translates from English",
@@ -390,7 +391,30 @@
           "Data protection; alerts you at 80%; extra allowance +25% — 49,000₮",
           "Extra users can be added — ask us"
         ]
-      }
+      },
+      "summary": {
+        "dali": [
+          "Answers 24/7 in Mongolian",
+          "Messenger, Instagram, website",
+          "Sends the booking link"
+        ],
+        "nova": [
+          "1,000 SMS a month",
+          "Appointment reminders",
+          "Invites customers back"
+        ],
+        "vira": [
+          "The videos and posts you want",
+          "Monthly content plan",
+          "Boost management, reports"
+        ],
+        "ora": [
+          "1,500 questions a month",
+          "Contracts, official letters, presentations",
+          "Reads documents, translates"
+        ]
+      },
+      "more": "Details"
     },
     "website": {
       "title": "Website",
