@@ -284,7 +284,7 @@
       "businessName": "Beauty salon",
       "statusOnline": "Online",
       "agentName": "Dali",
-      "agentRole": "Receptionist",
+      "agentRole": "Customer manager",
       "inputPlaceholder": "Type a message…",
       "typing": "Dali is typing",
       "footnote": "Dali · DalaTech"
@@ -621,7 +621,7 @@
     },
     "chapters": {
       "dali": {
-        "eyebrow": "Dali · AI receptionist",
+        "eyebrow": "Dali · Customer manager",
         "title": "Not one message goes unanswered.",
         "body": "A customer left waiting often moves on to a competitor. Dali answers Facebook, Instagram and website messages within seconds, gives the prices, hours and services you provided, and sends the booking link. It never promises a discount on its own and leaves decisions to you.",
         "cta": "Send a request",
@@ -645,7 +645,7 @@
         ]
       },
       "vira": {
-        "eyebrow": "Vira · marketing manager",
+        "eyebrow": "Vira · Marketing manager",
         "title": "You'll no longer have to think about what to post.",
         "body": "If you never find the time to keep your page active, Vira takes charge of it: short videos, posts and boosted ads.",
         "cta": "Send a request",
@@ -663,7 +663,7 @@
         }
       },
       "eho": {
-        "eyebrow": "Eho · phone operator",
+        "eyebrow": "Eho · Phone operator",
         "title": "Picks up even after closing time.",
         "body": "A missed call is often a lost booking. Eho talks on the phone like a person, answers questions and records the booking. After hours or at busy times, no call goes unanswered.",
         "cta": "Send a request",
@@ -676,7 +676,7 @@
         }
       },
       "nova": {
-        "eyebrow": "Nova · reminders, SMS",
+        "eyebrow": "Nova · Booking manager",
         "title": "Fewer customers forget to come.",
         "body": "A customer who forgets leaves an empty slot and lost income. Nova reminds every booked appointment automatically by SMS from your own number. You don't have to write a single message.",
         "cta": "Send a request",
@@ -700,7 +700,7 @@
         ]
       },
       "ora": {
-        "eyebrow": "Ora · personal assistant",
+        "eyebrow": "Ora · Personal assistant",
         "title": "The work on your desk gets lighter.",
         "body": "Contracts, official letters, reports and presentations take your time. Ora reads them, drafts them in formal language and reminds you before a deadline passes. It translates English documents into Mongolian and weighs decisions with you. Your customers and staff never deal with it: it works in a chat only you open. It does not give legal advice.",
         "cta": "Send a request",
@@ -796,12 +796,12 @@
     "agents": {
       "dali": {
         "name": "Dali",
-        "role": "Receptionist",
+        "role": "Customer manager",
         "job": "Answers every Facebook, Instagram and website message day and night within seconds, and sends the booking link."
       },
       "nova": {
         "name": "Nova",
-        "role": "Reminders, SMS",
+        "role": "Booking manager",
         "job": "Sends appointment reminders automatically by SMS from your own number, so fewer customers forget to come."
       },
       "vira": {
@@ -866,7 +866,7 @@
     },
     "/office": {
       "title": "AI staff",
-      "desc": "An AI team that shares your work with no extra headcount: receptionist, marketing manager, phone operator, reminders and personal assistant."
+      "desc": "An AI team that shares your work with no extra headcount: customer manager, booking manager, marketing manager, phone operator and personal assistant."
     },
     "/pricing": {
       "title": "Pricing",
