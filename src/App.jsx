@@ -5233,7 +5233,10 @@ function StaffHero({ onHire, onSee, onPick }) {
 function StaffPrice({ id, align = "left", yearly = false }) {
   const { t } = useTranslation();
   const a = OFFICE_AGENTS[id];
-  const extras = t(`pricing.staff.extras.${id}`, { returnObjects: true, defaultValue: [] });
+  // What the monthly fee buys, in the founder-approved wording. A missing
+  // key comes back from t() as the key string, so anything but an array
+  // renders no list rather than a stray line.
+  const includes = t(`pricing.staff.includes.${id}`, { returnObjects: true, defaultValue: [] });
   if (a.monthly == null) {
     return (
       <div className={align === "center" ? "text-center" : ""}>
@@ -5248,10 +5251,19 @@ function StaffPrice({ id, align = "left", yearly = false }) {
         <span className="text-[14px] font-normal text-fg-muted">{t(yearly ? "office.price.perYear" : "office.price.perMonth")}</span>
       </p>
       {yearly && <p className="mt-1 text-[13px] text-sky-400">{t("pricing.period.yearlyHint")}</p>}
-      <p className="mt-1 text-[13px] text-fg-muted">{t("office.price.setup", { price: formatTugrik(a.setup) })}</p>
-      {Array.isArray(extras) && extras.map((line) => (
-        <p key={line} className="mt-1 text-[13px] text-fg-muted">{line}</p>
-      ))}
+      <p className="mt-1 text-[13px] text-fg-muted">
+        {t("office.price.setup", { price: formatTugrik(a.setup) })} · {t("office.price.vat")}
+      </p>
+      {Array.isArray(includes) && includes.length > 0 && (
+        <ul className={["mt-4 space-y-2 text-[13.5px] leading-[1.5] text-fg/90", align === "center" ? "mx-auto max-w-[36ch] text-left" : ""].join(" ")}>
+          {includes.map((line) => (
+            <li key={line} className="flex items-start gap-2.5">
+              <CheckIcon />
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
