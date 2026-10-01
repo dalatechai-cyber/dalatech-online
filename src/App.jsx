@@ -326,33 +326,35 @@ function CheckIcon({ className = "" }) {
   );
 }
 
-function BrandLockup({ size = 40 }) {
+// The DalaTech wordmark: the wave-D symbol is the «D» of «DalaTech».
+// The symbol is rebuilt from circles and ellipses fitted to the wave-D in
+// public/favicon.png, so its edges stay clean at any size; the letters are
+// Outfit (OFL) at weight 650, placed as in the brand file. Both are baked
+// into paths so the mark never waits on a font. The colours are the brand
+// file's own, not palette tokens: the symbol blue is the logo's, and the
+// letters are white on dark backgrounds and navy on light ones.
+const WORDMARK_VIEWBOX = "0 0 1887.4 325";
+const WORDMARK_SYMBOL = "M33 8.63H158.81A158.19 158.19 0 0 1 158.81 325H33C9.47 325 0 315.53 0 292V153.75A49.43 49.43 0 0 1 56.84 104.88C94.68 110.61 94.71 155.25 94.71 166.59A63.24 63.24 0 0 0 221.2 166.59A137.42 91.11 0 0 0 0 94.36V41.63C0 18.1 9.47 8.63 33 8.63Z";
+const WORDMARK_LETTERS = "M459.3 329.5Q429.5 329.5 405.8 314.7Q382.2 299.9 368.6 274.4Q355 248.9 355 216.6Q355 184.1 368.6 158.5Q382.2 132.9 405.8 118Q429.5 103.2 459.3 103.2Q482 103.2 500 112.2Q518.1 121.2 529.2 137.1Q540.3 153 541.5 173.3V259.4Q540.3 279.7 529.3 295.6Q518.3 311.4 500.1 320.5Q482 329.5 459.3 329.5ZM471.7 271.4Q495.1 271.4 509.4 255.9Q523.7 240.5 523.7 216.3Q523.7 200.1 517.2 187.7Q510.8 175.3 499.1 168.3Q487.4 161.3 471.9 161.3Q456.7 161.3 445 168.3Q433.3 175.3 426.6 187.8Q419.8 200.2 419.8 216.3Q419.8 232.4 426.5 244.9Q433.2 257.3 444.9 264.4Q456.7 271.4 471.7 271.4ZM520.7 325V266.6L530.6 213.6L520.7 161.1V107.7H583.7V325ZM628.2 325V0H692.1V325ZM827.8 329.5Q798 329.5 774.3 314.7Q750.7 299.9 737.1 274.4Q723.5 248.9 723.5 216.6Q723.5 184.1 737.1 158.5Q750.7 132.9 774.3 118Q798 103.2 827.8 103.2Q850.4 103.2 868.5 112.2Q886.6 121.2 897.7 137.1Q908.8 153 910 173.3V259.4Q908.8 279.7 897.8 295.6Q886.8 311.4 868.6 320.5Q850.4 329.5 827.8 329.5ZM840.2 271.4Q863.6 271.4 877.9 255.9Q892.2 240.5 892.2 216.3Q892.2 200.1 885.7 187.7Q879.3 175.3 867.6 168.3Q855.9 161.3 840.4 161.3Q825.2 161.3 813.5 168.3Q801.8 175.3 795.1 187.8Q788.3 200.2 788.3 216.3Q788.3 232.4 795 244.9Q801.7 257.3 813.4 264.4Q825.2 271.4 840.2 271.4ZM889.2 325V266.6L899.1 213.6L889.2 161.1V107.7H952.2V325ZM1080.9 325V14.6H1146.8V325ZM981.1 67V9H1246.7V67ZM1328.4 329.8Q1293.7 329.8 1266.6 315.2Q1239.6 300.7 1224.1 274.8Q1208.5 249 1208.5 216.3Q1208.5 183.8 1223.8 158.2Q1239 132.6 1265.2 117.7Q1291.5 102.8 1324 102.8Q1355.7 102.8 1380.1 116.8Q1404.4 130.8 1418.4 155.4Q1432.3 179.9 1432.3 211.4Q1432.3 217.3 1431.6 223.6Q1430.9 229.8 1429.2 237.8L1244.1 238.3V192.8L1401 192.3L1374.2 211.3Q1373.6 192.3 1367.8 179.6Q1362 166.9 1351.1 160.2Q1340.2 153.5 1324.1 153.5Q1307.3 153.5 1294.9 161.1Q1282.5 168.7 1275.8 182.5Q1269.1 196.3 1269.1 215.7Q1269.1 235.2 1276.2 249.3Q1283.4 263.5 1296.7 271Q1310 278.6 1328.1 278.6Q1344.3 278.6 1357.6 273Q1370.9 267.4 1380.8 256.2L1416.9 292.4Q1400.9 311 1378.1 320.4Q1355.3 329.8 1328.4 329.8ZM1565.4 329.8Q1532 329.8 1505.1 315Q1478.3 300.2 1462.8 274.4Q1447.3 248.6 1447.3 216.5Q1447.3 184 1462.9 158.3Q1478.4 132.6 1505.4 117.7Q1532.4 102.8 1565.9 102.8Q1591.4 102.8 1612.8 111.9Q1634.2 120.9 1650.5 138.4L1609.6 179.5Q1601.5 170.5 1590.5 166Q1579.6 161.5 1565.9 161.5Q1550.4 161.5 1538.3 168.4Q1526.1 175.4 1519.2 187.6Q1512.3 199.7 1512.3 216.2Q1512.3 232.3 1519.2 244.7Q1526.1 257.1 1538.3 264.1Q1550.5 271.2 1565.9 271.2Q1580.1 271.2 1591.2 266.3Q1602.3 261.5 1610.4 252.1L1651.3 293.3Q1634.5 311.2 1613 320.5Q1591.5 329.8 1565.4 329.8ZM1823.2 325V200.9Q1823.2 182.6 1811.9 171.3Q1800.6 160 1783 160Q1771 160 1761.7 165.1Q1752.5 170.2 1747.3 179.5Q1742.1 188.7 1742.1 200.9L1717.3 188.5Q1717.3 162.9 1728.1 143.8Q1739 124.7 1758.2 113.9Q1777.4 103.2 1802.2 103.2Q1827.3 103.2 1846.5 113.9Q1865.7 124.5 1876.3 143.3Q1887 162 1887 186.6V325ZM1678.3 325V0H1742.1V325Z";
+const WORDMARK_LETTER_FILL = { dark: "#FFFFFF", light: "#0F172B" };
+
+// `on` is the background the mark sits on. Inside a link that carries the
+// accessible name, leave `label` unset so the name is not read twice.
+function Wordmark({ on = "dark", label, className = "" }) {
   return (
-    <span className="flex items-center gap-2.5">
-      <span
-        className="block overflow-hidden"
-        style={{ height: size, width: size, borderRadius: 8 }}
-      >
-        <img
-          src="/dalatech_logo_v3.jpg"
-          alt=""
-          aria-hidden="true"
-          width={size}
-          height={size}
-          loading="eager"
-          decoding="sync"
-          fetchpriority="high"
-          style={{ height: "100%", width: "100%", transform: "scale(1.18)" }}
-          className="block object-cover"
-        />
-      </span>
-      <span
-        className="font-display text-[18px] font-bold text-fg"
-        style={{ letterSpacing: "-0.02em", color: "#F0F4FF", fontWeight: 700 }}
-      >
-        DalaTech
-      </span>
-    </span>
+    <svg
+      viewBox={WORDMARK_VIEWBOX}
+      // Intrinsic size, so a CSS height with width:auto keeps the ratio in
+      // every engine; the classes set the rendered size.
+      width="1887.4"
+      height="325"
+      className={["block w-auto shrink-0", className].join(" ")}
+      {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true })}
+      focusable="false"
+    >
+      <path fill="#60C9FF" d={WORDMARK_SYMBOL} />
+      <path fill={WORDMARK_LETTER_FILL[on]} d={WORDMARK_LETTERS} />
+    </svg>
   );
 }
 
@@ -548,8 +550,8 @@ function Navbar() {
     >
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-7 lg:px-10">
         <div className={["flex items-center justify-between md:transition-all md:duration-300", scrolled ? "h-14" : "h-20"].join(" ")}>
-          <Link to="/" className="flex min-h-[44px] shrink-0 items-center" data-cursor="hover" aria-label="DalaTech home">
-            <BrandLockup size={40} />
+          <Link to="/" className="flex min-h-[44px] shrink-0 items-center" data-cursor="hover" aria-label="DalaTech">
+            <Wordmark className="h-[22px] sm:h-6" />
           </Link>
 
           {/* justify-evenly, not justify-center: the nav is a flex-1 track
@@ -676,9 +678,9 @@ function Navbar() {
                 to="/"
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center"
-                aria-label="DalaTech home"
+                aria-label="DalaTech"
               >
-                <BrandLockup size={40} />
+                <Wordmark className="h-[22px] sm:h-6" />
               </Link>
               <button
                 type="button"
@@ -3760,7 +3762,7 @@ function Footer() {
         <Container className="pt-16 pb-10">
           <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
             <div>
-              <BrandLockup size={40} />
+              <Wordmark label="DalaTech" className="h-6" />
               <p className="mt-5 max-w-[34ch] text-[14px] leading-[1.6] text-fg-muted">
                 {t("footer.tagline")}
               </p>
