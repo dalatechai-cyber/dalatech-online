@@ -34,15 +34,15 @@ const MAX_BODY_BYTES = 20 * 1024;
 // rejected — an unknown key must never cost us a real lead. Website + chatbot
 // selected together is the combo package; there is no separate key for it.
 const SERVICE_LABELS = {
-  dali: "Дали — AI хүлээн авагч",
-  nova: "Нова — AI харилцагчийн менежер",
-  vira: "Вира — AI бизнес аналитик",
-  eho: "Эхо — AI утасны оператор",
-  ora: "Ора — AI хувийн туслах",
+  dali: "Дали — Харилцагчийн менежер",
+  nova: "Нова — Захиалгын менежер",
+  vira: "Вира — Маркетинг менежер",
+  eho: "Эхо — Утасны оператор",
+  ora: "Ора — Хувийн туслах",
   website: "Вэбсайт",
   // keys an older build of the form may still send
-  ara: "Дали — AI хүлээн авагч (хуучин нэр: Ара)",
-  veda: "Вира — AI бизнес аналитик (хуучин нэр: Веда)",
+  ara: "Дали — Харилцагчийн менежер (хуучин нэр: Ара)",
+  veda: "Вира — Маркетинг менежер (хуучин нэр: Веда)",
   chatbot: "AI чатбот (хуучин нэр: Ара, одоо Дали)",
   voice: "AI дуут агент (хуучин нэр: Эхо)",
   unsure: "Хараахан шийдээгүй — зөвлөгөө хэрэгтэй",
