@@ -155,6 +155,26 @@ the same snapshot from `GET https://api.dalatech.online/api/web/launch/<web chan
 Preview deployments (*.vercel.app, localhost) show a switch panel bottom-left and accept
 `?live=vira,nova`, `?live=all`, `?live=none`; production never does.
 
+## Staff prices — must match Дали
+Prices live in `src/office/agents.js` (amounts) and `pricing.staff.*` in the locales (what each
+price includes). **They must always match Дали's data in Dala AI and the fallback facts in
+dalatech-chatbot.** Change all three together and ship them together; a visitor must never read
+one price on the page and get another from Дали's chat. Wording on the page is founder-approved:
+use it exactly, never paraphrase.
+
+Changed 2026-10-01 (PR #56, live with Дали's price update):
+- Вира 350,000₮ → 250,000₮/сар. No fixed number of videos or posts anywhere.
+- Price cards are short: name, role, price, at most three summary lines
+  (`pricing.staff.summary`). The full approved list (`pricing.staff.includes`) opens behind
+  «Дэлгэрэнгүй», closed by default. Same on /pricing and /office.
+- «Суурилуулалт 50,000₮ (нэг удаа) · НӨАТ төлөгч биш» appears once per page, below all the
+  prices, not on each card.
+- Ора: «Сард 1,500 асуулт» (summary), «Сард ≈1,500 асуулт (Ора Мэргэн болон том файл илүү их
+  хэрэглэнэ)», «Шинэ хэрэглэгчид эхний сард +500 асуулт бэлэг». The «80% хүрэхэд сануулна;
+  нэмэлт эрх +25% — 49,000₮» and «илүү их хувь» wording stays: it matches the percentage bar
+  in the app. No «өдөрт 50 асуулт», no 1,500-message / 500-message pack.
+- Extra users for Ора: «Нэмэлт хэрэглэгч нэмэх боломжтой — асуугаарай», with no prices.
+
 ## Deployment
 Vercel project `dalatech-online`, live at **https://dalatech.online**
 (`www.dalatech.online` also attached). Pushes to `main` deploy to production.
