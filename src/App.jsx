@@ -551,7 +551,7 @@ function Navbar() {
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-7 lg:px-10">
         <div className={["flex items-center justify-between md:transition-all md:duration-300", scrolled ? "h-14" : "h-20"].join(" ")}>
           <Link to="/" className="flex min-h-[44px] shrink-0 items-center" data-cursor="hover" aria-label="DalaTech">
-            <Wordmark className="h-[22px] sm:h-6" />
+            <Wordmark className="h-[19px] sm:h-5" />
           </Link>
 
           {/* justify-evenly, not justify-center: the nav is a flex-1 track
@@ -680,7 +680,7 @@ function Navbar() {
                 className="flex items-center"
                 aria-label="DalaTech"
               >
-                <Wordmark className="h-[22px] sm:h-6" />
+                <Wordmark className="h-[19px] sm:h-5" />
               </Link>
               <button
                 type="button"
@@ -3762,7 +3762,7 @@ function Footer() {
         <Container className="pt-16 pb-10">
           <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
             <div>
-              <Wordmark label="DalaTech" className="h-6" />
+              <Wordmark label="DalaTech" className="h-5" />
               <p className="mt-5 max-w-[34ch] text-[14px] leading-[1.6] text-fg-muted">
                 {t("footer.tagline")}
               </p>
