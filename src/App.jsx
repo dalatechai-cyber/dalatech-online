@@ -1786,147 +1786,337 @@ function Portfolio() {
   );
 }
 
-const ASK_CHIPS = [
-  { id: "u1", label: "liveDemo.messages.user1", reply: "liveDemo.messages.ai1" },
-  { id: "u2", label: "liveDemo.messages.user2", reply: "liveDemo.messages.ai2" },
-  { id: "u3", label: "liveDemo.ask.chip3", reply: null },
+// ------------------------------------------------------------ Дали, answering
+// A Messenger thread that plays by itself when the section comes into view:
+// the customer's line is typed into the composer and sent, Дали reads it
+// (her face under the message), types, and answers; then the next question
+// follows. The visitor only watches. Every line is copy the site already
+// publishes (liveDemo.messages, day.feed, hero.switchboard, salonMock).
+//
+// The play runs on its own clock, paused while the section is off screen or
+// the tab is hidden, and loops after a rest. Under reduced motion the whole
+// conversation is shown finished and still. The animated thread is hidden
+// from screen readers, which read the same conversation once as a list.
+const DEMO_THREAD = [
+  { ask: "liveDemo.messages.user1", reply: "liveDemo.messages.ai1" },
+  { ask: "liveDemo.messages.user2", reply: "liveDemo.messages.ai2", link: true },
+  { ask: "day.feed.priceAsk.body", reply: "day.feed.priceReply.body" },
+  { ask: "hero.switchboard.incoming.6.text", reply: "hero.switchboard.incoming.6.reply" },
+  // the one she does not decide: a discount goes to a person
+  { ask: "liveDemo.ask.chip3", reply: "day.feed.discountReply.body" },
 ];
+// The thread, flattened into the order lines appear in.
+const DEMO_LINES = DEMO_THREAD.flatMap((x, i) => [
+  { id: `q${i}`, from: "user", key: x.ask },
+  { id: `a${i}`, from: "ai", key: x.reply, link: !!x.link },
+]);
+const DEMO_REST = 5200; // ms the finished thread rests before it starts again
+// A line arriving: quick and settled, no bounce.
+const DEMO_ARRIVE = { type: "spring", stiffness: 420, damping: 34, mass: 0.7 };
 
-// The hand-off: the one moment on the page driven by physics rather than by
-// scroll. It rises from under the Messenger card and overlaps it, because the
-// point is that the conversation left the bot and reached a person.
-function HandoffCard({ question }) {
+function DemoRow({ from, avatar = true, children }) {
+  const mine = from === "user";
+  return (
+    <div className={["flex w-full items-end gap-2", mine ? "justify-end" : "justify-start"].join(" ")}>
+      {!mine && (avatar ? <StaffAvatar id="dali" zoom={1} /> : <span aria-hidden className="w-5 shrink-0" />)}
+      <div
+        className={[
+          "max-w-[80%] px-3.5 py-2 text-[14px] leading-[1.45]",
+          mine
+            ? "rounded-[20px] rounded-br-[6px] bg-accent text-ink-950"
+            : "rounded-[20px] rounded-bl-[6px] bg-white/[0.08] text-fg",
+        ].join(" ")}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// The booking link inside Дали's answer, as Messenger draws a link.
+function DemoLinkCard() {
+  const { t } = useTranslation();
+  return (
+    <div className="ml-7 mt-1.5 w-[72%] max-w-[250px] overflow-hidden rounded-[16px] border border-white/[0.08] bg-ink-800">
+      <div className="flex items-center gap-2 border-b border-white/[0.06] px-3.5 py-2">
+        <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-400/15 text-emerald-300">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3c-3.5 4-7 7-7 11a7 7 0 0 0 14 0c0-4-3.5-7-7-11z" />
+            <path d="M12 11v8" />
+          </svg>
+        </span>
+        <span className="text-[12.5px] font-semibold text-fg">{t("salonMock.brand")}</span>
+      </div>
+      <div className="px-3.5 py-2.5">
+        <p className="font-display text-[14.5px] font-semibold tracking-tight text-fg">{t("salonMock.booking.title")}</p>
+        <p className="mt-0.5 text-[12px] leading-[1.4] text-fg-muted">{t("salonMock.sub")}</p>
+      </div>
+    </div>
+  );
+}
+
+function DemoTyping() {
+  return (
+    <div className="flex items-end gap-2">
+      <StaffAvatar id="dali" zoom={1} />
+      <div className="rounded-[20px] rounded-bl-[6px] bg-white/[0.08] px-4 py-3">
+        <span className="demo-dots flex items-center gap-1"><span /><span /><span /></span>
+      </div>
+    </div>
+  );
+}
+
+// A clock for the script that only runs while the thread can be seen: every
+// wait is paused when the section leaves the screen or the tab is hidden, and
+// carries on from where it stopped when it comes back.
+function createPausableClock() {
+  let active = false;
+  let pending = null; // { remaining, startedAt, id, resolve }
+  const arm = () => {
+    if (!pending || pending.id) return;
+    pending.startedAt = performance.now();
+    pending.id = setTimeout(() => {
+      const done = pending.resolve;
+      pending = null;
+      done();
+    }, pending.remaining);
+  };
+  return {
+    wait(ms) {
+      return new Promise((resolve) => {
+        pending = { remaining: ms, startedAt: 0, id: 0, resolve };
+        if (active) arm();
+      });
+    },
+    setActive(next) {
+      if (next === active) return;
+      active = next;
+      if (!pending) return;
+      if (active) arm();
+      else if (pending.id) {
+        clearTimeout(pending.id);
+        pending.remaining = Math.max(0, pending.remaining - (performance.now() - pending.startedAt));
+        pending.id = 0;
+      }
+    },
+    stop() {
+      if (pending && pending.id) clearTimeout(pending.id);
+      pending = null;
+      active = false;
+    },
+  };
+}
+
+function DaliThread() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
+  const hostRef = React.useRef(null);
+  const scrollRef = React.useRef(null);
+  // Lines are read through a ref, so a language switch changes the words
+  // without restarting the conversation.
+  const tRef = React.useRef(t);
+  tRef.current = t;
+
+  const [shown, setShown] = React.useState(0); // how many lines have landed
+  const [draft, setDraft] = React.useState(""); // what the customer is typing
+  const [typing, setTyping] = React.useState(false); // Дали is typing
+  const [seen, setSeen] = React.useState(-1); // the customer line Дали has read
+  const [fading, setFading] = React.useState(false); // the rest before a new loop
+
+  React.useEffect(() => {
+    if (reduced) return undefined;
+    const host = hostRef.current;
+    if (!host) return undefined;
+    const clock = createPausableClock();
+    let cancelled = false;
+    let onScreen = false;
+    const sync = () => clock.setActive(onScreen && !document.hidden);
+    const io = new IntersectionObserver((entries) => {
+      onScreen = entries.some((e) => e.isIntersecting && e.intersectionRatio >= 0.25);
+      sync();
+    }, { threshold: 0.25 });
+    io.observe(host);
+    document.addEventListener("visibilitychange", sync);
+
+    const play = async () => {
+      // the conversation loops until the section unmounts
+      for (;;) {
+        await clock.wait(500);
+        for (let i = 0; i < DEMO_LINES.length; i += 1) {
+          if (cancelled) return;
+          const line = DEMO_LINES[i];
+          const text = tRef.current(line.key);
+          if (line.from === "user") {
+            // typed at a person's pace, capped so a long line does not drag
+            const chars = Array.from(text);
+            const per = Math.min(42, 1400 / Math.max(1, chars.length));
+            for (let c = 1; c <= chars.length; c += 1) {
+              await clock.wait(per);
+              if (cancelled) return;
+              setDraft(chars.slice(0, c).join(""));
+            }
+            await clock.wait(280);
+            if (cancelled) return;
+            setDraft("");
+            setShown(i + 1);
+            await clock.wait(650);
+            if (cancelled) return;
+            setSeen(i);
+          } else {
+            await clock.wait(250);
+            if (cancelled) return;
+            setTyping(true);
+            // a longer answer takes a little longer to write, within a beat
+            await clock.wait(Math.max(1000, Math.min(1900, Array.from(text).length * 22)));
+            if (cancelled) return;
+            setTyping(false);
+            setShown(i + 1);
+            // a breath before the customer writes again
+            await clock.wait(1500);
+          }
+        }
+        // rest on the finished thread, then let it go and start again
+        await clock.wait(DEMO_REST);
+        if (cancelled) return;
+        setFading(true);
+        await clock.wait(450);
+        if (cancelled) return;
+        setShown(0);
+        setSeen(-1);
+        setFading(false);
+      }
+    };
+    play().catch((err) => {
+      // a broken script must not leave a half-typed thread: show it finished
+      console.error("DaliThread script failed:", err);
+      if (!cancelled) {
+        setTyping(false);
+        setDraft("");
+        setFading(false);
+        setShown(DEMO_LINES.length);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      clock.stop();
+      io.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, [reduced]);
+
+  // keep the newest line in view, inside the thread only (never the page)
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || reduced) return undefined;
+    const id = requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [shown, typing, seen, reduced]);
+
+  const count = reduced ? DEMO_LINES.length : shown;
+  const lines = DEMO_LINES.slice(0, count);
+  // «seen» sits under the customer's latest line until Дали's answer lands
+  const showSeen = !reduced && seen >= 0 && seen === count - 1;
+  const showTyping = !reduced && typing;
+  const showDraft = reduced ? "" : draft;
+  const faded = !reduced && fading;
+
   return (
-    <motion.div
-      initial={reduced ? false : { y: 24, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.7, delay: reduced ? 0 : 0.04 }}
-      className="relative z-10 -mt-11 mx-3 rounded-[18px] border border-white/[0.1] bg-ink-800 p-4 shadow-[0_24px_60px_-20px_rgba(3,6,16,0.95)]"
-    >
-      <p className="flex items-center gap-2 text-[13px] font-semibold text-fg">
-        <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-300">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+    <div ref={hostRef} className="flex flex-col overflow-hidden rounded-[22px] border border-white/[0.08] bg-ink-900/85 shadow-[0_40px_90px_-30px_rgba(8,12,28,0.9)]">
+      {/* the page's header, as Messenger shows it */}
+      <div className="flex items-center gap-3 border-b border-white/[0.06] bg-white/[0.015] px-4 py-3">
+        <span className="relative shrink-0">
+          <StaffAvatar id="dali" zoom={2} />
+          <span aria-hidden className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-ink-900 bg-emerald-400" />
         </span>
-        {t("liveDemo.ask.handoffTitle")}
-      </p>
-      <p className="mt-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-dim">{t("liveDemo.ask.handoffLine")}</p>
-      <p className="mt-1 text-[13.5px] leading-[1.5] text-fg/90">{question}</p>
-    </motion.div>
+        <span className="min-w-0">
+          <span className="block truncate font-display text-[14px] font-semibold tracking-tight text-fg">{t("liveDemo.widget.businessName")}</span>
+          <span className="block text-[11.5px] text-fg-muted">{t("liveDemo.widget.statusOnline")}</span>
+        </span>
+      </div>
+
+      {/* screen readers get the conversation once, as text */}
+      <ol className="sr-only">
+        {DEMO_LINES.map((l) => <li key={l.id}>{t(l.key)}</li>)}
+      </ol>
+
+      <div
+        ref={scrollRef}
+        aria-hidden
+        tabIndex={-1}
+        className={["overflow-y-auto overscroll-contain px-3.5 py-4", reduced ? "" : "h-[340px] lg:h-[380px]"].join(" ")}
+        // earlier lines fade under the header instead of being cut by it
+        style={reduced ? undefined : { scrollbarWidth: "none", maskImage: "linear-gradient(to bottom, transparent 0, #000 24px)", WebkitMaskImage: "linear-gradient(to bottom, transparent 0, #000 24px)" }}
+      >
+        <motion.div
+          animate={{ opacity: faded ? 0 : 1 }}
+          transition={{ duration: 0.4, ease: EASE_OUT }}
+          className="flex min-h-full flex-col justify-end gap-2"
+        >
+          {/* the top of a new thread, as Messenger opens one */}
+          <div className="mb-3 flex flex-col items-center pt-2 text-center">
+            <StaffAvatar id="dali" zoom={3} />
+            <span className="mt-2 font-display text-[14px] font-semibold tracking-tight text-fg">{t("liveDemo.widget.businessName")}</span>
+            <span className="text-[11.5px] text-fg-muted">{t("liveDemo.widget.statusOnline")}</span>
+          </div>
+          <AnimatePresence initial={false}>
+            {lines.map((l, i) => {
+              const prev = lines[i - 1];
+              return (
+                <motion.div
+                  key={l.id}
+                  initial={reduced ? false : { opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={DEMO_ARRIVE}
+                  className={prev && prev.from !== l.from ? "mt-2" : ""}
+                >
+                  <DemoRow from={l.from}>{t(l.key)}</DemoRow>
+                  {l.link && <DemoLinkCard />}
+                </motion.div>
+              );
+            })}
+            {showSeen && (
+              <motion.div key="seen" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.1 } }} className="flex justify-end">
+                <StaffAvatar id="dali" zoom={1} className="scale-[0.7]" />
+              </motion.div>
+            )}
+            {showTyping && (
+              <motion.div key="typing" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.12 } }} transition={DEMO_ARRIVE} className="mt-2">
+                <DemoTyping />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+
+      {/* the composer: the customer's line is typed here */}
+      <div aria-hidden className="border-t border-white/[0.06] bg-white/[0.015] px-3 py-3">
+        <div className="flex items-center gap-2">
+          <div className={["min-h-[40px] min-w-0 flex-1 break-words rounded-[20px] bg-white/[0.06] px-4 py-2.5 text-[13.5px] leading-[1.4]", showDraft ? "text-fg" : "text-fg-muted"].join(" ")}>
+            {showDraft || t("liveDemo.widget.inputPlaceholder")}
+            {showDraft && <span className="demo-caret" />}
+          </div>
+          <span className={["flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-200", showDraft ? "bg-accent text-ink-950" : "text-fg-muted"].join(" ")}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z" /></svg>
+          </span>
+        </div>
+        <p className="mt-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/55">
+          {t("liveDemo.widget.footnote")}
+        </p>
+      </div>
+    </div>
   );
 }
 
 function LiveDemo() {
   const { t } = useTranslation();
-  const reduced = useReducedMotion();
-  const scrollRef = React.useRef(null);
-  const sectionRef = React.useRef(null);
-  const [step, setStep] = React.useState(0);
-  const [typing, setTyping] = React.useState(false);
-  // "script" until the scripted demo ends, then the visitor can ask.
-  const [phase, setPhase] = React.useState("script");
-  const [asked, setAsked] = React.useState([]);
-  const askTimers = React.useRef([]);
-  React.useEffect(() => () => askTimers.current.forEach(clearTimeout), []);
-
-  React.useEffect(() => {
-    if (reduced) {
-      setStep(5);
-      setTyping(false);
-      return;
-    }
-
-    let timers = [];
-    const runOnce = () => {
-      const timeline = [
-        { at: 0,    fn: () => { setStep(0); setTyping(false); } },
-        { at: 350,  fn: () => { setStep(1); } },
-        { at: 1500, fn: () => { setTyping(true); } },
-        { at: 2700, fn: () => { setStep(2); setTyping(false); } },
-        { at: 4200, fn: () => { setStep(3); } },
-        { at: 5400, fn: () => { setTyping(true); } },
-        { at: 7000, fn: () => { setStep(4); setTyping(false); } },
-        { at: 8400, fn: () => { setTyping(true); } },
-        { at: 9900, fn: () => { setStep(5); setTyping(false); } },
-      ];
-      timeline.forEach(({ at, fn }) => {
-        timers.push(setTimeout(fn, at));
-      });
-    };
-
-    // This used to run on a 13.5s interval from mount for the life of the
-    // visit, burning battery on a phone whether or not the section was on
-    // screen. Play it once, when it is actually being looked at.
-    const host = sectionRef.current;
-    if (!host) return undefined;
-    let played = false;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting && !played) {
-            played = true;
-            runOnce();
-            io.disconnect();
-          }
-        }
-      },
-      { threshold: 0.4 }
-    );
-    io.observe(host);
-
-    return () => {
-      io.disconnect();
-      timers.forEach(clearTimeout);
-    };
-  }, [reduced]);
-
-  React.useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const id = requestAnimationFrame(() => {
-      el.scrollTo({ top: el.scrollHeight, behavior: reduced ? "auto" : "smooth" });
-    });
-    return () => cancelAnimationFrame(id);
-  }, [step, typing, reduced, asked, phase]);
-
-  // A chip becomes a user bubble, a beat of typing, then either the answer the
-  // site already ships or — for the one she cannot answer — a plain refusal
-  // and a hand-off to a person.
-  const ask = React.useCallback(
-    (chip) => {
-      if (phase === "answering") return;
-      askTimers.current.forEach(clearTimeout);
-      askTimers.current = [];
-      setPhase("answering");
-      setAsked((prev) => [...prev, { id: `${chip.id}-${prev.length}`, chip, state: "sent" }]);
-      const beat = reduced ? 0 : 900;
-      const settle = () => {
-        setAsked((prev) => prev.map((a, i) => (i === prev.length - 1 ? { ...a, state: "answered" } : a)));
-        setPhase(chip.reply ? "idle" : "handover");
-      };
-      if (beat === 0) settle();
-      else askTimers.current.push(setTimeout(settle, beat));
-    },
-    [phase, reduced]
-  );
-
-  // Both cards have to be visible at once or the hand-off does not read.
-  const handover = phase === "handover";
-
-  const messages = [
-    { from: "user", key: "user1", at: 1 },
-    { from: "ai",   key: "ai1",   at: 2 },
-    { from: "user", key: "user2", at: 3 },
-    { from: "ai",   key: "ai2",   at: 4 },
-    { from: "ai",   key: "ai3",   at: 5 },
-  ];
-
   return (
-    <section id="live-demo" ref={sectionRef} className="relative py-28">
+    <section id="live-demo" className="relative py-28">
       <Container>
         <div className="grid items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
-          <Reveal>
+          <Reveal className="min-w-0">
             <SectionLabel>{t("liveDemo.section")}</SectionLabel>
             <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
               {t("liveDemo.title")}
@@ -1945,243 +2135,11 @@ function LiveDemo() {
             </div>
           </Reveal>
 
-          <Reveal delay={0.08}>
+          <Reveal className="min-w-0">
             <div className="relative mx-auto w-full max-w-[440px]">
-              <motion.div
-                animate={handover ? { y: reduced ? 0 : 6, opacity: 0.55 } : { y: 0, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.7 }}
-                className="overflow-hidden rounded-[22px] border border-white/[0.08] bg-ink-900/85 shadow-[0_40px_90px_-30px_rgba(8,12,28,0.9)] backdrop-blur">
-                <div className="relative flex items-center justify-between gap-3 border-b border-white/[0.06] bg-white/[0.015] px-4 py-3.5">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-400/30 to-sky-400/[0.06] ring-1 ring-inset ring-sky-400/45">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(186,230,253)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d="M12 2 14.5 8.5 21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z" />
-                      </svg>
-                      <span className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-ink-900" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate font-display text-[14px] font-semibold tracking-tight text-fg">
-                        {t("liveDemo.widget.businessName")}
-                      </p>
-                      <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-fg-muted">
-                        <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                        {t("liveDemo.widget.statusOnline")}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1 text-fg-muted/60">
-                    <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-md">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 12h14" />
-                      </svg>
-                    </span>
-                    <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-md">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 6 6 18" />
-                        <path d="m6 6 12 12" />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  ref={scrollRef}
-                  className="relative h-[300px] overflow-y-auto px-4 py-5 lg:h-[380px]"
-                  style={{ scrollbarWidth: "none" }}
-                >
-                  <div className="flex flex-col gap-3">
-                    <AnimatePresence initial={false}>
-                      {messages
-                        .filter((m) => step >= m.at)
-                        .map((m) => (
-                          <motion.div
-                            key={m.key}
-                            layout
-                            initial={reduced ? false : { opacity: 0, y: 8, scale: 0.97 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                            className={[
-                              "flex w-full items-end gap-2",
-                              m.from === "user" ? "justify-end" : "justify-start",
-                            ].join(" ")}
-                          >
-                            {m.from === "ai" && (
-                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
-                                <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
-                              </div>
-                            )}
-                            <div
-                              className={[
-                                "max-w-[78%] px-3.5 py-2.5 text-[13.5px] leading-[1.5]",
-                                m.from === "user"
-                                  ? "rounded-2xl rounded-br-md bg-sky-400/[0.14] text-fg ring-1 ring-inset ring-sky-400/25"
-                                  : "rounded-2xl rounded-bl-md bg-white/[0.04] text-fg/95 ring-1 ring-inset ring-white/[0.06]",
-                              ].join(" ")}
-                            >
-                              {t(`liveDemo.messages.${m.key}`)}
-                            </div>
-                          </motion.div>
-                        ))}
-                      {typing && !reduced && (
-                        <motion.div
-                          key="typing"
-                          layout
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4, transition: { duration: 0.14 } }}
-                          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-                          className="flex w-full items-end gap-2"
-                        >
-                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
-                            <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
-                          </div>
-                          <div className="rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-3 ring-1 ring-inset ring-white/[0.06]">
-                            <span className="flex items-center gap-1.5">
-                              {[0, 1, 2].map((i) => (
-                                <motion.span
-                                  key={i}
-                                  className="h-1.5 w-1.5 rounded-full bg-fg-muted/75"
-                                  animate={{ y: [0, -3, 0], opacity: [0.45, 1, 0.45] }}
-                                  transition={{ duration: 1.0, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
-                                />
-                              ))}
-                            </span>
-                            <span className="sr-only">{t("liveDemo.widget.typing")}</span>
-                          </div>
-                        </motion.div>
-                      )}
-                      {asked.map((a) => (
-                        <React.Fragment key={a.id}>
-                          <motion.div
-                            layout
-                            initial={reduced ? false : { opacity: 0, y: 8, scale: 0.97 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                            className="flex w-full items-end justify-end gap-2"
-                          >
-                            <div className="max-w-[78%] rounded-2xl rounded-br-md bg-sky-400/[0.14] px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-fg ring-1 ring-inset ring-sky-400/25">
-                              {t(a.chip.label)}
-                            </div>
-                          </motion.div>
-                          {a.state === "answered" && a.chip.reply && (
-                            <motion.div
-                              layout
-                              initial={reduced ? false : { opacity: 0, y: 8, scale: 0.97 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                              className="flex w-full items-end justify-start gap-2"
-                            >
-                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
-                                <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
-                              </div>
-                              <div className="max-w-[78%] rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-fg/95 ring-1 ring-inset ring-white/[0.06]">
-                                {t(a.chip.reply)}
-                              </div>
-                            </motion.div>
-                          )}
-                          {a.state === "answered" && !a.chip.reply && (
-                            <motion.div
-                              layout
-                              initial={reduced ? false : { opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ duration: 0.18 }}
-                              className="flex flex-col gap-3"
-                            >
-                              {/* no bubble, no red, no warning icon: a refusal
-                                  is a normal thing for her to do, not an error */}
-                              <p className="border-y border-white/[0.06] py-2.5 text-[13px] leading-[1.5] text-fg-muted">
-                                {t("liveDemo.ask.decline")}
-                              </p>
-                              <div className="flex w-full items-end justify-start gap-2">
-                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
-                                </div>
-                                <div className="max-w-[78%] rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-fg/95 ring-1 ring-inset ring-white/[0.06]">
-                                  {t("liveDemo.messages.ai3")}
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </React.Fragment>
-                      ))}
-                      {phase === "answering" && !reduced && (
-                        <motion.div
-                          key="ask-typing"
-                          layout
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4, transition: { duration: 0.14 } }}
-                          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-                          className="flex w-full items-end gap-2"
-                        >
-                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
-                            <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
-                          </div>
-                          <div className="rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-3 ring-1 ring-inset ring-white/[0.06]">
-                            <span className="flex items-center gap-1.5">
-                              {[0, 1, 2].map((i) => (
-                                <motion.span
-                                  key={i}
-                                  className="h-1.5 w-1.5 rounded-full bg-fg-muted/75"
-                                  animate={{ y: [0, -3, 0], opacity: [0.45, 1, 0.45] }}
-                                  transition={{ duration: 1.0, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
-                                />
-                              ))}
-                            </span>
-                            <span className="sr-only">{t("liveDemo.widget.typing")}</span>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                <div className="border-t border-white/[0.06] bg-white/[0.015] px-3 py-3">
-                  {step < 5 ? (
-                    <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-ink-950/45 px-3.5 py-2.5 text-[13px] text-fg-muted/80">
-                      <span className="flex-1 truncate">{t("liveDemo.widget.inputPlaceholder")}</span>
-                      <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-400/15 text-sky-300 ring-1 ring-inset ring-sky-400/30">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m5 12 14-7-7 14-2-5z" />
-                        </svg>
-                      </span>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="px-0.5 text-[11.5px] text-fg-muted">{t("liveDemo.ask.prompt")}</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {ASK_CHIPS.map((c) => (
-                          <button
-                            key={c.id}
-                            type="button"
-                            disabled={phase === "answering"}
-                            onClick={() => ask(c)}
-                            className="pressable min-h-[44px] rounded-xl border border-white/[0.09] bg-white/[0.03] px-3 py-2 text-left text-[12.5px] leading-[1.35] text-fg/90 transition-colors hover:border-white/20 hover:bg-white/[0.06] disabled:opacity-50"
-                          >
-                            {t(c.label)}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  <p className="mt-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/55">
-                    {t("liveDemo.widget.footnote")}
-                  </p>
-                </div>
-              </motion.div>
-
-              {handover && <HandoffCard question={t("liveDemo.ask.chip3")} />}
-
-              {handover && (
-                <motion.p
-                  initial={reduced ? false : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: reduced ? 0 : 0.25 }}
-                  className="mt-6 text-[19px] font-medium leading-[1.45] text-fg"
-                >
-                  {t("liveDemo.ask.reassure")}
-                </motion.p>
-              )}
+              <ErrorBoundary fallback={null}>
+                <DaliThread />
+              </ErrorBoundary>
             </div>
           </Reveal>
         </div>
