@@ -17,24 +17,19 @@ import {
   AnimatePresence,
   useScroll,
   useSpring,
-  useMotionValue,
-  useMotionValueEvent,
   useReducedMotion,
   useInView,
 } from "framer-motion";
 
-import { Spotlight } from "./components/ui/spotlight";
-import { WordRotate } from "./components/ui/word-rotate";
-import { AnimatedBeam } from "./components/ui/animated-beam";
 import { PeriodToggle } from "./components/ui/pricing-section";
 import { ShimmerButton } from "./components/ui/shimmer-button";
 import { Safari } from "./components/ui/safari";
 import { AGENTS as OFFICE_AGENTS, BUNDLES as OFFICE_BUNDLES, formatTugrik } from "./office/agents";
 import { loadAtlas as loadStaffAtlas, createStage as createPixelStage, setStagesFrozen, stageDpr, ATLAS as STAFF_ATLAS, CHARS as STAFF_CHARS } from "./office/pixel";
-import { drawChapter as drawStaffChapter, drawOraRoom, drawWorkingDay, deskCentres, dayPlan, STAFF as STAFF_ORDER, HERO_MIN_W as STAFF_HERO_MIN_W } from "./office/scenes";
+import { drawChapter as drawStaffChapter, drawOraRoom, dayPlan, STAFF as STAFF_ORDER } from "./office/scenes";
 import { DEFAULT_LIVE, fetchLaunch, isPreviewHost, merge as mergeLaunch, overrideFromQuery, readPreview, readStored, writePreview } from "./office/launch";
 import {
-  boardCaption, dayLead, daySceneAlt, heroDescription, officeLead, officeTitle, oraIntroLead, ownerDescription,
+  boardCaption, dayLead, heroDescription, officeLead, officeTitle, oraIntroLead, ownerDescription,
   teamSoonNote, theFourLead, theFourTitle,
 } from "./office/staffCopy";
 
@@ -200,11 +195,6 @@ function MagneticButton({
   const reduced = useReducedMotion();
   const jumpToContact = useContactJump();
   const { open: openDemoRequest } = useDemoRequest();
-  const ref = React.useRef(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const sx = useSpring(x, { stiffness: 220, damping: 18, mass: 0.5 });
-  const sy = useSpring(y, { stiffness: 220, damping: 18, mass: 0.5 });
 
   // Two centralised sentinels: href="#demo" opens the demo request dialog,
   // href="#contact" routes home and scrolls to the contact section.
@@ -213,37 +203,20 @@ function MagneticButton({
     (href === "#demo" ? () => openDemoRequest(demoServices) : undefined) ||
     (href === "#contact" ? jumpToContact : undefined);
 
-  const onMove = (e) => {
-    if (reduced || !ref.current || disabled) return;
-    // A pointermove also fires while a finger drags across the button, which
-    // made the label slide under the thumb on a phone. Restrict to a real
-    // pointer, and keep the pull small enough to read as weight, not as a toy.
-    if (!window.matchMedia("(pointer: fine) and (prefers-reduced-motion: no-preference)").matches) return;
-    const r = ref.current.getBoundingClientRect();
-    const clamp = (v) => Math.max(-10, Math.min(10, v));
-    x.set(clamp((e.clientX - (r.left + r.width / 2)) * 0.12));
-    y.set(clamp((e.clientY - (r.top + r.height / 2)) * 0.12));
-  };
-  const onLeave = () => { x.set(0); y.set(0); };
-
   const base =
-    "pressable group relative inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold tracking-tight transition-colors duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950";
+    "pressable group relative inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold tracking-tight transition-colors duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950";
 
+  // one button language site-wide: the filled light blue is the action, the
+  // outline is everything else
   const styles =
     variant === "primary"
-      ? "bg-fg text-ink-950 hover:bg-white"
+      ? "bg-accent text-ink-950 hover:bg-[#8AD6FF]"
       : "bg-white/[0.03] text-fg ring-1 ring-inset ring-white/10 hover:bg-white/[0.06] hover:ring-white/20";
 
   const Inner = (
-    <motion.span
-      ref={ref}
-      style={{ x: sx, y: sy }}
-      className={[base, styles, disabled ? "opacity-60 cursor-not-allowed" : "", className].join(" ")}
-      onPointerMove={onMove}
-      onPointerLeave={onLeave}
-    >
+    <span className={[base, styles, disabled ? "opacity-60 cursor-not-allowed" : "", className].join(" ")}>
       <span className="relative z-10 flex items-center gap-2">{children}</span>
-    </motion.span>
+    </span>
   );
 
   const outerClass = ["inline-block", className].join(" ").trim();
@@ -300,14 +273,6 @@ function SectionLabel({ children }) {
   return (
     <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted">
       <span className="h-px w-6 bg-white/15" />
-      {children}
-    </span>
-  );
-}
-
-function Pill({ children }) {
-  return (
-    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium tracking-wide text-fg-muted">
       {children}
     </span>
   );
@@ -536,7 +501,7 @@ function Navbar() {
       style={
         scrolled
           ? {
-              backgroundColor: "rgba(5,10,24,0.85)",
+              backgroundColor: "rgba(5,10,24,0.98)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
               borderBottom: "1px solid rgba(255,255,255,0.08)",
@@ -650,12 +615,7 @@ function Navbar() {
             </button>
 
             <div className="hidden md:block">
-              <MagneticButton href="#demo" variant="primary">
-                {t("nav.requestDemo")}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </MagneticButton>
+              <MessengerCta compact />
             </div>
           </div>
         </div>
@@ -772,12 +732,7 @@ function Navbar() {
                   </button>
                 ))}
               </div>
-              <MagneticButton href="#demo" variant="primary">
-                {t("nav.requestDemo")}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </MagneticButton>
+              <MessengerCta className="w-full" onClick={() => setMobileOpen(false)} />
             </motion.div>
           </motion.div>
         )}
@@ -785,32 +740,6 @@ function Navbar() {
       document.body
       )}
     </motion.header>
-  );
-}
-
-function HeroWords({ text, delay = 0, stagger = 0.06 }) {
-  const reduced = useReducedMotion();
-  const words = text.split(/(\s+)/);
-  let wIndex = 0;
-  return (
-    <span aria-label={text}>
-      {words.map((tok, i) => {
-        if (/^\s+$/.test(tok)) return <span key={i}>{tok}</span>;
-        const idx = wIndex++;
-        return (
-          <span key={i} className="word-mask">
-            <motion.span
-              initial={reduced ? false : { y: "110%" }}
-              animate={{ y: 0 }}
-              transition={{ ...SPRING_HEADLINE, delay: delay + idx * stagger }}
-              className="inline-block"
-            >
-              {tok}
-            </motion.span>
-          </span>
-        );
-      })}
-    </span>
   );
 }
 
@@ -824,7 +753,7 @@ function SalonPreview() {
   const services = t("salonMock.booking.services", { returnObjects: true });
   const slots = ["10:00", "11:30", "14:00", "15:30"];
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 flex flex-col overflow-hidden">
       <div
         aria-hidden
         className="absolute inset-0"
@@ -850,7 +779,7 @@ function SalonPreview() {
           {t("salonMock.book")}
         </div>
       </div>
-      <div className="relative grid grid-cols-[1fr_1fr] items-center gap-[4%] px-[4%]">
+      <div className="relative grid flex-1 grid-cols-[1fr_1fr] items-center gap-[4%] px-[4%] pb-[8%]">
         <div className="flex flex-col justify-center">
           <span className="inline-flex w-fit items-center gap-1 rounded-full bg-emerald-400/[0.12] px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-emerald-300 sm:px-2 sm:text-[9px]">
             <span className="h-1 w-1 rounded-full bg-emerald-400" />
@@ -911,394 +840,12 @@ function SalonPreview() {
   );
 }
 
-// ------------------------------------------------------------ the first screen
-// A day drawn as a ring. The hand sweeps one revolution per day and leaves a
-// lit arc behind it: the part of the day already covered. Seven real moments
-// sit at their real hour and light as the hand reaches them — and all but one
-// of them falls outside the hours a shop is open, which is the whole argument.
-//
-// One requestAnimationFrame loop writes through refs; nothing here re-renders
-// React per frame. It stops when the ring leaves the screen or the tab hides.
-const RING_R = 118;
-const RING_C = 2 * Math.PI * RING_R;
-const RING_CX = 150;
-const RING_OPEN = [10, 20]; // the hours a typical shop has someone at the counter
-
-const RING_SECONDS = 36; // one whole day per revolution, at a constant rate
-
-// Дали's seven moments; `line` is the caption's index in hero.ring.events. With only Дали
-// live the ring shows exactly these, as it always has.
-const RING_DALI = [
-  { at: 2 + 14 / 60, time: "02:14", who: "dali", line: 0 },
-  { at: 6 + 40 / 60, time: "06:40", who: "dali", line: 1 },
-  { at: 9, time: "09:00", who: "dali", line: 2 },
-  { at: 13 + 25 / 60, time: "13:25", who: "dali", line: 3 },
-  { at: 18 + 5 / 60, time: "18:05", who: "dali", line: 4 },
-  { at: 21 + 30 / 60, time: "21:30", who: "dali", line: 5 },
-  { at: 23 + 50 / 60, time: "23:50", who: "dali", line: 6 },
-];
-// One moment per other staff member, shown only while their switch is on (the ring must never
-// show a staff member working before they are live). Same hours as the phone's day.
-const RING_STAFF = {
-  vira: { at: 10.5, time: "10:30", who: "vira" },
-  ora: { at: 16 + 10 / 60, time: "16:10", who: "ora" },
-  nova: { at: 18, time: "18:00", who: "nova" },
-  eho: { at: 20 + 40 / 60, time: "20:40", who: "eho" },
-};
-
-function ringEvents(live) {
-  const extra = Object.keys(RING_STAFF).filter((id) => live[id]);
-  if (extra.length === 0) return RING_DALI;
-  // Нова's 18:00 reminder would sit on top of Дали's 18:05 hand-over, so that one gives way.
-  const dali = RING_DALI.filter((e) => !(live.nova && e.time === "18:05"));
-  return [...dali, ...extra.map((id) => RING_STAFF[id])].sort((a, b) => a.at - b.at);
-}
-
-function ringPoint(hour, radius = RING_R) {
-  const a = ((hour / 24) * 360 - 90) * (Math.PI / 180);
-  return [RING_CX + radius * Math.cos(a), RING_CX + radius * Math.sin(a)];
-}
-
-// The arc of the working day, drawn over the track.
-function ringArc(from, to, radius = RING_R) {
-  const [x0, y0] = ringPoint(from, radius);
-  const [x1, y1] = ringPoint(to, radius);
-  const large = (to - from) % 24 > 12 ? 1 : 0;
-  return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${radius} ${radius} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
-}
-
-const ringClock = (hour) => {
-  const q = Math.floor((hour % 24) * 4) / 4; // quarter hours: a clock, not a slot machine
-  const hh = Math.floor(q);
-  const mm = Math.round((q - hh) * 60);
-  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
-};
-
-function DayRing({ className = "" }) {
-  const { t } = useTranslation();
-  const reduced = useReducedMotion();
-  const staffLive = useStaffLive();
-  const RING_EVENTS = React.useMemo(() => ringEvents(staffLive), [staffLive]);
-  const team = RING_EVENTS !== RING_DALI;
-  const captions = t("hero.ring.events", { returnObjects: true });
-  const labels = Array.isArray(captions) ? captions : [];
-  const caption = (e) => (e.who === "dali" ? labels[e.line] || "" : t(`staffText.ring.${e.who}`));
-
-  const hostRef = React.useRef(null);
-  const handRef = React.useRef(null);
-  const trailRef = React.useRef(null);
-  const timeRef = React.useRef(null);
-  const dotsRef = React.useRef([]);
-  // which event the centre is showing, so text is written only when it changes
-  const shownRef = React.useRef(-1);
-  const clockRef = React.useRef("");
-  const spinRef = React.useRef("");
-  const litRef = React.useRef(-2);
-  const [active, setActive] = React.useState(RING_EVENTS.length - 1);
-
-  // A switch flipped in the preview changes the moments: start the day over with the new set.
-  React.useEffect(() => {
-    shownRef.current = -1;
-    clockRef.current = "";
-    spinRef.current = "";
-    litRef.current = -2;
-    setActive(RING_EVENTS.length - 1);
-  }, [RING_EVENTS]);
-
-  React.useEffect(() => {
-    if (reduced || !hostRef.current) return undefined;
-
-    let raf = 0;
-    let running = false;
-    let visible = false;
-    let started = 0;
-    let pausedAt = 0;
-
-    const frame = (now) => {
-      raf = 0;
-      if (!running) return;
-      // A constant sweep: one revolution is one day.
-      const p = ((now - started) / (RING_SECONDS * 1000)) % 1;
-      const hour = p * 24;
-
-      // The written values are often identical to the last ones, so comparing
-      // first skips the string building, not just the style write.
-      const spin = `rotate(${(p * 360).toFixed(2)}deg)`;
-      if (spin !== spinRef.current) {
-        spinRef.current = spin;
-        if (handRef.current) handRef.current.style.transform = spin;
-        if (trailRef.current) trailRef.current.style.strokeDashoffset = String(RING_C * (1 - p));
-      }
-
-      // the most recent moment the hand has passed; before the first one of
-      // the day, the centre still holds last night's
-      let idx = -1;
-      for (let i = 0; i < RING_EVENTS.length; i += 1) if (hour >= RING_EVENTS[i].at) idx = i;
-      const shown = idx === -1 ? RING_EVENTS.length - 1 : idx;
-
-      if (idx !== litRef.current) {
-        litRef.current = idx;
-        for (let i = 0; i < RING_EVENTS.length; i += 1) {
-          const el = dotsRef.current[i];
-          if (el) el.classList.toggle("is-lit", i <= idx);
-        }
-      }
-
-      if (shown !== shownRef.current) {
-        shownRef.current = shown;
-        setActive(shown);
-      }
-      // the clock lands exactly on a moment's own time as the hand reaches it
-      const near = idx >= 0 && hour - RING_EVENTS[idx].at < 0.35;
-      const text = near ? RING_EVENTS[idx].time : ringClock(hour);
-      if (text !== clockRef.current) {
-        clockRef.current = text;
-        if (timeRef.current) timeRef.current.textContent = text;
-      }
-
-      raf = requestAnimationFrame(frame);
-    };
-
-    const update = () => {
-      const should = visible && !document.hidden;
-      if (should && !running) {
-        running = true;
-        if (!started) {
-          // start the day a little before the 02:14 message so the first thing
-          // a visitor sees is a moment landing, not an empty ring
-          started = performance.now() - 1.4 * (RING_SECONDS / 24) * 1000;
-        } else {
-          // coming back: carry the origin forward past the time spent away,
-          // so scrolling off and back does not teleport the day to midnight
-          started += performance.now() - pausedAt;
-        }
-        raf = requestAnimationFrame(frame);
-      } else if (!should && running) {
-        running = false;
-        pausedAt = performance.now();
-        if (raf) cancelAnimationFrame(raf);
-        raf = 0;
-      }
-    };
-
-    const io = new IntersectionObserver((entries) => {
-      visible = entries.some((e) => e.isIntersecting);
-      update();
-    }, { rootMargin: "60px" });
-    io.observe(hostRef.current);
-    document.addEventListener("visibilitychange", update);
-
-    return () => {
-      running = false;
-      if (raf) cancelAnimationFrame(raf);
-      io.disconnect();
-      document.removeEventListener("visibilitychange", update);
-    };
-  }, [reduced, RING_EVENTS]);
-
-  const event = RING_EVENTS[active] || RING_EVENTS[0];
-  const openArc = ringArc(RING_OPEN[0], RING_OPEN[1]);
-  const closedHours = 24 - (RING_OPEN[1] - RING_OPEN[0]);
-
-  return (
-    <div ref={hostRef} className={["relative w-full max-w-[380px]", className].join(" ")}>
-      <div className="relative">
-        <svg viewBox="0 0 300 300" className="block w-full" role="img" aria-label={team ? t("staffText.ring.alt", { n: RING_EVENTS.length }) : t("hero.ring.alt")}>
-          {/* the whole day: what the four cover */}
-          <circle cx={RING_CX} cy={RING_CX} r={RING_R} fill="none" stroke="rgba(56,189,248,0.16)" strokeWidth="10" />
-          {/* the hours someone is at the counter */}
-          <path d={openArc} fill="none" stroke="rgba(240,244,255,0.22)" strokeWidth="10" strokeLinecap="butt" />
-          {/* hour ticks */}
-          {Array.from({ length: 24 }, (_, h) => {
-            const major = h % 6 === 0;
-            const [x0, y0] = ringPoint(h, RING_R - (major ? 14 : 9));
-            const [x1, y1] = ringPoint(h, RING_R - 6);
-            return <line key={h} x1={x0} y1={y0} x2={x1} y2={y1} stroke={major ? "rgba(240,244,255,0.45)" : "rgba(240,244,255,0.16)"} strokeWidth={major ? 1.6 : 1} strokeLinecap="round" />;
-          })}
-          {[0, 6, 12, 18].map((h) => {
-            const [x, y] = ringPoint(h, RING_R - 30);
-            return (
-              <text key={h} x={x} y={y} textAnchor="middle" dominantBaseline="central" fill="rgba(139,159,196,0.75)" fontSize="11" fontFamily="Inter, system-ui, sans-serif" letterSpacing="1">
-                {String(h).padStart(2, "0")}
-              </text>
-            );
-          })}
-          {/* the part of the day already covered */}
-          <circle
-            ref={trailRef}
-            cx={RING_CX}
-            cy={RING_CX}
-            r={RING_R}
-            fill="none"
-            stroke="#38BDF8"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeDasharray={RING_C}
-            strokeDashoffset={reduced ? RING_C * (1 - RING_EVENTS[RING_EVENTS.length - 1].at / 24) : RING_C}
-            transform={`rotate(-90 ${RING_CX} ${RING_CX})`}
-          />
-          {/* the seven moments */}
-          {RING_EVENTS.map((e, i) => {
-            const [x, y] = ringPoint(e.at);
-            return (
-              <g
-                key={e.time}
-                ref={(el) => { dotsRef.current[i] = el; }}
-                className={["ring-dot", reduced ? "is-lit" : ""].join(" ")}
-              >
-                <circle className="halo" cx={x} cy={y} r="6" fill="#38BDF8" />
-                <circle className="dot" cx={x} cy={y} r="5.5" />
-              </g>
-            );
-          })}
-          {/* the hand */}
-          <g
-            ref={handRef}
-            className="ring-hand"
-            style={{
-              transformOrigin: `${RING_CX}px ${RING_CX}px`,
-              transformBox: "view-box",
-              transform: reduced ? `rotate(${(RING_EVENTS[RING_EVENTS.length - 1].at / 24) * 360}deg)` : "rotate(0deg)",
-            }}
-          >
-            <line x1={RING_CX} y1={RING_CX - 46} x2={RING_CX} y2={RING_CX - RING_R + 4} stroke="url(#ringHand)" strokeWidth="2" strokeLinecap="round" />
-            <circle cx={RING_CX} cy={RING_CX - RING_R} r="4.5" fill="#F0F4FF" />
-            <circle cx={RING_CX} cy={RING_CX - RING_R} r="9" fill="#38BDF8" opacity="0.22" />
-          </g>
-          <defs>
-            <linearGradient id="ringHand" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%" stopColor="#38BDF8" stopOpacity="0" />
-              <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.9" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-        {/* the centre: what just happened, and who did it */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-[22%] text-center">
-          <span ref={timeRef} className="font-display text-[34px] font-semibold leading-none tabular-nums tracking-tight text-fg sm:text-[38px]">
-            {event.time}
-          </span>
-          <span key={`who-${active}`} className="ring-caption mt-2.5 flex items-center gap-1.5">
-            <StaffAvatar id={event.who} zoom={1} />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-300">
-              {t(`office.agents.${event.who}.name`)}
-            </span>
-          </span>
-          <span key={`line-${active}`} className="ring-caption mt-2 text-[12.5px] leading-[1.4] text-fg-muted" aria-live="off">
-            {caption(event)}
-          </span>
-        </div>
-      </div>
-
-      {/* the legend is the argument: ten hours open, fourteen covered anyway */}
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[12px] text-fg-muted">
-        <span className="inline-flex items-center gap-2">
-          <span aria-hidden className="h-1.5 w-5 rounded-full bg-white/25" />
-          {t("hero.ring.open", { from: "10:00", to: "20:00" })}
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <span aria-hidden className="h-1.5 w-5 rounded-full bg-sky-400" />
-          {t(team ? "staffText.ring.closed" : "hero.ring.closed", { hours: closedHours })}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function Hero() {
-  const { t } = useTranslation();
-  const staffLive = useStaffLive();
-  const channels = t("hero.channels", { returnObjects: true });
-  const heroChannels = React.useMemo(() => (Array.isArray(channels) ? channels : []), [channels]);
-
-  return (
-    <section id="top" className="relative overflow-hidden pb-16 pt-24 md:pb-24 md:pt-32">
-      {/* the spotlight sweeps in once from the top left; the pool sits behind the ring */}
-      <Spotlight className="-top-40 left-0 md:-top-24 md:left-40" fill="#60C8FF" />
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div
-          className="absolute right-[-10%] top-[6%] h-[38rem] w-[38rem] rounded-full lg:right-[2%]"
-          style={{ background: "radial-gradient(circle, rgba(56,189,248,0.16) 0%, rgba(37,99,235,0.06) 42%, rgba(56,189,248,0) 70%)", filter: "blur(40px)" }}
-        />
-      </div>
-
-      <Container className="relative z-[2]">
-        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:gap-16">
-          <div className="text-center lg:text-left">
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
-              className="text-[11.5px] font-medium leading-[1.5] tracking-[0.14em] text-fg-dim"
-            >
-              {t("hero.badge")}
-            </motion.p>
-
-            {/* the channel word rotates; screen readers get the whole line once */}
-            <h1 className="mt-4 font-display text-[36px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[48px] lg:text-[58px]">
-              <span className="sr-only">{t("hero.titleA11y")}</span>
-              <span aria-hidden className="block text-accent">
-                <WordRotate words={heroChannels} staticText={t("hero.channelsStatic")} duration={2600} />
-              </span>
-              <span aria-hidden className="block">
-                <HeroWords text={t("hero.titleAfter")} delay={0.15} stagger={0.045} />
-              </span>
-            </h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_REVEAL, delay: 0.5 }}
-              className="mx-auto mt-6 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px] lg:mx-0 lg:text-[18px]"
-            >
-              {heroDescription(t, staffLive)}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...SPRING_REVEAL, delay: 0.65 }}
-              className="mt-9 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6 lg:justify-start"
-            >
-              <MagneticButton href="#demo" variant="primary" className="w-full sm:w-auto">
-                {t("hero.buttons.request")}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </MagneticButton>
-              {/* a link, not a second button box: the hero gets one accent */}
-              <Link
-                to="/office"
-                className="inline-flex min-h-[44px] items-center gap-1.5 text-[17px] text-sky-400 transition-colors hover:text-sky-300"
-              >
-                {t("hero.buttons.seeWork")}
-                <span aria-hidden>&rsaquo;</span>
-              </Link>
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ ...SPRING_REVEAL, delay: 0.3 }}
-            className="flex justify-center lg:justify-end"
-          >
-            <ErrorBoundary fallback={null}>
-              <DayRing />
-            </ErrorBoundary>
-          </motion.div>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
+// `eyebrow` is accepted and not shown: a label over a heading only repeats it.
 function SectionHeader({ eyebrow, title, description, align = "center" }) {
   const wrap = align === "center" ? "text-center mx-auto" : "text-left";
   return (
     <Reveal className={wrap}>
-      <SectionLabel>{eyebrow}</SectionLabel>
-      <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
+      <h2 className="font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
         {title}
       </h2>
       {description && (
@@ -1706,484 +1253,53 @@ function HowItWorks() {
   );
 }
 
+// The second offer: a website that takes bookings, shown as the client's own
+// first screen. One quiet way to ask for it, and the demo-site builder as a link.
 function Portfolio() {
   const { t } = useTranslation();
-  return (
-    <section id="portfolio" className="relative py-16 md:py-28">
-      <Container>
-        <Reveal>
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <SectionLabel>{t("portfolio.section")}</SectionLabel>
-              <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
-                {t("portfolio.title")}
-              </h2>
-              <p className="mt-4 max-w-2xl text-[15.5px] leading-[1.65] text-fg-muted">
-                {t("portfolio.description")}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <MagneticButton href="https://app.dalatech.online" variant="primary">{t("portfolio.createDemo")}</MagneticButton>
-              <MagneticButton href="#demo" variant="ghost" demoServices={WEBSITE_DALI_DEMO_SERVICES}>{t("portfolio.getDemo")}</MagneticButton>
-            </div>
-          </div>
-        </Reveal>
-
-        <div className="mt-14 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <Reveal>
-            {/* the client is not named on this site, so the mock is not a link */}
-            <div className="relative">
-              <Safari url={t("portfolio.case.url")} className="drop-shadow-[0_40px_60px_rgba(2,6,23,0.6)]">
-                <SalonPreview />
-              </Safari>
-            </div>
-            <div className="mt-5 flex flex-wrap items-center gap-2">
-              <Pill>{t("portfolio.case.pills.website")}</Pill>
-              <Pill>{t("portfolio.case.pills.chatbot")}</Pill>
-              <Pill>{t("portfolio.case.pills.productQA")}</Pill>
-              <Pill>{t("portfolio.case.pills.availability")}</Pill>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.08}>
-            <div className="card-glow flex h-full flex-col rounded-2xl border border-white/10 bg-ink-800/55 p-7 shadow-card">
-              <h3 className="font-display text-[20px] font-semibold tracking-tight text-fg">{t("portfolio.case.title")}</h3>
-              <p className="mt-3 text-[14.5px] leading-[1.65] text-fg-muted">{t("portfolio.case.description")}</p>
-
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("portfolio.case.whatWeBuilt")}</p>
-                  <ul className="mt-3 space-y-2 text-[13.5px] text-fg/85">
-                    {[0, 1, 2].map((i) => (
-                      <li key={i} className="flex gap-2.5">
-                        <CheckIcon />
-                        <span>{t(`portfolio.case.features.${i}`)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fg-muted">{t("portfolio.case.idealOutcomes")}</p>
-                  <ul className="mt-3 space-y-2 text-[13.5px] text-fg/85">
-                    {[0, 1, 2].map((i) => (
-                      <li key={i} className="flex gap-2.5">
-                        <CheckIcon />
-                        <span>{t(`portfolio.case.outcomes.${i}`)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <MagneticButton href="#demo" variant="primary" demoServices={WEBSITE_DALI_DEMO_SERVICES}>{t("portfolio.case.buttons.requestDemo")}</MagneticButton>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </Container>
-    </section>
-  );
-}
-
-const ASK_CHIPS = [
-  { id: "u1", label: "liveDemo.messages.user1", reply: "liveDemo.messages.ai1" },
-  { id: "u2", label: "liveDemo.messages.user2", reply: "liveDemo.messages.ai2" },
-  { id: "u3", label: "liveDemo.ask.chip3", reply: null },
-];
-
-// The hand-off: the one moment on the page driven by physics rather than by
-// scroll. It rises from under the Messenger card and overlaps it, because the
-// point is that the conversation left the bot and reached a person.
-function HandoffCard({ question }) {
-  const { t } = useTranslation();
-  const reduced = useReducedMotion();
-  return (
-    <motion.div
-      initial={reduced ? false : { y: 24, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.7, delay: reduced ? 0 : 0.04 }}
-      className="relative z-10 -mt-11 mx-3 rounded-[18px] border border-white/[0.1] bg-ink-800 p-4 shadow-[0_24px_60px_-20px_rgba(3,6,16,0.95)]"
-    >
-      <p className="flex items-center gap-2 text-[13px] font-semibold text-fg">
-        <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-300">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-        </span>
-        {t("liveDemo.ask.handoffTitle")}
-      </p>
-      <p className="mt-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-dim">{t("liveDemo.ask.handoffLine")}</p>
-      <p className="mt-1 text-[13.5px] leading-[1.5] text-fg/90">{question}</p>
-    </motion.div>
-  );
-}
-
-function LiveDemo() {
-  const { t } = useTranslation();
-  const reduced = useReducedMotion();
-  const scrollRef = React.useRef(null);
-  const sectionRef = React.useRef(null);
-  const [step, setStep] = React.useState(0);
-  const [typing, setTyping] = React.useState(false);
-  // "script" until the scripted demo ends, then the visitor can ask.
-  const [phase, setPhase] = React.useState("script");
-  const [asked, setAsked] = React.useState([]);
-  const askTimers = React.useRef([]);
-  React.useEffect(() => () => askTimers.current.forEach(clearTimeout), []);
-
-  React.useEffect(() => {
-    if (reduced) {
-      setStep(5);
-      setTyping(false);
-      return;
-    }
-
-    let timers = [];
-    const runOnce = () => {
-      const timeline = [
-        { at: 0,    fn: () => { setStep(0); setTyping(false); } },
-        { at: 350,  fn: () => { setStep(1); } },
-        { at: 1500, fn: () => { setTyping(true); } },
-        { at: 2700, fn: () => { setStep(2); setTyping(false); } },
-        { at: 4200, fn: () => { setStep(3); } },
-        { at: 5400, fn: () => { setTyping(true); } },
-        { at: 7000, fn: () => { setStep(4); setTyping(false); } },
-        { at: 8400, fn: () => { setTyping(true); } },
-        { at: 9900, fn: () => { setStep(5); setTyping(false); } },
-      ];
-      timeline.forEach(({ at, fn }) => {
-        timers.push(setTimeout(fn, at));
-      });
-    };
-
-    // This used to run on a 13.5s interval from mount for the life of the
-    // visit, burning battery on a phone whether or not the section was on
-    // screen. Play it once, when it is actually being looked at.
-    const host = sectionRef.current;
-    if (!host) return undefined;
-    let played = false;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting && !played) {
-            played = true;
-            runOnce();
-            io.disconnect();
-          }
-        }
-      },
-      { threshold: 0.4 }
-    );
-    io.observe(host);
-
-    return () => {
-      io.disconnect();
-      timers.forEach(clearTimeout);
-    };
-  }, [reduced]);
-
-  React.useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const id = requestAnimationFrame(() => {
-      el.scrollTo({ top: el.scrollHeight, behavior: reduced ? "auto" : "smooth" });
-    });
-    return () => cancelAnimationFrame(id);
-  }, [step, typing, reduced, asked, phase]);
-
-  // A chip becomes a user bubble, a beat of typing, then either the answer the
-  // site already ships or — for the one she cannot answer — a plain refusal
-  // and a hand-off to a person.
-  const ask = React.useCallback(
-    (chip) => {
-      if (phase === "answering") return;
-      askTimers.current.forEach(clearTimeout);
-      askTimers.current = [];
-      setPhase("answering");
-      setAsked((prev) => [...prev, { id: `${chip.id}-${prev.length}`, chip, state: "sent" }]);
-      const beat = reduced ? 0 : 900;
-      const settle = () => {
-        setAsked((prev) => prev.map((a, i) => (i === prev.length - 1 ? { ...a, state: "answered" } : a)));
-        setPhase(chip.reply ? "idle" : "handover");
-      };
-      if (beat === 0) settle();
-      else askTimers.current.push(setTimeout(settle, beat));
-    },
-    [phase, reduced]
-  );
-
-  // Both cards have to be visible at once or the hand-off does not read.
-  const handover = phase === "handover";
-
-  const messages = [
-    { from: "user", key: "user1", at: 1 },
-    { from: "ai",   key: "ai1",   at: 2 },
-    { from: "user", key: "user2", at: 3 },
-    { from: "ai",   key: "ai2",   at: 4 },
-    { from: "ai",   key: "ai3",   at: 5 },
+  const lists = [
+    { heading: t("portfolio.case.whatWeBuilt"), key: "features" },
+    { heading: t("portfolio.case.idealOutcomes"), key: "outcomes" },
   ];
-
   return (
-    <section id="live-demo" ref={sectionRef} className="relative py-28">
+    <section id="portfolio" className="relative py-24 md:py-32">
       <Container>
-        <div className="grid items-center gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
-          <Reveal>
-            <SectionLabel>{t("liveDemo.section")}</SectionLabel>
-            <h2 className="mt-4 font-display text-[34px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
-              {t("liveDemo.title")}
-            </h2>
-            <p className="mt-5 max-w-[44ch] text-[15.5px] leading-[1.65] text-fg-muted">
-              {t("liveDemo.description")}
-            </p>
-            <div className="mt-9">
-              <MagneticButton variant="primary" href="#demo" demoServices={["dali"]}>
-                {t("liveDemo.ctaLabel")}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14" />
-                  <path d="m12 5 7 7-7 7" />
-                </svg>
-              </MagneticButton>
+        <div className="max-w-[40rem]">
+          <h2 className="font-display text-[32px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] md:text-[48px]">
+            {t("portfolio.title")}
+          </h2>
+          <p className="mt-5 text-[16.5px] leading-[1.6] text-fg-muted sm:text-[17px]">
+            {t("portfolio.description")}
+          </p>
+        </div>
+
+        {/* the client is not named on this site, so the mock is not a link */}
+        <div className="mt-12 max-w-[880px] md:mt-14">
+          <Safari url={t("portfolio.case.url")} className="drop-shadow-[0_40px_60px_rgba(2,6,23,0.6)]">
+            <SalonPreview />
+          </Safari>
+        </div>
+
+        <div className="mt-12 grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-start md:gap-12">
+          {lists.map((l) => (
+            <div key={l.key}>
+              <h3 className="text-[15.5px] font-semibold text-fg">{l.heading}</h3>
+              <ul className="mt-3 border-b border-white/[0.07]">
+                {[0, 1, 2].map((i) => (
+                  <li key={i} className="border-t border-white/[0.07] py-3 text-[15px] leading-[1.5] text-fg/90">
+                    {t(`portfolio.case.${l.key}.${i}`)}
+                  </li>
+                ))}
+              </ul>
             </div>
-          </Reveal>
-
-          <Reveal delay={0.08}>
-            <div className="relative mx-auto w-full max-w-[440px]">
-              <motion.div
-                animate={handover ? { y: reduced ? 0 : 6, opacity: 0.55 } : { y: 0, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 210, damping: 24, mass: 0.7 }}
-                className="overflow-hidden rounded-[22px] border border-white/[0.08] bg-ink-900/85 shadow-[0_40px_90px_-30px_rgba(8,12,28,0.9)] backdrop-blur">
-                <div className="relative flex items-center justify-between gap-3 border-b border-white/[0.06] bg-white/[0.015] px-4 py-3.5">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-400/30 to-sky-400/[0.06] ring-1 ring-inset ring-sky-400/45">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(186,230,253)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                        <path d="M12 2 14.5 8.5 21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z" />
-                      </svg>
-                      <span className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-ink-900" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate font-display text-[14px] font-semibold tracking-tight text-fg">
-                        {t("liveDemo.widget.businessName")}
-                      </p>
-                      <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-fg-muted">
-                        <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                        {t("liveDemo.widget.statusOnline")}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1 text-fg-muted/60">
-                    <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-md">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 12h14" />
-                      </svg>
-                    </span>
-                    <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-md">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 6 6 18" />
-                        <path d="m6 6 12 12" />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  ref={scrollRef}
-                  className="relative h-[300px] overflow-y-auto px-4 py-5 lg:h-[380px]"
-                  style={{ scrollbarWidth: "none" }}
-                >
-                  <div className="flex flex-col gap-3">
-                    <AnimatePresence initial={false}>
-                      {messages
-                        .filter((m) => step >= m.at)
-                        .map((m) => (
-                          <motion.div
-                            key={m.key}
-                            layout
-                            initial={reduced ? false : { opacity: 0, y: 8, scale: 0.97 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                            className={[
-                              "flex w-full items-end gap-2",
-                              m.from === "user" ? "justify-end" : "justify-start",
-                            ].join(" ")}
-                          >
-                            {m.from === "ai" && (
-                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
-                                <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
-                              </div>
-                            )}
-                            <div
-                              className={[
-                                "max-w-[78%] px-3.5 py-2.5 text-[13.5px] leading-[1.5]",
-                                m.from === "user"
-                                  ? "rounded-2xl rounded-br-md bg-sky-400/[0.14] text-fg ring-1 ring-inset ring-sky-400/25"
-                                  : "rounded-2xl rounded-bl-md bg-white/[0.04] text-fg/95 ring-1 ring-inset ring-white/[0.06]",
-                              ].join(" ")}
-                            >
-                              {t(`liveDemo.messages.${m.key}`)}
-                            </div>
-                          </motion.div>
-                        ))}
-                      {typing && !reduced && (
-                        <motion.div
-                          key="typing"
-                          layout
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4, transition: { duration: 0.14 } }}
-                          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-                          className="flex w-full items-end gap-2"
-                        >
-                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
-                            <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
-                          </div>
-                          <div className="rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-3 ring-1 ring-inset ring-white/[0.06]">
-                            <span className="flex items-center gap-1.5">
-                              {[0, 1, 2].map((i) => (
-                                <motion.span
-                                  key={i}
-                                  className="h-1.5 w-1.5 rounded-full bg-fg-muted/75"
-                                  animate={{ y: [0, -3, 0], opacity: [0.45, 1, 0.45] }}
-                                  transition={{ duration: 1.0, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
-                                />
-                              ))}
-                            </span>
-                            <span className="sr-only">{t("liveDemo.widget.typing")}</span>
-                          </div>
-                        </motion.div>
-                      )}
-                      {asked.map((a) => (
-                        <React.Fragment key={a.id}>
-                          <motion.div
-                            layout
-                            initial={reduced ? false : { opacity: 0, y: 8, scale: 0.97 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                            className="flex w-full items-end justify-end gap-2"
-                          >
-                            <div className="max-w-[78%] rounded-2xl rounded-br-md bg-sky-400/[0.14] px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-fg ring-1 ring-inset ring-sky-400/25">
-                              {t(a.chip.label)}
-                            </div>
-                          </motion.div>
-                          {a.state === "answered" && a.chip.reply && (
-                            <motion.div
-                              layout
-                              initial={reduced ? false : { opacity: 0, y: 8, scale: 0.97 }}
-                              animate={{ opacity: 1, y: 0, scale: 1 }}
-                              transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-                              className="flex w-full items-end justify-start gap-2"
-                            >
-                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
-                                <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
-                              </div>
-                              <div className="max-w-[78%] rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-fg/95 ring-1 ring-inset ring-white/[0.06]">
-                                {t(a.chip.reply)}
-                              </div>
-                            </motion.div>
-                          )}
-                          {a.state === "answered" && !a.chip.reply && (
-                            <motion.div
-                              layout
-                              initial={reduced ? false : { opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ duration: 0.18 }}
-                              className="flex flex-col gap-3"
-                            >
-                              {/* no bubble, no red, no warning icon: a refusal
-                                  is a normal thing for her to do, not an error */}
-                              <p className="border-y border-white/[0.06] py-2.5 text-[13px] leading-[1.5] text-fg-muted">
-                                {t("liveDemo.ask.decline")}
-                              </p>
-                              <div className="flex w-full items-end justify-start gap-2">
-                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
-                                </div>
-                                <div className="max-w-[78%] rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-2.5 text-[13.5px] leading-[1.5] text-fg/95 ring-1 ring-inset ring-white/[0.06]">
-                                  {t("liveDemo.messages.ai3")}
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </React.Fragment>
-                      ))}
-                      {phase === "answering" && !reduced && (
-                        <motion.div
-                          key="ask-typing"
-                          layout
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4, transition: { duration: 0.14 } }}
-                          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
-                          className="flex w-full items-end gap-2"
-                        >
-                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-400/15 ring-1 ring-inset ring-sky-400/30">
-                            <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
-                          </div>
-                          <div className="rounded-2xl rounded-bl-md bg-white/[0.04] px-3.5 py-3 ring-1 ring-inset ring-white/[0.06]">
-                            <span className="flex items-center gap-1.5">
-                              {[0, 1, 2].map((i) => (
-                                <motion.span
-                                  key={i}
-                                  className="h-1.5 w-1.5 rounded-full bg-fg-muted/75"
-                                  animate={{ y: [0, -3, 0], opacity: [0.45, 1, 0.45] }}
-                                  transition={{ duration: 1.0, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
-                                />
-                              ))}
-                            </span>
-                            <span className="sr-only">{t("liveDemo.widget.typing")}</span>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                <div className="border-t border-white/[0.06] bg-white/[0.015] px-3 py-3">
-                  {step < 5 ? (
-                    <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-ink-950/45 px-3.5 py-2.5 text-[13px] text-fg-muted/80">
-                      <span className="flex-1 truncate">{t("liveDemo.widget.inputPlaceholder")}</span>
-                      <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-400/15 text-sky-300 ring-1 ring-inset ring-sky-400/30">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m5 12 14-7-7 14-2-5z" />
-                        </svg>
-                      </span>
-                    </div>
-                  ) : (
-                    <>
-                      <p className="px-0.5 text-[11.5px] text-fg-muted">{t("liveDemo.ask.prompt")}</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {ASK_CHIPS.map((c) => (
-                          <button
-                            key={c.id}
-                            type="button"
-                            disabled={phase === "answering"}
-                            onClick={() => ask(c)}
-                            className="pressable min-h-[44px] rounded-xl border border-white/[0.09] bg-white/[0.03] px-3 py-2 text-left text-[12.5px] leading-[1.35] text-fg/90 transition-colors hover:border-white/20 hover:bg-white/[0.06] disabled:opacity-50"
-                          >
-                            {t(c.label)}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  <p className="mt-2.5 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-fg-muted/55">
-                    {t("liveDemo.widget.footnote")}
-                  </p>
-                </div>
-              </motion.div>
-
-              {handover && <HandoffCard question={t("liveDemo.ask.chip3")} />}
-
-              {handover && (
-                <motion.p
-                  initial={reduced ? false : { opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: reduced ? 0 : 0.25 }}
-                  className="mt-6 text-[19px] font-medium leading-[1.45] text-fg"
-                >
-                  {t("liveDemo.ask.reassure")}
-                </motion.p>
-              )}
-            </div>
-          </Reveal>
+          ))}
+          <div className="flex flex-col items-start gap-1">
+            <RequestLink services={WEBSITE_DALI_DEMO_SERVICES} className="-ml-1" />
+            <a href="https://app.dalatech.online" className="inline-flex min-h-[44px] items-center gap-1.5 text-[15.5px] font-medium text-accent transition-colors hover:text-[#8AD6FF]">
+              {t("portfolio.createDemo")}
+              <span aria-hidden>&rsaquo;</span>
+            </a>
+          </div>
         </div>
       </Container>
     </section>
@@ -3551,105 +2667,52 @@ function DemoRequestProvider({ children }) {
   );
 }
 
-function ContactOrbField() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-grid opacity-[0.55]" />
-
-      <div
-        className="contact-orb-glow absolute left-1/2 top-1/2 h-[44rem] w-[44rem] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(56,189,248,0.34) 0%, rgba(56,189,248,0.10) 28%, rgba(37,99,235,0.04) 50%, rgba(56,189,248,0) 70%)",
-          filter: "blur(48px)",
-        }}
-      />
-
-      <svg
-        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2"
-        viewBox="-200 -200 400 400"
-      >
-        <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(56,189,248,0.22)" strokeWidth="0.6" />
-        <circle cx="0" cy="0" r="156" fill="none" stroke="rgba(56,189,248,0.13)" strokeWidth="0.6" strokeDasharray="3 9" />
-        <circle cx="0" cy="0" r="190" fill="none" stroke="rgba(56,189,248,0.07)" strokeWidth="0.6" />
-      </svg>
-
-      <div className="contact-orbit contact-orbit-1 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-2 w-2 rounded-full bg-sky-300"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(108px)", boxShadow: "0 0 24px 4px rgba(56,189,248,0.85)" }}
-        />
-      </div>
-      <div className="contact-orbit contact-orbit-2 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1.5 w-1.5 rounded-full bg-sky-200"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(156px)", boxShadow: "0 0 18px 3px rgba(56,189,248,0.65)" }}
-        />
-      </div>
-      <div className="contact-orbit contact-orbit-3 absolute left-1/2 top-1/2">
-        <span
-          className="absolute h-1 w-1 rounded-full bg-white/85"
-          style={{ left: 0, top: 0, transform: "translate(-50%, -50%) translateX(190px)", boxShadow: "0 0 14px 2px rgba(255,255,255,0.55)" }}
-        />
-      </div>
-
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink-950 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ink-950 to-transparent" />
-    </div>
-  );
-}
-
+// The close: the same one action as the first screen, with Дали at the other
+// end of it. The request form and the demo website stay, quietly, beside it.
 function Contact() {
   const { t } = useTranslation();
   const mailtoHref = `mailto:${DEMO_EMAIL}?subject=${encodeURIComponent("Хүсэлт / Request")}`;
 
   return (
-    <section id="contact" className="relative overflow-hidden py-20 sm:py-40">
-      <ContactOrbField />
+    <section id="contact" className="border-t border-white/[0.06] py-24 sm:py-32">
+      <Container>
+        <h2 className="mx-auto max-w-[20ch] text-center font-display text-[clamp(34px,6vw,60px)] font-semibold leading-[1.04] tracking-tightest text-fg">
+          {t("contact.title")}
+        </h2>
 
-      <Container className="relative">
-        <StaggerGroup className="text-center" stagger={0.08} amount={0.3}>
-          <StaggerItem>
-            <h2 className="font-display mx-auto max-w-[22ch] text-[clamp(40px,7vw,80px)] font-semibold leading-[1.02] tracking-[-0.035em] text-fg">
-              {t("contact.title")}
-            </h2>
-          </StaggerItem>
+        {/* the thread the page has been showing all along, now open for the visitor */}
+        <div className="mx-auto mt-12 max-w-[520px] overflow-hidden rounded-[28px] border border-white/[0.08] bg-ink-900">
+          <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3">
+            <span className="relative shrink-0">
+              <StaffAvatar id="dali" zoom={2} />
+              <span aria-hidden className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-ink-900 bg-emerald-400" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-[15px] font-semibold tracking-tight text-fg">{t("office.agents.dali.name")}</span>
+              <span className="block text-[12px] text-fg-muted">{t("liveDemo.widget.statusOnline")}</span>
+            </span>
+          </div>
+          <div className="px-3.5 py-5">
+            <ChatRow from="ai">{t("contact.description")}</ChatRow>
+          </div>
+          <div className="border-t border-white/[0.06] p-3">
+            <MessengerCta className="w-full" />
+          </div>
+        </div>
 
-          <StaggerItem>
-            <p className="mx-auto mt-7 max-w-[54ch] text-[16px] leading-[1.55] text-fg-muted sm:text-[17px]">
-              {t("contact.description")}
-            </p>
-          </StaggerItem>
-
-          <StaggerItem>
-            <div className="mt-11 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-              <MagneticButton href="#demo" variant="primary">
-                <span>{t("contact.requestCta")}</span>
-                <span aria-hidden className="contact-arrow inline-block">→</span>
-              </MagneticButton>
-              <MagneticButton href="https://app.dalatech.online" variant="ghost">
-                {t("contact.demoCta")}
-              </MagneticButton>
-              <MagneticButton href={DEMO_MESSENGER} variant="ghost">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                  <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.35.27.57l.05 1.78c.02.57.6.94 1.12.71l1.99-.88c.17-.07.36-.09.53-.04.91.25 1.89.39 2.9.39 5.64 0 10-4.13 10-9.7S17.64 2 12 2Zm6 7.46-2.94 4.66a1.5 1.5 0 0 1-2.17.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66a1.5 1.5 0 0 1 2.17-.4l2.34 1.75a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63Z" />
-                </svg>
-                {t("contact.messengerCta")}
-              </MagneticButton>
-            </div>
-          </StaggerItem>
-
-          {/* the Facebook page and the email, as one quiet line under the buttons */}
-          <StaggerItem>
-            <p className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-[15px]">
-              <a href={FACEBOOK_PAGE} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center gap-1.5 text-sky-400 transition-colors hover:text-sky-300">
-                {t("contact.facebookLink")} <span aria-hidden>&rsaquo;</span>
-              </a>
-              <a href={mailtoHref} className="inline-flex min-h-[44px] items-center text-fg-muted transition-colors hover:text-fg">{DEMO_EMAIL}</a>
-            </p>
-          </StaggerItem>
-
-        </StaggerGroup>
+        <div className="mt-6 flex justify-center">
+          <RequestLink services={["dali"]} />
+        </div>
+        {/* the website demo, the Facebook page and the email: one quiet line */}
+        <p className="mt-4 flex flex-wrap items-center justify-center gap-x-7 gap-y-1 text-[15px]">
+          <a href="https://app.dalatech.online" className="inline-flex min-h-[44px] items-center gap-1.5 text-fg-muted transition-colors hover:text-fg">
+            {t("contact.demoCta")} <span aria-hidden>&rsaquo;</span>
+          </a>
+          <a href={FACEBOOK_PAGE} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center gap-1.5 text-fg-muted transition-colors hover:text-fg">
+            {t("contact.facebookLink")} <span aria-hidden>&rsaquo;</span>
+          </a>
+          <a href={mailtoHref} className="inline-flex min-h-[44px] items-center text-fg-muted transition-colors hover:text-fg">{DEMO_EMAIL}</a>
+        </p>
       </Container>
     </section>
   );
@@ -3675,7 +2738,7 @@ function FooterColumn({ heading, links }) {
   const linkClass = "text-[13.5px] text-fg/85 transition-colors duration-200 hover:text-sky-300";
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-muted/80">{heading}</p>
+      <p className="text-[13.5px] font-semibold text-fg">{heading}</p>
       <ul className="mt-4 space-y-2.5">
         {links.map((l) => (
           <li key={l.label}>
@@ -3744,20 +2807,7 @@ function Footer() {
   ];
 
   return (
-    <footer
-      className="relative"
-      style={{ borderTop: "1px solid rgba(56,189,248,0.15)" }}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{ background: "linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.55) 50%, transparent 100%)" }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-32 h-32"
-        style={{ background: "radial-gradient(50% 100% at 50% 100%, rgba(56,189,248,0.10) 0%, rgba(56,189,248,0) 70%)" }}
-      />
+    <footer className="relative border-t border-white/[0.06]">
       <div>
         <Container className="pt-16 pb-10">
           <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
@@ -3843,512 +2893,6 @@ function LocationBadge() {
 }
 
 // Page wrappers: each route renders only its own sections.
-// ------------------------------------------------------------ a working day
-// Small enough on a desk-width screen that all four desks fit left of the
-// owner's phone, which stands over the right of the room from 1024px up.
-const DAY_SCALE = (w) => (w < 1280 ? 2 : 3);
-const DAY_H = (w) => (w < 640 ? 150 : w < 1024 ? 168 : 128);
-
-// The owner's phone, over the room. It shows only what Дали does today: four
-// real moments from one day and the evening summary, on the timeline the room
-// is drawn from (the day plan in scenes.js).
-//
-// It is a notification stack, newest on top, never cleared: the old version
-// emptied the screen between groups of cards, which read as a blank phone in
-// the middle of the section. Here the first card is on screen from the first
-// frame, a new card slides in above the others, and the oldest slides out at
-// the bottom once four are showing.
-const FEED_VISIBLE = 4;
-
-function cardsLandedAt(p, cards) {
-  // the first card is up from the start, so the screen is never empty
-  let n = 1;
-  for (let i = 1; i < cards.length; i++) if (p >= cards[i].at) n = i + 1;
-  return n;
-}
-
-// The status-bar clock: the time of the newest card on the screen. It only
-// ever moves forward (a plan's cards are in time order) and changes when a card
-// lands, never per frame: a ticking clock reads as a slot machine, and one
-// that runs ahead of the next card has to jump back when that card lands.
-function feedClock(p, cards) {
-  return cards[cardsLandedAt(p, cards) - 1].time;
-}
-
-// The app icon on a notification: Дали's head, the customer's initial, or
-// the business's own app for what reaches the owner. No other company's logo.
-function PhoneIcon({ who, name }) {
-  // a staff member's own face on their own work
-  if (STAFF_IDS.has(who)) {
-    return (
-      <StaffAvatar id={who} zoom={1} />
-    );
-  }
-  if (who === "owner" || who === "summary") {
-    return <span className="h-[22px] w-[22px] shrink-0 rounded-[6px] bg-gradient-to-br from-sky-400 to-brand-500" aria-hidden />;
-  }
-  return (
-    <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px] bg-brand-500/25 text-[11px] font-semibold text-sky-300" aria-hidden>
-      {name.slice(0, 1)}
-    </span>
-  );
-}
-
-const phoneText = "mt-1 text-[12.5px] leading-[1.42] text-fg/85";
-const STAFF_IDS = new Set(["dali", "vira", "eho", "nova", "ora"]);
-// The order the team summary lists the others' work in, after Дали's.
-const SUMMARY_EXTRAS = ["vira", "ora", "nova", "eho"];
-
-function PhoneCard({ card, plan }) {
-  const { t } = useTranslation();
-  const staffLive = useStaffLive();
-  const raw = t(`day.feed.${card.key}`, { returnObjects: true });
-  // The team's evening summary: Дали's rows, then one row for each other staff
-  // member at work today — the same set whose moments the day just showed.
-  const c = card.key === "summaryTeam" && raw && typeof raw === "object"
-    ? { ...raw, rows: [
-        ...(t("day.feed.summaryTeam.dali", { returnObjects: true, n: plan ? plan.daliCount : 4 }) || []),
-        ...SUMMARY_EXTRAS.filter((id) => staffLive[id]).map((id) => t(`day.feed.summaryTeam.extra.${id}`)),
-      ] }
-    : raw;
-  const lit = card.who === "owner" || card.who === "summary";
-  return (
-    <div className={["rounded-[14px] border bg-[#111A3A]/95 px-3 py-2.5 shadow-[0_6px_22px_rgba(0,0,0,0.35)]", lit ? "border-sky-400/30" : "border-white/[0.09]"].join(" ")}>
-      <div className="flex items-center gap-2">
-        <PhoneIcon who={card.who} name={c.from || ""} />
-        <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-fg-muted">{c.from}</span>
-        <span className="shrink-0 text-[10.5px] tabular-nums text-fg-dim">{card.time}</span>
-      </div>
-      {c.title && <p className="mt-1.5 text-[13px] font-semibold leading-[1.3] text-fg">{c.title}</p>}
-      {c.body && <p className={phoneText}>{c.body}</p>}
-      {Array.isArray(c.rows) && (
-        <ul className="mt-2 flex flex-col gap-1.5 text-[12.5px] leading-[1.35] text-fg/85">
-          {c.rows.map((r) => (
-            <li key={r} className="flex items-center gap-2">
-              <span aria-hidden className="h-1 w-1 shrink-0 rounded-full bg-sky-400" />
-              {r}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-// `count` cards have landed; the newest FEED_VISIBLE show, newest first.
-// At rest (reduced motion, or no pixel room) nothing plays, so the whole day
-// is on the screen at once: the summary on top counts cards the visitor can
-// read, and so does a screen reader.
-function PhoneFeed({ count, animate, cards, plan }) {
-  if (!animate) {
-    return (
-      <div className="flex flex-col gap-2">
-        {cards.slice().reverse().map((card) => <PhoneCard key={card.key} card={card} plan={plan} />)}
-      </div>
-    );
-  }
-  // one card fewer once the summary lands, to leave room for the button under it
-  const visible = count >= cards.length ? FEED_VISIBLE - 1 : FEED_VISIBLE;
-  const shown = cards.slice(Math.max(0, count - visible), count).reverse();
-  return (
-    <div className="flex flex-col gap-2">
-      <AnimatePresence initial={false} mode="popLayout">
-        {shown.map((card) => (
-          <motion.div
-            key={card.key}
-            layout
-            initial={{ opacity: 0, y: -14, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12 }}
-            transition={{ type: "spring", stiffness: 260, damping: 30, mass: 0.7 }}
-          >
-            <PhoneCard card={card} plan={plan} />
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// The device: a plain frame, no brand marks, no wallpaper. `progress`
-// undefined is the phone at rest on the end of the day (reduced motion).
-function OwnerPhone({ progress, plan, className = "" }) {
-  const { t } = useTranslation();
-  const { open: openDemoRequest } = useDemoRequest();
-  const cards = plan.cards;
-  // a team at work: the owner chooses which staff to ask about, so nothing is preset
-  const team = plan.summaryKey === "summaryTeam";
-  const animate = !!progress;
-  const atRest = useMotionValue(1);
-  const [count, setCount] = React.useState(() => (progress ? cardsLandedAt(progress.get(), cards) : cards.length));
-  const [clock, setClock] = React.useState(() => (progress ? feedClock(progress.get(), cards) : cards[cards.length - 1].time));
-  // A new plan (a switch changed while the page was open) starts the phone over with it.
-  React.useEffect(() => {
-    const p = progress ? progress.get() : 1;
-    setCount(progress ? cardsLandedAt(p, cards) : cards.length);
-    setClock(progress ? feedClock(p, cards) : cards[cards.length - 1].time);
-  }, [cards, progress]);
-  useMotionValueEvent(progress ?? atRest, "change", (p) => {
-    if (!progress) return;
-    const n = cardsLandedAt(p, cards);
-    setCount((c) => (c === n ? c : n));
-    const label = feedClock(p, cards);
-    setClock((l) => (l === label ? l : label));
-  });
-  const done = count >= cards.length;
-  // the same preset as the section's own «Хүсэлт илгээх» under the phone
-  const cta = (
-    <>
-      <button
-        type="button"
-        tabIndex={done ? 0 : -1}
-        onClick={() => openDemoRequest(team ? [] : ["dali"])}
-        className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[14px] bg-sky-400 px-4 text-[14px] font-semibold text-ink-950 shadow-[0_8px_24px_rgba(56,189,248,0.35)] transition-colors hover:bg-sky-300"
-      >
-        {t("day.phone.cta")}
-        <span aria-hidden>→</span>
-      </button>
-      <p className="mt-2 text-center text-[11px] text-fg-dim">{t("day.phone.ctaHint")}</p>
-    </>
-  );
-  return (
-    <div className={["relative w-[240px] sm:w-[270px]", className].join(" ")} role="group" aria-label={t("day.phone.alt")}>
-      <div className="day-phone rounded-[42px] border border-white/[0.14] bg-[#0B1022] p-[7px] shadow-[0_30px_80px_rgba(0,0,0,0.55),inset_0_0_0_1px_rgba(255,255,255,0.04)]">
-        <div className={["relative overflow-hidden rounded-[36px] bg-[#070C1F]", animate ? "h-[500px] sm:h-[560px]" : "pb-8"].join(" ")}>
-          {/* status bar */}
-          <div className="flex items-center justify-between px-6 pt-4 text-[12px] font-semibold text-fg/90">
-            <span className="tabular-nums">{clock}</span>
-            <span className="flex items-center gap-1.5" aria-hidden>
-              <span className="flex items-end gap-[2px]">
-                {[3, 5, 7, 9].map((h) => <span key={h} className="w-[3px] rounded-[1px] bg-fg/85" style={{ height: h }} />)}
-              </span>
-              <span className="ml-1 h-[10px] w-[20px] rounded-[3px] border border-fg/60 p-[1.5px]"><span className="block h-full w-[70%] rounded-[1px] bg-fg/85" /></span>
-            </span>
-          </div>
-          <span aria-hidden className="absolute left-1/2 top-[11px] h-[22px] w-[74px] -translate-x-1/2 rounded-full bg-black" />
-
-          <div className="relative mx-3 mt-5">
-            <PhoneFeed count={count} animate={animate} cards={cards} plan={plan} />
-          </div>
-
-          {animate ? (
-            <>
-              {/* the bottom of the stack fades out under the door in */}
-              <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#070C1F] via-[#070C1F]/85 to-transparent" />
-              <div
-                className={[
-                  "absolute inset-x-3 bottom-7 transition-[opacity,transform] duration-500 ease-out",
-                  done ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
-                ].join(" ")}
-                aria-hidden={!done}
-              >
-                {cta}
-              </div>
-            </>
-          ) : (
-            <div className="mx-3 mt-4">{cta}</div>
-          )}
-
-          <span aria-hidden className="absolute bottom-2 left-1/2 h-[4px] w-[96px] -translate-x-1/2 rounded-full bg-fg/40" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// The day plays on a clock, not on the scrollbar: the section is ordinary
-// height, the sequence starts when it comes into view, plays once, and rests
-// on the summary with the button on it. Scrolling past is just scrolling.
-// A plan (scenes.js dayPlan) sets its own length: 36 s for today's day, a little
-// longer for each staff member whose work it adds, at the same pace per card.
-// A new plan restarts the day from the beginning.
-function useTimedProgress(ref, seconds, disabled, restartKey) {
-  const progress = useMotionValue(0);
-  React.useEffect(() => {
-    const el = ref.current;
-    if (disabled || !el) return undefined;
-
-    progress.set(0);
-    let raf = 0;
-    let running = false;
-    let visible = false;
-    let finished = false;
-    let startedAt = 0;
-    let elapsed = 0; // survives a pause, so leaving and returning resumes
-
-    const frame = (now) => {
-      raf = 0;
-      if (!running) return;
-      const p = Math.min(1, (elapsed + (now - startedAt)) / (seconds * 1000));
-      progress.set(p);
-      if (p >= 1) {
-        running = false;
-        finished = true;
-        return;
-      }
-      raf = requestAnimationFrame(frame);
-    };
-
-    const update = () => {
-      const should = visible && !document.hidden && !finished;
-      if (should && !running) {
-        running = true;
-        startedAt = performance.now();
-        raf = requestAnimationFrame(frame);
-      } else if (!should && running) {
-        running = false;
-        elapsed += performance.now() - startedAt;
-        if (raf) cancelAnimationFrame(raf);
-        raf = 0;
-      }
-    };
-
-    // -12%: the sequence waits until the scene is properly on screen rather
-    // than starting while its first pixel row is still under the fold
-    const io = new IntersectionObserver((entries) => {
-      visible = entries.some((e) => e.isIntersecting);
-      update();
-    }, { rootMargin: "-12% 0px" });
-    io.observe(el);
-    document.addEventListener("visibilitychange", update);
-
-    return () => {
-      running = false;
-      if (raf) cancelAnimationFrame(raf);
-      io.disconnect();
-      document.removeEventListener("visibilitychange", update);
-    };
-  }, [ref, seconds, disabled, progress, restartKey]);
-  return progress;
-}
-
-// A name tag over each desk of the working-day room: Дали in service, the
-// other three «Удахгүй», so four people at work never reads as four in
-// service. Positioned from the stage's own geometry, in logical pixels.
-// In the window band above the heads (the glass runs from 3 to 30), so a tag
-// never covers a face at any scale.
-const DESK_TAG_Y = 4;
-
-function DeskTags({ geom, rowRightCss }) {
-  const { t } = useTranslation();
-  const staffLive = useStaffLive();
-  // the same sum the scene does with it, so tag and desk agree
-  const rowRight = rowRightCss != null ? rowRightCss / geom.scale : Infinity;
-  return deskCentres(geom.W, rowRight).map(({ id, x }) => {
-    const live = staffLive[id];
-    return (
-      <span
-        key={id}
-        className="absolute flex -translate-x-1/2 flex-col items-center whitespace-nowrap rounded-[8px] border border-white/[0.12] bg-ink-950/80 px-2 py-0.5 text-center leading-[1.3] backdrop-blur-sm sm:flex-row sm:gap-1 sm:rounded-full"
-        style={{ left: geom.left + x * geom.scale, top: DESK_TAG_Y * geom.scale }}
-      >
-        <span className="flex items-center gap-1 text-[11px] font-medium text-fg">
-          {live && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-sky-400" />}
-          {t(`office.agents.${id}.name`)}
-        </span>
-        <span className={["text-[10px] sm:text-[11px]", live ? "text-sky-300" : "text-fg-dim"].join(" ")}>
-          <span aria-hidden className="hidden sm:inline">· </span>
-          {t(live ? "day.desk.live" : "day.desk.soon")}
-        </span>
-      </span>
-    );
-  });
-}
-
-// Where the owner's phone starts covering the room, in CSS pixels from the
-// room's left edge, or null when the phone sits under the room (below lg).
-// Measured, not derived from breakpoints: the stage is narrower than the
-// viewport by the scrollbar, which put a derived edge 15px wrong at 1024px.
-// It is measured again whenever the page lays out anew: a resize, and the
-// first frames after mount, while fonts and the stage settle.
-function usePhoneEdge(bandRef, phoneRef) {
-  const [edge, setEdge] = React.useState(null);
-  React.useLayoutEffect(() => {
-    const band = bandRef.current;
-    const phone = phoneRef.current;
-    if (!band || !phone) return undefined;
-    const measure = () => {
-      // from the band, not the canvas: the canvas is sized only once the atlas
-      // arrives, and before that its box is a sliver in the middle. The two
-      // left edges differ by under one logical pixel once it is.
-      const b = band.getBoundingClientRect();
-      const ph = phone.getBoundingClientRect();
-      const covers = ph.width > 0 && ph.top < b.bottom && ph.bottom > b.top && ph.left > b.left + b.width / 2;
-      const next = covers ? Math.round(ph.left - b.left - 28) : null;
-      setEdge((e) => (e === next ? e : next));
-    };
-    const ro = new ResizeObserver(measure);
-    ro.observe(band);
-    ro.observe(phone);
-    window.addEventListener("resize", measure);
-    measure();
-    let frames = 0;
-    let raf = requestAnimationFrame(function again() {
-      measure();
-      if (++frames < 30) raf = requestAnimationFrame(again);
-    });
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measure);
-      cancelAnimationFrame(raf);
-    };
-  }, [bandRef, phoneRef]);
-  return edge;
-}
-
-function WorkingDay() {
-  const { t } = useTranslation();
-  const staffLive = useStaffLive();
-  // who works today follows the launch switches; with only Дали live this is the
-  // day the section has always shown
-  const plan = dayPlan(staffLive);
-  const team = plan.summaryKey === "summaryTeam";
-  const reduced = useReducedMotion();
-  const { error } = useStaffAtlas();
-  const dayRef = React.useRef(null);
-  const still = useMotionValue(0.93);
-  const progress = useTimedProgress(dayRef, plan.seconds, reduced || !!error, plan);
-  const bandRef = React.useRef(null);
-  const phoneRef = React.useRef(null);
-  const phoneEdge = usePhoneEdge(bandRef, phoneRef);
-  // read on every frame through a ref, so the stage is not rebuilt on resize
-  const edgeRef = React.useRef(phoneEdge);
-  edgeRef.current = phoneEdge;
-  const planRef = React.useRef(plan);
-  planRef.current = plan;
-  const drawDay = React.useCallback((ctx, img, view) => drawWorkingDay(ctx, img, { ...view, rowRightCss: edgeRef.current, plan: planRef.current }), []);
-  const drawStill = React.useCallback((ctx, img, view) => drawWorkingDay(ctx, img, { ...view, plan: planRef.current }), []);
-  const tags = React.useCallback((geom) => <DeskTags geom={geom} rowRightCss={phoneEdge} />, [phoneEdge]);
-
-  const heading = (
-    <Container>
-      <h2 className="max-w-[18ch] font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px] lg:text-[44px]">
-        {t("day.title")}
-      </h2>
-      <p className="mt-4 max-w-[34rem] text-[16px] leading-[1.6] text-fg-muted sm:text-[17px]">{dayLead(t, staffLive)}</p>
-    </Container>
-  );
-
-  const closing = (
-    <Container>
-      <div className="mt-14 flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-[46ch] text-[15px] leading-[1.6] text-fg-muted">{t(team ? "staffText.day.closing" : "day.closing")}</p>
-        <MagneticButton href="#demo" variant="primary" demoServices={team ? undefined : ["dali"]}>{t("day.phone.cta")}</MagneticButton>
-      </div>
-    </Container>
-  );
-
-  // Reduced motion, or no atlas: the room held at the evening and the phone
-  // at rest on the end of the day. Every card is text in the DOM, so this
-  // reads correctly even if no canvas ever appears.
-  if (reduced || error) {
-    return (
-      <section className="py-20 md:py-28">
-        {heading}
-        <div className="relative mt-10">
-          {!error && (
-            <div className="day-band">
-              <PixelStage draw={drawStill} logicalH={DAY_H} scale={DAY_SCALE} minW={STAFF_HERO_MIN_W} progress={still} label={daySceneAlt(t, staffLive)} overlay={tags} />
-            </div>
-          )}
-          <Container className="mt-8 flex justify-center">
-            <OwnerPhone plan={plan} />
-          </Container>
-        </div>
-        {closing}
-      </section>
-    );
-  }
-
-  return (
-    <section className="relative pb-20 pt-10 md:pb-28 md:pt-14">
-      {heading}
-
-      <div ref={dayRef} className="relative mt-10 lg:min-h-[640px] lg:py-10">
-        <div className="relative lg:absolute lg:inset-x-0 lg:top-1/2 lg:-translate-y-1/2">
-          <div ref={bandRef} className="day-band">
-            <PixelStage
-              draw={drawDay}
-              logicalH={DAY_H}
-              scale={DAY_SCALE}
-              minW={STAFF_HERO_MIN_W}
-              progress={progress}
-              label={daySceneAlt(t, staffLive)}
-              overlay={tags}
-            />
-          </div>
-
-          {/* the phone: under the room on a phone, in front of it on a desk */}
-          <div className="relative -mt-14 flex justify-center lg:absolute lg:inset-0 lg:mt-0 lg:block">
-            <Container className="lg:relative lg:h-full">
-              <div ref={phoneRef} className="flex justify-center lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:justify-end">
-                <OwnerPhone progress={progress} plan={plan} />
-              </div>
-            </Container>
-          </div>
-        </div>
-      </div>
-
-      {closing}
-    </section>
-  );
-}
-
-// The four, named once. Not cards: the owner's complaint was that the same
-// priced, profiled cards appeared again and again down the page. Prices live
-// on /pricing and the job descriptions on /office, so this is a type list —
-// portrait, name, role, and whether they are in service yet.
-function TheFour() {
-  const { t } = useTranslation();
-  const staffLive = useStaffLive();
-  return (
-    <section className="py-20 md:py-28">
-      <Container>
-        <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="font-display text-[30px] font-semibold leading-[1.1] tracking-tightest text-fg sm:text-[38px]">
-            {theFourTitle(t, staffLive)}
-          </h2>
-          <Link to="/office" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
-            {t("hero.buttons.seeWork")}
-            <span aria-hidden>&rsaquo;</span>
-          </Link>
-        </div>
-        {/* the one split that matters on this list: four face the customers, one faces the owner */}
-        <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.55] text-fg-muted">{theFourLead(t, staffLive)}</p>
-
-        <StaggerGroup className="mt-8 md:mt-10" stagger={0.06}>
-          {ALL_STAFF.map((id) => (
-            <StaffRow key={id} id={id} />
-          ))}
-        </StaggerGroup>
-      </Container>
-    </section>
-  );
-}
-
-function StaffRow({ id }) {
-  const { t } = useTranslation();
-  const live = useStaffLive()[id];
-  return (
-    <StaggerItem y={12}>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.07] py-5 sm:h-[96px] sm:flex-nowrap sm:py-0">
-        <StaffAvatar id={id} zoom={3} />
-        <span className="min-w-0 flex-1">
-          <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">
-            {t(`office.agents.${id}.name`)}
-          </span>
-          <span className="block text-[13px] text-fg-muted">{t(`office.agents.${id}.role`)}</span>
-        </span>
-        {/* the live dot is this section's one accent */}
-        <span className="inline-flex shrink-0 items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-dim">
-          <span aria-hidden className={["h-1 w-1 rounded-full", live ? "bg-sky-400" : "bg-fg-dim"].join(" ")} />
-          {t(live ? "office.status.live" : "office.status.soon")}
-        </span>
-      </div>
-    </StaggerItem>
-  );
-}
-
 // The page's one bright moment, and its only contradiction: staff by the
 // month, a website once. ink-700 and ink-600 appear nowhere else here. No
 // image — the client mock is one section above, and repeating it is exactly
@@ -4476,157 +3020,981 @@ function NotFoundPage() {
   );
 }
 
-// -------------------------------------------------------- how it works
-// Three channels in, Дали in the middle, the owner out the far side. Kept
-// from the redesign preview (founder, 2026-09-27) in the live site's own type
-// and spacing. What reaches the owner is named «танд»: the channel the
-// details travel by is an internal detail and never shown to a customer.
-const FLOW_BEAM = { pathColor: "#8B9FC4", pathOpacity: 0.18, gradientStartColor: "#60C8FF", gradientStopColor: "#2563EB" };
+// ---------------------------------------------------------------------------
+// The landing page tells one story, once: Дали answering a customer at 02:14,
+// the whole day on one clock, the team, the honest terms, the website, and an
+// open thread to Дали. One motion language throughout: things arrive the way a
+// message arrives (ARRIVE), and only where an arrival means something. Nothing
+// waits hidden for the scroll, and under reduced motion everything is simply
+// there, finished.
 
-function FlowGlyph({ kind }) {
-  if (kind === "facebook") {
-    return (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
-        <path d="M22 12a10 10 0 1 0-11.6 9.9V14.9H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3V22A10 10 0 0 0 22 12z" />
-      </svg>
-    );
-  }
-  if (kind === "instagram") {
-    return (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-        <rect x="3" y="3" width="18" height="18" rx="5" />
-        <circle cx="12" cy="12" r="4" />
-        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-      </svg>
-    );
-  }
-  if (kind === "website") {
-    return (
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" />
-      </svg>
-    );
-  }
-  // the owner: a person, not an app
+// A message landing: quick, settled, no bounce. Every arrival on the page uses it.
+const ARRIVE = { type: "spring", stiffness: 420, damping: 34, mass: 0.7 };
+const ARRIVE_FROM = { opacity: 0, y: 10, scale: 0.98 };
+const ARRIVE_TO = { opacity: 1, y: 0, scale: 1 };
+
+function MessengerGlyph({ className = "h-4 w-4" }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.35.27.57l.05 1.78c.02.57.6.94 1.12.71l1.99-.88c.17-.07.36-.09.53-.04.91.25 1.89.39 2.9.39 5.64 0 10-4.13 10-9.7S17.64 2 12 2Zm6 7.46-2.94 4.66a1.5 1.5 0 0 1-2.17.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66a1.5 1.5 0 0 1 2.17-.4l2.34 1.75a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63Z" />
     </svg>
   );
 }
 
-function FlowNode({ nodeRef, label, big = false, lit = false, children }) {
+// The page's one action: a conversation with Дали on Messenger, which is both
+// the product and its best demonstration (founder, 2026-10-02). It is the only
+// filled light-blue control on the landing page.
+function MessengerCta({ className = "", compact = false, onClick }) {
+  const { t } = useTranslation();
   return (
-    <div className="relative z-10 flex flex-col items-center gap-2">
+    <a
+      href={DEMO_MESSENGER}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={onClick}
+      className={[
+        "pressable inline-flex items-center justify-center gap-2.5 rounded-xl bg-accent font-semibold tracking-tight text-ink-950 transition-colors duration-200 hover:bg-[#8AD6FF] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950",
+        compact ? "min-h-[40px] px-4 text-[13.5px]" : "min-h-[52px] px-6 text-[15.5px]",
+        className,
+      ].join(" ")}
+    >
+      <MessengerGlyph className={compact ? "h-4 w-4" : "h-[18px] w-[18px]"} />
+      {t("contact.messengerCta")}
+    </a>
+  );
+}
+
+// The quiet way in: the request form, as a text button beside the action.
+function RequestLink({ services, className = "" }) {
+  const { t } = useTranslation();
+  const { open } = useDemoRequest();
+  return (
+    <button
+      type="button"
+      onClick={() => open(services)}
+      className={[
+        "inline-flex min-h-[44px] items-center gap-1.5 rounded-md px-1 text-[15.5px] font-medium text-fg-muted transition-colors hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/70",
+        className,
+      ].join(" ")}
+    >
+      {t("hero.buttons.request")}
+      <span aria-hidden>&rsaquo;</span>
+    </button>
+  );
+}
+
+// ------------------------------------------------------------ Дали, answering
+// The proof, first thing on the page: a Messenger thread as the customer sees
+// it, at 02:14. The customer's line is typed into the composer and sent; Дали
+// reads it, types, and answers; the booking answer carries the salon's booking
+// link the way Messenger shows a link. Then the visitor asks one of three
+// questions, one of which Дали will not answer herself. Every line comes from
+// the locale (liveDemo.*, salonMock.*). It plays once, from when it is on
+// screen; under reduced motion the finished thread and the questions are there.
+const CHAT_SCRIPT = [
+  { from: "user", key: "user1" },
+  { from: "ai", key: "ai1" },
+  { from: "user", key: "user2" },
+  { from: "ai", key: "ai2", link: true },
+  { from: "ai", key: "ai3" },
+];
+const CHAT_CLOCK = "02:14";
+
+// Questions the thread has not asked yet, each with the answer the site already
+// publishes for it; the last is the one Дали hands to the owner instead.
+const ASK_CHIPS = [
+  { id: "price", label: "day.feed.priceAsk.body", reply: "day.feed.priceReply.body" },
+  { id: "where", label: "hero.switchboard.incoming.4.text", reply: "hero.switchboard.incoming.4.reply" },
+  { id: "pay", label: "hero.switchboard.incoming.6.text", reply: "hero.switchboard.incoming.6.reply" },
+  { id: "discount", label: "liveDemo.ask.chip3", reply: null },
+];
+
+function ChatRow({ from, avatar = true, children }) {
+  const mine = from === "user";
+  return (
+    <div className={["flex w-full items-end gap-2", mine ? "justify-end" : "justify-start"].join(" ")}>
+      {!mine && (avatar ? <StaffAvatar id="dali" zoom={1} /> : <span aria-hidden className="w-5 shrink-0" />)}
       <div
-        ref={nodeRef}
         className={[
-          "flex items-center justify-center overflow-hidden rounded-full border",
-          big ? "h-[72px] w-[72px] sm:h-[84px] sm:w-[84px]" : "h-12 w-12 sm:h-14 sm:w-14",
-          lit ? "border-sky-400/40 bg-ink-800 text-sky-400 shadow-[0_0_40px_-10px_rgba(56,189,248,0.6)]" : "border-white/10 bg-ink-900 text-fg-muted",
+          "max-w-[80%] px-3.5 py-2 text-[14.5px] leading-[1.45]",
+          mine
+            ? "rounded-[20px] rounded-br-[6px] bg-accent text-ink-950"
+            : "rounded-[20px] rounded-bl-[6px] bg-white/[0.08] text-fg",
         ].join(" ")}
       >
         {children}
       </div>
-      <span className="text-center text-[13px] leading-tight text-fg-muted">{label}</span>
     </div>
   );
 }
 
-function ChannelBeams() {
+function ChatArrive({ children, reduced, className = "" }) {
+  return (
+    <motion.div
+      layout={!reduced}
+      initial={reduced ? false : ARRIVE_FROM}
+      animate={ARRIVE_TO}
+      transition={ARRIVE}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function TypingDots() {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-end gap-2">
+      <StaffAvatar id="dali" zoom={1} />
+      <div className="rounded-[20px] rounded-bl-[6px] bg-white/[0.08] px-4 py-3">
+        <span className="chat-dots flex items-center gap-1" aria-hidden>
+          <span /><span /><span />
+        </span>
+        <span className="sr-only">{t("liveDemo.widget.typing")}</span>
+      </div>
+    </div>
+  );
+}
+
+// The booking link inside Дали's answer, as Messenger draws a link.
+function BookingLinkCard() {
+  const { t } = useTranslation();
+  return (
+    <div className="ml-7 mt-1 w-[72%] max-w-[260px] overflow-hidden rounded-[16px] border border-white/[0.08] bg-ink-800">
+      <div className="flex items-center gap-2 border-b border-white/[0.06] px-3.5 py-2.5">
+        <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-400/15 text-emerald-300">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 3c-3.5 4-7 7-7 11a7 7 0 0 0 14 0c0-4-3.5-7-7-11z" />
+            <path d="M12 11v8" />
+          </svg>
+        </span>
+        <span className="text-[12.5px] font-semibold text-fg">{t("salonMock.brand")}</span>
+      </div>
+      <div className="px-3.5 py-3">
+        <p className="font-display text-[15px] font-semibold tracking-tight text-fg">{t("salonMock.booking.title")}</p>
+        <p className="mt-1 text-[12.5px] leading-[1.4] text-fg-muted">{t("salonMock.sub")}</p>
+      </div>
+    </div>
+  );
+}
+
+// Handing over: the conversation leaves Дали and reaches a person.
+function HandoffCard({ question }) {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-[16px] border border-accent/30 bg-ink-800 px-4 py-3.5">
+      <p className="flex items-center gap-2 text-[13.5px] font-semibold text-fg">
+        <span aria-hidden className="flex h-5 w-5 items-center justify-center rounded-full bg-accent/15 text-accent">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        </span>
+        {t("liveDemo.ask.handoffTitle")}
+      </p>
+      <p className="mt-2 text-[12.5px] text-fg-muted">{t("liveDemo.ask.handoffLine")}</p>
+      <p className="mt-0.5 text-[14px] leading-[1.45] text-fg">{question}</p>
+    </div>
+  );
+}
+
+function DaliChat() {
   const { t } = useTranslation();
   const reduced = useReducedMotion();
-  const box = React.useRef(null);
-  const fb = React.useRef(null);
-  const ig = React.useRef(null);
-  const web = React.useRef(null);
-  const dali = React.useRef(null);
-  const owner = React.useRef(null);
-  // the light runs only while the diagram is on screen
-  const inView = useInView(box, { amount: 0.3 });
-  const animate = inView && !reduced;
-  return (
-    <div ref={box} role="img" aria-label={t("how.diagramLabel")} className="relative mx-auto flex h-[280px] w-full max-w-[720px] items-center justify-between px-1 sm:h-[320px] sm:px-8">
-      <div className="flex h-full flex-col justify-between py-1">
-        <FlowNode nodeRef={fb} label="Facebook"><FlowGlyph kind="facebook" /></FlowNode>
-        <FlowNode nodeRef={ig} label="Instagram"><FlowGlyph kind="instagram" /></FlowNode>
-        <FlowNode nodeRef={web} label={t("how.website")}><FlowGlyph kind="website" /></FlowNode>
-      </div>
-      <FlowNode nodeRef={dali} label={t("office.agents.dali.name")} big lit>
-        <StaffAvatar id="dali" zoom={3} />
-      </FlowNode>
-      <FlowNode nodeRef={owner} label={t("how.owner")} lit>
-        <FlowGlyph kind="owner" />
-      </FlowNode>
+  const hostRef = React.useRef(null);
+  const scrollRef = React.useRef(null);
+  const inView = useInView(hostRef, { once: true, amount: 0.3 });
+  // The script reads its lines through a ref, so a language switch mid-play
+  // changes the words without restarting the conversation from the top.
+  const tRef = React.useRef(t);
+  tRef.current = t;
 
-      <AnimatedBeam containerRef={box} fromRef={fb} toRef={dali} curvature={-40} endYOffset={-10} duration={4} animate={animate} {...FLOW_BEAM} />
-      <AnimatedBeam containerRef={box} fromRef={ig} toRef={dali} duration={4} delay={0.6} animate={animate} {...FLOW_BEAM} />
-      <AnimatedBeam containerRef={box} fromRef={web} toRef={dali} curvature={40} endYOffset={10} duration={4} delay={1.2} animate={animate} {...FLOW_BEAM} />
-      <AnimatedBeam containerRef={box} fromRef={dali} toRef={owner} duration={3} delay={2} animate={animate} {...FLOW_BEAM} />
+  const [shown, setShown] = React.useState(() => (reduced ? CHAT_SCRIPT.length : 0));
+  const [draft, setDraft] = React.useState("");
+  const [typing, setTyping] = React.useState(false);
+  const [seen, setSeen] = React.useState(() => (reduced ? 2 : -1));
+  const [phase, setPhase] = React.useState(() => (reduced ? "ask" : "script"));
+  // what a screen reader hears when Дали answers a question the visitor chose
+  const [announce, setAnnounce] = React.useState("");
+  const [asked, setAsked] = React.useState([]);
+  const askTimers = React.useRef([]);
+  React.useEffect(() => () => askTimers.current.forEach(clearTimeout), []);
+
+  // On a phone the site's floating chat button would sit on this thread's send
+  // button; it steps aside while the thread is on screen (index.css).
+  React.useEffect(() => {
+    const el = hostRef.current;
+    if (!el) return undefined;
+    const root = document.documentElement;
+    const io = new IntersectionObserver((entries) => {
+      root.classList.toggle("dali-demo-visible", entries.some((e) => e.isIntersecting));
+    }, { threshold: 0.15 });
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      root.classList.remove("dali-demo-visible");
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (reduced) {
+      setShown(CHAT_SCRIPT.length);
+      setSeen(2);
+      setTyping(false);
+      setDraft("");
+      setPhase((p) => (p === "script" ? "ask" : p));
+      return undefined;
+    }
+    if (!inView) return undefined;
+    let cancelled = false;
+    const timers = [];
+    const wait = (ms) => new Promise((resolve) => { timers.push(setTimeout(resolve, ms)); });
+    const run = async () => {
+      await wait(450);
+      for (let i = 0; i < CHAT_SCRIPT.length; i += 1) {
+        if (cancelled) return;
+        const m = CHAT_SCRIPT[i];
+        const text = tRef.current(`liveDemo.messages.${m.key}`);
+        if (m.from === "user") {
+          // typed at a person's pace, capped so a long line does not drag
+          const chars = Array.from(text);
+          const per = Math.min(38, 1300 / Math.max(1, chars.length));
+          for (let c = 1; c <= chars.length; c += 1) {
+            await wait(per);
+            if (cancelled) return;
+            setDraft(chars.slice(0, c).join(""));
+          }
+          await wait(260);
+          if (cancelled) return;
+          setDraft("");
+          setShown(i + 1);
+          await wait(520);
+          if (cancelled) return;
+          setSeen(i);
+        } else {
+          const prevAi = i > 0 && CHAT_SCRIPT[i - 1].from === "ai";
+          await wait(prevAi ? 650 : 240);
+          if (cancelled) return;
+          setTyping(true);
+          // longer answers take a little longer to write, within a beat
+          await wait(Math.max(900, Math.min(1700, Array.from(text).length * 20)));
+          if (cancelled) return;
+          setTyping(false);
+          setShown(i + 1);
+        }
+      }
+      await wait(700);
+      // never overwrite a hand-over the visitor has already started
+      if (!cancelled) setPhase((p) => (p === "script" ? "ask" : p));
+    };
+    run().catch((err) => {
+      // a broken script must not leave a half-typed thread: show it finished
+      console.error("DaliChat script failed:", err);
+      if (!cancelled) {
+        setTyping(false);
+        setDraft("");
+        setShown(CHAT_SCRIPT.length);
+        setPhase("ask");
+      }
+    });
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+    };
+  }, [reduced, inView]);
+
+  // keep the newest line in view, inside the thread only
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return undefined;
+    const id = requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: reduced ? "auto" : "smooth" });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [shown, typing, asked, phase, reduced]);
+  // and when the thread's size changes without a new line (web fonts arriving,
+  // the questions appearing under it), settle back on the newest line
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const ro = new ResizeObserver(() => { el.scrollTop = el.scrollHeight; });
+    ro.observe(el);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+    return () => ro.disconnect();
+  }, []);
+
+  const ask = React.useCallback(
+    (chip) => {
+      if (phase === "answering") return;
+      askTimers.current.forEach(clearTimeout);
+      askTimers.current = [];
+      setPhase("answering");
+      setAsked((prev) => [...prev, { id: `${chip.id}-${prev.length}`, chip, state: "sent" }]);
+      const settle = () => {
+        setAsked((prev) => prev.map((a, i) => (i === prev.length - 1 ? { ...a, state: "answered" } : a)));
+        setPhase(chip.reply ? "ask" : "handover");
+        setAnnounce(chip.reply ? t(chip.reply) : `${t("liveDemo.ask.decline")} ${t("liveDemo.messages.ai3")} ${t("liveDemo.ask.handoffTitle")}`);
+      };
+      if (reduced) settle();
+      else askTimers.current.push(setTimeout(settle, 1000));
+    },
+    [phase, reduced, t]
+  );
+
+  const lastUser = CHAT_SCRIPT.reduce((acc, m, i) => (m.from === "user" && i < shown ? i : acc), -1);
+  // «seen» sits under the customer's last line until Дали's answer lands under it
+  const showSeen = seen >= 0 && seen === lastUser && shown === lastUser + 1;
+  const canAsk = phase !== "script";
+  const answering = phase === "answering";
+
+  return (
+    <div ref={hostRef} className="mx-auto w-full min-w-0 max-w-[420px] lg:max-w-[380px]">
+      {/* on a desk the thread sits in a phone; on a phone it is the screen itself */}
+      <div className="lg:rounded-[52px] lg:border lg:border-white/[0.12] lg:bg-[#0B1022] lg:p-[9px] lg:shadow-[0_40px_100px_-30px_rgba(0,0,0,0.75)]">
+        <div className="flex flex-col overflow-hidden rounded-[28px] border border-white/[0.08] bg-ink-900 lg:rounded-[44px] lg:border-0">
+          <div aria-hidden className="relative hidden items-center justify-between px-7 pb-1 pt-3.5 text-[12.5px] font-semibold text-fg/90 lg:flex">
+            <span className="tabular-nums">{CHAT_CLOCK}</span>
+            <span className="absolute left-1/2 top-2.5 h-[24px] w-[84px] -translate-x-1/2 rounded-full bg-black" />
+            <span className="flex items-center gap-1.5">
+              <span className="flex items-end gap-[2px]">
+                {[3, 5, 7, 9].map((h) => <span key={h} className="w-[3px] rounded-[1px] bg-fg/85" style={{ height: h }} />)}
+              </span>
+              <span className="ml-1 h-[10px] w-[20px] rounded-[3px] border border-fg/60 p-[1.5px]"><span className="block h-full w-[70%] rounded-[1px] bg-fg/85" /></span>
+            </span>
+          </div>
+
+          {/* the page's header, as Messenger shows it */}
+          <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3">
+            <svg aria-hidden width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-accent">
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+            <span className="relative shrink-0">
+              <StaffAvatar id="dali" zoom={2} />
+              <span aria-hidden className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-ink-900 bg-emerald-400" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-[15px] font-semibold tracking-tight text-fg">{t("liveDemo.widget.businessName")}</span>
+              <span className="block text-[12px] text-fg-muted">{t("liveDemo.widget.statusOnline")}</span>
+            </span>
+          </div>
+
+          <div
+            ref={scrollRef}
+            role="log"
+            aria-live="off"
+            aria-label={t("liveDemo.title")}
+            className="h-[380px] overflow-y-auto overscroll-contain px-3.5 py-4 sm:h-[420px] lg:h-[372px]"
+            // earlier lines fade under the header instead of being cut by it
+            style={{ scrollbarWidth: "none", maskImage: "linear-gradient(to bottom, transparent 0, #000 28px)", WebkitMaskImage: "linear-gradient(to bottom, transparent 0, #000 28px)" }}
+          >
+            <div className="flex min-h-full flex-col justify-end gap-2">
+              <p className="mb-2 text-center text-[11.5px] font-medium tabular-nums text-fg-muted">{CHAT_CLOCK}</p>
+              <AnimatePresence initial={false}>
+                {CHAT_SCRIPT.slice(0, shown).map((m, i) => {
+                  const prev = CHAT_SCRIPT[i - 1];
+                  const next = CHAT_SCRIPT[i + 1];
+                  // one avatar per run of Дали's lines, on the last of them
+                  const avatar = m.from === "ai" && !(next && next.from === "ai" && i + 1 < shown);
+                  return (
+                    <ChatArrive key={m.key} reduced={reduced} className={prev && prev.from !== m.from ? "mt-2" : ""}>
+                      <ChatRow from={m.from} avatar={avatar}>{t(`liveDemo.messages.${m.key}`)}</ChatRow>
+                      {m.link && <BookingLinkCard />}
+                    </ChatArrive>
+                  );
+                })}
+                {showSeen && (
+                  <motion.div key="seen" initial={reduced ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.1 } }} className="flex justify-end pr-0.5">
+                    <StaffAvatar id="dali" zoom={1} className="scale-[0.7]" />
+                  </motion.div>
+                )}
+                {typing && (
+                  <ChatArrive key="typing" reduced={reduced} className="mt-2">
+                    <TypingDots />
+                  </ChatArrive>
+                )}
+                {asked.map((a) => (
+                  <React.Fragment key={a.id}>
+                    <ChatArrive reduced={reduced} className="mt-2">
+                      <ChatRow from="user">{t(a.chip.label)}</ChatRow>
+                    </ChatArrive>
+                    {a.state === "sent" && !reduced && (
+                      <ChatArrive key={`${a.id}-typing`} reduced={reduced} className="mt-2">
+                        <TypingDots />
+                      </ChatArrive>
+                    )}
+                    {a.state === "answered" && a.chip.reply && (
+                      <ChatArrive reduced={reduced} className="mt-2">
+                        <ChatRow from="ai">{t(a.chip.reply)}</ChatRow>
+                      </ChatArrive>
+                    )}
+                    {a.state === "answered" && !a.chip.reply && (
+                      <ChatArrive reduced={reduced} className="mt-2 flex flex-col gap-2">
+                        {/* a refusal is a normal thing for her to do, not an error */}
+                        <p className="py-1 text-center text-[12.5px] leading-[1.45] text-fg-muted">{t("liveDemo.ask.decline")}</p>
+                        <ChatRow from="ai">{t("liveDemo.messages.ai3")}</ChatRow>
+                        <HandoffCard question={t("liveDemo.ask.chip3")} />
+                      </ChatArrive>
+                    )}
+                  </React.Fragment>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* quick replies, then the composer: the customer's line is typed here */}
+          <div className="border-t border-white/[0.06] px-3 pb-3 pt-2.5">
+            {canAsk && (
+              <motion.div initial={reduced ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={ARRIVE} className="mb-2.5">
+                <p className="px-0.5 text-[12px] text-fg-muted">{t("liveDemo.ask.prompt")}</p>
+                <div className="-mx-3 mt-2 flex gap-1.5 overflow-x-auto px-3 pb-0.5" style={{ scrollbarWidth: "none" }}>
+                  {ASK_CHIPS.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      aria-disabled={answering}
+                      onClick={() => ask(c)}
+                      className={["pressable min-h-[44px] shrink-0 whitespace-nowrap rounded-full border border-accent/35 px-3.5 py-2 text-left text-[13px] leading-[1.3] text-accent transition-[background-color,opacity] hover:bg-accent/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/70", answering ? "opacity-40" : ""].join(" ")}
+                    >
+                      {t(c.label)}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+            <div className="flex items-center gap-2">
+              <div aria-hidden className={["min-h-[40px] flex-1 truncate rounded-full bg-white/[0.06] px-4 py-2.5 text-[14px]", draft ? "text-fg" : "text-fg-muted"].join(" ")}>
+                {draft || t("liveDemo.widget.inputPlaceholder")}
+                {draft && <span className="chat-caret" />}
+              </div>
+              <span aria-hidden className={["flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-200", draft ? "bg-accent text-ink-950" : "text-fg-dim"].join(" ")}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z" /></svg>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p className="sr-only" aria-live="polite">{announce}</p>
+      <p className="mt-3 text-center text-[12.5px] text-fg-muted">{t("liveDemo.example")}</p>
+      {phase === "handover" && (
+        <motion.p
+          initial={reduced ? false : { opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={ARRIVE}
+          className="mt-4 text-center text-[16px] font-medium leading-[1.45] text-fg"
+        >
+          {t("liveDemo.ask.reassure")}
+        </motion.p>
+      )}
     </div>
   );
 }
 
-function ChannelFlow() {
+function Hero() {
   const { t } = useTranslation();
-  const steps = t("how.steps", { returnObjects: true });
+  const staffLive = useStaffLive();
   return (
-    <section id="how" className="py-20 md:py-28">
+    <section id="top" className="relative pb-20 pt-24 sm:pt-28 md:pb-28 lg:pt-36">
       <Container>
-        <SectionHeader eyebrow={t("how.section")} title={t("how.title")} description={t("how.description")} />
-        <div className="mt-10 md:mt-14">
+        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-20 xl:gap-28">
+          <div className="min-w-0">
+            <h1 className="max-w-[16ch] font-display text-[36px] font-semibold leading-[1.06] tracking-tightest text-fg sm:text-[48px] lg:text-[60px]">
+              {t("hero.titleA11y")}
+            </h1>
+            <p className="mt-6 max-w-[34rem] text-[16.5px] leading-[1.6] text-fg-muted sm:text-[18px]">
+              {heroDescription(t, staffLive)}
+            </p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+              <MessengerCta className="w-full sm:w-auto" />
+              <RequestLink services={["dali"]} className="self-center sm:self-auto" />
+            </div>
+            <p className="mt-6 text-[14px] text-fg-muted">{t("hero.badge")}</p>
+          </div>
           <ErrorBoundary fallback={null}>
-            <ChannelBeams />
+            <DaliChat />
           </ErrorBoundary>
         </div>
-        <ol className="mx-auto mt-10 grid max-w-[980px] gap-x-8 md:mt-14 md:grid-cols-3">
-          {(Array.isArray(steps) ? steps : []).map((s, i) => (
-            <li key={s.title} className="border-t border-white/[0.07] py-5">
-              <span className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-fg-dim">
-                <span aria-hidden className="h-1 w-1 rounded-full bg-sky-400" />
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3 className="mt-2 font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">{s.title}</h3>
-              <p className="mt-2 text-[15px] leading-[1.55] text-fg-muted">{s.body}</p>
-            </li>
-          ))}
-        </ol>
       </Container>
     </section>
   );
 }
 
-// ------------------------------------------------------- data protection
-// Kept from the preview (founder, 2026-09-27). Rows in the staff list's own
-// shape; the two timed promises say their number in words, not a counter.
-function DataProtection() {
-  const { t } = useTranslation();
-  const items = t("dataProtection.items", { returnObjects: true });
+// ------------------------------------------------------------ the whole day
+// One clock for the whole day. The ring, the pixel office and the owner's
+// phone used to tell this three times; now it is told once, in the order it
+// happens. The moments are scenes.js dayPlan, so another staff member appears
+// here only once their launch switch is on. Scrolling moves the clock: a
+// message the clock has not reached yet is already on the page, dimmed, and
+// lights when the clock reaches it; scrolling back turns the clock back. The
+// clock reads scroll position and never moves it.
+//
+// One rAF loop writes through refs and runs only while the section is on
+// screen and the clock is still catching up; React does not re-render per
+// frame. Under reduced motion the day is shown finished and nothing moves.
+const DAY_OPEN = [10, 20]; // the hours a typical shop has someone at the counter
+
+const hourOf = (time) => {
+  const [h, m] = time.split(":").map(Number);
+  return h + m / 60;
+};
+
+const quarterClock = (hour) => {
+  const q = Math.floor((hour % 24) * 4) / 4; // quarter hours: a clock, not a slot machine
+  const hh = Math.floor(q);
+  const mm = Math.round((q - hh) * 60);
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+};
+
+const STAFF_IDS = new Set(["dali", "vira", "eho", "nova", "ora"]);
+// The order the team summary lists the others' work in, after Дали's.
+const SUMMARY_EXTRAS = ["vira", "ora", "nova", "eho"];
+
+function DayIcon({ who, name }) {
+  if (STAFF_IDS.has(who)) return <StaffAvatar id={who} zoom={1} />;
+  if (who === "owner" || who === "summary") {
+    return (
+      <span aria-hidden className="flex h-[22px] w-5 shrink-0 items-center justify-center rounded-[4px] bg-accent/15 text-accent">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></svg>
+      </span>
+    );
+  }
   return (
-    <section id="data" className="py-20 md:py-28">
-      <Container>
-        <SectionHeader eyebrow={t("dataProtection.section")} title={t("dataProtection.title")} description={t("dataProtection.description")} />
-        <ul className="mx-auto mt-10 grid max-w-[980px] gap-x-10 md:mt-14 md:grid-cols-2">
-          {(Array.isArray(items) ? items : []).map((it) => (
-            <li key={it.title} className="flex gap-4 border-t border-white/[0.07] py-5">
-              <span aria-hidden className="flex h-[44px] w-[40px] shrink-0 items-center justify-center rounded-[10px] bg-white/[0.05] text-sky-400">
-                <LockIcon className="h-4 w-4" />
-              </span>
-              <span className="min-w-0">
-                <span className="block font-display text-[17px] font-semibold tracking-tight text-fg sm:text-[19px]">{it.title}</span>
-                <span className="mt-1 block text-[15px] leading-[1.55] text-fg-muted">{it.body}</span>
-              </span>
+    <span aria-hidden className="flex h-[22px] w-5 shrink-0 items-center justify-center rounded-[4px] bg-white/[0.08] text-[11px] font-semibold text-fg-muted">
+      {name.slice(0, 1)}
+    </span>
+  );
+}
+
+function DayCard({ card, plan }) {
+  const { t } = useTranslation();
+  const staffLive = useStaffLive();
+  const raw = t(`day.feed.${card.key}`, { returnObjects: true });
+  // The team's evening summary: Дали's rows, then one row for each other staff
+  // member at work today, the same set whose moments the day just showed.
+  const c = card.key === "summaryTeam" && raw && typeof raw === "object"
+    ? { ...raw, rows: [
+        ...(t("day.feed.summaryTeam.dali", { returnObjects: true, n: plan.daliCount }) || []),
+        ...SUMMARY_EXTRAS.filter((id) => staffLive[id]).map((id) => t(`day.feed.summaryTeam.extra.${id}`)),
+      ] }
+    : raw;
+  if (!c || typeof c !== "object") return null;
+  const owner = card.who === "owner" || card.who === "summary";
+  return (
+    <div
+      data-at={hourOf(card.time)}
+      className={["day-card rounded-2xl border px-4 py-3.5", owner ? "border-accent/30 bg-ink-800" : "border-white/[0.07] bg-ink-900"].join(" ")}
+    >
+      <div className="flex items-center gap-2.5">
+        <DayIcon who={card.who} name={c.from || ""} />
+        <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-fg-muted">{c.from}</span>
+        <span className="shrink-0 text-[12px] tabular-nums text-fg-muted">{card.time}</span>
+      </div>
+      {c.title && <p className="mt-2 text-[15px] font-semibold leading-[1.35] text-fg">{c.title}</p>}
+      {c.body && <p className="mt-1.5 text-[14.5px] leading-[1.5] text-fg/90">{c.body}</p>}
+      {Array.isArray(c.rows) && (
+        <ul className="mt-2.5 space-y-1.5 text-[14.5px] leading-[1.4] text-fg/90">
+          {c.rows.map((r) => (
+            <li key={r} className="flex items-center gap-2.5">
+              <span aria-hidden className="h-1 w-1 shrink-0 rounded-full bg-accent" />
+              {r}
             </li>
           ))}
         </ul>
-        <div className="mt-8 text-center">
-          <a href="/privacy/" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] text-fg transition-colors hover:text-white">
-            {t("dataProtection.policy")}
-            <span aria-hidden>&rsaquo;</span>
-          </a>
+      )}
+    </div>
+  );
+}
+
+// A new moment starts with each customer's question and with each other staff
+// member's own work; Дали's answer and what reaches the owner belong to it.
+function dayMoments(cards) {
+  const out = [];
+  cards.forEach((card) => {
+    const opens = card.who === "customer" || card.who === "summary" || (STAFF_IDS.has(card.who) && card.who !== "dali");
+    if (opens || out.length === 0) out.push({ time: card.time, cards: [card] });
+    else out[out.length - 1].cards.push(card);
+  });
+  return out;
+}
+
+function DayLegend({ team, className = "" }) {
+  const { t } = useTranslation();
+  const closedHours = 24 - (DAY_OPEN[1] - DAY_OPEN[0]);
+  return (
+    <div className={["flex flex-col gap-2 text-[13.5px] text-fg-muted", className].join(" ")}>
+      <span className="inline-flex items-center gap-2.5">
+        <span aria-hidden className="h-1.5 w-5 rounded-full bg-white/25" />
+        {t("hero.ring.open", { from: "10:00", to: "20:00" })}
+      </span>
+      <span className="inline-flex items-center gap-2.5">
+        <span aria-hidden className="h-1.5 w-5 rounded-full bg-accent" />
+        {t(team ? "staffText.ring.closed" : "hero.ring.closed", { hours: closedHours })}
+      </span>
+    </div>
+  );
+}
+
+function DayClock() {
+  const { t } = useTranslation();
+  const staffLive = useStaffLive();
+  const reduced = useReducedMotion();
+  const plan = dayPlan(staffLive);
+  const team = plan.summaryKey === "summaryTeam";
+  const moments = React.useMemo(() => dayMoments(plan.cards), [plan]);
+  const first = hourOf(plan.cards[0].time);
+  const last = hourOf(plan.cards[plan.cards.length - 1].time);
+
+  const sectionRef = React.useRef(null);
+  const listRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const list = listRef.current;
+    const section = sectionRef.current;
+    if (!list || !section) return undefined;
+    const cards = Array.from(list.querySelectorAll("[data-at]"));
+    const times = cards.map((el) => Number(el.dataset.at));
+    // two clocks share one reading: the phone bar and the desk instrument
+    const timeEls = Array.from(section.querySelectorAll("[data-clock-time]"));
+    const markEls = Array.from(section.querySelectorAll("[data-clock-mark]"));
+    const fillEls = Array.from(section.querySelectorAll("[data-clock-fill]"));
+    let clockText = "";
+
+    const paint = (hour) => {
+      const p = Math.min(1, Math.max(0, hour / 24));
+      const mark = `translateX(${(p * 100).toFixed(3)}%)`;
+      const fill = `scaleX(${p.toFixed(4)})`;
+      markEls.forEach((el) => { el.style.transform = mark; });
+      fillEls.forEach((el) => { el.style.transform = fill; });
+      // the clock lands on a message's own time as it reaches it: the nearest
+      // one, so 02:15 reads 02:15 and not the 02:14 just before it
+      let exact = null;
+      let best = 0.06;
+      for (const h of times) {
+        const d = Math.abs(h - hour);
+        if (d < best) { best = d; exact = h; }
+      }
+      const text = exact != null ? quarterClockExact(exact) : quarterClock(hour);
+      if (text !== clockText) {
+        clockText = text;
+        timeEls.forEach((el) => { el.textContent = text; });
+      }
+    };
+
+    if (reduced) {
+      cards.forEach((el) => el.classList.add("is-on"));
+      paint(last);
+      return undefined;
+    }
+
+    // armed: from here on a message the clock has not reached is dimmed. Until
+    // this runs, and if it never does, every message shows at full strength.
+    list.classList.add("day-armed");
+    let target = first;
+    let shown = first;
+    let raf = 0;
+    let listening = false;
+    let started = false;
+
+    // Where the clock is: the reading line sits a little under the middle of
+    // the screen; between two messages the hour moves in proportion to how far
+    // the line has travelled from one to the next. All reads first, then the
+    // writes, so a scroll never forces a layout per card.
+    const measure = () => {
+      const vh = window.innerHeight;
+      const tops = cards.map((el) => el.getBoundingClientRect().top);
+      // near the end of the list the reading line drops to the bottom of the
+      // screen, so the last message lights before the section scrolls away
+      const end = list.getBoundingClientRect().bottom;
+      const line = end < vh ? vh : vh * 0.58;
+      let hour = first;
+      for (let i = 0; i < tops.length; i += 1) {
+        if (tops[i] > line) break;
+        if (i + 1 < tops.length) {
+          const span = tops[i + 1] - tops[i];
+          const f = span > 0 ? Math.min(1, Math.max(0, (line - tops[i]) / span)) : 1;
+          hour = times[i] + (times[i + 1] - times[i]) * f;
+        } else {
+          hour = times[i];
+        }
+      }
+      tops.forEach((top, i) => cards[i].classList.toggle("is-on", top <= line));
+      target = hour;
+    };
+
+    // a damped read: the clock eases toward the scroll position, never jumps
+    const frame = () => {
+      raf = 0;
+      shown += (target - shown) * 0.18;
+      if (Math.abs(target - shown) < 0.002) shown = target;
+      paint(shown);
+      if (shown !== target) raf = requestAnimationFrame(frame);
+    };
+    const kick = () => {
+      measure();
+      if (!raf) raf = requestAnimationFrame(frame);
+    };
+
+    const start = () => {
+      if (listening) return;
+      listening = true;
+      window.addEventListener("scroll", kick, { passive: true });
+      window.addEventListener("resize", kick);
+      measure();
+      // arriving from below (a reload mid-page, a jump link) the clock starts
+      // where the reader is, rather than sweeping the whole day to get there
+      if (!started) {
+        started = true;
+        shown = target;
+        paint(shown);
+      }
+      kick();
+    };
+    const stop = () => {
+      if (!listening) return;
+      listening = false;
+      window.removeEventListener("scroll", kick);
+      window.removeEventListener("resize", kick);
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    };
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) start();
+      else stop();
+    }, { rootMargin: "200px 0px" });
+    io.observe(section);
+    paint(first);
+
+    return () => {
+      io.disconnect();
+      stop();
+      list.classList.remove("day-armed");
+    };
+  }, [reduced, plan, first, last]);
+
+  // overflow-x clip: the marker layer is a full-width box moved by a transform,
+  // which would otherwise widen the page's scrollable area on a phone
+  const track = (
+    <div className="relative h-1.5 w-full overflow-x-clip rounded-full bg-accent/20" aria-hidden>
+      <span className="absolute inset-y-0 rounded-full bg-white/20" style={{ left: `${(DAY_OPEN[0] / 24) * 100}%`, width: `${((DAY_OPEN[1] - DAY_OPEN[0]) / 24) * 100}%` }} />
+      <span data-clock-fill className="absolute inset-0 origin-left rounded-full bg-accent/70" style={{ transform: `scaleX(${first / 24})` }} />
+      <span data-clock-mark className="absolute inset-0" style={{ transform: `translateX(${(first / 24) * 100}%)` }}>
+        <span className="absolute left-0 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-ink-950 bg-fg shadow-[0_0_0_4px_rgba(96,200,255,0.25)]" />
+      </span>
+    </div>
+  );
+
+  return (
+    <section ref={sectionRef} data-pin className="relative pb-24 pt-12 md:pb-32 md:pt-16">
+      <Container>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:gap-20">
+          <div>
+            <h2 className="max-w-[16ch] font-display text-[32px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px] lg:text-[48px]">
+              {t("day.title")}
+            </h2>
+            <p className="mt-5 max-w-[34rem] text-[16.5px] leading-[1.6] text-fg-muted sm:text-[17px]">{dayLead(t, staffLive)}</p>
+            <p className="mt-3 text-[13.5px] text-fg-muted">{t("day.example")}</p>
+            <DayLegend team={team} className="mt-6 lg:hidden" />
+
+            {/* on a desk: a still instrument beside the day, held in view */}
+            <div className="sticky top-32 mt-14 hidden lg:block">
+              <span data-clock-time className="block font-display text-[72px] font-semibold leading-none tabular-nums tracking-tight text-fg">
+                {plan.cards[0].time}
+              </span>
+              <div className="mt-7">
+                {track}
+                <div aria-hidden className="mt-2 flex justify-between text-[11.5px] tabular-nums text-fg-dim">
+                  <span>00</span><span>06</span><span>12</span><span>18</span><span>24</span>
+                </div>
+              </div>
+              <DayLegend team={team} className="mt-6" />
+            </div>
+          </div>
+
+          <div>
+            {/* on a phone: a slim bar under the navigation, held while the day scrolls under it */}
+            <div className="sticky top-[56px] z-20 -mx-5 mb-8 flex items-center gap-5 border-b border-white/[0.06] bg-ink-950/90 px-5 py-3 backdrop-blur-md sm:-mx-7 sm:px-7 lg:hidden">
+              <span data-clock-time className="font-display text-[26px] font-semibold leading-none tabular-nums tracking-tight text-fg">
+                {plan.cards[0].time}
+              </span>
+              <div className="min-w-0 flex-1">{track}</div>
+            </div>
+            <ol ref={listRef} className="flex flex-col gap-12 lg:pt-4">
+              {moments.map((m) => (
+                <li key={`${m.time}-${m.cards[0].key}`} className="grid grid-cols-[44px_minmax(0,1fr)] gap-4 sm:grid-cols-[56px_minmax(0,1fr)]">
+                  <span className="pt-3.5 text-[13px] font-medium tabular-nums text-fg-muted">{m.time}</span>
+                  <div className="flex flex-col gap-2.5">
+                    {m.cards.map((card) => <DayCard key={card.key} card={card} plan={plan} />)}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
+      </Container>
+    </section>
+  );
+}
+
+// A message time exactly as written ("02:14"), for when the clock lands on one.
+function quarterClockExact(hour) {
+  const hh = Math.floor(hour);
+  const mm = Math.round((hour - hh) * 60);
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+}
+
+// ------------------------------------------------------------ the team
+// The four, named once. Not cards: prices live on /pricing and the jobs on
+// /office, so this is a type list: portrait, name, role, in service or not.
+function TheFour() {
+  const { t } = useTranslation();
+  const staffLive = useStaffLive();
+  return (
+    <section className="pb-12 pt-24 md:pb-16 md:pt-32">
+      <Container>
+        <div className="flex max-w-[760px] flex-wrap items-end justify-between gap-x-8 gap-y-4">
+          <div>
+            <h2 className="font-display text-[32px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px]">
+              {theFourTitle(t, staffLive)}
+            </h2>
+            <p className="mt-4 max-w-[46ch] text-[16px] leading-[1.6] text-fg-muted">{theFourLead(t, staffLive)}</p>
+          </div>
+          <Link to="/office" className="inline-flex min-h-[44px] items-center gap-1.5 text-[16px] font-medium text-accent transition-colors hover:text-[#8AD6FF]">
+            {t("hero.buttons.seeWork")}
+            <span aria-hidden>&rsaquo;</span>
+          </Link>
+        </div>
+        <ul className="mt-10 max-w-[760px] border-b border-white/[0.07] md:mt-12">
+          {ALL_STAFF.map((id) => <StaffRow key={id} id={id} />)}
+        </ul>
+      </Container>
+    </section>
+  );
+}
+
+function StaffRow({ id }) {
+  const { t } = useTranslation();
+  const live = useStaffLive()[id];
+  return (
+    <li className="flex items-center gap-4 border-t border-white/[0.07] py-4 sm:py-5">
+      <StaffAvatar id={id} zoom={3} />
+      <span className="min-w-0 flex-1">
+        <span className="block font-display text-[18px] font-semibold tracking-tight text-fg sm:text-[20px]">
+          {t(`office.agents.${id}.name`)}
+        </span>
+        <span className="block text-[14px] text-fg-muted">{t(`office.agents.${id}.role`)}</span>
+      </span>
+      {/* in service is the list's one accent */}
+      <span className={["inline-flex shrink-0 items-center gap-2 text-[13px] font-medium", live ? "text-accent" : "text-fg-muted"].join(" ")}>
+        <span aria-hidden className={["h-1.5 w-1.5 rounded-full", live ? "bg-accent" : "bg-fg-dim"].join(" ")} />
+        {t(live ? "office.status.live" : "office.status.soon")}
+      </span>
+    </li>
+  );
+}
+
+// ------------------------------------------------------------ the terms
+// What an owner asks before they agree to anything, answered plainly and in
+// one place: how it starts, what Дали does, what she will not do, and what
+// happens to their money and their customers' data. Every line below is one
+// the site already publishes (office.steps, how.steps, office.limits,
+// dataProtection, pricing.staff); only the section title is new.
+function TermsBlock({ title, lead, children }) {
+  return (
+    <div className="mb-16 break-inside-avoid last:mb-0 md:last:mb-16">
+      <h3 className="font-display text-[21px] font-semibold leading-[1.25] tracking-tight text-fg sm:text-[23px]">{title}</h3>
+      {lead && <p className="mt-2 text-[15px] leading-[1.55] text-fg-muted">{lead}</p>}
+      <div className="mt-5">{children}</div>
+    </div>
+  );
+}
+
+function TermsRows({ rows, numbered = false }) {
+  return (
+    <ul className="border-b border-white/[0.07]">
+      {rows.map((r, i) => (
+        <li key={r.title || r.body} className="flex gap-4 border-t border-white/[0.07] py-4">
+          {numbered && <span className="w-4 shrink-0 font-display text-[15px] font-semibold tabular-nums text-fg-muted">{i + 1}</span>}
+          <span className="min-w-0">
+            {r.title && <span className="block text-[15.5px] font-semibold text-fg">{r.title}</span>}
+            <span className={["block text-[15px] leading-[1.55]", r.title ? "mt-1 text-fg-muted" : "text-fg/90"].join(" ")}>{r.body}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function OwnerTerms() {
+  const { t } = useTranslation();
+  const asList = (key) => {
+    const v = t(key, { returnObjects: true, defaultValue: [] });
+    return Array.isArray(v) ? v : [];
+  };
+  const steps = asList("office.steps.items");
+  const does = asList("how.steps");
+  const limits = asList("office.limits.items").map((body) => ({ body }));
+  const data = asList("dataProtection.items");
+  return (
+    <section id="terms" className="py-24 md:py-32">
+      <Container>
+        <h2 className="max-w-[20ch] font-display text-[32px] font-semibold leading-[1.08] tracking-tightest text-fg sm:text-[42px]">
+          {t("terms.title")}
+        </h2>
+        <div className="mt-12 md:mt-16 md:columns-2 md:gap-16">
+          <TermsBlock title={t("office.steps.title")}>
+            <TermsRows rows={steps} numbered />
+            {/* the third step ends «та зөвхөн сарын төлбөр төлнө»: the price, right there */}
+            <div className="border-b border-white/[0.07] py-5">
+              <div className="flex items-center gap-3">
+                <StaffAvatar id="dali" zoom={2} />
+                <span>
+                  <span className="block text-[15.5px] font-semibold text-fg">{t("office.agents.dali.name")}</span>
+                  <span className="block text-[13.5px] text-fg-muted">{t("office.agents.dali.role")}</span>
+                </span>
+              </div>
+              <div className="mt-4">
+                <StaffPrice id="dali" />
+              </div>
+              <StaffTerms className="mt-3" />
+            </div>
+          </TermsBlock>
+          <TermsBlock title={t("how.title")} lead={t("how.description")}>
+            <TermsRows rows={does} />
+          </TermsBlock>
+          <TermsBlock title={t("office.limits.title")} lead={t("office.limits.lead")}>
+            <TermsRows rows={limits} />
+          </TermsBlock>
+          <TermsBlock title={t("dataProtection.title")} lead={t("dataProtection.description")}>
+            <TermsRows rows={data} />
+            <a href="/privacy/" className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 text-[15.5px] font-medium text-accent transition-colors hover:text-[#8AD6FF]">
+              {t("dataProtection.policy")}
+              <span aria-hidden>&rsaquo;</span>
+            </a>
+          </TermsBlock>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+// ------------------------------------------------------------ a real owner
+// One real owner's words, once one is given (Tara Salon, pending the owner's
+// consent). Until `testimonial` exists in the locale files this renders
+// nothing: no placeholder, no invented quote. Shape, in both locales:
+// "testimonial": { "quote": "…", "name": "…", "business": "…" }
+function Testimonial() {
+  const { t } = useTranslation();
+  const q = t("testimonial", { returnObjects: true, defaultValue: null });
+  if (!q || typeof q !== "object" || !q.quote) return null;
+  return (
+    <section className="py-24 md:py-32">
+      <Container>
+        <figure className="mx-auto max-w-[760px]">
+          <blockquote className="font-display text-[26px] font-medium leading-[1.3] tracking-tight text-fg sm:text-[34px]">
+            «{q.quote}»
+          </blockquote>
+          <figcaption className="mt-6 text-[15px] text-fg-muted">
+            <span className="font-semibold text-fg">{q.name}</span>
+            {q.business ? `, ${q.business}` : ""}
+          </figcaption>
+        </figure>
       </Container>
     </section>
   );
@@ -4637,15 +4005,13 @@ const LandingPage = React.memo(function LandingPage() {
   return (
     <>
       <Hero />
-      {/* one day in one room: the page's argument, made once, in pictures */}
       <ErrorBoundary fallback={null}>
-        <WorkingDay />
+        <DayClock />
       </ErrorBoundary>
-      <ChannelFlow />
       <TheFour />
-      <LiveDemo />
+      <OwnerTerms />
       <Portfolio />
-      <DataProtection />
+      <Testimonial />
       <Contact />
     </>
   );

@@ -194,7 +194,8 @@
     "desk": {
       "live": "Live",
       "soon": "Soon"
-    }
+    },
+    "example": "An example day"
   },
   "theFour": {
     "title": "Dali today. The full team soon.",
@@ -303,7 +304,8 @@
       "handoffTitle": "Passed to you",
       "handoffLine": "The customer asked",
       "reassure": "Dali does not make decisions on your behalf."
-    }
+    },
+    "example": "Example conversation"
   },
   "pricing": {
     "section": "PRICING",
@@ -1117,5 +1119,8 @@
       "nova": "Sent tomorrow's appointment reminder by SMS",
       "eho": "Answered a call after closing"
     }
+  },
+  "terms": {
+    "title": "What to know before you start"
   }
 }

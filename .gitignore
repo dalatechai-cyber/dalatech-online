@@ -8,3 +8,8 @@ scripts/__pycache__/
 assets-src/office/3d/kenney/
 assets-src/office/3d/quaternius/
 __pycache__/
+
+# Impeccable review captures and live-mode state: local only
+.impeccable/review/
+.impeccable/live/
+.impeccable/config.local.json

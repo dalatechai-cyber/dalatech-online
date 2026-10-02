@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-02T08:00:00Z",
+  "title": "Design System: DalaTech",
+  "extensions": {
+    "colorMeta": {
+      "accent": { "role": "primary", "displayName": "Wave-D Light Blue", "canonical": "oklch(79.3% 0.124 234)", "tonalRamp": ["#000736", "#002756", "#004676", "#006698", "#0288BB", "#3FAAE0", "#69D1FF", "#D7F1FF"] },
+      "accent-hover": { "role": "primary", "displayName": "Pressed Light Blue", "canonical": "oklch(84.1% 0.095 233)", "tonalRamp": ["#000C2B", "#002949", "#004669", "#0E668A", "#3A86AC", "#5DA9D0", "#83CFF8", "#DDF3FF"] },
+      "ink-950": { "role": "neutral", "displayName": "Night Ink", "canonical": "oklch(14.8% 0.032 265)", "tonalRamp": ["#050A18", "#0A1024", "#0D1430", "#131C45", "#1A2557", "#5A6E94", "#8B9FC4", "#F0F4FF"] },
+      "ink-900": { "role": "neutral", "displayName": "Thread Ink", "canonical": "oklch(18.0% 0.042 269)", "tonalRamp": ["#05091D", "#1C2339", "#373F56", "#545D76", "#737D97", "#949EBA", "#B9C4E0", "#E3EEFF"] },
+      "ink-800": { "role": "neutral", "displayName": "Raised Ink", "canonical": "oklch(20.3% 0.056 270)", "tonalRamp": ["#040822", "#1A223F", "#343E5E", "#515C7E", "#707CA0", "#919DC2", "#B6C3EA", "#E0EEFF"] },
+      "device-bezel": { "role": "neutral", "displayName": "Bezel", "canonical": "#0B1022", "tonalRamp": ["#05091D", "#1C2339", "#373F56", "#545D76", "#737D97", "#949EBA", "#B9C4E0", "#E3EEFF"] },
+      "fg": { "role": "neutral", "displayName": "Paper White", "canonical": "oklch(96.7% 0.015 270)", "tonalRamp": ["#090B12", "#21242C", "#3C4048", "#5A5D67", "#7A7D87", "#9A9EA8", "#C0C4CE", "#EAEEF9"] },
+      "fg-muted": { "role": "neutral", "displayName": "Mist", "canonical": "oklch(70.0% 0.059 263)", "tonalRamp": ["#010923", "#142340", "#2F3F5F", "#4C5E7F", "#6B7EA1", "#8B9FC4", "#B0C5EB", "#DAEFFF"] },
+      "fg-dim": { "role": "neutral", "displayName": "Dusk", "canonical": "oklch(53.8% 0.065 263)", "tonalRamp": ["#010826", "#132343", "#2D3F62", "#4A5D82", "#697DA4", "#899FC7", "#AEC5EF", "#D8EFFF"] },
+      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "rgba(255,255,255,0.07)", "tonalRamp": ["rgba(255,255,255,0.03)", "rgba(255,255,255,0.05)", "rgba(255,255,255,0.06)", "rgba(255,255,255,0.07)", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.10)", "rgba(255,255,255,0.15)", "rgba(255,255,255,0.20)"] },
+      "bubble-incoming": { "role": "neutral", "displayName": "Incoming Bubble", "canonical": "rgba(255,255,255,0.08)", "tonalRamp": ["rgba(255,255,255,0.02)", "rgba(255,255,255,0.04)", "rgba(255,255,255,0.06)", "rgba(255,255,255,0.08)", "rgba(255,255,255,0.10)", "rgba(255,255,255,0.12)", "rgba(255,255,255,0.16)", "rgba(255,255,255,0.20)"] },
+      "status-online": { "role": "tertiary", "displayName": "Online Green", "canonical": "oklch(77.3% 0.153 163)", "tonalRamp": ["#001900", "#00360A", "#005626", "#007644", "#009862", "#00BB83", "#4AE3A8", "#C9F7E2"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The hero h1 only: 36px phone, 48px sm, 60px lg; max 16ch." },
+      "display-close": { "displayName": "Display Close", "purpose": "The closing invitation, centred, max 20ch." },
+      "clock": { "displayName": "Clock", "purpose": "The day clock's reading: 72px desktop, 26px in the phone bar; tabular numerals." },
+      "headline": { "displayName": "Headline", "purpose": "Section h2s: 32px phone, 42px sm, 48px lg." },
+      "title": { "displayName": "Title", "purpose": "Sub-blocks inside a section (21px / 23px); staff names 18px / 20px." },
+      "lead": { "displayName": "Lead", "purpose": "The one paragraph under a heading, Mist, 16.5px phone to 17-18px, max 34rem." },
+      "body": { "displayName": "Body", "purpose": "Row bodies; row titles at 15.5px 600." },
+      "bubble": { "displayName": "Bubble", "purpose": "Chat bubbles and day-card bodies." },
+      "label": { "displayName": "Label", "purpose": "Senders, timestamps, status lines, example disclaimers. Sentence case, never uppercase." }
+    },
+    "shadows": [
+      { "name": "device-drop", "value": "0 40px 100px -30px rgba(0,0,0,0.75)", "purpose": "The desktop phone frame around the hero thread." },
+      { "name": "browser-drop", "value": "drop-shadow(0 40px 60px rgba(2,6,23,0.6))", "purpose": "Filter on the browser frame around the website case." },
+      { "name": "needle-halo", "value": "0 0 0 4px rgba(96,200,255,0.25)", "purpose": "The day clock's position marker." },
+      { "name": "focus-ring", "value": "0 0 0 2px #050A18, 0 0 0 4px #60C8FF", "purpose": "Focus-visible on every control: 2px accent ring offset 2px from ink-950." }
+    ],
+    "motion": [
+      { "name": "arrive", "value": "spring(stiffness 420, damping 34, mass 0.7); from opacity 0, y 10px, scale 0.98", "purpose": "Every arrival on the landing page: messages, typing bubble, the ask row, replies. Quick, settled, no bounce." },
+      { "name": "day-lit", "value": "opacity 420ms cubic-bezier(0.16, 1, 0.3, 1), transform 520ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "A day card lighting as the clock reaches it." },
+      { "name": "day-dim", "value": "opacity 0.32; translateY(8px)", "purpose": "A day card the clock has not reached, only while the list is armed." },
+      { "name": "clock-damping", "value": "shown += (target - shown) * 0.18 per frame", "purpose": "The day clock eases toward the scroll position; never jumps, never hijacks scroll." },
+      { "name": "press", "value": "scale(0.97) 160ms cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Active state of pressable controls; off under reduced motion." },
+      { "name": "color-hover", "value": "200ms ease-out", "purpose": "Fill and text colour changes on hover." },
+      { "name": "typing-dots", "value": "1.1s ease-in-out infinite, 0.15s stagger", "purpose": "Дали typing." },
+      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce", "purpose": "Threads render finished, dots and caret stop, armed cards show at full opacity without transform or transition, press scale off." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Messenger Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The page's one filled light-blue action: write to Дали on Messenger.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\" width=\"18\" height=\"18\"><path d=\"M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.35.27.57l.05 1.78c.02.57.6.94 1.12.71l1.99-.88c.17-.07.36-.09.53-.04.91.25 1.89.39 2.9.39 5.64 0 10-4.13 10-9.7S17.64 2 12 2Zm6 7.46-2.94 4.66a1.5 1.5 0 0 1-2.17.4l-2.34-1.75a.6.6 0 0 0-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66a1.5 1.5 0 0 1 2.17-.4l2.34 1.75a.6.6 0 0 0 .72 0l3.16-2.4c.42-.32.97.18.69.63Z\"/></svg>Messenger-ээр бичих</a>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 24px; border-radius: 12px; background: #60C8FF; color: #050A18; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 15.5px; font-weight: 600; letter-spacing: -0.025em; text-decoration: none; transition: background-color 200ms ease-out, transform 160ms cubic-bezier(0.23, 1, 0.32, 1); } .ds-btn-primary:hover { background: #8AD6FF; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px #050A18, 0 0 0 4px #60C8FF; } .ds-btn-primary:active { transform: scale(0.97); } @media (prefers-reduced-motion: reduce) { .ds-btn-primary:active { transform: none; } }"
+    },
+    {
+      "name": "Request Link",
+      "kind": "button",
+      "refersTo": "link-quiet",
+      "description": "The quiet second path beside the action: a Mist text button that opens the request form.",
+      "html": "<button type=\"button\" class=\"ds-link-quiet\">Хүсэлт илгээх <span aria-hidden=\"true\">&rsaquo;</span></button>",
+      "css": ".ds-link-quiet { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; border: 0; border-radius: 6px; background: transparent; color: var(--fg-muted, #8B9FC4); font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 15.5px; font-weight: 500; cursor: pointer; transition: color 200ms ease-out; } .ds-link-quiet:hover { color: var(--fg, #F0F4FF); } .ds-link-quiet:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(96,200,255,0.7); }"
+    },
+    {
+      "name": "Ask Chip",
+      "kind": "chip",
+      "refersTo": "chip-ask",
+      "description": "A question the visitor can ask Дали under the hero thread.",
+      "html": "<button type=\"button\" class=\"ds-chip-ask\">Үнийн мэдээлэл авч болох уу?</button>",
+      "css": ".ds-chip-ask { min-height: 44px; padding: 8px 14px; border: 1px solid rgba(96,200,255,0.35); border-radius: 9999px; background: transparent; color: #60C8FF; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 13px; line-height: 1.3; white-space: nowrap; cursor: pointer; transition: background-color 200ms ease-out, opacity 200ms ease-out; } .ds-chip-ask:hover { background: rgba(96,200,255,0.10); } .ds-chip-ask:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(96,200,255,0.7); } .ds-chip-ask[aria-disabled=true] { opacity: 0.4; }"
+    },
+    {
+      "name": "Messenger Bubbles",
+      "kind": "custom",
+      "refersTo": "bubble-incoming",
+      "description": "Дали's incoming bubble and the visitor's light-blue outgoing bubble, tail corner cut to 6px.",
+      "html": "<div class=\"ds-thread\"><div class=\"ds-bubble ds-bubble-out\">16 цагт хоёр хүний цаг авч болох уу?</div><div class=\"ds-bubble ds-bubble-in\">Энэ холбоосоор маргааш 16:00 цагт хоёр хүний цагаа сонгоод захиалаарай.</div><div class=\"ds-bubble ds-bubble-in ds-typing\"><span></span><span></span><span></span></div></div>",
+      "css": ".ds-thread { display: flex; flex-direction: column; gap: 8px; max-width: 360px; padding: 16px 14px; border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; background: #0A1024; } .ds-bubble { max-width: 80%; padding: 8px 14px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14.5px; line-height: 1.45; border-radius: 20px; } .ds-bubble-out { align-self: flex-end; background: #60C8FF; color: #050A18; border-bottom-right-radius: 6px; } .ds-bubble-in { align-self: flex-start; background: rgba(255,255,255,0.08); color: var(--fg, #F0F4FF); border-bottom-left-radius: 6px; } .ds-typing { display: flex; gap: 4px; padding: 12px 16px; } .ds-typing span { width: 6px; height: 6px; border-radius: 9999px; background: rgba(240,244,255,0.55); animation: ds-dot 1.1s ease-in-out infinite; } .ds-typing span:nth-child(2) { animation-delay: 0.15s; } .ds-typing span:nth-child(3) { animation-delay: 0.3s; } @keyframes ds-dot { 0%, 60%, 100% { opacity: 0.35; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-2px); } } @media (prefers-reduced-motion: reduce) { .ds-typing span { animation: none; } }"
+    },
+    {
+      "name": "Day Card",
+      "kind": "card",
+      "refersTo": "day-card",
+      "description": "A notification moment in the day; ink-800 with an accent border when it reaches the owner. Dims until the clock reaches it.",
+      "html": "<div class=\"ds-day\"><div class=\"ds-day-card\"><div class=\"ds-day-head\"><span>Болд · Messenger</span><time>02:14</time></div><p class=\"ds-day-body\">Сайн байна уу, маргааш цаг авч болох уу?</p></div><div class=\"ds-day-card ds-day-owner\"><div class=\"ds-day-head\"><span>DalaTech · Танд</span><time>02:15</time></div><p class=\"ds-day-title\">Захиалах сонирхолтой харилцагч</p><p class=\"ds-day-body\">Болд маргааш цаг авахыг хүссэн. Дали захиалгын холбоосыг шөнийн 02:14-т илгээсэн.</p></div><div class=\"ds-day-card ds-day-waiting\"><div class=\"ds-day-head\"><span>Дали · Сараад</span><time>09:40</time></div><p class=\"ds-day-body\">Мэдээж. Үнийн жагсаалтыг илгээлээ.</p></div></div>",
+      "css": ".ds-day { display: flex; flex-direction: column; gap: 10px; max-width: 420px; } .ds-day-card { padding: 14px 16px; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; background: #0A1024; font-family: Inter, ui-sans-serif, system-ui, sans-serif; transition: opacity 420ms cubic-bezier(0.16, 1, 0.3, 1), transform 520ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-day-owner { border-color: rgba(96,200,255,0.30); background: var(--ink-800, #0D1430); } .ds-day-waiting { opacity: 0.32; transform: translateY(8px); } .ds-day-head { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 500; color: var(--fg-muted, #8B9FC4); } .ds-day-head time { font-size: 12px; font-weight: 400; font-variant-numeric: tabular-nums; color: #5A6E94; } .ds-day-title { margin: 8px 0 0; font-size: 15px; font-weight: 600; line-height: 1.35; color: var(--fg, #F0F4FF); } .ds-day-body { margin: 6px 0 0; font-size: 14.5px; line-height: 1.5; color: rgba(240,244,255,0.9); } @media (prefers-reduced-motion: reduce) { .ds-day-card { transition: none; } .ds-day-waiting { opacity: 1; transform: none; } }"
+    },
+    {
+      "name": "Hairline List",
+      "kind": "custom",
+      "refersTo": "list-row",
+      "description": "The page's answer to cards: rows ruled by 7% white hairlines, optional tabular numeral gutter.",
+      "html": "<ol class=\"ds-list\"><li><span class=\"ds-num\">1</span><span><b>Уулзалт, 30 минут</b><span>Танай үйл ажиллагаа, ирдэг зурвасын төрлийг тодруулна.</span></span></li><li><span class=\"ds-num\">2</span><span><b>Суурилуулалт, 1–2 долоо хоног</b><span>AI ажилтныг танай хуудас, мэдээлэлд тохируулан сургана.</span></span></li><li><span class=\"ds-num\">3</span><span><b>Ажиллаж эхэлнэ</b><span>AI ажилтан эхний өдрөөс ажлаа хийж, та зөвхөн сарын төлбөр төлнө.</span></span></li></ol>",
+      "css": ".ds-list { list-style: none; margin: 0; padding: 0; max-width: 560px; border-bottom: 1px solid rgba(255,255,255,0.07); font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-list li { display: flex; gap: 16px; padding: 16px 0; border-top: 1px solid rgba(255,255,255,0.07); } .ds-num { width: 16px; flex-shrink: 0; font-family: Manrope, Inter, sans-serif; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; color: #5A6E94; } .ds-list b { display: block; font-size: 15.5px; font-weight: 600; color: var(--fg, #F0F4FF); } .ds-list b + span { display: block; margin-top: 4px; font-size: 15px; line-height: 1.55; color: var(--fg-muted, #8B9FC4); }"
+    },
+    {
+      "name": "Team Row",
+      "kind": "custom",
+      "refersTo": "list-row",
+      "description": "A staff member in the team list: name, role, and a live state that is light blue only when the switch is on.",
+      "html": "<ul class=\"ds-team\"><li><span class=\"ds-avatar\"></span><span class=\"ds-who\"><b>Дали</b><span>Харилцагчийн менежер</span></span><span class=\"ds-state ds-live\"><i></i>Идэвхтэй</span></li><li><span class=\"ds-avatar\"></span><span class=\"ds-who\"><b>Вира</b><span>Маркетинг менежер</span></span><span class=\"ds-state\"><i></i>Удахгүй</span></li></ul>",
+      "css": ".ds-team { list-style: none; margin: 0; padding: 0; max-width: 560px; border-bottom: 1px solid rgba(255,255,255,0.07); font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-team li { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-top: 1px solid rgba(255,255,255,0.07); } .ds-avatar { width: 40px; height: 40px; flex-shrink: 0; border-radius: 4px; background: #0D1430; } .ds-who { flex: 1; min-width: 0; } .ds-who b { display: block; font-family: Manrope, Inter, sans-serif; font-size: 18px; font-weight: 600; letter-spacing: -0.025em; color: var(--fg, #F0F4FF); } .ds-who span { display: block; font-size: 14px; color: var(--fg-muted, #8B9FC4); } .ds-state { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #5A6E94; } .ds-state i { width: 6px; height: 6px; border-radius: 9999px; background: #5A6E94; } .ds-live { color: #60C8FF; } .ds-live i { background: #60C8FF; }"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "button-primary-compact",
+      "description": "Fixed bar: transparent over the hero, ink-950 at 94% with a 20px blur and a hairline once scrolled; one compact Messenger button.",
+      "html": "<header class=\"ds-nav\"><span class=\"ds-nav-mark\">DalaTech</span><nav class=\"ds-nav-links\"><a href=\"#\" aria-current=\"page\">AI ажилтан</a><a href=\"#\">Вэбсайт</a><a href=\"#\">Үнэ</a><a href=\"#\">Асуулт</a></nav><a class=\"ds-nav-cta\" href=\"#\">Messenger-ээр бичих</a></header>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 56px; padding: 0 20px; background: rgba(5,10,24,0.94); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.08); font-family: Inter, ui-sans-serif, system-ui, sans-serif; } .ds-nav-mark { font-family: Manrope, Inter, sans-serif; font-size: 17px; font-weight: 700; color: #FFFFFF; } .ds-nav-links { display: flex; flex: 1; justify-content: space-evenly; } .ds-nav-links a { position: relative; font-size: 13.5px; font-weight: 500; letter-spacing: -0.005em; color: var(--fg-muted, #8B9FC4); text-decoration: none; transition: color 200ms ease-out; } .ds-nav-links a:hover, .ds-nav-links a[aria-current=page] { color: var(--fg, #F0F4FF); } .ds-nav-links a[aria-current=page]::after { content: \"\"; position: absolute; left: 0; right: 0; bottom: -6px; height: 1px; background: rgba(96,200,255,0.7); } .ds-nav-cta { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 12px; background: #60C8FF; color: #050A18; font-size: 13.5px; font-weight: 600; letter-spacing: -0.025em; text-decoration: none; transition: background-color 200ms ease-out; } .ds-nav-cta:hover { background: #8AD6FF; } .ds-nav-cta:focus-visible, .ds-nav-links a:focus-visible { outline: none; box-shadow: 0 0 0 2px #050A18, 0 0 0 4px #60C8FF; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Inbox at 02:14",
+    "overview": "The landing page is one day of Дали's, told once. It opens on a Messenger thread answered in the middle of the night, carries one clock through the day as each real moment lands, and closes on the owner's summary with the thread to Дали left open. Everything visual is borrowed from the grammar the visitor already knows from their phone: bubbles, a composer with a caret, typing dots, a seen-avatar, notification cards, a status line reading \"Онлайн\". DalaTech's own pixel staff heads are the avatars. Nothing is decorated that a messaging app would not draw.\n\nThe ground is deep navy ink, never black and never a gradient. Text sits in three cool greys. One light blue, the blue of the wave-D in the wordmark, means exactly one thing: Дали, now, act. It fills the visitor's own outgoing bubble, the one action button, the clock's progress, and the live-staff dot; it never decorates. Density is calm: wide section breathing room, long hairline-ruled lists instead of grids of cards, and type that does the hierarchy work on its own.\n\nConfirmed rejections, from the direction contract and the build: no split hero with stats, no rows of equal feature cards, no eyebrows or kickers above headings, no glow orbs, no gradients as decoration, no button in every section.",
+    "keyCharacteristics": [
+      "Messenger grammar as the whole visual vocabulary.",
+      "Navy ink grounds, three cool text greys, one light-blue meaning.",
+      "One filled light-blue action per moment; everything else is text.",
+      "Hairline-ruled rows instead of cards; cards only where Messenger itself draws a card.",
+      "Manrope display set tight, Inter body.",
+      "One motion: a thing arrives the way a message arrives."
+    ],
+    "rules": [
+      { "name": "The One Meaning Rule", "body": "Light blue means Дали, now, act. If an element is light blue, it is the visitor's own message, the action, the clock's present, or something live. Nothing else gets it, including headings, icons for decoration, and borders for emphasis.", "section": "colors" },
+      { "name": "The No Gradient Rule", "body": "Surfaces are flat ink steps. Depth comes from moving one ink step up (950 to 900 to 800), not from gradients, glows or orbs.", "section": "colors" },
+      { "name": "The No Eyebrow Rule", "body": "A heading stands alone. No uppercase tracked kicker, numbered label or small pre-title sits above any h1 or h2.", "section": "typography" },
+      { "name": "The Tight Display Rule", "body": "Manrope at -0.04em is for h1 and h2 only; everything at title size and below relaxes to -0.025em or normal.", "section": "typography" },
+      { "name": "The Object-Only Shadow Rule", "body": "Only an object that stands for a physical device casts a shadow. Cards, rows, bubbles and buttons are flat.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep light blue (#60C8FF) to its one meaning: the visitor's message, the action, the clock's present, something live.",
+      "Do give each moment exactly one filled light-blue control, the Messenger button, with the request form as a quiet Mist text link beside it.",
+      "Do separate list items with 1px hairlines at 7% white and 16px of padding instead of wrapping them in cards.",
+      "Do draw a card only where Messenger itself would: a notification, a link preview, a handoff; 16px radius, ink-900 or ink-800, no shadow.",
+      "Do animate arrivals with the ARRIVE spring (stiffness 420, damping 34, mass 0.7) and nothing else, and render the finished state under prefers-reduced-motion.",
+      "Do set h1 and h2 in Manrope 600 at -0.04em, and use tabular numerals for every time.",
+      "Do keep every target at 44px or taller and every focus ring a 2px accent ring offset from ink-950.",
+      "Do use the wordmark paths from `brand/` exactly; never re-trace."
+    ],
+    "donts": [
+      "Don't put an eyebrow, kicker or uppercase tracked label above a heading.",
+      "Don't build rows of equal feature cards, a split hero with stats, or a button in every section.",
+      "Don't use gradients, glow orbs or blurred colour blobs as decoration.",
+      "Don't add a second filled or outlined button next to the Messenger action.",
+      "Don't use Dusk (#5A6E94) for anything a visitor needs to read; it is below 4.5:1 on ink.",
+      "Don't cast shadows from cards, rows or buttons; only device frames and the clock needle carry one.",
+      "Don't bind motion to scroll in a way that holds or hijacks it; the clock follows the reader."
+    ]
+  }
+}

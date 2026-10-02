@@ -94,16 +94,6 @@ html.nav-menu-open #dt-chat-frame {
   visibility: hidden;
 }
 
-.bg-grid {
-  background-image:
-    linear-gradient(rgba(56,189,248,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56,189,248,0.06) 1px, transparent 1px);
-  background-size: 56px 56px;
-  background-position: -1px -1px;
-  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent 75%);
-          mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent 75%);
-}
-
 .card-glow {
   position: relative;
   isolation: isolate;
@@ -175,14 +165,6 @@ html.nav-menu-open #dt-chat-frame {
   .animate-floatY {
     animation: none !important;
   }
-}
-
-.word-mask {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-  padding-bottom: 0.12em;
-  margin-bottom: -0.12em;
 }
 
 .field {
@@ -265,54 +247,6 @@ html.nav-menu-open #dt-chat-frame {
   }
 }
 
-/* Contact section — orbiting points around a glowing core. */
-@keyframes contactOrbDrift {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(1.05); }
-}
-@keyframes contactOrbit {
-  to { transform: rotate(360deg); }
-}
-@keyframes contactOrbitReverse {
-  to { transform: rotate(-360deg); }
-}
-.contact-orb-glow {
-  animation: contactOrbDrift 11s ease-in-out infinite;
-  will-change: transform;
-}
-.contact-orbit {
-  width: 0;
-  height: 0;
-  will-change: transform;
-}
-.contact-orbit-1 {
-  animation: contactOrbit 26s linear infinite;
-}
-.contact-orbit-2 {
-  animation: contactOrbitReverse 38s linear infinite;
-}
-.contact-orbit-3 {
-  animation: contactOrbit 18s linear infinite;
-}
-.contact-arrow {
-  transition: transform 220ms var(--ease-out-quart);
-}
-.group:hover .contact-arrow {
-  transform: translateX(3px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .contact-orb-glow,
-  .contact-orbit-1,
-  .contact-orbit-2,
-  .contact-orbit-3 {
-    animation: none !important;
-  }
-  .contact-arrow {
-    transition: none !important;
-  }
-}
-
 /* Demo request dialog — a bottom sheet on phones, a centred card from sm up. */
 .demo-sheet {
   max-height: 92vh;
@@ -359,49 +293,64 @@ html.demo-dialog-open #dt-chat-frame {
   50% { transform: scaleY(1.5); }
 }
 
-.day-band {
-  overflow: hidden;
+/* ------------------------------------------------ the landing page's motion
+   One language: a thing arrives the way a message arrives, and only where an
+   arrival means something. Under reduced motion all of it is simply there. */
+
+/* Дали typing: three dots that breathe in turn */
+.chat-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgba(240, 244, 255, 0.55);
+  animation: chatDot 1.1s ease-in-out infinite;
+}
+.chat-dots span:nth-child(2) { animation-delay: 0.15s; }
+.chat-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes chatDot {
+  0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
 }
 
+/* the caret in the composer while the customer types */
+.chat-caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: -0.15em;
+  background: #60C8FF;
+  animation: chatCaret 1s steps(1) infinite;
+}
+@keyframes chatCaret {
+  50% { opacity: 0; }
+}
 
-/* the owner's phone over the room: breathes when the scroll stops */
-.day-phone {
-  animation: dayPhoneFloat 5.5s ease-in-out infinite alternate;
+/* the day: a message the clock has not reached yet waits, dimmed, in place,
+   and lights as the clock reaches it. Only once the clock is running (armed);
+   without it every message shows at full strength. */
+.day-armed .day-card {
+  transition: opacity 420ms var(--ease-out-expo), transform 520ms var(--ease-out-expo);
 }
-@keyframes dayPhoneFloat {
-  from { transform: translateY(0); }
-  to { transform: translateY(-7px); }
+.day-armed .day-card:not(.is-on) {
+  opacity: 0.32;
+  transform: translateY(8px);
 }
+
+/* on a phone the floating chat button steps aside while the demo thread is on
+   screen, so it never sits on the demo's send button */
+@media (max-width: 1023px) {
+  /* hidden, not just transparent, so keyboard focus cannot land on it either */
+  html.dali-demo-visible #dt-chat-toggle:not(.is-open) {
+    visibility: hidden;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .day-phone { animation: none; }
-}
-
-/* the first screen's day ring: a moment lights as the hand reaches it */
-.ring-dot {
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: scale(0.55);
-  transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.ring-dot .dot { fill: #24325A; transition: fill 340ms ease; }
-.ring-dot .halo { opacity: 0; transform-box: fill-box; transform-origin: center; }
-.ring-dot.is-lit { transform: scale(1); }
-.ring-dot.is-lit .dot { fill: #38BDF8; }
-.ring-dot.is-lit .halo { animation: ringHalo 1200ms cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes ringHalo {
-  0% { opacity: 0.5; transform: scale(0.6); }
-  100% { opacity: 0; transform: scale(3); }
-}
-/* each new moment arrives rather than swapping, so the eye catches the change */
-.ring-caption { animation: ringCaption 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
-@keyframes ringCaption {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ring-dot { transition: none; }
-  .ring-dot .halo { animation: none !important; }
-  .ring-caption { animation: none; }
+  .chat-dots span,
+  .chat-caret { animation: none; }
+  .day-armed .day-card,
+  .day-armed .day-card:not(.is-on) { transition: none; opacity: 1; transform: none; }
 }
 
 /* ------------------------------------------------ the office page's opening

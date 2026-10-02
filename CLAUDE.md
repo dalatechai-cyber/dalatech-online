@@ -12,7 +12,8 @@ in this repo and no build step that would typecheck it.
 - Styling: Tailwind CSS 3 (`tailwind.config.js`), plus `src/index.css`
 - Animation: `framer-motion`
 - 3D: `three` (the globe on the location section)
-- Pixel art: a plain 2D canvas on `/` and `/office` (`src/office/pixel.js`)
+- Pixel art: a plain 2D canvas on `/office` (`src/office/pixel.js`); the landing page
+  uses the staff faces from the same atlas, not the canvas
 - i18n: `i18next` + `react-i18next`
 - Deploy: Vercel, framework preset `vite`, output `dist/`
 
@@ -60,8 +61,8 @@ safety gain. Keep it that way when adding rules.
     src/Globe.jsx         three.js globe, lazy-loaded
     src/office/           the pixel office: pixel.js (atlas, stage, sprite
                           helpers), scenes.js (the office room, the four pixel /office
-                          chapters, and the landing page's working-day timeline
-                          that runs behind the owner's phone), agents.js (prices),
+                          chapters, and dayPlan(): the moments of the landing
+                          page's day clock), agents.js (prices),
                           staff.json (atlas manifest)
     src/Setup.jsx         Facebook SDK page-connect flow, lazy-loaded at /setup
     eslint.config.js      the build's lint gate (see Commands)
@@ -103,6 +104,22 @@ The UI ships two locales — `mn` (default), `en` — switched from
 the navbar and persisted to `localStorage` under `language`. New
 visitor-facing copy belongs in both locale files, not hardcoded in JSX.
 Some sections still have hardcoded English; see `TRANSLATION_GUIDE.md`.
+
+## Landing page (redesigned 2026-10-02)
+One story, told once: hero with Дали answering a Messenger thread at 02:14 (`DaliChat`),
+the whole day on one scroll-driven clock (`DayClock`, moments from `dayPlan()`), the team
+(`TheFour`), the honest terms (`OwnerTerms`: steps, what Дали does, what she won't, money
+and data, Дали's price), the website (`Portfolio`), a testimonial slot that renders nothing
+until a real `testimonial` exists in the locales, and the close (`Contact`).
+
+- The one action is Messenger (`MessengerCta`, light-blue filled). The request form is the
+  quiet `RequestLink` beside it. Don't add a button per section.
+- One motion language: a thing arrives the way a message arrives (`ARRIVE` spring), only
+  where an arrival means something. No section reveal-on-scroll, no ambient loops, no glow.
+  Reduced motion shows everything finished and still.
+- Conversations on the page are labelled examples (`liveDemo.example`, `day.example`).
+- No eyebrow labels over headings (`SectionHeader` ignores `eyebrow`).
+- Product/brief context for design tools: `PRODUCT.md`, `.impeccable/surfaces/`.
 
 ## Brand
 Dark, premium, professional. Must not look AI-generated.
